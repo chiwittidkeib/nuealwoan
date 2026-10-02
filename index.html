@@ -404,7 +404,7 @@ async function init(){
   if(!data.session){S.state='login';render();return}
   startData();
 }
-const LOGIN_DOMAIN=()=>String((window.APP_CONFIG||{}).LOGIN_DOMAIN||'nuealwoan.local').replace(/^@/,'');
+const LOGIN_DOMAIN=()=>String((window.APP_CONFIG||{}).LOGIN_DOMAIN||'nuealwoan.com').replace(/^@/,'');
 const cleanUser=u=>String(u||'').trim().toLowerCase();
 const userToEmail=u=>{u=cleanUser(u);return u.includes('@')?u:u+'@'+LOGIN_DOMAIN()};
 const emailToUser=e=>{e=String(e||'');const d='@'+LOGIN_DOMAIN();return e.toLowerCase().endsWith(d)?e.slice(0,-d.length):e};
