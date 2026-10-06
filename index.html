@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#17694f">
+<meta name="theme-color" content="#111614">
+<meta name="color-scheme" content="dark">
+<script>document.documentElement.setAttribute("data-theme","dark")</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>NueaLwoan</title>
@@ -15,7 +17,7 @@
 <style>
 /* Layout: sticky shop header, single working column (max 1080px), bottom tab bar on every width; work happens in a slide-up sheet. */
 :root{
-  --bg:#f3f5f0; --surface:#ffffff; --sunk:#e9ece5; --line:#d9ded4;
+  --bg:#f3f5f0; --surface:#ffffff; --sunk:#e9ece5; --line:#d9ded4; --veil-rgb:243,245,240; --veil-a:.5;
   --fg:#1c2420; --muted:#5f6b64;
   --jade:#17694f; --jade-soft:#dcefe5; --on-jade:#ffffff;
   --chili:#b23d27; --chili-soft:#f7e2db;
@@ -26,14 +28,14 @@
   --r:12px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#111614; --surface:#1a201d; --sunk:#151a18; --line:#2b3430;
+  --bg:#111614; --surface:#1a201d; --sunk:#151a18; --line:#2b3430; --veil-rgb:17,22,20;
   --fg:#e8eee9; --muted:#9aa69f;
   --jade:#5ec59c; --jade-soft:#1c3a2e; --on-jade:#0b1912;
   --chili:#f08c74; --chili-soft:#3d231c;
   --amber:#e4b75c; --amber-soft:#382d16;
   --shadow:0 10px 30px rgba(0,0,0,.45); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#111614; --surface:#1a201d; --sunk:#151a18; --line:#2b3430;
+  --bg:#111614; --surface:#1a201d; --sunk:#151a18; --line:#2b3430; --veil-rgb:17,22,20;
   --fg:#e8eee9; --muted:#9aa69f;
   --jade:#5ec59c; --jade-soft:#1c3a2e; --on-jade:#0b1912;
   --chili:#f08c74; --chili-soft:#3d231c;
@@ -306,19 +308,37 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 body.auth{background:#0b0a09}
 body.auth::before{content:"";position:fixed;inset:0;z-index:-1;
   background:linear-gradient(180deg,rgba(8,6,5,.30) 0%,rgba(8,6,5,.55) 55%,rgba(8,6,5,.88) 100%),url(images/bg.jpg) center 40%/cover no-repeat,url(bg.jpg) center 40%/cover no-repeat}
-@media (max-width:700px){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.15) 40%,#0b0a09 60%),url(images/bg-m.jpg) 50% 0/auto 58% no-repeat,url(bg-m.jpg) 50% 0/auto 58% no-repeat,#0b0a09}}
+@media (max-width:700px){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.1) 35vw,#0b0a09 100vw),url(images/bg-m.jpg) 50% 0/100% auto no-repeat,url(bg-m.jpg) 50% 0/100% auto no-repeat,#0b0a09}}
 body.auth .top{background:transparent;border-color:transparent}
 body.auth .top h1,body.auth .top small{color:#f6efe4;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 body.auth .wrap{min-height:calc(100vh - 70px);padding-block:16px 24px;max-width:none}
 body.auth .login,body.auth .empty{--surface:rgba(18,15,12,.62);--fg:#f6efe4;--muted:#cdbfae;--line:rgba(255,230,190,.18);--jade:#d9a65a;--on-jade:#1d1307;--chili:#ff8a73;
   color:var(--fg);background:var(--surface);border-color:var(--line);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);box-shadow:0 20px 50px rgba(0,0,0,.5)}
-@media (min-width:701px){body.auth .login{margin:max(20vh,120px) 4vw 40px auto;width:320px}}
+@media (min-width:701px){body.auth .wrap{justify-content:center;align-items:center;min-height:calc(100vh - 90px)}
+  body.auth .login{margin:0 auto;width:360px}}
+body.auth .login input:-webkit-autofill{-webkit-text-fill-color:#f6efe4;-webkit-box-shadow:0 0 0 40px #1b1612 inset;caret-color:#f6efe4}
 body.auth .login input{background:rgba(0,0,0,.35);color:var(--fg)}
 body.auth .login input::placeholder{color:#9f9384}
 body.auth .lg-mark{background:linear-gradient(140deg,#e9bd6f,#b9802f)}
 body.auth .lg-mark svg{stroke:#1d1307}
 body.auth .btn.pri{background:linear-gradient(180deg,#e2b265,#c48d3d);border-color:#c48d3d;color:#1d1307;font-weight:600}
 @media (max-width:700px){body.auth .login{margin:auto 0 8px;width:100%}}
+@media (min-width:701px) and (orientation:portrait){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/bg-m.jpg) center 30%/cover no-repeat,url(bg-m.jpg) center 30%/cover no-repeat,#0b0a09}}
+
+/* ---- พื้นหลังรูปหน้าร้าน (หลังเข้าสู่ระบบ) ---- */
+body.app::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg.jpg) center/cover no-repeat,url(bg.jpg) center/cover no-repeat,var(--bg)}
+@media (max-width:700px),(orientation:portrait){body.app::before{
+  background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-m.jpg) center 20%/cover no-repeat,url(bg-m.jpg) center 20%/cover no-repeat,var(--bg)}}
+body.app.nobg::before{display:none}
+body.app .top{background:rgba(var(--veil-rgb),.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+body.app .tcard:not(.busy){background:color-mix(in srgb,var(--surface) 72%,transparent);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+body.app .sec-h{background:rgba(var(--veil-rgb),.7);border-radius:10px;padding:6px 10px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+body.app .empty{background:color-mix(in srgb,var(--surface) 88%,transparent)}
+body.app .chips,body.app .subtabs{border-radius:12px}
+.bgctl{display:flex;align-items:center;gap:10px}
+.bgctl input[type=range]{flex:1;accent-color:var(--jade)}
+.bgctl output{min-width:44px;text-align:right;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -469,6 +489,7 @@ function sortMenu(){const cats=S.settings.cats||[];S.menu.sort((a,b)=>{const ca=
 /* ---------- main render ---------- */
 function render(){
   document.body.classList.toggle('auth',S.state!=='ready');
+  document.body.classList.toggle('app',S.state==='ready');
   $('#shopName').textContent=S.settings.shopName||'NueaLwoan';
   const c=$('#conn');
   c.innerHTML=S.state==='ready'?'<span class="dot on"></span>ออนไลน์ · '+esc(dlong(Date.now())):['noconfig','offline','nostaff'].includes(S.state)?'<span class="dot off"></span>ไม่ได้เชื่อมฐานข้อมูล':S.state==='login'?'<span class="dot"></span>ยังไม่ได้เข้าสู่ระบบ':'<span class="dot"></span>กำลังเชื่อมต่อ…';
@@ -657,7 +678,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order')renderOrderLines();else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,staffNew:sheetStaffNew,bill:sheetBill,qr:sheetQr,receipt:sheetReceipt,member:sheetMember}[s.type])();}
+  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,receipt:sheetReceipt,member:sheetMember}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -966,10 +987,16 @@ async function saveExp(){const amount=nval('eAmt');if(!(amount>0))return toast('
   const ref=S.db.collection('expenses').doc();
   const ok=await write('expenses/'+ref.id,r=>r.set({cat:val('eCat'),amount,note:val('eNote'),at:fromDateInput(val('eDate'))}));if(ok){closeSheet();toast('บันทึกรายจ่ายแล้ว')}}
 
-const accountCard=()=>`<div class="card"><h3>บัญชีของฉัน</h3><p class="help" style="margin:0">เข้าสู่ระบบด้วยชื่อผู้ใช้ <b>${esc(S.me||'')}</b> · ${S.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</p>
+const BG_KEY='nl_bg';
+const getBg=()=>{try{const v=localStorage.getItem(BG_KEY);return v===null?50:Math.max(0,Math.min(100,+v))}catch(e){return 50}};
+function applyBg(v){document.documentElement.style.setProperty('--veil-a',String(1-v/100));document.body.classList.toggle('nobg',v===0)}
+applyBg(getBg());
+const bgCard=()=>`<div class="card"><h3>รูปพื้นหลัง (เฉพาะเครื่องนี้)</h3><div class="bgctl"><span class="help">จาง</span><input id="bgRange" type="range" min="0" max="100" step="5" value="${getBg()}" aria-label="ความชัดของรูปพื้นหลัง"><span class="help">ชัด</span><output id="bgOut">${getBg()}%</output></div><p class="help" style="margin:0">ตั้ง 0% เพื่อปิดรูปพื้นหลัง</p></div>`;
+function bindBg(){const r=$('#bgRange');if(!r)return;r.addEventListener('input',()=>{const v=+r.value;$('#bgOut').textContent=v+'%';applyBg(v);try{localStorage.setItem(BG_KEY,String(v))}catch(e){}})}
+const accountCard=()=>`${bgCard()}<div class="card"><h3>บัญชีของฉัน</h3><p class="help" style="margin:0">เข้าสู่ระบบด้วยชื่อผู้ใช้ <b>${esc(S.me||'')}</b> · ${S.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</p>
    <div class="field"><label for="myPw">ตั้งรหัสผ่านใหม่</label><div class="inrow"><input id="myPw" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"><button class="btn sm" data-act="myPwSave" type="button">เปลี่ยนรหัส</button></div></div>
    <button class="btn sm danger" data-act="logout" data-confirm="1" type="button" style="align-self:flex-start">ออกจากระบบ</button></div>`;
-function sheetAccount(){$('#panel').innerHTML=head('บัญชีของฉัน')+`<form class="sh-body">${accountCard()}</form>`;}
+function sheetAccount(){$('#panel').innerHTML=head('บัญชีของฉัน')+`<form class="sh-body">${accountCard()}</form>`;bindBg();}
 function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.settings;
   $('#panel').innerHTML=head('ตั้งค่าร้าน')+
   `<form class="sh-body"><div class="field"><label for="cName">ชื่อร้าน</label><input id="cName" value="${esc(s.shopName)}"></div>
@@ -989,10 +1016,10 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <p class="help" style="margin:0" id="cPtsHelp"></p></div>
   <div class="card"><h3>ลูกค้าสั่งเองผ่าน QR</h3><p class="help" style="margin:0">พิมพ์ QR ไปติดที่โต๊ะ ลูกค้าสแกนแล้วสั่งได้เลย รายการจะเข้าบิลของโต๊ะนั้น</p><button class="btn sm" data-act="qrSheet" type="button">ดูและพิมพ์ QR ประจำโต๊ะ</button></div>
   <div class="card"><div class="sec-h"><h3>พนักงาน</h3><button class="lnk" data-act="staffNew" type="button">+ เพิ่มพนักงาน</button></div>
-   <p class="help" style="margin:0">พนักงานเปิดโต๊ะ รับออร์เดอร์ เก็บเงิน และดูครัวได้ แต่ไม่เห็นหน้าสรุปเงินและตั้งค่าร้าน</p><div id="staffList"><p class="help" style="margin:0">กำลังโหลด…</p></div></div>
+   <p class="help" style="margin:0">เฉพาะเจ้าของร้านที่สร้าง ตั้งรหัส และลบบัญชีได้ พนักงานเปิดโต๊ะ รับออร์เดอร์ เก็บเงิน และดูครัวได้ แต่ไม่เห็นหน้าสรุปเงินและตั้งค่าร้าน</p><div id="staffList"><p class="help" style="margin:0">กำลังโหลด…</p></div></div>
   ${accountCard()}</form>
   <div class="sh-foot"><button class="btn pri wide" data-act="saveSettings" type="button">บันทึกการตั้งค่า</button></div>`;
-  loadStaff();
+  loadStaff();bindBg();
   if(S.sheet.logo===undefined)S.sheet.logo=s.logo||'';renderLogo();
   const ph=()=>{const per=parseFloat(val('cPtsPer'))||50,pv=parseFloat(val('cPtsVal'))||1;$('#cPtsHelp').textContent=`ลูกค้าจ่าย 500 บาท ได้ ${Math.floor(500/per)} แต้ม = ส่วนลด ${baht(Math.floor(500/per)*pv)} (คืน ${r2(pv/per*100)}%)`};
   ['cPtsPer','cPtsVal'].forEach(i=>$('#'+i).addEventListener('input',ph));ph();
@@ -1003,7 +1030,7 @@ async function loadStaff(){const box=$('#staffList');if(!box)return;
   if(!$('#staffList'))return;
   if(error){box.innerHTML='<p class="err">โหลดรายชื่อพนักงานไม่ได้ ลองรัน schema.sql เวอร์ชันล่าสุด</p>';return}
   box.innerHTML='<div class="list">'+data.map(r=>{const u=r.username||emailToUser(r.email),me=u===S.me;
-    return `<div class="row"><div class="grow"><div class="t">${esc(u)} ${me?'<span class="pill mute">คุณ</span>':''}</div><div class="s">${r.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</div></div>${me?'':`<select class="sm-sel" data-role-for="${esc(r.email)}" aria-label="สิทธิ์ของ ${esc(u)}"><option value="staff" ${r.role!=='owner'?'selected':''}>พนักงาน</option><option value="owner" ${r.role==='owner'?'selected':''}>เจ้าของร้าน</option></select><button class="btn sm danger" data-act="staffDel" data-email="${esc(r.email)}" data-confirm="1" type="button">ลบ</button>`}</div>`}).join('')+'</div>';
+    return `<div class="row"><div class="grow"><div class="t">${esc(u)} ${me?'<span class="pill mute">คุณ</span>':''}</div><div class="s">${r.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</div></div>${me?'':`<select class="sm-sel" data-role-for="${esc(r.email)}" aria-label="สิทธิ์ของ ${esc(u)}"><option value="staff" ${r.role!=='owner'?'selected':''}>พนักงาน</option><option value="owner" ${r.role==='owner'?'selected':''}>เจ้าของร้าน</option></select><button class="btn sm" data-act="staffPwOpen" data-user="${esc(u)}" type="button">ตั้งรหัส</button><button class="btn sm danger" data-act="staffDel" data-user="${esc(u)}" data-confirm="1" type="button">ลบ</button>`}</div>`}).join('')+'</div>';
   box.querySelectorAll('[data-role-for]').forEach(sel=>sel.addEventListener('change',async()=>{
     const {error}=await SB.from('staff').update({role:sel.value}).eq('email',sel.dataset.roleFor);
     toast(error?'เปลี่ยนสิทธิ์ไม่สำเร็จ':'เปลี่ยนสิทธิ์แล้ว',error?'bad':'');if(error)loadStaff()}));}
@@ -1014,21 +1041,27 @@ function sheetStaffNew(){$('#panel').innerHTML=head('เพิ่มพนัก
    <p class="err" id="stErr" role="alert"></p></form>
    <div class="sh-foot"><button class="btn" data-act="settings" type="button">ย้อนกลับ</button><button class="btn pri wide" id="stBtn" data-act="staffCreate" type="button">สร้างบัญชี</button></div>`;
   $('#stUser').focus();}
+const adminErr=e=>{const m=String(e&&e.message||'');
+  if(/user_exists/.test(m))return 'มีชื่อผู้ใช้นี้แล้ว เลือกชื่ออื่น';
+  if(/bad_username/.test(m))return 'ชื่อผู้ใช้ใช้ได้เฉพาะ a-z 0-9 . _ - ยาว 3–30 ตัว';
+  if(/weak_password/.test(m))return 'รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร';
+  if(/not_owner/.test(m))return 'เฉพาะเจ้าของร้านเท่านั้นที่จัดการบัญชีได้';
+  if(/self_delete/.test(m))return 'ลบบัญชีของตัวเองไม่ได้';
+  if(/no_user/.test(m))return 'ไม่พบบัญชีนี้';
+  if(/function .*does not exist|Could not find the function/i.test(m))return 'ยังไม่ได้รันไฟล์ update-02-admin-users.sql ใน Supabase';
+  return 'ทำรายการไม่สำเร็จ: '+m;};
 async function staffCreate(){const user=cleanUser(val('stUser')),pw=$('#stPw').value,role=val('stRole'),er=$('#stErr'),btn=$('#stBtn');er.textContent='';
   if(!validUser(user)){er.textContent='ชื่อผู้ใช้ใช้ได้เฉพาะ a-z 0-9 . _ - ยาว 3–30 ตัว';return}
   if(pw.length<6){er.textContent='รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร';return}
-  btn.disabled=true;btn.textContent='กำลังสร้าง…';const email=userToEmail(user);
-  try{const cfg=window.APP_CONFIG;
-    const tmp=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:'nl-tmp-'+Date.now()}});
-    const {data,error}=await tmp.auth.signUp({email,password:pw});
-    if(error){er.textContent=/registered|exists/i.test(error.message)?'มีชื่อผู้ใช้นี้แล้ว เลือกชื่ออื่น':/not allowed|disabled/i.test(error.message)?'Supabase ปิดการสร้างบัญชีอยู่ ดูวิธีเปิดในคู่มือ':'สร้างบัญชีไม่สำเร็จ: '+error.message;return}
-    if(data.user&&Array.isArray(data.user.identities)&&!data.user.identities.length){er.textContent='มีชื่อผู้ใช้นี้แล้ว เลือกชื่ออื่น';return}
-    if(!data.session){er.textContent='สร้างบัญชีแล้วแต่ต้องยืนยันอีเมล ให้ปิด "Confirm email" ใน Supabase ตามคู่มือ แล้วลบและสร้างใหม่';}
-    const ins=await SB.from('staff').upsert({email,username:user,role});
-    if(ins.error){er.textContent='เพิ่มสิทธิ์พนักงานไม่สำเร็จ: '+ins.error.message;return}
-    if(data.session){toast(`สร้างบัญชี ${user} แล้ว`);openSheet({type:'settings'})}
-  }catch(e){er.textContent='เชื่อมต่อไม่ได้ ลองอีกครั้ง'}
-  finally{if(btn.isConnected){btn.disabled=false;btn.textContent='สร้างบัญชี'}}}
+  btn.disabled=true;btn.textContent='กำลังสร้าง…';
+  const {error}=await SB.rpc('admin_create_user',{p_username:user,p_password:pw,p_role:role});
+  if(btn.isConnected){btn.disabled=false;btn.textContent='สร้างบัญชี'}
+  if(error){er.textContent=adminErr(error);return}
+  toast(`สร้างบัญชี ${user} แล้ว`);openSheet({type:'settings'});}
+function sheetStaffPw(){const u=S.sheet.user;$('#panel').innerHTML=head('ตั้งรหัสผ่านใหม่',esc(u))+`<form class="sh-body">
+   <div class="field"><label for="spPw">รหัสผ่านใหม่ของ ${esc(u)}</label><div class="pw"><input id="spPw" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"><button type="button" class="pw-eye" data-act="pwToggle" data-for="spPw">แสดง</button></div></div>
+   <p class="help" style="margin:0">ตั้งเสร็จแล้วบอกรหัสใหม่ให้พนักงาน เขาเปลี่ยนเองได้ทีหลังที่ "บัญชีของฉัน"</p><p class="err" id="spErr" role="alert"></p></form>
+   <div class="sh-foot"><button class="btn" data-act="settings" type="button">ย้อนกลับ</button><button class="btn pri wide" id="spBtn" data-act="staffPwSave" type="button">ตั้งรหัสใหม่</button></div>`;$('#spPw').focus();}
 function renderLogo(){const b=$('#cLogoBox');if(!b)return;const v=S.sheet.logo;b.innerHTML=v?`<img src="${esc(v)}" alt="โลโก้">`:'ยังไม่มีโลโก้';$('#cLogoDel').hidden=!v;}
 async function logoDataUrl(file){let bmp;try{bmp=await createImageBitmap(file)}catch(e){bmp=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(file)})}
   const k=Math.min(1,320/Math.max(bmp.width,bmp.height)),c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
@@ -1132,7 +1165,11 @@ const ACT={
   qrSheet:()=>openSheet({type:'qr'}),
   staffNew:()=>openSheet({type:'staffNew'}),
   staffCreate,
-  staffDel:async d=>{const {error}=await SB.from('staff').delete().eq('email',d.email);if(error)toast('ลบไม่สำเร็จ','bad');else{toast('ลบพนักงานแล้ว เข้าระบบไม่ได้อีก');loadStaff()}},
+  staffDel:async d=>{const {error}=await SB.rpc('admin_delete_user',{p_username:d.user});if(error)toast(adminErr(error),'bad');else{toast('ลบบัญชีแล้ว เข้าระบบไม่ได้อีก');loadStaff()}},
+  staffPwOpen:d=>openSheet({type:'staffPw',user:d.user}),
+  staffPwSave:async()=>{const pw=$('#spPw').value,er=$('#spErr');if(pw.length<6){er.textContent='รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร';return}
+    const btn=$('#spBtn');btn.disabled=true;const {error}=await SB.rpc('admin_set_password',{p_username:S.sheet.user,p_password:pw});btn.disabled=false;
+    if(error){er.textContent=adminErr(error);return}toast('ตั้งรหัสผ่านใหม่ให้ '+S.sheet.user+' แล้ว');openSheet({type:'settings'})},
   myPwSave:async()=>{const pw=$('#myPw').value;if(pw.length<6)return toast('รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร','bad');
     const {error}=await SB.auth.updateUser({password:pw});if(error)toast(/same|different/i.test(error.message)?'รหัสใหม่ต้องไม่ซ้ำรหัสเดิม':'เปลี่ยนรหัสไม่สำเร็จ: '+error.message,'bad');else{$('#myPw').value='';toast('เปลี่ยนรหัสผ่านแล้ว')}},
   pwToggle:(d,b)=>{const i=document.getElementById(d.for);if(!i)return;const show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'ซ่อน':'แสดง'},

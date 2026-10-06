@@ -92,7 +92,7 @@ footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:cente
 
 /* ---- พื้นหลังรูปหน้าร้าน (หน้าต้อนรับลูกค้า) ---- */
 body.welcome::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.15) 40%,#0b0a09 60%),url(images/bg-m.jpg) 50% 0/auto 58% no-repeat,url(bg-m.jpg) 50% 0/auto 58% no-repeat,#0b0a09}
+  background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.1) 35vw,#0b0a09 100vw),url(images/bg-m.jpg) 50% 0/100% auto no-repeat,url(bg-m.jpg) 50% 0/100% auto no-repeat,#0b0a09}
 @media (min-width:701px){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.3),rgba(8,6,5,.85)),url(images/bg.jpg) center 40%/cover no-repeat,url(bg.jpg) center 40%/cover no-repeat}}
 body.welcome header,body.welcome main{position:relative;z-index:1}
 body.welcome header{background:transparent}
@@ -102,6 +102,7 @@ body.welcome .namebox{--surface:rgba(18,15,12,.62);--fg:#f6efe4;--muted:#cdbfae;
   color:var(--fg);background:var(--surface);border-color:var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);margin-bottom:max(24px,env(safe-area-inset-bottom));box-shadow:0 20px 50px rgba(0,0,0,.5)}
 body.welcome .namebox input{background:rgba(0,0,0,.35);color:var(--fg)}
 body.welcome .namebox .btn.pri{background:linear-gradient(180deg,#e2b265,#c48d3d);border-color:#c48d3d;color:#1d1307}
+@media (min-width:701px) and (orientation:portrait){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/bg-m.jpg) center 30%/cover no-repeat,url(bg-m.jpg) center 30%/cover no-repeat,#0b0a09}}
 </style>
 </head>
 <body>
