@@ -460,16 +460,16 @@ const chChip=o=>{const c=chOf(o);return c==='dinein'?'':`<span class="chip-ch" s
 const orderTitle=o=>o.ref?'#'+o.ref:o.customerName?'คุณ'+o.customerName:hm(o.openedAt);
 const methodName=m=>m==='cash'?'เงินสด':m==='promptpay'?'พร้อมเพย์':(CH[m]?.n||m);
 
-const DEFAULTS={seats:{},defSeats:4,qrRequireOpen:true,qrWalkin:true,channels:{lineman:{on:true,markup:0,gp:0},grab:{on:true,markup:0,gp:0},shopee:{on:true,markup:0,gp:0}},shopName:'NueaLwoan',address:'',phone:'',taxId:'',receiptFooter:'ขอบคุณที่อุดหนุนครับ',paper:80,logo:'',pointsOn:true,pointsPer:50,pointValue:1,tables:10,promptpay:'',cats:['ก๋วยเตี๋ยว','ข้าว','ของทานเล่น','เครื่องดื่ม'],expCats:['ค่าเช่า','ค่าแรง','ค่าไฟ/น้ำ','ค่าแก๊ส','อุปกรณ์','อื่นๆ'],extraPrice:10};
+const DEFAULTS={vat:{on:false,rate:7,mode:'incl'},seats:{},defSeats:4,qrRequireOpen:true,qrWalkin:true,channels:{lineman:{on:true,markup:0,gp:0},grab:{on:true,markup:0,gp:0},shopee:{on:true,markup:0,gp:0}},shopName:'NueaLwoan',address:'',phone:'',taxId:'',receiptFooter:'ขอบคุณที่อุดหนุนครับ',paper:80,logo:'',pointsOn:true,pointsPer:50,pointValue:1,tables:10,promptpay:'',cats:['ก๋วยเตี๋ยว','ข้าว','ของทานเล่น','เครื่องดื่ม'],expCats:['ค่าเช่า','ค่าแรง','ค่าไฟ/น้ำ','ค่าแก๊ส','อุปกรณ์','อื่นๆ'],extraPrice:10};
 const QUICK_NOTES=['พิเศษ','ไม่ใส่ผัก','ไม่ใส่ถั่วงอก','ไม่เผ็ด','เผ็ดมาก','ไม่ใส่ผงชูรส','ใส่ห่อ'];
 
-const PERMS=[['tables','เปิดโต๊ะ / รับออร์เดอร์'],['kitchen','หน้าครัว / กดเสิร์ฟ'],['pay','เก็บเงิน / ออกใบเสร็จ'],['discount','ให้ส่วนลด'],['void','ยกเลิกบิล'],['menu_edit','แก้เมนูและราคา'],['stock','สต็อก / ซื้อของเข้า'],['expenses','รายจ่ายร้าน'],['members','สมาชิกสะสมแต้ม'],['report','สรุปเงิน / รายงานกำไร']];
+const PERMS=[['tables','เปิดโต๊ะ / รับออร์เดอร์'],['kitchen','หน้าครัว / กดเสิร์ฟ'],['pay','เก็บเงิน / ออกใบเสร็จ'],['discount','ให้ส่วนลด'],['move','ย้ายโต๊ะ'],['void','ยกเลิกบิล'],['menu_edit','แก้เมนูและราคา'],['stock','สต็อก / ซื้อของเข้า'],['expenses','รายจ่ายร้าน'],['members','สมาชิกสะสมแต้ม'],['report','สรุปเงิน / รายงานกำไร']];
 const ROLES={owner:'แอดมิน',waiter:'พนักงานเสิร์ฟ',chef:'เชฟ',partner:'หุ้นส่วน'};
-const DEFAULT_PERMS={waiter:{tables:true,kitchen:true,pay:true,members:true},chef:{kitchen:true,stock:true},partner:{report:true,expenses:true,stock:true,members:true}};
+const DEFAULT_PERMS={waiter:{tables:true,move:true,kitchen:true,pay:true,members:true},chef:{kitchen:true,stock:true},partner:{report:true,expenses:true,stock:true,members:true}};
 const roleKey=r=>r==='staff'?'waiter':r;
 const roleName=r=>ROLES[roleKey(r)]||'พนักงาน';
 const effRole=()=>S.role==='owner'&&S.viewAs?S.viewAs:S.role;
-function can(k){const r=effRole();if(r==='owner')return true;const rp=(S.perms&&S.perms[roleKey(r)])||DEFAULT_PERMS[roleKey(r)]||{};return !!rp[k]}
+function can(k){const r=effRole();if(r==='owner')return true;const dp=DEFAULT_PERMS[roleKey(r)]||{},rp=(S.perms&&S.perms[roleKey(r)])||dp;return !!(k in rp?rp[k]:dp[k])}
 const TAB_OK={tables:()=>can('tables'),kitchen:()=>can('kitchen'),menu:()=>true,back:()=>can('stock')||can('expenses')||can('members'),report:()=>can('report')};
 const deny=()=>{toast('ตำแหน่งของคุณไม่มีสิทธิ์ใช้ส่วนนี้ ติดต่อแอดมิน','bad');return true};
 const S={floor:(()=>{try{return localStorage.getItem('nl_floor')||'tables'}catch(e){return 'tables'}})(),tab:'tables',perms:null,backTab:'stock',menuCat:'all',settings:{...DEFAULTS},
@@ -726,11 +726,13 @@ function viewReport(){
   const gpT=D.orders.reduce((s,o)=>s+(+o.gp||0),0),platGross=sumBy(o=>DELIV.includes(o.method)),platNet=r2(platGross-gpT);
   const buy=D.purch.reduce((s,p)=>s+(+p.amount||0),0);
   const exp=D.exp.reduce((s,e)=>s+(+e.amount||0),0);
-  const gross=sales-cogs-gpT,net=gross-exp,flow=cash+pp+platNet-buy-exp;
+  const vatT=D.orders.reduce((s,o)=>s+(+o.vat||0),0);
+  const gross=sales-vatT-cogs-gpT,net=gross-exp,flow=cash+pp+platNet-buy-exp-vatT;
   const gm=sales?Math.round(gross/sales*100):0;
   h+=`<p class="muted" style="margin:0">${dshort(D.a)}${D.b-D.a>DAY?' – '+dshort(D.b-1):''} · ${D.orders.length} บิล${disc?' · ส่วนลดรวม '+baht(disc):''}</p>
   <div class="kpis">
     <div class="kpi"><span>ยอดขาย</span><b>${baht(sales)}</b></div>
+    ${vatT?`<div class="kpi"><span>VAT ในยอดขาย</span><b>${baht(vatT)}</b></div>`:''}
     <div class="kpi"><span>ต้นทุนอาหาร${gpT?' + GP':''}</span><b>${baht(cogs+gpT)}</b></div>
     <div class="kpi"><span>กำไรขั้นต้น · ${gm}%</span><b>${baht(gross)}</b></div>
     <div class="kpi"><span>รายจ่ายร้าน</span><b>${baht(exp)}</b></div>
@@ -740,6 +742,7 @@ function viewReport(){
     <div class="kv"><span>รับเงินสด</span><span>${baht(cash)}</span></div>
     <div class="kv"><span>รับพร้อมเพย์</span><span>${baht(pp)}</span></div>
     ${platGross?`<div class="kv"><span>รับจากแอปเดลิเวอรี่ (หัก GP แล้ว)</span><span>${baht(platNet)}</span></div>`:''}
+    ${vatT?`<div class="kv"><span>ภาษีขาย (VAT) ที่ต้องนำส่ง</span><span>${baht(-vatT)}</span></div>`:''}
     <div class="kv"><span>จ่ายซื้อของ</span><span>${baht(-buy)}</span></div>
     <div class="kv"><span>จ่ายรายจ่ายร้าน</span><span>${baht(-exp)}</span></div>
     <div class="kv tot"><span>เงินคงเหลือสุทธิ</span><span style="color:var(${flow<0?'--chili':'--jade'})">${baht(flow)}</span></div>
@@ -804,6 +807,11 @@ function sheetNewDel(){const s=S.sheet,c=CH[s.ch],cfg=chCfg(s.ch),del=DELIV.incl
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ยกเลิก</button><button class="btn pri wide" data-act="doNewDel" type="button">สร้างออร์เดอร์</button></div>`;
   setTimeout(()=>($('#ndRef')||$('#ndName'))?.focus(),50);}
 const seatsOf=t=>Math.max(1,+((S.settings.seats||{})[String(t)])||+S.settings.defSeats||4);
+const vatCfg=()=>Object.assign({on:false,rate:7,mode:'incl'},S.settings.vat||{});
+// base = ยอดหลังส่วนลด/แต้ม → คืน {vat, total, beforeVat}
+function vatCalc(base){const v=vatCfg();if(!v.on||!(+v.rate>0))return {vat:0,total:r2(base),beforeVat:r2(base),rate:0,mode:''};
+  const rt=+v.rate;if(v.mode==='excl'){const vat=r2(base*rt/100);return {vat,total:r2(base+vat),beforeVat:r2(base),rate:rt,mode:'excl'}}
+  const vat=r2(base*rt/(100+rt));return {vat,total:r2(base),beforeVat:r2(base-vat),rate:rt,mode:'incl'}}
 const ordPrefix=t=>t==='TA'?'TX':'T'+t;
 function localOrderNo(prefix){const d=new Date(),p2=n=>String(n).padStart(2,'0');return prefix+'-'+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'-'+p2(d.getHours())+p2(d.getMinutes())+'-L'+String(Date.now()).slice(-3)}
 async function nextOrderNo(prefix){try{const {data,error}=await SB.rpc('next_order_no',{p_prefix:prefix});if(!error&&data)return data}catch(e){}return localOrderNo(prefix)}
@@ -847,7 +855,8 @@ function renderOrderLines(){const o=S.open[S.sheet.id];const box=$('#ordLines');
    :`<div class="empty"><b>ยังไม่มีรายการ</b>เลือกเมนูด้านล่าง หรือส่งมือถือให้ลูกค้าสั่งเองด้วยโหมดลูกค้า</div>`;
   if(keep){$('#edNote').value=keep.note;$('#edExtra').value=keep.extra;if(keep.focus)document.getElementById(keep.focus)?.focus()}
   const mv=$('#ordMove');if(mv){const free=[];for(let i=1;i<=Math.max(1,+S.settings.tables||10);i++)if(!Object.values(S.open).some(x=>x.table===String(i)))free.push(i);
-    mv.innerHTML=o.table==='TA'&&!isDel(o)?`<div class="inrow"><select id="mvT" class="sm-sel" aria-label="ย้ายไปโต๊ะ">${free.map(i=>`<option value="${i}">โต๊ะ ${i}</option>`).join('')}</select><button class="btn sm" data-act="moveTbl" type="button" ${free.length?'':'disabled'}>ย้ายไปโต๊ะ</button></div>`:''}
+    const canMv=!isDel(o)&&(o.table==='TA'?can('tables')||can('move'):can('move'));
+    mv.innerHTML=canMv?`<div class="inrow"><select id="mvT" class="sm-sel" aria-label="ย้ายไปโต๊ะ">${free.map(i=>`<option value="${i}">โต๊ะ ${i}</option>`).join('')}</select><button class="btn sm" data-act="moveTbl" type="button" ${free.length?'':'disabled'}>${o.table==='TA'?'ย้ายไปโต๊ะ':'ย้ายโต๊ะ'}</button>${free.length?'':'<span class="help">ไม่มีโต๊ะว่าง</span>'}</div>`:''}
   const dz=$('#ordDanger');if(dz)dz.innerHTML=items.length?(can('void')?`<button class="btn danger sm" data-act="voidOrder" data-confirm="1" type="button">ยกเลิกบิลนี้</button>`:''):`<button class="btn sm" data-act="closeTbl" type="button">${o.table==='TA'?'ยกเลิกออร์เดอร์':'ปิดโต๊ะ (ไม่มีรายการ)'}</button>${o.table!=='TA'&&S.settings.qrRequireOpen!==false?'<span class="help" style="align-self:center">โต๊ะเปิดอยู่ ลูกค้าสแกน QR สั่งได้</span>':''}`;
   const tot=linesTotal(items);
   $('#ordFoot').innerHTML=`<div class="total-line"><small>${linesCount(items)} รายการ</small><b>${baht(tot)}</b></div><button class="btn" data-act="custMode" type="button">โหมดลูกค้า</button>${can('pay')?`<button class="btn pri" data-act="pay" ${items.length?'':'disabled'} type="button">ชำระเงิน</button>`:''}`;}
@@ -884,10 +893,10 @@ const payOpen=id=>{const o=S.open[id];return {type:'pay',id,method:o&&isDel(o)?c
 function payCalc(){const o=S.open[S.sheet.id],s=S.sheet,st=S.settings;const sub=linesTotal(o.items);const disc=Math.min(sub,Math.max(0,parseFloat(s.discount)||0));
   let use=0,redeem=0;const pv=Math.max(0.01,+st.pointValue||1);
   if(st.pointsOn&&s.member){use=Math.max(0,Math.min(Math.floor(parseFloat(s.usePts)||0),Math.floor(+s.member.points||0),Math.floor((sub-disc)/pv)));redeem=r2(use*pv)}
-  const total=r2(sub-disc-redeem);const recv=parseFloat(s.received)||0;
+  const vc=vatCalc(sub-disc-redeem);const total=vc.total;const recv=parseFloat(s.received)||0;
   const gpPct=DELIV.includes(s.method)?(+chCfg(s.method).gp||0):0;const gp=r2(total*gpPct/100);
   const earn=st.pointsOn&&(s.member||s.memberNew)?Math.floor(total/Math.max(1,+st.pointsPer||50)):0;
-  return {sub,disc,use,redeem,total,recv,change:r2(recv-total),earn,gp,gpPct,net:r2(total-gp)}}
+  return {sub,disc,use,redeem,total,recv,change:r2(recv-total),earn,gp,gpPct,net:r2(total-gp),vat:vc.vat,vatRate:vc.rate,vatMode:vc.mode,beforeVat:vc.beforeVat}}
 const normPhone=v=>String(v||'').replace(/\D/g,'').replace(/^66(?=\d{9}$)/,'0');
 const maskPhone=p=>{const d=String(p||'');return d.length>=9?d.slice(0,3)+'-xxx-'+d.slice(-4):d};
 function findMember(){const ph=normPhone(val('payPhone'));const s=S.sheet;
@@ -903,7 +912,7 @@ function renderMem(){const box=$('#payMem');if(!box)return;const s=S.sheet,st=S.
   $('#payUse')?.addEventListener('input',e=>{s.usePts=e.target.value;payUpdate()});
   $('#payName')?.addEventListener('input',e=>{s.newName=e.target.value});}
 function payUpdate(){const o=S.open[S.sheet?.id];if(!o||!$('#payTotal'))return;const c=payCalc(),s=S.sheet;
-  $('#payTotal').textContent=baht(c.total);$('#paySub').textContent=c.disc||c.redeem?`ราคาเต็ม ${baht(c.sub)}${c.disc?' · ส่วนลด '+baht(c.disc):''}${c.redeem?' · ใช้ '+c.use+' แต้ม '+baht(c.redeem):''}`:'';
+  $('#payTotal').textContent=baht(c.total);$('#paySub').textContent=[c.disc||c.redeem?`ราคาเต็ม ${baht(c.sub)}${c.disc?' · ส่วนลด '+baht(c.disc):''}${c.redeem?' · ใช้ '+c.use+' แต้ม '+baht(c.redeem):''}`:'',c.vat?(c.vatMode==='excl'?`บวก VAT ${c.vatRate}% ${baht(c.vat)}`:`รวม VAT ${c.vatRate}% แล้ว (${baht(c.vat)})`):''].filter(Boolean).join(' · ');
   const pe=$('#payEarn');if(pe)pe.textContent=`บิลนี้ได้ +${c.earn} แต้ม`+(s.member?` · คงเหลือหลังจ่าย ${num(Math.max(0,(+s.member.points||0)-c.use)+c.earn)} แต้ม`:'');
   $('#payCash').hidden=s.method!=='cash';$('#payPP').hidden=s.method!=='promptpay';
   const notes=[20,50,100,500,1000];const sug=[c.total];notes.forEach(n=>{const v=Math.ceil(c.total/n)*n;if(v>c.total&&!sug.includes(v))sug.push(v)});
@@ -925,10 +934,10 @@ async function confirmPay(){const id=S.sheet.id,o=S.open[id];if(!o)return;const 
   const memFields=mem?{memberPhone:mem.phone,memberName:mem.name,ptsUsed:c.use,ptsEarned:c.earn,redeem:c.redeem,ptsBalance:Math.max(0,(+(sh.member?.points)||0)-c.use)+c.earn}:{};
   try{await S.db.doc('orders/'+id).transform(d=>{
       if(d.status!=='open')return null;
-      const tot=r2(linesTotal(d.items)-c.disc-c.redeem);
+      const tot=vatCalc(linesTotal(d.items)-c.disc-c.redeem).total;
       if(Math.abs(tot-c.total)>0.001){changed=true;return null}
       paidItems=(d.items||[]).map(l=>({...l,served:true}));
-      patch={status:'paid',paidAt:Date.now(),billNo,method:m,subtotal:r2(c.sub),discount:r2(c.disc),total:c.total,cost:r2(linesCost(d.items)),received:m==='cash'?c.recv:c.total,change:m==='cash'?c.change:0,channel:chOf(d),ref:d.ref||'',gp:c.gp,net:c.net,items:paidItems,...memFields};
+      patch={status:'paid',paidAt:Date.now(),billNo,method:m,subtotal:r2(c.sub),discount:r2(c.disc),total:c.total,cost:r2(linesCost(d.items)),received:m==='cash'?c.recv:c.total,change:m==='cash'?c.change:0,channel:chOf(d),ref:d.ref||'',gp:c.gp,net:c.net,vat:c.vat,vatRate:c.vatRate,vatMode:c.vatMode,beforeVat:c.beforeVat,items:paidItems,...memFields};
       return patch;
     })}catch(e){fail=true;toast(errMsg(e),'bad')}
   if(fail){$('#payOk').disabled=false;return}
@@ -962,7 +971,7 @@ function receiptHTML(o,mode){const st=S.settings,isBill=mode==='bill',items=o.it
   if(st.logo)h+=`<img class="rc-logo" src="${esc(st.logo)}" alt="">`;
   h+=`<div class="rc-shop">${esc(st.shopName)}</div>`;
   [st.address,st.phone?'โทร '+st.phone:'',st.taxId?'เลขประจำตัวผู้เสียภาษี '+st.taxId:''].filter(Boolean).forEach(x=>h+=`<div class="rc-sub">${esc(x)}</div>`);
-  h+=`<div class="rc-title">${isBill?'ใบแจ้งยอด':'ใบเสร็จรับเงิน'}</div><hr>`;
+  h+=`<div class="rc-title">${isBill?'ใบแจ้งยอด':(vatCfg().on&&st.taxId?'ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ':'ใบเสร็จรับเงิน')}</div>${!isBill&&vatCfg().on&&st.taxId?'<div class="rc-sub">VAT included</div>':''}<hr>`;
   if(o.orderNo||(!isBill&&o.billNo))h+=ln('เลขที่',esc(o.orderNo||o.billNo));
   h+=ln('วันที่',d)+(o.table==='TA'?ln('ช่องทาง',(o.selfOrder?'สั่งเองผ่าน QR':CH[chOf(o)].n)+(o.ref?' #'+esc(o.ref):'')):ln('โต๊ะ',esc(o.table)));
   const cn=custNames(o);if(cn.length)h+=ln('ลูกค้า',esc(cn.map(n=>'คุณ'+n).join(', ')));
@@ -972,7 +981,9 @@ function receiptHTML(o,mode){const st=S.settings,isBill=mode==='bill',items=o.it
   h+='<hr>'+ln(`รวม ${linesCount(items)} รายการ`,num(o.subtotal));
   if(o.discount)h+=ln('ส่วนลด','-'+num(o.discount));
   if(o.redeem)h+=ln(`ใช้แต้ม ${o.ptsUsed} แต้ม`,'-'+num(o.redeem));
+  if(o.vat&&o.vatMode==='excl')h+=ln('ก่อนภาษี',num(o.beforeVat))+ln(`ภาษีมูลค่าเพิ่ม ${o.vatRate}%`,num(o.vat));
   h+=ln('ยอดสุทธิ','฿'+num(o.total),'rc-total');
+  if(o.vat&&o.vatMode!=='excl')h+=`<div class="rc-note" style="padding-left:0">ราคารวมภาษีมูลค่าเพิ่ม ${o.vatRate}% แล้ว · มูลค่าก่อนภาษี ${num(o.beforeVat)} · VAT ${num(o.vat)}</div>`;
   if(!isBill){h+=ln('ชำระโดย',methodName(o.method));if(o.method==='cash')h+=ln('รับเงิน',num(o.received))+ln('เงินทอน',num(o.change))}
   if(o.memberPhone){h+=`<hr><div class="rl"><span>สมาชิก ${esc(o.memberName||'')}</span><span>${maskPhone(o.memberPhone)}</span></div>`;
     if(isBill)h+=ln('แต้มสะสมตอนนี้',num(o.ptsHave||0))+ln('บิลนี้จะได้รับ','+'+(o.ptsEarned||0)+' แต้ม');
@@ -982,7 +993,7 @@ function receiptHTML(o,mode){const st=S.settings,isBill=mode==='bill',items=o.it
   if(st.receiptFooter)h+=`<hr><div class="rc-foot">${esc(st.receiptFooter)}</div>`;
   return h+'</div>';}
 function billPreviewOrder(){const o=S.open[S.sheet.id],c=payCalc(),sh=S.sheet;
-  return {...o,subtotal:r2(c.sub),discount:r2(c.disc),redeem:c.redeem,ptsUsed:c.use,total:c.total,
+  return {...o,subtotal:r2(c.sub),discount:r2(c.disc),redeem:c.redeem,ptsUsed:c.use,total:c.total,vat:c.vat,vatRate:c.vatRate,vatMode:c.vatMode,beforeVat:c.beforeVat,
     ...(S.settings.pointsOn&&(sh.member||sh.memberNew)?{memberPhone:sh.phone,memberName:sh.member?.name||val('payName')||'',ptsHave:+(sh.member?.points)||0,ptsEarned:c.earn}:{})};}
 function sheetReceipt(){const s=S.sheet,o=s.order,isBill=s.mode==='bill';
   $('#panel').innerHTML=head(isBill?'ใบแจ้งยอด':'ใบเสร็จ '+esc(o.billNo||''),esc(tableLabel(o)))+
@@ -1140,6 +1151,11 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
   <div class="field"><label for="cPP">พร้อมเพย์ของร้าน</label><input id="cPP" inputmode="numeric" value="${esc(s.promptpay)}" placeholder="เบอร์มือถือ 10 หลัก หรือเลขบัตร 13 หลัก"><span class="help">ใช้สร้าง QR พร้อมยอดเงินตอนเก็บเงิน</span></div>
   <div class="field"><label for="cCats">หมวดเมนู (คั่นด้วย ,)</label><input id="cCats" value="${esc((s.cats||[]).join(', '))}"></div>
   <div class="field"><label for="cExp">หมวดรายจ่าย (คั่นด้วย ,)</label><input id="cExp" value="${esc((s.expCats||[]).join(', '))}"></div>
+  <div class="card"><h3>ภาษีมูลค่าเพิ่ม (VAT)</h3>
+   <label class="check"><input type="checkbox" id="cVatOn" ${vatCfg().on?'checked':''}> คิดภาษีมูลค่าเพิ่ม</label>
+   <div class="grid2"><div class="field"><label for="cVatRate">อัตรา (%)</label><input id="cVatRate" inputmode="decimal" value="${vatCfg().rate}"></div>
+   <div class="field"><label for="cVatMode">ราคาเมนู</label><select id="cVatMode"><option value="incl" ${vatCfg().mode!=='excl'?'selected':''}>รวม VAT แล้ว</option><option value="excl" ${vatCfg().mode==='excl'?'selected':''}>ยังไม่รวม (บวกตอนเก็บเงิน)</option></select></div></div>
+   <p class="help" style="margin:0" id="cVatEx"></p></div>
   <div class="card"><h3>หัวใบเสร็จ</h3>
    <div class="logo-edit"><div class="logo-box" id="cLogoBox"></div><div class="photo-act"><label class="btn sm" for="cLogo">เลือกโลโก้ร้าน</label><input id="cLogo" type="file" accept="image/*" hidden><button class="btn sm ghost" data-act="logoRemove" type="button" id="cLogoDel">ลบโลโก้</button></div></div>
    <div class="field"><label for="cAddr">ที่อยู่ร้าน</label><input id="cAddr" value="${esc(s.address||'')}" placeholder="เช่น 12 ถ.สุขุมวิท บางนา กทม." autocomplete="off"></div>
@@ -1163,13 +1179,15 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
   ${accountCard()}</form>
   <div class="sh-foot"><button class="btn pri wide" data-act="saveSettings" type="button">บันทึกการตั้งค่า</button></div>`;
   loadStaff();bindBg();renderPerm();
+  const vx=()=>{const on=$('#cVatOn').checked,r=parseFloat(val('cVatRate'))||0,ex=val('cVatMode')==='excl';$('#cVatEx').textContent=!on?'ปิดอยู่ ใบเสร็จจะไม่แสดงภาษี':ex?`ตัวอย่าง: อาหาร 100 บาท + VAT ${r}% = ${baht(r2(100+100*r/100))}`:`ตัวอย่าง: อาหาร 100 บาท (รวม VAT แล้ว) = ก่อนภาษี ${baht(r2(100-100*r/(100+r)))} + VAT ${baht(r2(100*r/(100+r)))}`};
+  ['cVatOn','cVatRate','cVatMode'].forEach(i=>$('#'+i).addEventListener('input',vx));$('#cVatMode').addEventListener('change',vx);vx();
   if(S.sheet.logo===undefined)S.sheet.logo=s.logo||'';renderLogo();
   const ph=()=>{const per=parseFloat(val('cPtsPer'))||50,pv=parseFloat(val('cPtsVal'))||1;$('#cPtsHelp').textContent=`ลูกค้าจ่าย 500 บาท ได้ ${Math.floor(500/per)} แต้ม = ส่วนลด ${baht(Math.floor(500/per)*pv)} (คืน ${r2(pv/per*100)}%)`};
   ['cPtsPer','cPtsVal'].forEach(i=>$('#'+i).addEventListener('input',ph));ph();
   $('#cLogo').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
     try{S.sheet.logo=await logoDataUrl(f);renderLogo()}catch(err){toast('อ่านไฟล์รูปไม่ได้','bad')}});}
 function renderPerm(src){const b=$('#permBody');if(!b)return;const P=src||S.perms||DEFAULT_PERMS;
-  b.innerHTML=PERMS.map(([k,label])=>`<tr><td>${label}</td><td class="c"><input type="checkbox" checked disabled aria-label="แอดมิน ${label}"></td>${['waiter','chef','partner'].map(r=>`<td class="c"><input type="checkbox" data-perm="${r}:${k}" ${(P[r]||{})[k]?'checked':''} aria-label="${ROLES[r]} ${label}"></td>`).join('')}</tr>`).join('');}
+  b.innerHTML=PERMS.map(([k,label])=>`<tr><td>${label}</td><td class="c"><input type="checkbox" checked disabled aria-label="แอดมิน ${label}"></td>${['waiter','chef','partner'].map(r=>`<td class="c"><input type="checkbox" data-perm="${r}:${k}" ${(k in (P[r]||{})?P[r][k]:(DEFAULT_PERMS[r]||{})[k])?'checked':''} aria-label="${ROLES[r]} ${label}"></td>`).join('')}</tr>`).join('');}
 async function loadStaff(){const box=$('#staffList');if(!box)return;
   const {data,error}=await SB.from('staff').select('email,username,role,created_at').order('created_at');
   if(!$('#staffList'))return;
@@ -1228,6 +1246,7 @@ async function saveSettings(){const pp=val('cPP').replace(/\D/g,'');if(pp&&!ppVa
   const data={...S.settings,shopName:val('cName')||'NueaLwoan',tables:Math.max(1,Math.min(60,Math.round(nval('cTables'))||10)),extraPrice:nval('cExtra'),promptpay:pp,cats:split(val('cCats')),expCats:split(val('cExp')),qrKey:S.settings.qrKey||newQrKey(),
     logo:S.sheet.logo??S.settings.logo??'',address:val('cAddr'),phone:val('cPhone'),taxId:val('cTax'),receiptFooter:val('cFoot'),paper:+val('cPaper')||80,
     defSeats:Math.max(1,Math.min(30,Math.round(nval('cDefSeats'))||4)),seats:Object.fromEntries([...document.querySelectorAll('[data-seat]')].map(e=>[e.dataset.seat,Math.round(parseFloat(e.value))]).filter(([,v])=>v>0&&v<=30)),
+    vat:{on:$('#cVatOn').checked,rate:Math.min(30,Math.max(0,nval('cVatRate'))),mode:val('cVatMode')==='excl'?'excl':'incl'},
     qrRequireOpen:$('#cQrOpen').checked,qrWalkin:$('#cQrWalk').checked,channels:Object.fromEntries(DELIV.map(c=>[c,{on:$('#chOn_'+c).checked,markup:Math.max(0,nval('chMk_'+c)),gp:Math.min(100,Math.max(0,nval('chGp_'+c)))}])),
     pointsOn:$('#cPtsOn').checked,pointsPer:Math.max(1,nval('cPtsPer')||50),pointValue:Math.max(0.01,nval('cPtsVal')||1)};
   if(!data.cats.length)data.cats=DEFAULTS.cats;if(!data.expCats.length)data.expCats=DEFAULTS.expCats;
@@ -1268,8 +1287,12 @@ const ACT={
   quickOrder:()=>can('tables')?(S.floor='other',createOrder({table:'TA',channel:'walkin',label:'ออร์เดอร์ '+hm(Date.now())})):deny(),
   walkinQr:()=>openSheet({type:'walkinQr'}),
   wqPrint:()=>{const pa=$('#printArea');pa.className='qrs';pa.innerHTML=`<div class="pq" style="grid-column:1/-1;max-width:90mm;margin:0 auto">${qrSvg(tableUrl(0,S.settings.qrKey))}<b>สแกนสั่งอาหาร</b><small>ไม่ต้องรอโต๊ะ · ${esc(S.settings.shopName)}</small></div>`;setTimeout(()=>window.print(),50)},
-  moveTbl:async()=>{const id=S.sheet.id,t=val('mvT');if(!t)return;if(Object.values(S.open).some(x=>x.table===t))return toast('โต๊ะ '+t+' มีบิลเปิดอยู่','bad');
-    const ok=await write('orders/'+id,r=>r.transform(d=>d.status==='open'&&d.table==='TA'?{table:t,channel:'dinein',label:'',...(d.orderNo?{orderNo:String(d.orderNo).replace(/^TX-/,'T'+t+'-')}:{})}:null));if(ok){const o=S.open[id];if(o&&o.table==='TA')S.open[id]={...o,table:t,channel:'dinein',label:'',...(o.orderNo?{orderNo:String(o.orderNo).replace(/^TX-/,'T'+t+'-')}:{})};S.floor='tables';closeSheet();render();toast('ย้ายไปโต๊ะ '+t+' แล้ว')}},
+  moveTbl:async()=>{const id=S.sheet.id,t=val('mvT'),cur=S.open[id];if(!t||!cur)return;const fromTA=cur.table==='TA';if(!(fromTA?can('tables')||can('move'):can('move')))return deny();
+    if(cur.table===t)return;if(Object.values(S.open).some(x=>x.table===t))return toast('โต๊ะ '+t+' มีบิลเปิดอยู่','bad');
+    if(!fromTA&&!confirm('ย้ายบิลจากโต๊ะ '+cur.table+' ไปโต๊ะ '+t+' ?'))return;
+    const from=cur.table,rn=n=>n?{orderNo:String(n).replace(/^T(X|\d+)-/,'T'+t+'-')}:{};
+    const ok=await write('orders/'+id,r=>r.transform(d=>d.status==='open'&&d.table===from?{table:t,channel:'dinein',...(from==='TA'?{label:''}:{}),movedFrom:from,...rn(d.orderNo)}:null));
+    if(ok){const o=S.open[id];if(o&&o.table===from)S.open[id]={...o,table:t,channel:'dinein',...(from==='TA'?{label:''}:{}),movedFrom:from,...rn(o.orderNo)};S.floor='tables';closeSheet();render();toast(from==='TA'?'ย้ายไปโต๊ะ '+t+' แล้ว':'ย้ายโต๊ะ '+from+' → โต๊ะ '+t+' แล้ว')}},
   floor:d=>{S.floor=d.v;try{localStorage.setItem('nl_floor',d.v)}catch(e){}render()},
   newTakeaway:()=>openSheet({type:'newDel',ch:'takeaway'}),
   newDel:d=>can('tables')?openSheet({type:'newDel',ch:d.ch}):deny(),
@@ -1326,7 +1349,7 @@ const ACT={
   viewAs:d=>{try{localStorage.setItem('nl_mode',d.r)}catch(e){}S.viewAs=d.r;S.tab='tables';S.backTab='stock';closeSheet();render();window.scrollTo(0,0);toast('สลับเป็นมุมมอง '+roleName(d.r))},
   viewAsOff:()=>{try{localStorage.removeItem('nl_mode')}catch(e){}S.viewAs=null;render();toast('กลับเป็นมุมมองแอดมินแล้ว')},
   permReset:()=>{renderPerm(DEFAULT_PERMS);toast('คืนค่าเริ่มต้นแล้ว กด "บันทึกสิทธิ์" เพื่อใช้งาน')},
-  permSave:async()=>{const roles={waiter:{},chef:{},partner:{}};document.querySelectorAll('[data-perm]').forEach(c=>{const [r,k]=c.dataset.perm.split(':');if(c.checked)roles[r][k]=true});
+  permSave:async()=>{const roles={waiter:{},chef:{},partner:{}};document.querySelectorAll('[data-perm]').forEach(c=>{const [r,k]=c.dataset.perm.split(':');roles[r][k]=c.checked});
     const ok=await write('config/permissions',r=>r.set({roles}));if(ok){S.perms=roles;toast('บันทึกสิทธิ์แล้ว มีผลกับทุกเครื่องทันที')}},
   staffCreate,
   staffDel:async d=>{const {error}=await SB.rpc('admin_delete_user',{p_username:d.user});if(error)toast(adminErr(error),'bad');else{toast('ลบบัญชีแล้ว เข้าระบบไม่ได้อีก');loadStaff()}},
