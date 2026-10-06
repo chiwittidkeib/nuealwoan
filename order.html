@@ -247,6 +247,14 @@ const setWO=id=>{try{id?localStorage.setItem(WO_KEY,JSON.stringify({id,ts:Date.n
 const OPARAM=(P.get('o')||'').replace(/[^0-9a-zA-Z-]/g,'').slice(0,60);
 if(WALK&&OPARAM)setWO(OPARAM);
 function keepOrderInUrl(id){if(!WALK||!id)return;try{const u=new URL(location.href);if(u.searchParams.get('o')!==id){u.searchParams.set('o',id);history.replaceState(null,'',u.href)}}catch(e){}}
+const TO_KEY='nl_to_'+K+'_'+T;
+const getTO=()=>{try{const v=JSON.parse(localStorage.getItem(TO_KEY)||'null');return v&&Date.now()-v.ts<4*3600e3?v.id:null}catch(e){return null}};
+const setTO=id=>{try{id?localStorage.setItem(TO_KEY,JSON.stringify({id,ts:Date.now()})):localStorage.removeItem(TO_KEY)}catch(e){}};
+const myOrder=()=>WALK?getWO():(S.myOrder||getTO());
+function followMove(t){if(WALK)setWO(null);else setTO(null);
+  const v=$('#view');if(v)v.innerHTML=`<div class="msg"><h2>ย้ายไปโต๊ะ ${esc(t)} แล้ว</h2><p class="muted">พนักงานย้ายรายการของคุณไปรวมที่โต๊ะ ${esc(t)} กำลังเปิดหน้าโต๊ะใหม่…</p></div>`;
+  $('#foot').hidden=true;
+  setTimeout(()=>{try{const u=new URL(location.href);u.searchParams.set('t',t);u.searchParams.delete('o');location.replace(u.href)}catch(e){location.reload()}},1500)}
 const where=()=>WALK?'ของคุณ':'ของโต๊ะ '+esc(T);
 const loadName=()=>{try{return localStorage.getItem(NAME_KEY)||''}catch(e){return ''}};
 const saveName=n=>{try{localStorage.setItem(NAME_KEY,n)}catch(e){}};
@@ -285,7 +293,9 @@ async function start(){
   setInterval(()=>{if(S.view==='status'&&!document.hidden)loadStatus()},15000);
 }
 let lastSig='';
-async function loadStatus(force){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T,p_order:WALK?getWO():null});if(error)return;S.status=data;if(data.now)S.skew=data.now-Date.now();
+async function loadStatus(force){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T,p_order:myOrder()});if(error)return;
+  if(data.moved&&data.moved!==T){S.view='off';followMove(data.moved);return}
+  S.status=data;if(!WALK&&data.open&&data.orderId&&data.orderId!==S.myOrder){S.myOrder=data.orderId;setTO(data.orderId)}if(data.now)S.skew=data.now-Date.now();
   const sig=JSON.stringify([data.items,data.call,data.ahead,data.open]);const changed=sig!==lastSig;lastSig=sig;setCall();
   if(WALK&&!data.open&&getWO())setWO(null);
   if(WALK&&data.walkinOn===false){fail('ร้านปิดรับออร์เดอร์แบบสั่งเอง','สั่งกับพนักงานที่เคาน์เตอร์ได้เลย');S.view='off';return}
