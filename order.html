@@ -92,8 +92,8 @@ footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:cente
 
 /* ---- พื้นหลังรูปหน้าร้าน (หน้าต้อนรับลูกค้า) ---- */
 body.welcome::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.15) 40%,#0b0a09 60%),url(images/bg-m.jpg) 50% 0/auto 58% no-repeat,#0b0a09}
-@media (min-width:701px){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.3),rgba(8,6,5,.85)),url(images/bg.jpg) center 40%/cover no-repeat}}
+  background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.15) 40%,#0b0a09 60%),url(images/bg-m.jpg) 50% 0/auto 58% no-repeat,url(bg-m.jpg) 50% 0/auto 58% no-repeat,#0b0a09}
+@media (min-width:701px){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.3),rgba(8,6,5,.85)),url(images/bg.jpg) center 40%/cover no-repeat,url(bg.jpg) center 40%/cover no-repeat}}
 body.welcome header,body.welcome main{position:relative;z-index:1}
 body.welcome header{background:transparent}
 body.welcome main{display:flex;align-items:flex-end}
@@ -111,6 +111,7 @@ body.welcome .namebox .btn.pri{background:linear-gradient(180deg,#e2b265,#c48d3d
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="js/config.js"></script>
+<script>window.APP_CONFIG||document.write('<script src="config.js"><\/script>')</script>
 <script>
 "use strict";
 const $=s=>document.querySelector(s);

@@ -305,8 +305,8 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 /* ---- พื้นหลังรูปหน้าร้าน (หน้าเข้าสู่ระบบ) ---- */
 body.auth{background:#0b0a09}
 body.auth::before{content:"";position:fixed;inset:0;z-index:-1;
-  background:linear-gradient(180deg,rgba(8,6,5,.30) 0%,rgba(8,6,5,.55) 55%,rgba(8,6,5,.88) 100%),url(images/bg.jpg) center 40%/cover no-repeat}
-@media (max-width:700px){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.15) 40%,#0b0a09 60%),url(images/bg-m.jpg) 50% 0/auto 58% no-repeat,#0b0a09}}
+  background:linear-gradient(180deg,rgba(8,6,5,.30) 0%,rgba(8,6,5,.55) 55%,rgba(8,6,5,.88) 100%),url(images/bg.jpg) center 40%/cover no-repeat,url(bg.jpg) center 40%/cover no-repeat}
+@media (max-width:700px){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.15) 40%,#0b0a09 60%),url(images/bg-m.jpg) 50% 0/auto 58% no-repeat,url(bg-m.jpg) 50% 0/auto 58% no-repeat,#0b0a09}}
 body.auth .top{background:transparent;border-color:transparent}
 body.auth .top h1,body.auth .top small{color:#f6efe4;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 body.auth .wrap{min-height:calc(100vh - 70px);padding-block:16px 24px;max-width:none}
@@ -346,7 +346,9 @@ body.auth .btn.pri{background:linear-gradient(180deg,#e2b265,#c48d3d);border-col
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="js/config.js"></script>
+<script>window.APP_CONFIG||document.write('<script src="config.js"><\/script>')</script>
 <script src="js/db.js"></script>
+<script>window.makeDb||document.write('<script src="db.js"><\/script>')</script>
 <script>
 "use strict";
 /* ---------- helpers ---------- */
