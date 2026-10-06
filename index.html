@@ -365,12 +365,18 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .qb b{font-size:16px}.qb small{font-weight:400;opacity:.8;font-size:12.5px}
 .qrbox.big svg{width:min(300px,75vw)}
 #ordMove .inrow{align-items:center}
+.modesel{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:9px;padding:2px 4px 2px 10px;background:var(--surface);font-size:13px;color:var(--muted)}
+.modesel select{border:0;background:transparent;color:var(--fg);font-weight:600;padding:5px 4px;font-size:13.5px;cursor:pointer}
+.modesel.on{border-color:#c48d3d;background:#3a2a0b}.modesel.on select{color:#ffd58a}
+.viewas{padding:6px 16px;font-size:13px}
+@media (max-width:520px){.top-in{flex-wrap:wrap;row-gap:6px}.top-in .brand{flex-basis:100%}.modesel span{display:none}.modesel{padding:2px;margin-right:auto}.modesel select{max-width:130px}.viewas{top:calc(env(safe-area-inset-top,0px) + 100px)}}
 </style>
 </head>
 <body>
 
 <header class="top"><div class="top-in">
   <div class="brand"><h1 id="shopName">NueaLwoan</h1><small id="conn"><span class="dot"></span>กำลังเชื่อมต่อ…</small></div>
+  <label class="modesel" id="hdrModeWrap" hidden><span>โหมด</span><select id="hdrMode" aria-label="โหมดหน้าจอ"><option value="">แอดมิน</option><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">เชฟ</option><option value="partner">หุ้นส่วน</option></select></label>
   <button class="btn sm" data-act="settings" type="button">ตั้งค่าร้าน</button>
   <button class="btn sm" id="hdrLogout" data-act="logout" data-confirm="1" type="button">ออกจากระบบ</button>
 </div></header>
@@ -514,6 +520,7 @@ async function startData(){
   if(st.error){S.state='offline';render();return}
   if(!['owner','staff','waiter','chef','partner'].includes(st.data)){S.state='nostaff';render();return}
   S.role=st.data;
+  if(S.role==='owner'){try{const m=localStorage.getItem('nl_mode');if(m&&ROLES[m]&&m!=='owner')S.viewAs=m}catch(e){}}
   const u=await SB.auth.getUser();S.me=emailToUser(u.data.user?.email||'');
 
   const db=makeDb(SB);
@@ -541,7 +548,8 @@ function render(){
   c.innerHTML=S.state==='ready'?'<span class="dot on"></span>ออนไลน์ · '+esc(dlong(Date.now())):['noconfig','offline','nostaff'].includes(S.state)?'<span class="dot off"></span>ไม่ได้เชื่อมฐานข้อมูล':S.state==='login'?'<span class="dot"></span>ยังไม่ได้เข้าสู่ระบบ':'<span class="dot"></span>กำลังเชื่อมต่อ…';
   document.querySelector('[data-act="settings"]').hidden=S.state!=='ready';
   $('#hdrLogout').hidden=S.state!=='ready';
-  const va=$('#viewAs');va.hidden=!(S.state==='ready'&&S.viewAs);if(!va.hidden)va.innerHTML=`<span>กำลังดูหน้าจอแบบ <b>${roleName(S.viewAs)}</b> · ข้อมูลจริง กดใช้งานได้ตามสิทธิ์ของตำแหน่งนี้</span><button class="btn sm" data-act="viewAsOff" type="button">กลับเป็นแอดมิน</button>`;
+  const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){$('#hdrMode').value=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs)}
+  const va=$('#viewAs');va.hidden=!(S.state==='ready'&&S.viewAs);if(!va.hidden)va.innerHTML=`<span>โหมด <b>${roleName(S.viewAs)}</b> · ใช้งานจริงตามสิทธิ์ของตำแหน่งนี้</span><button class="btn sm" data-act="viewAsOff" type="button">กลับโหมดแอดมิน</button>`;
   $('#tabs').parentElement.hidden=S.state!=='ready';
   const isOwner=S.role==='owner';
   document.querySelector('[data-act="settings"]').textContent=isOwner?'ตั้งค่าร้าน':'บัญชีของฉัน';
@@ -1269,8 +1277,8 @@ const ACT={
   logout,
   qrSheet:()=>openSheet({type:'qr'}),
   staffNew:()=>openSheet({type:'staffNew'}),
-  viewAs:d=>{S.viewAs=d.r;S.tab='tables';S.backTab='stock';closeSheet();render();window.scrollTo(0,0);toast('สลับเป็นมุมมอง '+roleName(d.r))},
-  viewAsOff:()=>{S.viewAs=null;render();toast('กลับเป็นมุมมองแอดมินแล้ว')},
+  viewAs:d=>{try{localStorage.setItem('nl_mode',d.r)}catch(e){}S.viewAs=d.r;S.tab='tables';S.backTab='stock';closeSheet();render();window.scrollTo(0,0);toast('สลับเป็นมุมมอง '+roleName(d.r))},
+  viewAsOff:()=>{try{localStorage.removeItem('nl_mode')}catch(e){}S.viewAs=null;render();toast('กลับเป็นมุมมองแอดมินแล้ว')},
   permReset:()=>{renderPerm(DEFAULT_PERMS);toast('คืนค่าเริ่มต้นแล้ว กด "บันทึกสิทธิ์" เพื่อใช้งาน')},
   permSave:async()=>{const roles={waiter:{},chef:{},partner:{}};document.querySelectorAll('[data-perm]').forEach(c=>{const [r,k]=c.dataset.perm.split(':');if(c.checked)roles[r][k]=true});
     const ok=await write('config/permissions',r=>r.set({roles}));if(ok){S.perms=roles;toast('บันทึกสิทธิ์แล้ว มีผลกับทุกเครื่องทันที')}},
@@ -1307,6 +1315,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
   if(b.dataset.confirm&&!b.dataset.armed){b.dataset.armed='1';b.dataset.label=b.textContent;b.textContent='แตะอีกครั้งเพื่อยืนยัน';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent=b.dataset.label}},3500);return}
   const f=ACT[b.dataset.act];if(f)f({...b.dataset},b,e);});
 document.addEventListener('submit',e=>e.preventDefault());
+$('#hdrMode').addEventListener('change',e=>{const v=e.target.value;if(v)ACT.viewAs({r:v});else ACT.viewAsOff()});
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet()});
 setInterval(()=>{if(S.state==='ready'&&(!S.sheet||S.sheet.type!=='pay'))render()},60000);
