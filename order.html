@@ -133,6 +133,7 @@ function rpcErr(e){const m=String(e&&e.message||'');
   if(/bad_key/.test(m))return ['QR นี้ใช้ไม่ได้แล้ว','ร้านเปลี่ยน QR ใหม่ รบกวนแจ้งพนักงานหรือสแกน QR ที่ติดอยู่บนโต๊ะอีกครั้ง'];
   if(/bad_table/.test(m))return ['ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน'];
   if(/empty/.test(m))return ['เมนูที่เลือกปิดขายแล้ว','ลองเลือกเมนูอื่น'];
+  if(/table_closed/.test(m))return ['โต๊ะนี้ยังไม่เปิด','แจ้งพนักงานให้เปิดโต๊ะก่อน แล้วสั่งได้เลย'];
   return ['เชื่อมต่อไม่ได้','ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง'];}
 
 async function start(){
@@ -148,17 +149,26 @@ async function start(){
   if(data.logo){$('#logo').src=data.logo;$('#logo').hidden=false}
   $('#shop').textContent=data.shopName||'สั่งอาหาร';$('#tnum').textContent=T;$('#tno').hidden=false;
   S.name=loadName();if(!S.name)S.view='name';setSub();
-  render();loadStatus();
+  await loadStatus();
+  if(S.status&&S.status.requireOpen&&!S.status.open){S.after=S.view;S.view='closed'}
+  render();
   setInterval(()=>{if(S.view==='status'&&!document.hidden)loadStatus()},15000);
 }
-async function loadStatus(){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T});if(!error){S.status=data;if(S.view==='status'||S.view==='done')render()}}
+async function loadStatus(){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T});if(error)return;S.status=data;
+  if(S.view==='closed'&&(data.open||!data.requireOpen)){S.view=S.after||'menu';render();return}
+  if(S.view==='status'||S.view==='done')render()}
+setInterval(()=>{if(S.view==='closed'&&!document.hidden)loadStatus()},6000);
 
 const cartN=()=>Object.values(S.cart).reduce((a,b)=>a+b,0);
 const cartT=()=>Object.entries(S.cart).reduce((s,[id,q])=>s+(+(S.menu.find(m=>m.id===id)||{}).price||0)*q,0);
 
 function render(){
-  document.body.classList.toggle('welcome',S.view==='name');
+  document.body.classList.toggle('welcome',S.view==='name'||S.view==='closed');
   const v=$('#view'),f=$('#footIn');let h='',ft='';
+  if(S.view==='closed'){
+    v.innerHTML=`<div class="namebox" style="text-align:center"><h2>โต๊ะ ${esc(T)} ยังไม่เปิด</h2><p class="muted" style="margin:0">แจ้งพนักงานให้เปิดโต๊ะ หน้านี้จะไปหน้าเมนูให้เองเมื่อโต๊ะเปิดแล้ว</p><p class="muted" style="margin:0;font-size:13px">กำลังรอ…</p></div>`;
+    f.innerHTML='';$('#foot').hidden=true;return;
+  }
   if(S.view==='name'){
     h=`<form class="namebox" id="nameForm"><h2>ยินดีต้อนรับ</h2><p class="muted" style="margin:0">โต๊ะ ${esc(T)} · ใส่ชื่อของคุณ ร้านจะได้เสิร์ฟถูกคน</p>
       <div class="field"><label for="nm">ชื่อของคุณ</label><input id="nm" maxlength="40" autocomplete="given-name" placeholder="เช่น ต้น, พี่หนิง" value="${esc(S.name)}"></div>
@@ -198,7 +208,8 @@ async function send(){
   const items=Object.entries(S.cart).map(([menuId,qty])=>({menuId,qty}));
   const {error}=await sb.rpc('customer_add',{p_key:K,p_table:T,p_items:items,p_note:note,p_name:S.name||''});
   S.sending=false;
-  if(error){render();if($('#note'))$('#note').value=note;const [a,b]=rpcErr(error);$('#sendErr').textContent=a+' · '+b;return}
+  if(error){if(/table_closed/.test(String(error.message))){S.after='cart';S.view='closed';render();return}
+    render();if($('#note'))$('#note').value=note;const [a,b]=rpcErr(error);$('#sendErr').textContent=a+' · '+b;return}
   S.cart={};S.view='done';render();loadStatus();window.scrollTo(0,0);$('main').scrollTop=0;
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const d=b.dataset;
