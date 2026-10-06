@@ -84,6 +84,24 @@ footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:cente
 .msg h2{font-size:24px}
 .muted{color:var(--muted)}
 .err{color:var(--chili)}
+.namebox{max-width:420px;width:100%;margin:24px auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.namebox h2{font-size:24px}
+.lnk-w{border:0;background:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit;opacity:.95}
+.lnk-g{border:0;background:none;color:var(--jade);cursor:pointer;padding:4px 0;font:inherit;font-weight:500}
+.who{font-size:12px;color:var(--muted)}
+
+/* ---- พื้นหลังรูปหน้าร้าน (หน้าต้อนรับลูกค้า) ---- */
+body.welcome::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.15) 40%,#0b0a09 60%),url(images/bg-m.jpg) 50% 0/auto 58% no-repeat,#0b0a09}
+@media (min-width:701px){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.3),rgba(8,6,5,.85)),url(images/bg.jpg) center 40%/cover no-repeat}}
+body.welcome header,body.welcome main{position:relative;z-index:1}
+body.welcome header{background:transparent}
+body.welcome main{display:flex;align-items:flex-end}
+body.welcome .wrap{width:100%}
+body.welcome .namebox{--surface:rgba(18,15,12,.62);--fg:#f6efe4;--muted:#cdbfae;--line:rgba(255,230,190,.18);--jade:#d9a65a;--on-jade:#1d1307;
+  color:var(--fg);background:var(--surface);border-color:var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);margin-bottom:max(24px,env(safe-area-inset-bottom));box-shadow:0 20px 50px rgba(0,0,0,.5)}
+body.welcome .namebox input{background:rgba(0,0,0,.35);color:var(--fg)}
+body.welcome .namebox .btn.pri{background:linear-gradient(180deg,#e2b265,#c48d3d);border-color:#c48d3d;color:#1d1307}
 </style>
 </head>
 <body>
@@ -92,7 +110,7 @@ footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:cente
 <footer id="foot" hidden><div class="in" id="footIn"></div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-<script src="config.js"></script>
+<script src="js/config.js"></script>
 <script>
 "use strict";
 const $=s=>document.querySelector(s);
@@ -101,7 +119,11 @@ const baht=n=>'฿'+(Math.round((+n||0)*100)/100).toLocaleString('th-TH',{maximu
 const P=new URLSearchParams(location.search);
 const T=(P.get('t')||'').replace(/\D/g,''),K=P.get('k')||'';
 const NOTES=['ไม่ใส่ผัก','ไม่ใส่ถั่วงอก','ไม่เผ็ด','เผ็ดมาก','ไม่ใส่ผงชูรส','ใส่ห่อ'];
-const S={menu:[],cats:[],cat:'all',cart:{},view:'menu',status:null,sending:false};
+const S={menu:[],cats:[],cat:'all',cart:{},view:'menu',status:null,sending:false,name:''};
+const NAME_KEY='nl_name';
+const loadName=()=>{try{return localStorage.getItem(NAME_KEY)||''}catch(e){return ''}};
+const saveName=n=>{try{localStorage.setItem(NAME_KEY,n)}catch(e){}};
+function setSub(){$('#sub').innerHTML=S.name?`สวัสดี คุณ${esc(S.name)} · <button class="lnk-w" data-a="editName" type="button">แก้ชื่อ</button>`:'สั่งอาหารได้จากมือถือ'}
 let sb=null;
 
 function fail(title,text){$('#view').innerHTML=`<div class="msg"><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p></div>`;$('#foot').hidden=true}
@@ -123,6 +145,7 @@ async function start(){
   document.title=(data.shopName||'NueaLwoan')+' · โต๊ะ '+T;
   if(data.logo){$('#logo').src=data.logo;$('#logo').hidden=false}
   $('#shop').textContent=data.shopName||'สั่งอาหาร';$('#tnum').textContent=T;$('#tno').hidden=false;
+  S.name=loadName();if(!S.name)S.view='name';setSub();
   render();loadStatus();
   setInterval(()=>{if(S.view==='status'&&!document.hidden)loadStatus()},15000);
 }
@@ -132,7 +155,20 @@ const cartN=()=>Object.values(S.cart).reduce((a,b)=>a+b,0);
 const cartT=()=>Object.entries(S.cart).reduce((s,[id,q])=>s+(+(S.menu.find(m=>m.id===id)||{}).price||0)*q,0);
 
 function render(){
+  document.body.classList.toggle('welcome',S.view==='name');
   const v=$('#view'),f=$('#footIn');let h='',ft='';
+  if(S.view==='name'){
+    h=`<form class="namebox" id="nameForm"><h2>ยินดีต้อนรับ</h2><p class="muted" style="margin:0">โต๊ะ ${esc(T)} · ใส่ชื่อของคุณ ร้านจะได้เสิร์ฟถูกคน</p>
+      <div class="field"><label for="nm">ชื่อของคุณ</label><input id="nm" maxlength="40" autocomplete="given-name" placeholder="เช่น ต้น, พี่หนิง" value="${esc(S.name)}"></div>
+      <p class="err" id="nmErr" role="alert"></p>
+      <button class="btn pri" type="submit">เริ่มสั่งอาหาร</button>
+      ${S.name?'':'<button class="lnk-g" data-a="skipName" type="button">ข้าม ไม่ใส่ชื่อ</button>'}</form>`;
+    v.innerHTML=h;f.innerHTML='';$('#foot').hidden=true;
+    $('#nameForm').addEventListener('submit',e=>{e.preventDefault();const n=$('#nm').value.trim().replace(/\s+/g,' ');
+      if(!n){$('#nmErr').textContent='ใส่ชื่อก่อน หรือกด "ข้าม"';return}
+      S.name=n.slice(0,40);saveName(S.name);setSub();S.view='menu';render()});
+    setTimeout(()=>$('#nm')?.focus(),50);return;
+  }
   if(S.view==='menu'){
     h=`<div class="chips">${['all',...S.cats].map(c=>`<button class="chip" aria-pressed="${S.cat===c}" data-a="cat" data-v="${esc(c)}" type="button">${c==='all'?'ทั้งหมด':esc(c)}</button>`).join('')}</div>
     <div class="grid">${S.menu.filter(m=>S.cat==='all'||m.cat===S.cat).map(m=>`<button class="item" data-a="add" data-m="${esc(m.id)}" type="button"><div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${S.cart[m.id]?`<em>${S.cart[m.id]}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${baht(m.price)}</span></div></button>`).join('')||'<p class="muted">ยังไม่มีเมนูเปิดขาย</p>'}</div>
@@ -140,15 +176,15 @@ function render(){
     ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()?'':'disabled'} type="button">ดูตะกร้า</button>`;
   }else if(S.view==='cart'){
     const rows=Object.entries(S.cart).map(([id,q])=>{const m=S.menu.find(x=>x.id===id);return m?`<div class="row">${m.img?`<div class="mini"><img src="${esc(m.img)}" alt=""></div>`:''}<div class="g">${esc(m.name)}</div><div class="stepper"><button data-a="qty" data-m="${esc(id)}" data-d="-1" type="button" aria-label="ลด">−</button><span>${q}</span><button data-a="qty" data-m="${esc(id)}" data-d="1" type="button" aria-label="เพิ่ม">+</button></div><div class="r" style="min-width:60px;text-align:right">${baht(m.price*q)}</div></div>`:''}).join('');
-    h=`<h2>ตะกร้าของโต๊ะ ${esc(T)}</h2>${rows?`<div class="list">${rows}</div>`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}
+    h=`<h2>ตะกร้าของโต๊ะ ${esc(T)}</h2>${S.name?`<p class="muted" style="margin:0">สั่งในชื่อ <b>คุณ${esc(S.name)}</b> · <button class="lnk-g" data-a="editName" type="button">เปลี่ยน</button></p>`:''}${rows?`<div class="list">${rows}</div>`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}
     <div class="field"><label for="note">บอกครัว (ถ้ามี)</label><input id="note" placeholder="เช่น ไม่ใส่ผัก ไม่เผ็ด" maxlength="120" autocomplete="off"></div>
     <div class="qn">${NOTES.map(n=>`<button class="chip" data-a="note" data-v="${esc(n)}" type="button">${esc(n)}</button>`).join('')}</div>
     <p class="err" id="sendErr" role="alert"></p>`;
     ft=`<button class="btn" data-a="view" data-v="menu" type="button">เลือกเพิ่ม</button><button class="btn pri wide" data-a="send" ${cartN()&&!S.sending?'':'disabled'} type="button">${S.sending?'กำลังส่ง…':'ส่งรายการ '+baht(cartT())}</button>`;
   }else{
     const st=S.status||{items:[],total:0};
-    h=(S.view==='done'?`<div class="msg" style="padding:24px 8px"><h2>ส่งรายการเข้าครัวแล้ว</h2><p class="muted">รออาหารที่โต๊ะ ${esc(T)} ได้เลย ชำระเงินกับพนักงานเมื่อทานเสร็จ</p></div>`:`<h2>รายการของโต๊ะ ${esc(T)}</h2>`)+
-      (st.items.length?`<div class="list">${st.items.map(l=>`<div class="row"><div class="g">${l.qty}× ${esc(l.name)}</div><span class="pill ${l.served?'ok':'warn'}">${l.served?'เสิร์ฟแล้ว':'กำลังทำ'}</span><div class="r">${baht(l.amount)}</div></div>`).join('')}<div class="row"><div class="g"><b>ยอดรวมตอนนี้</b></div><div class="r"><b>${baht(st.total)}</b></div></div></div>`:'<p class="muted">ยังไม่มีรายการ</p>');
+    h=(S.view==='done'?`<div class="msg" style="padding:24px 8px"><h2>ส่งรายการเข้าครัวแล้ว${S.name?' คุณ'+esc(S.name):''}</h2><p class="muted">รออาหารที่โต๊ะ ${esc(T)} ได้เลย ชำระเงินกับพนักงานเมื่อทานเสร็จ</p></div>`:`<h2>รายการของโต๊ะ ${esc(T)}</h2>`)+
+      (st.items.length?`<div class="list">${st.items.map(l=>`<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.cname?`<div class="who">คุณ${esc(l.cname)}</div>`:''}</div><span class="pill ${l.served?'ok':'warn'}">${l.served?'เสิร์ฟแล้ว':'กำลังทำ'}</span><div class="r">${baht(l.amount)}</div></div>`).join('')}<div class="row"><div class="g"><b>ยอดรวมตอนนี้</b></div><div class="r"><b>${baht(st.total)}</b></div></div></div>`:'<p class="muted">ยังไม่มีรายการ</p>');
     ft=`<button class="btn pri wide" data-a="view" data-v="menu" type="button">สั่งเพิ่ม</button>`;
   }
   const keep=$('#note')?.value;
@@ -158,7 +194,7 @@ function render(){
 async function send(){
   if(S.sending||!cartN())return;S.sending=true;const note=($('#note')?.value||'').trim();render();if($('#note'))$('#note').value=note;
   const items=Object.entries(S.cart).map(([menuId,qty])=>({menuId,qty}));
-  const {error}=await sb.rpc('customer_add',{p_key:K,p_table:T,p_items:items,p_note:note});
+  const {error}=await sb.rpc('customer_add',{p_key:K,p_table:T,p_items:items,p_note:note,p_name:S.name||''});
   S.sending=false;
   if(error){render();if($('#note'))$('#note').value=note;const [a,b]=rpcErr(error);$('#sendErr').textContent=a+' · '+b;return}
   S.cart={};S.view='done';render();loadStatus();window.scrollTo(0,0);$('main').scrollTop=0;
@@ -169,7 +205,9 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   else if(d.a==='qty'){const q=(S.cart[d.m]||0)+ +d.d;if(q>0)S.cart[d.m]=q;else delete S.cart[d.m];render()}
   else if(d.a==='view'){S.view=d.v;render();$('main').scrollTop=0;if(d.v==='status')loadStatus()}
   else if(d.a==='note'){const n=$('#note');n.value=n.value?n.value+', '+d.v:d.v}
-  else if(d.a==='send')send();});
+  else if(d.a==='send')send();
+  else if(d.a==='editName'){S.view='name';render();$('main').scrollTop=0}
+  else if(d.a==='skipName'){S.view='menu';render()}});
 start();
 </script>
 </body>
