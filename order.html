@@ -103,6 +103,11 @@ body.welcome .namebox{--surface:rgba(18,15,12,.62);--fg:#f6efe4;--muted:#cdbfae;
 body.welcome .namebox input{background:rgba(0,0,0,.35);color:var(--fg)}
 body.welcome .namebox .btn.pri{background:linear-gradient(180deg,#e2b265,#c48d3d);border-color:#c48d3d;color:#1d1307}
 @media (min-width:701px) and (orientation:portrait){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/bg-m.jpg) center 30%/cover no-repeat,url(bg-m.jpg) center 30%/cover no-repeat,#0b0a09}}
+
+/* มือถือ: ช่องกรอกตัวอักษร 16px ขึ้นไป กัน iPhone ซูมเข้าเองตอนแตะช่องกรอก และกันหน้าเลื่อนออกด้านข้าง */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{max-width:100%;overflow-x:clip}
+@media (pointer:coarse),(max-width:820px){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}}
 </style>
 </head>
 <body>

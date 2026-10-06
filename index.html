@@ -365,6 +365,7 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .qb b{font-size:16px}.qb small{font-weight:400;opacity:.8;font-size:12.5px}
 .qrbox.big svg{width:min(300px,75vw)}
 #ordMove .inrow{align-items:center}
+.btn.ok-flash{background:#2f9e6b!important;border-color:#2f9e6b!important;color:#fff!important}
 .modesel{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:9px;padding:2px 4px 2px 10px;background:var(--surface);font-size:13px;color:var(--muted)}
 .modesel select{border:0;background:transparent;color:var(--fg);font-weight:600;padding:5px 4px;font-size:13.5px;cursor:pointer}
 .modesel.on{border-color:#c48d3d;background:#3a2a0b}.modesel.on select{color:#ffd58a}
@@ -391,6 +392,11 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .seatcell{display:flex;align-items:center;justify-content:space-between;gap:6px;border:1px solid var(--line);border-radius:9px;padding:4px 4px 4px 10px;font-size:13px;background:var(--surface)}
 .seatcell input{width:42px;text-align:center;border:1px solid var(--line);border-radius:7px;background:var(--sunk);padding:6px 2px;color:var(--fg)}
 @media (max-width:600px){.floorbar{flex-direction:column;align-items:stretch;gap:6px}.floorseg{display:flex}.floorseg button{flex:1;flex-direction:column;justify-content:center;gap:3px;padding:7px 4px;font-size:13px;text-align:center;line-height:1.2}.floorseg .nw{display:block;white-space:nowrap}.newch{display:grid;grid-template-columns:1fr 1fr}}
+
+/* มือถือ: ช่องกรอกตัวอักษร 16px ขึ้นไป กัน iPhone ซูมเข้าเองตอนแตะช่องกรอก และกันหน้าเลื่อนออกด้านข้าง */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{max-width:100%;overflow-x:clip}
+@media (pointer:coarse),(max-width:820px){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}}
 </style>
 </head>
 <body>
@@ -1252,7 +1258,8 @@ async function saveSettings(){const pp=val('cPP').replace(/\D/g,'');if(pp&&!ppVa
   if(!data.cats.length)data.cats=DEFAULTS.cats;if(!data.expCats.length)data.expCats=DEFAULTS.expCats;
   const back=S.sheet.back;const ok=await write('config/settings',r=>r.set(data));if(!ok)return;
   S.settings={...DEFAULTS,...data};toast('บันทึกการตั้งค่าแล้ว');
-  if(back)openSheet(back);else closeSheet();}
+  if(back)return openSheet(back);
+  const b=document.querySelector('[data-act="saveSettings"]');if(b){b.textContent='✓ บันทึกแล้ว';b.classList.add('ok-flash');clearTimeout(b._t);b._t=setTimeout(()=>{b.textContent='บันทึกการตั้งค่า';b.classList.remove('ok-flash')},2000)}}
 
 /* ---------- customer mode ---------- */
 function custOpen(oid){S.cust={id:oid,cart:{},cat:'all',view:'menu',confirmExit:false};closeSheet();renderCust();$('#cust').hidden=false}
