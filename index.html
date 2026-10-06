@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.06-1750">
+<meta name="app-version" content="2026.10.06-1800">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -671,13 +671,26 @@ async function startData(){
 const CALLK={staff:'เรียกพนักงาน',pay:'ขอชำระเงิน / เช็คบิล',paid:'แจ้งโอนเงินแล้ว รอตรวจยอด',water:'ขอน้ำ / น้ำแข็ง'};
 const callOf=o=>S.calls.find(c=>o.table==='TA'?c.order===o.id:c.table===o.table);
 const canCall=()=>can('tables')||can('pay')||can('kitchen');
-function callAlert(){if(!canCall())return;try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
-  try{const A=window.__ac||(window.__ac=new (window.AudioContext||window.webkitAudioContext)());[0,0.25].forEach(t=>{const o=A.createOscillator(),g=A.createGain();o.frequency.value=880;o.connect(g);g.connect(A.destination);g.gain.setValueAtTime(0.0001,A.currentTime+t);g.gain.exponentialRampToValueAtTime(0.3,A.currentTime+t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,A.currentTime+t+0.2);o.start(A.currentTime+t);o.stop(A.currentTime+t+0.22)})}catch(e){}}
+/* เสียงแจ้งเตือน: ใช้ <audio> (ดังได้แม้ iPhone เปิดโหมดเงียบ) ต้องแตะจอ 1 ครั้งเพื่อปลดล็อกเสียง */
+const Bell={a:null,ok:false,
+  wav(){const sr=22050,seg=[[880,.16],[0,.06],[1175,.26],[0,.18],[880,.16],[0,.06],[1175,.3]];let n=0;seg.forEach(x=>n+=Math.round(sr*x[1]));
+    const b=new DataView(new ArrayBuffer(44+n*2)),w=(o,t)=>{for(let i=0;i<t.length;i++)b.setUint8(o+i,t.charCodeAt(i))};
+    w(0,'RIFF');b.setUint32(4,36+n*2,true);w(8,'WAVEfmt ');b.setUint32(16,16,true);b.setUint16(20,1,true);b.setUint16(22,1,true);b.setUint32(24,sr,true);b.setUint32(28,sr*2,true);b.setUint16(32,2,true);b.setUint16(34,16,true);w(36,'data');b.setUint32(40,n*2,true);
+    let o=44;seg.forEach(([f,d])=>{const m=Math.round(sr*d);for(let i=0;i<m;i++){const env=Math.min(1,i/200,(m-i)/600);const v=f?Math.sin(2*Math.PI*f*i/sr)*.9*env+Math.sin(4*Math.PI*f*i/sr)*.1*env:0;b.setInt16(o,v*32000,true);o+=2}});
+    let bin='';const u=new Uint8Array(b.buffer);for(let i=0;i<u.length;i+=8192)bin+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return 'data:audio/wav;base64,'+btoa(bin)},
+  init(){if(!this.a){this.a=new Audio(this.wav());this.a.preload='auto'}return this.a},
+  unlock(){if(this.ok)return;try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
+    const a=this.init();a.muted=true;const p=a.play();if(p&&p.then)p.then(()=>{a.pause();a.currentTime=0;a.muted=false;this.ok=true;renderCalls()}).catch(()=>{a.muted=false});},
+  ring(){const a=this.init();try{a.pause();a.currentTime=0}catch(e){}a.muted=false;a.volume=1;const p=a.play();if(p&&p.catch)p.catch(()=>{this.ok=false;renderCalls()});
+    try{navigator.vibrate&&navigator.vibrate([300,120,300,120,300])}catch(e){}}};
+function callAlert(){if(!canCall())return;Bell.ring()}
+/* ดังซ้ำทุก 12 วินาที จนกว่าจะกดรับทราบ (นานสุด 3 นาทีต่อการเรียก) */
+setInterval(()=>{if(S.state==='ready'&&canCall()&&S.calls.some(c=>Date.now()-c.at<180000&&Date.now()-c.at>5000))Bell.ring()},12000);
 function renderCalls(){const el=$('#callbar');if(!el)return;const list=S.state==='ready'&&canCall()?S.calls.filter(c=>Date.now()-c.at<6*3600e3):[];el.hidden=!list.length;
-  el.innerHTML=list.map(c=>{const o=c.table==='TA'?S.open[c.order]:Object.values(S.open).find(x=>x.table===c.table);const where=c.table==='TA'?(o?tableLabel(o):'ลูกค้าสั่งเอง'):'โต๊ะ '+c.table;
+  el.innerHTML=(list.length&&!Bell.ok?`<div class="callcard" style="background:#fff"><span style="font-size:20px">🔇</span><div class="grow"><b>แตะเพื่อเปิดเสียงแจ้งเตือน</b><small>มือถือจะไม่ส่งเสียงจนกว่าจะแตะหน้าจอแอป 1 ครั้ง</small></div><button class="btn sm" data-act="bellTest" type="button">เปิดเสียง</button></div>`:'')+list.map(c=>{const o=c.table==='TA'?S.open[c.order]:Object.values(S.open).find(x=>x.table===c.table);const where=c.table==='TA'?(o?tableLabel(o):'ลูกค้าสั่งเอง'):'โต๊ะ '+c.table;
     return `<div class="callcard${c.kind==='paid'?' paid':''}" role="alert"><span style="font-size:22px">🔔</span><div class="grow"><b>${esc(where)} · ${esc(CALLK[c.kind]||'เรียกพนักงาน')}</b><small>${c.name?'คุณ'+esc(c.name)+' · ':''}${ago(c.at).replace('เพิ่งเปิด','เมื่อสักครู่')}${/นาที|ชม/.test(ago(c.at))?'ที่แล้ว':''}</small></div>${o&&(c.kind==='pay'||c.kind==='paid')&&can('pay')?`<button class="btn sm" data-act="callBill" data-id="${o.id}" data-c="${esc(c.id)}" type="button">เก็บเงิน</button>`:o?`<button class="btn sm ghost" data-act="openOrder" data-id="${o.id}" type="button">ดูบิล</button>`:''}<button class="btn sm${o&&(c.kind==='pay'||c.kind==='paid')?' ghost':''}" data-act="callAck" data-c="${esc(c.id)}" type="button">รับทราบ</button></div>`}).join('');}
 setInterval(()=>{if(S.calls.length)renderCalls()},30000);
-document.addEventListener('pointerdown',()=>{try{const A=window.__ac||(window.__ac=new (window.AudioContext||window.webkitAudioContext)());if(A.state==='suspended')A.resume()}catch(e){}},{once:true});
+document.addEventListener('pointerdown',()=>Bell.unlock(),true);document.addEventListener('keydown',()=>Bell.unlock(),true);
 function sortMenu(){const cats=S.settings.cats||[];S.menu.sort((a,b)=>{const ca=cats.indexOf(a.cat),cb=cats.indexOf(b.cat);return (ca<0?99:ca)-(cb<0?99:cb)||String(a.name).localeCompare(String(b.name),'th')})}
 
 /* ---------- main render ---------- */
@@ -1300,7 +1313,7 @@ function applyBg(v){document.documentElement.style.setProperty('--veil-a',String
 applyBg(getBg());
 const bgCard=()=>`<div class="card"><h3>รูปพื้นหลัง (เฉพาะเครื่องนี้)</h3><div class="bgctl"><span class="help">จาง</span><input id="bgRange" type="range" min="0" max="100" step="5" value="${getBg()}" aria-label="ความชัดของรูปพื้นหลัง"><span class="help">ชัด</span><output id="bgOut">${getBg()}%</output></div><p class="help" style="margin:0">ตั้ง 0% เพื่อปิดรูปพื้นหลัง</p></div>`;
 function bindBg(){const r=$('#bgRange');if(!r)return;r.addEventListener('input',()=>{const v=+r.value;$('#bgOut').textContent=v+'%';applyBg(v);try{localStorage.setItem(BG_KEY,String(v))}catch(e){}})}
-const accountCard=()=>`${bgCard()}<div class="card"><h3>บัญชีของฉัน <small class="muted" style="font-size:12px;font-weight:400">เว็บเวอร์ชัน ${esc(APP_VER)}</small></h3><p class="help" style="margin:0">เข้าสู่ระบบด้วยชื่อผู้ใช้ <b>${esc(S.me||'')}</b> · ${S.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</p>
+const accountCard=()=>`${bgCard()}<div class="card"><div class="inrow" style="justify-content:space-between;margin-bottom:6px"><span class="help">เสียงเรียกพนักงาน ${Bell.ok?'เปิดอยู่':'ยังไม่ได้เปิด'}</span><button class="btn sm" data-act="bellTest" type="button">🔔 ทดสอบเสียงแจ้งเตือน</button></div><h3>บัญชีของฉัน <small class="muted" style="font-size:12px;font-weight:400">เว็บเวอร์ชัน ${esc(APP_VER)}</small></h3><p class="help" style="margin:0">เข้าสู่ระบบด้วยชื่อผู้ใช้ <b>${esc(S.me||'')}</b> · ${S.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</p>
    <div class="field"><label for="myPw">ตั้งรหัสผ่านใหม่</label><div class="inrow"><input id="myPw" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"><button class="btn sm" data-act="myPwSave" type="button">เปลี่ยนรหัส</button></div></div>
    <button class="btn sm danger" data-act="logout" data-confirm="1" type="button" style="align-self:flex-start">ออกจากระบบ</button></div>`;
 function sheetAccount(){$('#panel').innerHTML=head('บัญชีของฉัน')+`<form class="sh-body">${accountCard()}</form>`;bindBg();}
@@ -1453,6 +1466,7 @@ function custSend(){const c=S.cust,oid=c.id;if(!S.open[oid])return;const note=va
 
 /* ---------- actions ---------- */
 const ACT={
+  bellTest:()=>{Bell.unlock();setTimeout(()=>{Bell.ring();toast(Bell.ok?'ถ้าไม่ได้ยิน ให้เพิ่มเสียงมือถือ':'กดอีกครั้งเพื่อทดสอบเสียง')},150)},
   callAck:d=>{S.calls=S.calls.filter(c=>c.id!==d.c);renderCalls();render();write('calls/'+d.c,r=>r.delete())},
   callBill:d=>{if(!S.open[d.id])return toast('บิลนี้ปิดไปแล้ว','bad');if(!can('pay'))return deny();const p=payOpen(d.id);if((S.calls.find(c=>c.id===d.c)||{}).kind==='paid'&&!isDel(S.open[d.id]))p.method='promptpay';openSheet(p)},
   tab:d=>{S.tab=d.v;render();window.scrollTo(0,0)},
