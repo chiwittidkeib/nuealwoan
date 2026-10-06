@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.06-1830">
+<meta name="app-version" content="2026.10.06-2010">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -456,6 +456,7 @@ html,body{max-width:100%;overflow-x:clip}
 @media (prefers-reduced-motion:reduce){.bell,.callcard{animation:none}}
 .updbar{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:99;background:#ffd58a;color:#2b1c00;border-radius:12px;padding:8px 10px 8px 14px;display:flex;gap:10px;align-items:center;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.45);white-space:nowrap}
 .updbar button{border:0;border-radius:9px;background:#2b1c00;color:#ffd58a;font:inherit;padding:6px 12px;cursor:pointer}
+#coList input[data-co]{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:9px;padding:8px 10px;min-height:42px;width:100%}
 </style>
 </head>
 <body>
@@ -605,7 +606,7 @@ function can(k){const r=effRole();if(r==='owner')return true;const dp=DEFAULT_PE
 const TAB_OK={tables:()=>can('tables'),kitchen:()=>can('kitchen'),menu:()=>true,back:()=>can('stock')||can('expenses')||can('members'),report:()=>can('report')};
 const deny=()=>{toast('ตำแหน่งของคุณไม่มีสิทธิ์ใช้ส่วนนี้ ติดต่อแอดมิน','bad');return true};
 const S={floor:(()=>{try{return localStorage.getItem('nl_floor')||'tables'}catch(e){return 'tables'}})(),tab:'tables',perms:null,backTab:'stock',menuCat:'all',settings:{...DEFAULTS},
-  menu:[],stock:[],members:[],open:{},today:[],calls:[],purch:[],exp:[],
+  menu:[],stock:[],members:[],open:{},today:[],calls:[],voice:{},purch:[],exp:[],
   db:null,state:'loading',sheet:null,cust:null,
   report:{range:'today',data:null,loading:false}};
 
@@ -646,8 +647,8 @@ async function init(){
   render();
   const cfg=window.APP_CONFIG||{};
   if(!window.supabase||!cfg.SUPABASE_URL||/x{6}/.test(cfg.SUPABASE_URL)||!cfg.SUPABASE_KEY||/ใส่/.test(cfg.SUPABASE_KEY)){S.state='noconfig';render();return}
-  SB=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
-  const {data}=await SB.auth.getSession();
+  SB=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,lock:async(_n,_t,fn)=>await fn()}});
+  let data={};try{data=(await Promise.race([SB.auth.getSession(),new Promise((_,no)=>setTimeout(()=>no(new Error('t')),15000))])).data||{}}catch(e){S.state='loading';S.loadErr='เชื่อมต่อระบบเข้าสู่ระบบไม่ได้';render();setTimeout(()=>location.reload(),8000);return}
   if(!data.session){S.state='login';render();return}
   startData();
 }
@@ -668,17 +669,19 @@ async function login(){
 }
 async function logout(){await SB.auth.signOut();location.reload()}
 async function startData(){
-  S.state='loading';render();
-  const st=await SB.rpc('my_role');
-  if(st.error){S.state='offline';render();return}
+  S.state='loading';S.loadStep='ตรวจสิทธิ์ผู้ใช้';S.loadErr='';render();
+  const tmo=(p,ms)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),ms))]);
+  let st;try{st=await tmo(SB.rpc('my_role'),15000)}catch(e){S.loadErr='เชื่อมต่อฐานข้อมูลช้าเกินไป (ขั้นตอน: '+S.loadStep+')';render();setTimeout(()=>{if(S.state==='loading')startData()},5000);return}
+  if(st.error){S.state='offline';S.loadErr=String(st.error.message||'');render();return}
+  S.loadStep='โหลดบัญชี';
   if(!['owner','staff','waiter','chef','partner'].includes(st.data)){S.state='nostaff';render();return}
   S.role=st.data;
   if(S.role==='owner'){try{const m=localStorage.getItem('nl_mode');if(m&&ROLES[m]&&m!=='owner')S.viewAs=m}catch(e){}}
-  const u=await SB.auth.getUser();S.me=emailToUser(u.data.user?.email||'');S.email=String(u.data.user?.email||'').toLowerCase();
+  let u;try{u=await tmo(SB.auth.getUser(),15000)}catch(e){u={data:{user:null}}}S.me=emailToUser(u.data.user?.email||'');S.email=String(u.data.user?.email||'').toLowerCase();
 
   const db=makeDb(SB);
   S.db=db;S.state='ready';render();
-  pushBoot();
+  pushBoot();loadQrDay();setInterval(()=>{const d=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);if(!S.qrDay||S.qrDay.day!==d)loadQrDay()},10*60000);
   const day0=sod();setInterval(()=>{if(sod()!==day0&&!S.sheet&&!S.cust)location.reload()},60000);
   db.doc('config/permissions').onSnapshot(s=>{S.perms=s.exists?(s.data().roles||null):null;render();refreshSheet()},onErr);
   db.doc('config/settings').onSnapshot(s=>{S.settings={...DEFAULTS,...(s.exists?s.data():{})};render();refreshSheet()},onErr);
@@ -686,6 +689,7 @@ async function startData(){
   db.collection('stock').onSnapshot(s=>{S.stock=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.name).localeCompare(String(b.name),'th'));render()},onErr);
   db.collection('orders').where('status','==','open').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]={id:d.id,...d.data()});S.open=o;render();refreshSheet('order')},onErr);
   db.collection('orders').where('status','==','paid').where('paidAt','>=',sod()).onSnapshot(s=>{S.today=s.docs.map(d=>({id:d.id,...d.data()}));render()},onErr);
+  db.collection('voice').onSnapshot(s=>{const v={};s.docs.forEach(d=>{const x=d.data();if(x&&x.wav)v[d.id]=x.wav});S.voice=v;if(S.sheet&&S.sheet.type==='voiceRec')sheetVoiceRec()},onErr);
   db.collection('calls').onSnapshot(s=>{const prev=new Set(S.calls.map(c=>c.id+':'+c.at));S.calls=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.at-b.at);
     if(S.calls.some(c=>!prev.has(c.id+':'+c.at)&&Date.now()-c.at<120000))callAlert();renderCalls();render()},onErr);
   db.collection('members').onSnapshot(s=>{S.members=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.lastAt||0)-(a.lastAt||0));if(S.tab==='back')render()},onErr);
@@ -693,7 +697,10 @@ async function startData(){
   db.collection('purchases').where('at','>=',since).onSnapshot(s=>{S.purch=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
   db.collection('expenses').where('at','>=',since).onSnapshot(s=>{S.exp=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
 }
-const CALLK={staff:'เรียกพนักงาน',pay:'ขอชำระเงิน / เช็คบิล',paid:'แจ้งโอนเงินแล้ว รอตรวจยอด',water:'ขอน้ำ / น้ำแข็ง'};
+const CALL_DEF=[{id:'staff',label:'เรียกพนักงาน'},{id:'pay',label:'ขอชำระเงิน / เช็คบิล',pay:true},{id:'water',label:'ขอน้ำ / น้ำแข็ง'}];
+const callOpts=()=>{const L=S.settings.callOptions;return Array.isArray(L)&&L.length?L.filter(o=>o&&o.id&&o.label):CALL_DEF};
+const callLabel=k=>k==='paid'?'แจ้งโอนเงินแล้ว รอตรวจยอด':((callOpts().find(o=>o.id===k)||CALL_DEF.find(o=>o.id===k)||{}).label||'เรียกพนักงาน');
+const isPayKind=k=>k==='paid'||!!(callOpts().find(o=>o.id===k)||CALL_DEF.find(o=>o.id===k)||{}).pay;
 const callOf=o=>S.calls.find(c=>o.table==='TA'?c.order===o.id:c.table===o.table);
 const canCall=()=>can('tables')||can('pay')||can('kitchen');
 /* เสียงแจ้งเตือน: ใช้ <audio> (ดังได้แม้ iPhone เปิดโหมดเงียบ) ต้องแตะจอ 1 ครั้งเพื่อปลดล็อกเสียง */
@@ -702,20 +709,24 @@ const BELL_SEG={chime:[[880,.16],[0,.06],[1175,.26],[0,.18],[880,.16],[0,.06],[1
   beep:[[1000,.09],[0,.07],[1000,.09],[0,.07],[1000,.09],[0,.07],[1000,.09],[0,.25],[1000,.09],[0,.07],[1000,.09],[0,.07],[1000,.09],[0,.07],[1000,.09]],
   bell:[[660,1.3,'d'],[0,.1],[660,1.1,'d']],cash:[[1568,.12,'d'],[2093,.7,'d'],[0,.15],[1568,.12,'d'],[2093,.7,'d']],
   siren:[[600,.55,'s',1100],[1100,.55,'s',600],[600,.55,'s',1100],[1100,.55,'s',600]],triple:[[1047,.14],[0,.08],[1319,.14],[0,.08],[1568,.35,'d']]};
-const bellCfg=()=>{let c={};try{c=JSON.parse(localStorage.getItem('nl_bell')||'{}')||{}}catch(e){}return Object.assign({staff:'chime',pay:'cash',vol:1,rep:12,mode:'both'},c)};
+const bellCfg=()=>{let c={};try{c=JSON.parse(localStorage.getItem('nl_bell')||'{}')||{}}catch(e){}return (r=>{if(!c.mode)r.mode=(typeof S!=='undefined'&&S.voice&&Object.keys(S.voice).length)?'rec':'both';return r})(Object.assign({staff:'chime',pay:'cash',vol:1,rep:12,mode:'',rate:1,pitch:1,voice:''},c))};
 const bellSave=c=>{try{localStorage.setItem('nl_bell',JSON.stringify(c))}catch(e){toast('บันทึกในเครื่องนี้ไม่ได้','bad')}};
 const bellCustom=()=>{try{return localStorage.getItem('nl_bell_custom')||''}catch(e){return ''}};
 /* เสียงแจ้งเตือน: ใช้ <audio> ตัวเดียว (ดังได้แม้ iPhone เปิดโหมดเงียบ) ต้องแตะจอ 1 ครั้งเพื่อปลดล็อกเสียง */
-const thVoice=()=>{try{return (speechSynthesis.getVoices()||[]).find(v=>/^th/i.test(v.lang))||null}catch(e){return null}};
-try{if(window.speechSynthesis){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{const h=document.getElementById('bVoiceHelp');if(h)h.textContent=voiceHelp()}}}catch(e){}
-const voiceHelp=()=>!window.speechSynthesis?'เบราว์เซอร์นี้พูดไม่ได้ จะใช้กริ่งแทน':thVoice()?'✓ มีเสียงพูดภาษาไทย ('+thVoice().name+')':'✗ ไม่พบเสียงพูดภาษาไทยในเครื่องนี้ · iPhone: การตั้งค่า → การช่วยการเข้าถึง → เนื้อหาที่ถูกอ่าน → เสียง → ไทย · Android: ตั้งค่า → การแปลงข้อความเป็นเสียงพูด → Google → ติดตั้งข้อมูลเสียง → ไทย · คอมพิวเตอร์ Windows: ตั้งค่า → เวลาและภาษา → คำพูด → เพิ่มเสียงไทย';
+const thVoices=()=>{try{const q=v=>/premium|พรีเมียม|siri|neural|natural/i.test(v.name)?0:/enhanced|ปรับปรุง/i.test(v.name)?1:/compact|กะทัดรัด/i.test(v.name)?3:2;
+  return (speechSynthesis.getVoices()||[]).filter(v=>/^th/i.test(v.lang)).sort((a,b)=>q(a)-q(b)||a.name.localeCompare(b.name))}catch(e){return []}};
+const thVoice=()=>{const L=thVoices();if(!L.length)return null;const want=bellCfg().voice;return (want&&L.find(v=>v.voiceURI===want||v.name===want))||L[0]};
+const voiceLabel=v=>v.name+(/premium|พรีเมียม/i.test(v.name)?' ★★':/enhanced|ปรับปรุง/i.test(v.name)?' ★':'')+(v.localService===false?' (ออนไลน์)':'');
+try{if(window.speechSynthesis){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{const h=document.getElementById('bVoiceHelp');if(h)h.textContent=voiceHelp();const sv=document.getElementById('bVoice');if(sv)sv.innerHTML=voiceOpts(bellCfg().voice)}}}catch(e){}
+const voiceOpts=cur=>{const L=thVoices();return L.length?L.map((v,i)=>`<option value="${esc(v.voiceURI||v.name)}" ${(cur?(v.voiceURI===cur||v.name===cur):i===0)?'selected':''}>${esc(voiceLabel(v))}</option>`).join(''):'<option value="">ยังไม่พบเสียงไทย</option>'};
+const voiceHelp=()=>!window.speechSynthesis?'เบราว์เซอร์นี้พูดไม่ได้ จะใช้กริ่งแทน':thVoice()?'✓ มีเสียงพูดภาษาไทย '+thVoices().length+' เสียง':'✗ ไม่พบเสียงพูดภาษาไทยในเครื่องนี้ · iPhone: การตั้งค่า → การช่วยการเข้าถึง → เนื้อหาที่ถูกอ่าน → เสียง → ไทย · Android: ตั้งค่า → การแปลงข้อความเป็นเสียงพูด → Google → ติดตั้งข้อมูลเสียง → ไทย · คอมพิวเตอร์ Windows: ตั้งค่า → เวลาและภาษา → คำพูด → เพิ่มเสียงไทย';
 const callSpeech=c=>{if(!c)return '';const o=c.table==='TA'?S.open[c.order]:null;const who=c.table==='TA'?(c.name?'คุณ'+c.name:(o?tableLabel(o):'ลูกค้าสั่งเอง')):'โต๊ะ '+c.table;
-  return who+' '+String(CALLK[c.kind]||'เรียกพนักงาน').replace(/\s*\/\s*/g,' ').replace(/ รอตรวจยอด/,' กรุณาตรวจยอด')};
+  return who+' '+String(callLabel(c.kind)).replace(/\s*\/\s*/g,' ').replace(/ รอตรวจยอด/,' กรุณาตรวจยอด')};
 const Bell={a:null,ok:false,cache:{},
   spOk:false,_u:null,
-  say(text){if(!text||!window.speechSynthesis)return false;try{const c=bellCfg(),ss=speechSynthesis,u=new SpeechSynthesisUtterance(text);u.lang='th-TH';const v=thVoice();if(v)u.voice=v;u.rate=.95;u.volume=Math.max(.2,Math.min(1,+c.vol||1));
+  say(text){if(!text||!window.speechSynthesis)return false;try{const c=bellCfg(),ss=speechSynthesis,u=new SpeechSynthesisUtterance(text);u.lang='th-TH';const v=thVoice();if(v)u.voice=v;u.rate=Math.max(.6,Math.min(1.4,+c.rate||1));u.pitch=Math.max(.6,Math.min(1.4,+c.pitch||1));u.volume=Math.max(.2,Math.min(1,+c.vol||1));
     this._u=u;/* กันเบราว์เซอร์ทิ้งเสียงกลางคัน */ if(ss.speaking||ss.pending)ss.cancel();if(ss.paused)ss.resume();setTimeout(()=>{try{ss.speak(u)}catch(e){}},60);return true}catch(e){return false}},
-  sayNow(text){/* เรียกในจังหวะที่ผู้ใช้แตะจอ (iPhone ต้องการ) */ if(!text||!window.speechSynthesis)return;try{const c=bellCfg(),u=new SpeechSynthesisUtterance(text);u.lang='th-TH';const v=thVoice();if(v)u.voice=v;u.rate=.95;u.volume=Math.max(.2,Math.min(1,+c.vol||1));this._u=u;speechSynthesis.cancel();speechSynthesis.speak(u);this.spOk=true}catch(e){}},
+  sayNow(text){/* เรียกในจังหวะที่ผู้ใช้แตะจอ (iPhone ต้องการ) */ if(!text||!window.speechSynthesis)return;try{const c=bellCfg(),u=new SpeechSynthesisUtterance(text);u.lang='th-TH';const v=thVoice();if(v)u.voice=v;u.rate=Math.max(.6,Math.min(1.4,+c.rate||1));u.pitch=Math.max(.6,Math.min(1.4,+c.pitch||1));u.volume=Math.max(.2,Math.min(1,+c.vol||1));this._u=u;speechSynthesis.cancel();speechSynthesis.speak(u);this.spOk=true}catch(e){}},
   speechUnlock(){if(this.spOk||!window.speechSynthesis)return;try{const u=new SpeechSynthesisUtterance('ค่ะ');u.lang='th-TH';u.volume=0.01;u.rate=2;this._u=u;speechSynthesis.speak(u);this.spOk=true}catch(e){}},
   wav(seg){const sr=22050;let n=0;seg.forEach(x=>n+=Math.round(sr*x[1]));
     const b=new DataView(new ArrayBuffer(44+n*2)),w=(o,t)=>{for(let i=0;i<t.length;i++)b.setUint8(o+i,t.charCodeAt(i))};
@@ -728,18 +739,57 @@ const Bell={a:null,ok:false,cache:{},
   unlock(){if(this.ok)return;try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
 
     const a=this.init();a.muted=true;const p=a.play();if(p&&p.then)p.then(()=>{a.pause();a.currentTime=0;a.muted=false;this.ok=true;renderCalls()}).catch(()=>{a.muted=false});},
-  ring(kind,name,text){const c=bellCfg();name=name||((kind==='pay'||kind==='paid')?c.pay:c.staff);
+  seq(list,i=0){const a=this.init();if(i>=list.length){a.onended=null;return}a.onended=()=>setTimeout(()=>this.seq(list,i+1),120);a.src=list[i];try{a.currentTime=0}catch(e){}const p=a.play();if(p&&p.catch)p.catch(()=>{a.onended=null})},
+  ring(kind,name,text,call){const c=bellCfg();name=name||(isPayKind(kind)?c.pay:c.staff);
+    const clips=c.mode==='rec'?voiceClips(call):null;
     if(c.mode==='voice'&&text){this.say(text);try{navigator.vibrate&&navigator.vibrate([300,120,300])}catch(e){}return}
-    const a=this.init();try{a.pause()}catch(e){}a.onended=c.mode!=='bell'&&text?()=>{a.onended=null;this.say(text)}:null;
+    const a=this.init();try{a.pause()}catch(e){}a.onended=clips?()=>{a.onended=null;setTimeout(()=>this.seq(clips),150)}:(c.mode!=='bell'&&text?()=>{a.onended=null;this.say(text)}:null);
     const sr=this.src(name);if(a.src!==sr)a.src=sr;try{a.currentTime=0}catch(e){}a.muted=false;a.volume=Math.max(0.05,Math.min(1,+c.vol||1));const p=a.play();if(p&&p.catch)p.catch(()=>{this.ok=false;renderCalls()});
     try{navigator.vibrate&&navigator.vibrate([300,120,300,120,300])}catch(e){}}};
-function callAlert(){if(!canCall())return;const c=S.calls.slice().sort((a,b)=>a.at-b.at).pop();Bell.ring(c&&c.kind,null,callSpeech(c))}
+/* ---------- เสียงคนจริงที่อัดเอง ---------- */
+const vkinds=()=>[...callOpts().map(o=>['k_'+o.id,o.label]),['k_paid','แจ้งโอนเงินแล้ว'],['walkin','ลูกค้าสั่งเอง (ไม่ระบุโต๊ะ)']];
+function voiceClips(call){if(!call)return null;const V=S.voice||{};const who=call.table==='TA'?V.walkin:V['t'+call.table];const what=V['k_'+(call.kind||'staff')];return who&&what?[who,what]:null}
+const VREC={rec:null,key:null,chunks:[],timer:null};
+async function wavFromBlob(blob){const AC=window.AudioContext||window.webkitAudioContext;const ac=new AC();const buf=await new Promise((ok,no)=>{blob.arrayBuffer().then(ab=>ac.decodeAudioData(ab,ok,no)).catch(no)});
+  let d=buf.getChannelData(0);let peak=0;for(let i=0;i<d.length;i++)peak=Math.max(peak,Math.abs(d[i]));const th=Math.max(.02,peak*.08);
+  let s0=0,e0=d.length-1;while(s0<d.length&&Math.abs(d[s0])<th)s0++;while(e0>s0&&Math.abs(d[e0])<th)e0--;const pad=Math.round(buf.sampleRate*.08);s0=Math.max(0,s0-pad);e0=Math.min(d.length-1,e0+pad);
+  if(e0-s0<buf.sampleRate*.15)throw new Error('silent');const seg=d.slice(s0,e0+1);
+  const sr=16000,n=Math.round(seg.length*sr/buf.sampleRate);const out=new Float32Array(n);for(let i=0;i<n;i++){const x=i*buf.sampleRate/sr,j=Math.floor(x),f=x-j;out[i]=(seg[j]||0)*(1-f)+(seg[j+1]||0)*f}
+  const g=peak>0?.9/peak:1;try{ac.close()}catch(e){}
+  const b=new DataView(new ArrayBuffer(44+n*2)),w=(o,t)=>{for(let i=0;i<t.length;i++)b.setUint8(o+i,t.charCodeAt(i))};
+  w(0,'RIFF');b.setUint32(4,36+n*2,true);w(8,'WAVEfmt ');b.setUint32(16,16,true);b.setUint16(20,1,true);b.setUint16(22,1,true);b.setUint32(24,sr,true);b.setUint32(28,sr*2,true);b.setUint16(32,2,true);b.setUint16(34,16,true);w(36,'data');b.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++){const v=Math.max(-1,Math.min(1,out[i]*g));b.setInt16(44+i*2,v*32000,true)}
+  let bin='';const u=new Uint8Array(b.buffer);for(let i=0;i<u.length;i+=8192)bin+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return 'data:audio/wav;base64,'+btoa(bin)}
+async function voiceSaveBlob(key,blob,isFile){if(isFile&&blob.size>3*1048576)return toast('ไฟล์ใหญ่เกิน 3 MB','bad');
+  try{const wav=await wavFromBlob(blob);if(wav.length>(isFile?700000:400000))throw new Error('long');S.voice={...S.voice,[key]:wav};sheetVoiceRec();Bell.unlock();Bell.seq([wav]);
+    const ok=await write('voice/'+key,x=>x.set({wav,at:Date.now(),by:S.me||''}));if(ok)toast('บันทึกเสียงแล้ว ทุกเครื่องในร้านใช้เสียงนี้')}
+  catch(e){toast(/silent/.test(e.message)?'ไม่ได้ยินเสียง ลองพูดดังขึ้นแล้วอัดใหม่':/long/.test(e.message)?(isFile?'ไฟล์เสียงยาวเกินไป ตัดให้เหลือไม่เกิน 5 วินาที':'เสียงยาวเกินไป พูดให้สั้นลง (ไม่เกิน 3 วินาที)'):(isFile?'เปิดไฟล์เสียงนี้ไม่ได้ ใช้ไฟล์ mp3 / m4a / wav':'แปลงเสียงไม่สำเร็จ ลองอีกครั้ง'),'bad')}}
+async function voiceRecToggle(key){if(VREC.rec){const r=VREC.rec;clearTimeout(VREC.timer);if(r.state!=='inactive')r.stop();return}
+  if(!navigator.mediaDevices||!window.MediaRecorder)return toast('เครื่องนี้อัดเสียงผ่านเว็บไม่ได้ ลองใช้ Chrome หรือ Safari รุ่นใหม่','bad');
+  let st;try{st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}catch(e){return toast('ไม่ได้รับอนุญาตให้ใช้ไมโครโฟน ไปเปิดที่ตั้งค่าเบราว์เซอร์','bad')}
+  const r=new MediaRecorder(st);VREC.rec=r;VREC.key=key;VREC.chunks=[];r.ondataavailable=e=>{if(e.data&&e.data.size)VREC.chunks.push(e.data)};
+  r.onstop=async()=>{st.getTracks().forEach(t=>t.stop());const blob=new Blob(VREC.chunks,{type:r.mimeType||'audio/mp4'});VREC.rec=null;sheetVoiceRec();voiceSaveBlob(key,blob,false)};
+  r.start();sheetVoiceRec();VREC.timer=setTimeout(()=>{if(r.state!=='inactive')r.stop()},4000)}
+function sheetVoiceRec(){const n=Math.max(1,Math.min(60,+S.settings.tables||10)),V=S.voice||{};
+  const rows=[...Array.from({length:n},(_,i)=>['t'+(i+1),'โต๊ะที่ '+(i+1)]),...vkinds()];
+  const done=rows.filter(r=>V[r[0]]).length;
+  const row=([k,lab])=>{const on=VREC.rec&&VREC.key===k;return `<div class="row"><div class="grow"><div class="t">${esc(lab)}</div><div class="s">${on?'<span style="color:var(--chili)">● กำลังอัด… แตะ "หยุด" เมื่อพูดจบ</span>':V[k]?'✓ อัดแล้ว':'ยังไม่ได้อัด'}</div></div>
+    <button class="btn sm${on?' danger':''}" data-act="vRec" data-k="${k}" type="button" ${VREC.rec&&!on?'disabled':''}>${on?'■ หยุด':'● อัด'}</button><button class="btn sm ghost" data-act="vFile" data-k="${k}" type="button" title="เลือกไฟล์เสียง" ${VREC.rec?'disabled':''}>📁</button>${V[k]?`<button class="btn sm" data-act="vPlay" data-k="${k}" type="button" aria-label="ฟัง">▶</button><button class="btn sm ghost" data-act="vDel" data-k="${k}" type="button" aria-label="ลบ">🗑</button>`:''}</div>`};
+  $('#panel').innerHTML=head('อัดเสียงเรียกโต๊ะ','อัดแล้ว '+done+'/'+rows.length+' · ใช้ร่วมกันทุกเครื่องในร้าน')+`<div class="sh-body">
+   <div class="card"><p class="help" style="margin:0">กด <b>● อัด</b> แล้วพูดสั้นๆ ชัดๆ เช่น "โต๊ะที่ 2" แล้วกด <b>■ หยุด</b> (หยุดเองใน 4 วินาที) ระบบตัดช่วงเงียบและปรับความดังให้ · ตอนลูกค้าเรียก จะเล่นต่อกันเป็น <b>"โต๊ะที่ 2" + "เช็คบิล / เก็บเงิน"</b> · อัดในที่เงียบๆ จะชัดที่สุด</p>
+   <div class="inrow" style="margin-top:8px;flex-wrap:wrap">${callOpts().slice(0,3).map((o,i)=>`<button class="btn sm${i?'':' pri'}" data-act="vTest" data-k="${esc(o.id)}" type="button">▶ โต๊ะที่ 2 + ${esc(o.label)}</button>`).join('')}</div></div>
+   <h3 style="margin:4px 0 0">ประโยค</h3><div class="list">${rows.slice(n).map(row).join('')}</div>
+   <h3 style="margin:4px 0 0">เลขโต๊ะ</h3><div class="list">${rows.slice(0,n).map(row).join('')}</div></div>
+   <input type="file" id="vFileIn" accept="audio/*" hidden></div>
+   <div class="sh-foot"><button class="btn pri wide" data-act="vDone" type="button">เสร็จ · ใช้เสียงที่อัด</button></div>`;
+  const fi=$('#vFileIn');if(fi)fi.addEventListener('change',()=>{const f=fi.files&&fi.files[0];if(f&&VREC.fileKey)voiceSaveBlob(VREC.fileKey,f,true)})}
+function callAlert(){if(!canCall())return;const c=S.calls.slice().sort((a,b)=>a.at-b.at).pop();Bell.ring(c&&c.kind,null,callSpeech(c),c)}
 /* ดังซ้ำตามที่ตั้ง จนกว่าจะกดรับทราบ (นานสุด 3 นาทีต่อการเรียก) */
 let bellLast=0;setInterval(()=>{const c=bellCfg();if(!(+c.rep>0)||Date.now()-bellLast<c.rep*1000-500)return;
-  const live=S.state==='ready'&&canCall()?S.calls.filter(x=>Date.now()-x.at<180000&&Date.now()-x.at>5000):[];if(live.length){bellLast=Date.now();const lc=live[live.length-1];Bell.ring(lc.kind,null,callSpeech(lc))}},1000);
+  const live=S.state==='ready'&&canCall()?S.calls.filter(x=>Date.now()-x.at<180000&&Date.now()-x.at>5000):[];if(live.length){bellLast=Date.now();const lc=live[live.length-1];Bell.ring(lc.kind,null,callSpeech(lc),lc)}},1000);
 function renderCalls(){const el=$('#callbar');if(!el)return;const list=S.state==='ready'&&canCall()?S.calls.filter(c=>Date.now()-c.at<6*3600e3):[];el.hidden=!list.length;
   el.innerHTML=(list.length&&!Bell.ok?`<div class="callcard" style="background:#fff"><span style="font-size:20px">🔇</span><div class="grow"><b>แตะเพื่อเปิดเสียงแจ้งเตือน</b><small>มือถือจะไม่ส่งเสียงจนกว่าจะแตะหน้าจอแอป 1 ครั้ง</small></div><button class="btn sm" data-act="bellTest" type="button">เปิดเสียง</button></div>`:'')+list.map(c=>{const o=c.table==='TA'?S.open[c.order]:Object.values(S.open).find(x=>x.table===c.table);const where=c.table==='TA'?(o?tableLabel(o):'ลูกค้าสั่งเอง'):'โต๊ะ '+c.table;
-    return `<div class="callcard${c.kind==='paid'?' paid':''}" role="alert"><span style="font-size:22px">🔔</span><div class="grow"><b>${esc(where)} · ${esc(CALLK[c.kind]||'เรียกพนักงาน')}</b><small>${c.name?'คุณ'+esc(c.name)+' · ':''}${ago(c.at).replace('เพิ่งเปิด','เมื่อสักครู่')}${/นาที|ชม/.test(ago(c.at))?'ที่แล้ว':''}</small></div>${o&&(c.kind==='pay'||c.kind==='paid')&&can('pay')?`<button class="btn sm" data-act="callBill" data-id="${o.id}" data-c="${esc(c.id)}" type="button">เก็บเงิน</button>`:o?`<button class="btn sm ghost" data-act="openOrder" data-id="${o.id}" type="button">ดูบิล</button>`:''}<button class="btn sm${o&&(c.kind==='pay'||c.kind==='paid')?' ghost':''}" data-act="callAck" data-c="${esc(c.id)}" type="button">รับทราบ</button></div>`}).join('');}
+    return `<div class="callcard${c.kind==='paid'?' paid':''}" role="alert"><span style="font-size:22px">🔔</span><div class="grow"><b>${esc(where)} · ${esc(callLabel(c.kind))}</b><small>${c.name?'คุณ'+esc(c.name)+' · ':''}${ago(c.at).replace('เพิ่งเปิด','เมื่อสักครู่')}${/นาที|ชม/.test(ago(c.at))?'ที่แล้ว':''}</small></div>${o&&isPayKind(c.kind)&&can('pay')?`<button class="btn sm" data-act="callBill" data-id="${o.id}" data-c="${esc(c.id)}" type="button">เก็บเงิน</button>`:o?`<button class="btn sm ghost" data-act="openOrder" data-id="${o.id}" type="button">ดูบิล</button>`:''}<button class="btn sm${o&&isPayKind(c.kind)?' ghost':''}" data-act="callAck" data-c="${esc(c.id)}" type="button">รับทราบ</button></div>`}).join('');}
 setInterval(()=>{if(S.calls.length)renderCalls()},30000);
 document.addEventListener('pointerdown',()=>{Bell.unlock();Bell.speechUnlock()},true);document.addEventListener('keydown',()=>{Bell.unlock();Bell.speechUnlock()},true);
 function sortMenu(){const cats=S.settings.cats||[];S.menu.sort((a,b)=>{const ca=cats.indexOf(a.cat),cb=cats.indexOf(b.cat);return (ca<0?99:ca)-(cb<0?99:cb)||String(a.name).localeCompare(String(b.name),'th')})}
@@ -779,7 +829,7 @@ function render(){
     <button class="btn pri" id="lgBtn" type="submit">เข้าสู่ระบบ</button>
     <p class="help" style="margin:0">ลืมรหัสผ่าน ติดต่อเจ้าของร้านให้ตั้งรหัสใหม่</p></form>`;
     $('#lgForm').addEventListener('submit',e=>{e.preventDefault();login()});(last?$('#lgPw'):$('#lgUser')).focus();return}
-  if(S.state==='loading'){v.innerHTML=`<div class="empty"><b>กำลังโหลดข้อมูลร้าน…</b>โต๊ะ เมนู และยอดขายวันนี้จะขึ้นในไม่กี่วินาที</div>`;return}
+  if(S.state==='loading'){v.innerHTML=S.loadErr?`<div class="empty"><b>ยังเชื่อมต่อไม่ได้</b>${esc(S.loadErr)} · กำลังลองใหม่อัตโนมัติ…<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn pri" type="button" onclick="location.reload()">โหลดหน้าใหม่</button><button class="btn" type="button" data-act="logout">ออกจากระบบ</button></div></div>`:`<div class="empty"><b>กำลังโหลดข้อมูลร้าน…</b>โต๊ะ เมนู และยอดขายวันนี้จะขึ้นในไม่กี่วินาที<br><small class="muted">${esc(S.loadStep||'')}</small></div>`;return}
   v.innerHTML=({tables:viewTables,kitchen:viewKitchen,menu:viewMenu,back:viewBack,report:viewReport}[S.tab])();
 }
 const isLow=s=>(+s.qty||0)<=(+s.min||0);
@@ -805,7 +855,7 @@ function viewTables(){
   for(let i=1;i<=n;i++){const o=byTable[String(i)];
     if(o){const un=(o.items||[]).filter(l=>!l.served).reduce((a,l)=>a+l.qty,0);
       const cn=custNames(o);
-      const cl=callOf(o);h+=`<button class="tcard busy" data-act="openTable" data-t="${i}" type="button"><div class="no">${i}<small>โต๊ะ</small></div>${cl?`<span class="bell">🔔 ${esc((CALLK[cl.kind]||'').split(' /')[0])}</span>`:''}${ordNoTag(o)}${cn.length?`<div class="tname">คุณ${esc(cn.join(', คุณ'))}</div>`:''}
+      const cl=callOf(o);h+=`<button class="tcard busy" data-act="openTable" data-t="${i}" type="button"><div class="no">${i}<small>โต๊ะ</small></div>${cl?`<span class="bell">🔔 ${esc((callLabel(cl.kind)).split(' /')[0])}</span>`:''}${ordNoTag(o)}${cn.length?`<div class="tname">คุณ${esc(cn.join(', คุณ'))}</div>`:''}
       <div>${un?`<span class="pill warn">รอเสิร์ฟ ${un}</span>`:(o.items||[]).length?'<span class="pill ok">เสิร์ฟครบ</span>':'<span class="pill info">เปิดแล้ว · รอสั่ง</span>'}<span class="pill ${o.guests>seatsOf(i)?'warn':'mute'}">${o.guests?o.guests+'/':''}${seatsOf(i)} ที่นั่ง</span></div>
       <div class="meta"><span>${ago(o.openedAt)}</span><span class="tot">${baht(linesTotal(o.items))}</span></div></button>`}
     else h+=`<button class="tcard" data-act="openTable" data-t="${i}" type="button"><div class="no">${i}<small>โต๊ะ</small></div><div class="seats">${'<i></i>'.repeat(Math.min(seatsOf(i),8))}<span>${seatsOf(i)} ที่นั่ง</span></div><div class="meta"><span>ปิดอยู่</span><span>+ เปิดโต๊ะ</span></div></button>`}
@@ -958,7 +1008,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order')renderOrderLines();else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,receipt:sheetReceipt,member:sheetMember}[s.type])();}
+  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,receipt:sheetReceipt,member:sheetMember}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -966,10 +1016,11 @@ async function openTable(t){
   const ex=Object.values(S.open).find(o=>o.table===String(t));
   if(ex)return openSheet({type:'order',id:ex.id,cat:'all',q:'',edit:null});
   openSheet({type:'openTbl',t:String(t),guests:Math.min(2,seatsOf(t))});}
-function sheetWalkinQr(){const k=S.settings.qrKey;
+function sheetWalkinQr(){if(qrSecure()&&!S.qrDay){$('#panel').innerHTML=head('QR ให้ลูกค้าสั่งเอง')+`<div class="sh-body"><p class="muted">กำลังสร้าง QR ของวันนี้…</p></div>`;loadQrDay().then(d=>{if(S.sheet&&S.sheet.type==='walkinQr'){if(d)sheetWalkinQr();else $('#panel .sh-body').innerHTML='<div class="empty"><b>สร้าง QR ไม่ได้</b>ให้แอดมินรัน SQL ล่าสุดใน Supabase</div>'}});return}
+  const k=walkKey();
   if(!k){$('#panel').innerHTML=head('QR ให้ลูกค้าสั่งเอง')+`<div class="sh-body"><div class="empty"><b>ยังไม่มีรหัส QR</b>ให้แอดมินเปิด ตั้งค่าร้าน → QR ประจำโต๊ะ ก่อน</div></div>`;return}
   const url=tableUrl(0,k);
-  $('#panel').innerHTML=head('QR ให้ลูกค้าสั่งเอง','ไม่ต้องเลือกโต๊ะ')+`<div class="sh-body"><div class="qrbox big">${qrSvg(url)}<div class="amt">สแกนสั่งอาหาร</div><div style="font-size:13px">${esc(S.settings.shopName)}</div></div>
+  $('#panel').innerHTML=head('QR ให้ลูกค้าสั่งเอง',qrSecure()?'QR ของวันที่ '+dayLabel()+' · พรุ่งนี้จะเปลี่ยนใหม่':'ไม่ต้องเลือกโต๊ะ')+`<div class="sh-body"><div class="qrbox big">${qrSvg(url)}<div class="amt">สแกนสั่งอาหาร</div><div style="font-size:13px">${esc(S.settings.shopName)}</div></div>
    <p class="help" style="margin:0">ให้ลูกค้าสแกนจากจอนี้ หรือพิมพ์ไปวางที่เคาน์เตอร์ ลูกค้าใส่ชื่อแล้วสั่งได้เลย ออร์เดอร์จะขึ้นในหมวด "ไม่ระบุโต๊ะ" และเข้าครัวทันที ถ้าลูกค้านั่งโต๊ะทีหลัง เปิดออร์เดอร์แล้วกด "ย้ายไปโต๊ะ" ได้</p></div>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="wqPrint" type="button">พิมพ์ QR</button></div>`;}
 function sheetOpenTbl(){const s=S.sheet;
@@ -1003,7 +1054,7 @@ async function createOrder(extra){
   if(!S.db)return toast('ยังไม่ได้เชื่อมฐานข้อมูล','bad');
   if(S.creating)return;S.creating=true;
   try{const orderNo=await nextOrderNo(ordPrefix(extra.table));
-    const ref=S.db.collection('orders').doc();const o={status:'open',openedAt:Date.now(),items:[],orderNo,...extra};
+    const ref=S.db.collection('orders').doc();const o={status:'open',openedAt:Date.now(),items:[],orderNo,...extra};if(o.table!=='TA')o.qrToken=newTok();
     S.open[ref.id]={id:ref.id,...o};write('orders/'+ref.id,r=>r.set(o));
     render();openSheet({type:'order',id:ref.id,cat:'all',q:'',edit:null});}
   finally{S.creating=false}}
@@ -1018,7 +1069,7 @@ function sheetOrder(){const o=S.open[S.sheet.id];if(!o)return closeSheet();
    <div class="pgrid" id="ordGrid"></div>
    <div id="ordMove"></div><div id="ordDanger" style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px"></div></div>
    <div class="sh-foot" id="ordFoot"></div>`;
-  if(S.settings.qrKey&&(o.table!=='TA'||chOf(o)==='walkin')){const x=$('#panel .sh-head .x');if(x)x.insertAdjacentHTML('beforebegin','<button class="btn sm" data-act="qrOne" type="button" title="QR ให้ลูกค้าสแกนดูรายการ / สั่งต่อ">📱 QR</button>')}
+  if((qrSecure()||S.settings.qrKey)&&(o.table!=='TA'||chOf(o)==='walkin')){const x=$('#panel .sh-head .x');if(x)x.insertAdjacentHTML('beforebegin','<button class="btn sm" data-act="qrOne" type="button" title="QR ให้ลูกค้าสแกนดูรายการ / สั่งต่อ">📱 QR</button>')}
   $('#ordQ').addEventListener('input',e=>{S.sheet.q=e.target.value.trim();renderPicker()});
   renderOrderLines();renderPicker();}
 function renderPicker(){const g=$('#ordGrid');if(!g)return;const s=S.sheet;
@@ -1041,7 +1092,7 @@ function renderOrderLines(){const o=S.open[S.sheet.id];const box=$('#ordLines');
   if(keep){$('#edNote').value=keep.note;$('#edExtra').value=keep.extra;if(keep.focus)document.getElementById(keep.focus)?.focus()}
   const mv=$('#ordMove');if(mv){const opened=[...new Set(Object.values(S.open).filter(x=>x.table!=='TA'&&x.table!==o.table&&x.id!==o.id).map(x=>x.table))].sort((a,b)=>a-b);
     const canMv=!isDel(o)&&(o.table==='TA'?can('tables')||can('move'):can('move'));
-    const qrOk=S.settings.qrKey&&(o.table!=='TA'||chOf(o)==='walkin');
+    const qrOk=(qrSecure()||S.settings.qrKey)&&(o.table!=='TA'||chOf(o)==='walkin');
     mv.innerHTML=(qrOk?`<div class="inrow" style="margin-bottom:10px"><button class="btn sm" data-act="qrOne" type="button">📱 QR ให้ลูกค้าสแกน ${o.table==='TA'?'(ออร์เดอร์นี้)':'(โต๊ะ '+esc(o.table)+')'}</button><span class="help">ลูกค้าออกจากหน้าแล้ว สแกนเพื่อดูรายการและสั่งต่อได้</span></div>`:'')+(canMv?`<div class="inrow"><select id="mvT" class="sm-sel" aria-label="ย้ายไปโต๊ะที่เปิดอยู่">${opened.map(t=>`<option value="${t}">โต๊ะ ${t}</option>`).join('')}</select><button class="btn sm" data-act="moveTbl" type="button" ${opened.length&&items.length?'':'disabled'}>${o.table==='TA'?'ย้ายไปโต๊ะ':'ย้ายโต๊ะ'}</button><span class="help">${opened.length?'ย้ายได้เฉพาะโต๊ะที่เปิดแล้ว รายการจะรวมเข้าบิลโต๊ะนั้น':'ยังไม่มีโต๊ะอื่นที่เปิดอยู่ เปิดโต๊ะปลายทางก่อนแล้วค่อยย้าย'}</span></div>`:'')}
   const dz=$('#ordDanger');if(dz)dz.innerHTML=items.length?(can('void')?`<button class="btn danger sm" data-act="voidOrder" data-confirm="1" type="button">ยกเลิกบิลนี้</button>`:''):`<button class="btn sm" data-act="closeTbl" type="button">${o.table==='TA'?'ยกเลิกออร์เดอร์':'ปิดโต๊ะ (ไม่มีรายการ)'}</button>${o.table!=='TA'&&S.settings.qrRequireOpen!==false?'<span class="help" style="align-self:center">โต๊ะเปิดอยู่ ลูกค้าสแกน QR สั่งได้</span>':''}`;
   const tot=linesTotal(items);
@@ -1282,6 +1333,10 @@ async function optBulkSave(){const sh=S.sheet,keys=Object.keys(OPT_TPL).filter(k
     keys.forEach(k=>{const t=OPT_TPL[k];if(cur.some(g=>g.name===t[0]))return;cur.push({id:uid(),name:t[0],req:t[1]==='req1',max:t[1]==='multi'?0:1,choices:t[2].map(c=>Array.isArray(c)?{id:uid(),name:c[0],price:c[1]}:{id:uid(),name:c,price:0})})});
     const ok=await write('menu/'+id,r=>r.update({options:cur}));if(ok){n++;m.options=cur}}
   closeSheet();render();toast('ใส่ตัวเลือกให้ '+n+' เมนูแล้ว');}
+function renderCo(){const box=$('#coList');if(!box)return;const L=S.sheet.co;
+  box.innerHTML=L.map((o,i)=>`<div class="oc-row" style="grid-template-columns:minmax(0,1fr) auto 40px;margin-top:8px"><input data-co="${i}" value="${esc(o.label)}" maxlength="40" placeholder="เช่น ขอช้อนส้อมเพิ่ม" aria-label="ประโยคเรียกพนักงาน">
+    <label class="check" style="font-size:13px;white-space:nowrap"><input type="checkbox" data-cop="${i}" ${o.pay?'checked':''}> เก็บเงิน</label><button class="btn sm ghost" data-act="coDel" data-i="${i}" type="button" aria-label="ลบ" ${L.length<2?'disabled':''}>×</button></div>`).join('')}
+function readCo(){document.querySelectorAll('[data-co]').forEach(e=>{const o=S.sheet.co[+e.dataset.co];if(o)o.label=e.value.trim()});document.querySelectorAll('[data-cop]').forEach(e=>{const o=S.sheet.co[+e.dataset.cop];if(o)o.pay=e.checked})}
 function renderOpts(){const box=$('#optList');if(!box)return;const O=S.sheet.opts;
   box.innerHTML=O.map((g,i)=>`<div class="og"><div class="og-h"><input data-eg="${i}" data-k="name" value="${esc(g.name)}" placeholder="ชื่อกลุ่ม เช่น เลือกเส้น" aria-label="ชื่อกลุ่มตัวเลือก"><button class="btn sm ghost" data-act="ogDel" data-i="${i}" type="button">ลบกลุ่ม</button></div>
     <select data-eg="${i}" data-k="type" aria-label="วิธีเลือก"><option value="req1" ${g.type==='req1'?'selected':''}>ต้องเลือก 1 อย่าง (บังคับ)</option><option value="opt1" ${g.type==='opt1'?'selected':''}>เลือกได้ 1 อย่าง (ไม่บังคับ)</option><option value="multi" ${g.type==='multi'?'selected':''}>เลือกได้หลายอย่าง (ไม่บังคับ)</option></select>
@@ -1368,14 +1423,18 @@ function bellCard(){const c=bellCfg(),opt=v=>Object.entries(BELLS).map(([k,n])=>
   return `<div class="card"><h3>🔔 เสียงเรียกพนักงาน <small class="muted" style="font-size:12px;font-weight:400">(ตั้งแยกแต่ละเครื่อง)</small></h3>
    <div class="grid2" style="margin-top:8px"><div class="field"><label for="bStaff">เรียกพนักงาน / ขอน้ำ</label><div class="inrow"><select id="bStaff" data-bell="staff">${opt(c.staff)}</select><button class="btn sm" data-act="bellTest" data-k="staff" type="button" aria-label="ฟังเสียง">▶</button></div></div>
    <div class="field"><label for="bPay">ขอชำระเงิน / แจ้งโอน</label><div class="inrow"><select id="bPay" data-bell="pay">${opt(c.pay)}</select><button class="btn sm" data-act="bellTest" data-k="pay" type="button" aria-label="ฟังเสียง">▶</button></div></div></div>
-   <div class="field"><label for="bMode">แบบเสียง</label><select id="bMode" data-bell="mode">${[['both','กริ่ง แล้วพูดชื่อโต๊ะ (เช่น "โต๊ะ 2 ขอชำระเงิน เช็คบิล")'],['voice','พูดชื่อโต๊ะอย่างเดียว'],['bell','กริ่งอย่างเดียว']].map(([v,n])=>`<option value="${v}" ${c.mode===v?'selected':''}>${n}</option>`).join('')}</select>
-     <div class="inrow" style="margin-top:6px"><button class="btn sm" data-act="bellSay" type="button">🗣 ฟังตัวอย่างเสียงพูด</button><span class="help" id="bVoiceHelp">${voiceHelp()}</span></div></div>
+   <div class="field"><label for="bMode">แบบเสียง</label><select id="bMode" data-bell="mode">${[['rec','กริ่ง แล้วเล่นเสียงคนจริงที่อัดไว้ ⭐'],['both','กริ่ง แล้วพูดชื่อโต๊ะ (เสียงเครื่อง)'],['voice','พูดชื่อโต๊ะอย่างเดียว'],['bell','กริ่งอย่างเดียว']].map(([v,n])=>`<option value="${v}" ${c.mode===v?'selected':''}>${n}</option>`).join('')}</select>
+     <div class="inrow" style="margin-top:6px;flex-wrap:wrap">${S.role==='owner'?`<button class="btn sm pri" data-act="vOpen" type="button">🎙 อัดเสียงเรียกโต๊ะ (${Object.keys(S.voice||{}).length} คลิป)</button>`:''}<button class="btn sm" data-act="bellSay" type="button">🗣 ฟังตัวอย่างเสียงพูด</button><span class="help" id="bVoiceHelp">${voiceHelp()}</span></div>
+     <div class="grid2" style="margin-top:8px"><div class="field"><label for="bVoice">เสียงผู้พูด</label><select id="bVoice" data-bell="voice">${voiceOpts(c.voice)}</select></div>
+     <div class="field"><label for="bRate">ความเร็วพูด ${Math.round((+c.rate||1)*100)}%</label><input id="bRate" type="range" min="70" max="130" step="5" value="${Math.round((+c.rate||1)*100)}" data-bell="rate" style="min-height:0;padding:0;border:0;background:none"></div></div>
+     <p class="help" style="margin:4px 0 0">iPhone: เสียงที่มี ★ จะเป็นธรรมชาติกว่า ถ้าไม่มีให้เลือก ไปที่ การตั้งค่า → การช่วยการเข้าถึง → เนื้อหาที่ถูกอ่าน → เสียง → ไทย → แตะชื่อเสียง แล้วดาวน์โหลดแบบ "ปรับปรุงแล้ว/พรีเมียม" จากนั้นปิดแอปแล้วเปิดใหม่ · เสียง Siri เว็บใช้ไม่ได้ (Apple ไม่เปิดให้)</p></div>
    <div class="grid2"><div class="field"><label for="bVol">ความดัง ${Math.round((+c.vol||1)*100)}%</label><input id="bVol" type="range" min="10" max="100" step="10" value="${Math.round((+c.vol||1)*100)}" data-bell="vol" style="min-height:0;padding:0;border:0;background:none"></div>
    <div class="field"><label for="bRep">ดังซ้ำจนกดรับทราบ</label><select id="bRep" data-bell="rep">${[[0,'ดังครั้งเดียว'],[8,'ทุก 8 วินาที'],[12,'ทุก 12 วินาที'],[20,'ทุก 20 วินาที'],[30,'ทุก 30 วินาที']].map(([v,n])=>`<option value="${v}" ${+c.rep===v?'selected':''}>${n}</option>`).join('')}</select></div></div>
    <div class="field" style="border-top:1px solid var(--line);padding-top:10px;margin-top:4px"><label>📲 แจ้งเตือนแม้ล็อกจอ / ปิดแอปอยู่</label><span class="help" id="pushStat">กำลังตรวจสอบ…</span>
      <div class="inrow" style="flex-wrap:wrap;gap:8px;margin-top:6px"><button class="btn sm pri" id="pushOnBtn" data-act="pushOn" type="button">เปิดแจ้งเตือนบนเครื่องนี้</button><button class="btn sm" id="pushTestBtn" data-act="pushTest" type="button" hidden>ส่งทดสอบ</button></div></div>
    <div class="inrow" style="flex-wrap:wrap;gap:8px"><label class="btn sm" for="bFile">อัปโหลดเสียงของฉัน</label><input id="bFile" type="file" accept="audio/*" hidden>${bellCustom()?'<button class="btn sm ghost" data-act="bellDel" type="button">ลบเสียงของฉัน</button>':''}<span class="help">${Bell.ok?'เสียงเปิดอยู่':'แตะ ▶ เพื่อเปิดเสียงในเครื่องนี้'} · ไฟล์ mp3/m4a ไม่เกิน 1 MB</span></div></div>`}
-function bellBind(){pushStatus();if(PUSH.ok())PUSH.loadKey().catch(()=>{});document.querySelectorAll('[data-bell]').forEach(e=>e.addEventListener(e.type==='range'?'input':'change',()=>{const c=bellCfg(),k=e.dataset.bell;c[k]=k==='vol'?(+e.value/100):k==='rep'?+e.value:e.value;bellSave(c);if(k==='mode')return;
+function bellBind(){pushStatus();if(PUSH.ok())PUSH.loadKey().catch(()=>{});document.querySelectorAll('[data-bell]').forEach(e=>e.addEventListener(e.type==='range'&&e.dataset.bell!=='rate'?'input':'change',()=>{const c=bellCfg(),k=e.dataset.bell;c[k]=k==='vol'||k==='rate'?(+e.value/100):k==='rep'?+e.value:e.value;bellSave(c);if(k==='mode')return;
+    if(k==='rate'){const l=e.closest('.field').querySelector('label');if(l)l.textContent='ความเร็วพูด '+e.value+'%';Bell.sayNow('โต๊ะ 2 ขอชำระเงิน เช็คบิล');return}if(k==='voice'){Bell.sayNow('โต๊ะ 2 ขอชำระเงิน เช็คบิล');return}
     if(k==='vol'){const l=e.closest('.field').querySelector('label');if(l)l.textContent='ความดัง '+e.value+'%'}else if(k!=='rep'){Bell.unlock();Bell.ring(null,e.value)}}));
   const f=$('#bFile');if(f)f.addEventListener('change',()=>{const x=f.files&&f.files[0];if(!x)return;if(x.size>1048576)return toast('ไฟล์ใหญ่เกิน 1 MB ตัดเสียงให้สั้นลงก่อน','bad');
     const r=new FileReader();r.onload=()=>{try{localStorage.setItem('nl_bell_custom',r.result)}catch(e){return toast('เครื่องนี้เก็บไฟล์ไม่พอ ลองไฟล์ที่เล็กลง','bad')}const c=bellCfg();c.staff='custom';bellSave(c);Bell.unlock();Bell.ring(null,'custom');toast('ใช้เสียงของคุณแล้ว');refreshBellCard()};r.readAsDataURL(x)})}
@@ -1416,7 +1475,9 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <label class="check"><input type="checkbox" id="cPtsOn" ${s.pointsOn?'checked':''}> เปิดระบบสะสมแต้มด้วยเบอร์โทร</label>
    <div class="grid2"><div class="field"><label for="cPtsPer">ซื้อครบกี่บาท ได้ 1 แต้ม</label><input id="cPtsPer" inputmode="decimal" value="${s.pointsPer??50}"></div><div class="field"><label for="cPtsVal">1 แต้ม แลกส่วนลดกี่บาท</label><input id="cPtsVal" inputmode="decimal" value="${s.pointValue??1}"></div></div>
    <p class="help" style="margin:0" id="cPtsHelp"></p></div>
-  <div class="card"><h3>ลูกค้าสั่งเองผ่าน QR</h3><p class="help" style="margin:0">พิมพ์ QR ไปติดที่โต๊ะ ลูกค้าสแกนแล้วสั่งได้เลย รายการจะเข้าบิลของโต๊ะนั้น</p> <label class="check"><input type="checkbox" id="cQrWalk" ${s.qrWalkin!==false?'checked':''}> เปิดให้ลูกค้าสั่งเองแบบไม่ระบุโต๊ะ (QR เคาน์เตอร์)</label><label class="check"><input type="checkbox" id="cQrOpen" ${s.qrRequireOpen!==false?'checked':''}> ให้สั่งผ่าน QR ได้เฉพาะโต๊ะที่พนักงานเปิดแล้ว</label><button class="btn sm" data-act="qrSheet" type="button">ดูและพิมพ์ QR ประจำโต๊ะ</button></div>
+  <div class="card"><h3>ปุ่มเรียกพนักงาน (หน้าลูกค้า)</h3><p class="help" style="margin:0">ลูกค้ากด 🔔 แล้วจะเห็นปุ่มตามรายการนี้ · พิมพ์ประโยคเองได้ เพิ่ม/ลบได้ (สูงสุด 8) · ติ๊ก "เก็บเงิน" ถ้าเป็นการขอจ่ายเงิน (ใช้เสียงเก็บเงิน และมีปุ่มไปหน้าคิดเงิน) · เสียงของแต่ละประโยค อัดหรือเลือกไฟล์ได้ที่ 🎙 อัดเสียงเรียกโต๊ะ</p><div id="coList"></div>
+   <div class="inrow" style="margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-act="coAdd" type="button">+ เพิ่มประโยค</button><button class="btn sm ghost" data-act="vOpen" type="button">🎙 อัด / เลือกไฟล์เสียงของแต่ละประโยค</button></div></div>
+  <div class="card"><h3>ลูกค้าสั่งเองผ่าน QR</h3><p class="help" style="margin:0">พิมพ์ QR ไปติดที่โต๊ะ ลูกค้าสแกนแล้วสั่งได้เลย รายการจะเข้าบิลของโต๊ะนั้น</p> <label class="check" style="align-items:flex-start"><input type="checkbox" id="cQrSecure" ${s.qrSecure!==false?'checked':''}><span><b>QR ปลอดภัย (แนะนำ)</b><br><small class="muted">QR สั่งเองเปลี่ยนใหม่ทุกวัน · QR โต๊ะสร้างใหม่ทุกครั้งที่เปิดโต๊ะ และใช้ไม่ได้หลังชำระเงิน กันคนเอา QR เก่ามาแกล้งสั่ง (ไม่ต้องติด QR บนโต๊ะ ให้ลูกค้าสแกนจากจอพนักงานหรือพิมพ์ใบ QR ตอนเปิดโต๊ะ)</small></span></label><label class="check"><input type="checkbox" id="cQrWalk" ${s.qrWalkin!==false?'checked':''}> เปิดให้ลูกค้าสั่งเองแบบไม่ระบุโต๊ะ (QR เคาน์เตอร์)</label><label class="check"><input type="checkbox" id="cQrOpen" ${s.qrRequireOpen!==false?'checked':''}> ให้สั่งผ่าน QR ได้เฉพาะโต๊ะที่พนักงานเปิดแล้ว</label><button class="btn sm" data-act="qrSheet" type="button">${s.qrSecure!==false?'ดู QR สั่งเองของวันนี้':'ดูและพิมพ์ QR ประจำโต๊ะ'}</button></div>
   <div class="card"><h3>ช่องทางเดลิเวอรี่</h3><p class="help" style="margin:0">ราคาบวกเพิ่มใช้ตอนเพิ่มรายการในออร์เดอร์ของช่องทางนั้น GP ใช้คิดเงินที่ร้านได้รับจริงในรายงาน ใส่ตามสัญญาของร้าน</p>
    <div class="perm-wrap"><table class="perm"><thead><tr><th>ช่องทาง</th><th>เปิดใช้</th><th>ราคา +%</th><th>GP %</th></tr></thead><tbody>${DELIV.map(c=>{const g=chCfg(c);return `<tr><td><span class="chip-ch" style="--chc:${CH[c].c}">${CH[c].n}</span></td><td class="c"><input type="checkbox" id="chOn_${c}" ${g.on?'checked':''} aria-label="เปิดใช้ ${CH[c].n}"></td><td class="c"><input class="pct" id="chMk_${c}" inputmode="decimal" value="${g.markup||0}" aria-label="ราคาบวกเพิ่ม ${CH[c].n}"></td><td class="c"><input class="pct" id="chGp_${c}" inputmode="decimal" value="${g.gp||0}" aria-label="GP ${CH[c].n}"></td></tr>`}).join('')}</tbody></table></div></div>
   <div class="card"><div class="sec-h"><h3>พนักงาน</h3><button class="lnk" data-act="staffNew" type="button">+ เพิ่มพนักงาน</button></div>
@@ -1428,7 +1489,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <div class="field"><label>ลองดูหน้าจอของแต่ละตำแหน่ง</label><div class="newch">${['waiter','chef','partner'].map(r=>`<button class="btn sm" data-act="viewAs" data-r="${r}" type="button">ดูแบบ${ROLES[r]}</button>`).join('')}</div><span class="help">บันทึกสิทธิ์ก่อนแล้วค่อยกดดู จะเห็นหน้าจอตามสิทธิ์ล่าสุด</span></div></div>
   ${accountCard()}</form>
   <div class="sh-foot"><button class="btn pri wide" data-act="saveSettings" type="button">บันทึกการตั้งค่า</button></div>`;
-  loadStaff();bindBg();bellBind();renderPerm();
+  loadStaff();bindBg();bellBind();renderPerm();if(!S.sheet.co)S.sheet.co=callOpts().map(o=>({...o}));renderCo();
   const vx=()=>{const on=$('#cVatOn').checked,r=parseFloat(val('cVatRate'))||0,ex=val('cVatMode')==='excl';$('#cVatEx').textContent=!on?'ปิดอยู่ ใบเสร็จจะไม่แสดงภาษี':ex?`ตัวอย่าง: อาหาร 100 บาท + VAT ${r}% = ${baht(r2(100+100*r/100))}`:`ตัวอย่าง: อาหาร 100 บาท (รวม VAT แล้ว) = ก่อนภาษี ${baht(r2(100-100*r/(100+r)))} + VAT ${baht(r2(100*r/(100+r)))}`};
   ['cVatOn','cVatRate','cVatMode'].forEach(i=>$('#'+i).addEventListener('input',vx));$('#cVatMode').addEventListener('change',vx);vx();
   if(S.sheet.logo===undefined)S.sheet.logo=s.logo||'';renderLogo();
@@ -1482,17 +1543,35 @@ async function logoDataUrl(file){let bmp;try{bmp=await createImageBitmap(file)}c
   if(u.length>180000){const c2=document.createElement('canvas');c2.width=c.width;c2.height=c.height;const g2=c2.getContext('2d');g2.fillStyle='#fff';g2.fillRect(0,0,c2.width,c2.height);g2.drawImage(c,0,0);u=c2.toDataURL('image/jpeg',0.85)}
   return u;}
 const newQrKey=()=>Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>b.toString(16).padStart(2,'0')).join('');
+const qrSecure=()=>S.settings.qrSecure!==false;
+const newTok=()=>{try{const a=new Uint8Array(9);crypto.getRandomValues(a);return [...a].map(x=>(x%36).toString(36)).join('')}catch(e){return Math.random().toString(36).slice(2,11)}};
+async function loadQrDay(){try{const {data,error}=await SB.rpc('staff_qr_today');if(!error&&data&&data.token){S.qrDay=data;return data}}catch(e){}S.qrDay=null;return null}
+const walkKey=()=>qrSecure()?(S.qrDay&&S.qrDay.token)||'':S.settings.qrKey;
+const dayLabel=()=>S.qrDay?new Date(S.qrDay.day+'T12:00:00').toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}):'';
+async function ensureTok(o){if(!o||o.table==='TA'||o.qrToken)return o&&o.qrToken;const t=newTok();S.open[o.id]={...o,qrToken:t};await write('orders/'+o.id,r=>r.transform(d=>d.status==='open'&&!d.qrToken?{qrToken:t}:null));return (S.open[o.id]||{}).qrToken||t}
 const tableUrl=(t,k)=>new URL('order.html',location.href).href.split('?')[0].split('#')[0]+'?t='+t+'&k='+k;
-const orderUrl=o=>o.table==='TA'?tableUrl(0,S.settings.qrKey)+'&o='+encodeURIComponent(o.id):tableUrl(o.table,S.settings.qrKey);
+const orderUrl=o=>o.table==='TA'?tableUrl(0,walkKey())+'&o='+encodeURIComponent(o.id):tableUrl(o.table,qrSecure()?(o.qrToken||''):S.settings.qrKey);
 function qrCard(url,big,sub){const s=S.settings;return `<div class="pq">${s.logo?`<img src="${esc(s.logo)}" alt="" style="height:34px;width:auto;margin:0 auto 4px;display:block">`:''}<small style="font-weight:600">${esc(s.shopName)}</small>${qrSvg(url)}<b>${big}</b><small>${sub}</small></div>`}
-function sheetQrOne(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const url=orderUrl(o),walk=o.table==='TA';
+function sheetQrOne(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const walk=o.table==='TA';
+  if(qrSecure()&&((!walk&&!o.qrToken)||(walk&&!S.qrDay))){$('#panel').innerHTML=head('QR')+`<div class="sh-body"><p class="muted">กำลังสร้าง QR…</p></div>`;
+    (walk?loadQrDay():ensureTok(o)).then(()=>{if(S.sheet&&S.sheet.type==='qrOne'&&(walk?S.qrDay:S.open[o.id]?.qrToken))sheetQrOne();else if(S.sheet&&S.sheet.type==='qrOne')$('#panel .sh-body').innerHTML='<div class="empty"><b>สร้าง QR ไม่ได้</b>ให้แอดมินรัน SQL ล่าสุดใน Supabase</div>'});return}
+  const url=orderUrl(o);
   const card=qrCard(url,walk?esc(orderTitle(o)):'โต๊ะ '+esc(o.table),walk?'สแกนเพื่อดูรายการ / สั่งเพิ่ม · '+esc(o.orderNo||''):'สแกนสั่งอาหาร · ดูรายการ · เรียกพนักงาน');
   $('#printArea').className='qrs one';$('#printArea').innerHTML=card;
-  $('#panel').innerHTML=head(walk?'QR ออร์เดอร์นี้':'QR โต๊ะ '+esc(o.table),walk?'ใช้ได้จนกว่าจะชำระเงิน':'ใช้ได้ทุกครั้งที่โต๊ะเปิดอยู่')+`<div class="sh-body">
+  $('#panel').innerHTML=head(walk?'QR ออร์เดอร์นี้':'QR โต๊ะ '+esc(o.table),walk?'ใช้ได้จนกว่าจะชำระเงิน':(qrSecure()?'ใช้ได้เฉพาะบิลนี้ จนกว่าจะชำระเงิน':'ใช้ได้ทุกครั้งที่โต๊ะเปิดอยู่'))+`<div class="sh-body">
    <div class="qrbig">${card}</div>
-   <p class="help" style="margin:0">ให้ลูกค้าสแกนจากหน้าจอนี้ ลูกค้าจะเห็นรายการที่สั่งไปแล้ว สถานะคิว ยอดเงิน และสั่งเพิ่มเข้าบิลเดิมได้${walk?' (QR นี้ผูกกับออร์เดอร์นี้เท่านั้น)':' · QR นี้เหมือนกับที่ติดบนโต๊ะ'}</p></div>
-   <div class="sh-foot"><button class="btn" data-act="openOrder" data-id="${o.id}" type="button">กลับไปบิล</button><button class="btn pri wide" data-act="qrOnePrint" type="button">พิมพ์ QR นี้</button></div>`;}
+   ${S.sheet.fresh?`<div class="card" style="text-align:center"><b>เปิดโต๊ะ ${esc(o.table)} แล้ว</b><span class="help">ให้ลูกค้าสแกน QR นี้เพื่อสั่งอาหาร หรือกด "พิมพ์ QR นี้" วางไว้ที่โต๊ะ</span></div>`:''}
+   <p class="help" style="margin:0">ให้ลูกค้าสแกนจากหน้าจอนี้ ลูกค้าจะเห็นรายการที่สั่งไปแล้ว สถานะคิว ยอดเงิน และสั่งเพิ่มเข้าบิลเดิมได้${qrSecure()?(walk?' · QR นี้ผูกกับออร์เดอร์นี้ ใช้ได้จนกว่าจะชำระเงิน':' · <b>QR นี้ใช้ได้เฉพาะบิลนี้</b> ชำระเงินแล้วจะใช้ไม่ได้ เปิดโต๊ะใหม่จะได้ QR ใหม่'):(walk?' (QR นี้ผูกกับออร์เดอร์นี้เท่านั้น)':' · QR นี้เหมือนกับที่ติดบนโต๊ะ')}</p></div>
+   <div class="sh-foot"><button class="btn" data-act="openOrder" data-id="${o.id}" type="button">${S.sheet.fresh?'ไปหน้ารับออร์เดอร์':'กลับไปบิล'}</button><button class="btn pri wide" data-act="qrOnePrint" type="button">พิมพ์ QR นี้</button></div>`;}
 function sheetQr(){const s=S.settings,n=Math.max(1,Math.min(60,+s.tables||10));
+  if(qrSecure()){if(!S.qrDay){$('#panel').innerHTML=head('QR สั่งอาหาร')+`<div class="sh-body"><p class="muted">กำลังโหลด…</p></div>`;loadQrDay().then(d=>{if(S.sheet&&S.sheet.type==='qr'){if(d)sheetQr();else $('#panel .sh-body').innerHTML='<div class="empty"><b>สร้าง QR ไม่ได้</b>รัน SQL ล่าสุดใน Supabase ก่อน</div>'}});return}
+    const card=qrCard(tableUrl(0,walkKey()),'สั่งเอง','ไม่ระบุโต๊ะ · ใช้ได้วันที่ '+dayLabel());
+    $('#printArea').className='qrs one';$('#printArea').innerHTML=card;
+    $('#panel').innerHTML=head('QR สั่งอาหาร','โหมด QR ปลอดภัย')+`<div class="sh-body">
+     <div class="card"><h3>QR โต๊ะ: สร้างใหม่ทุกบิล</h3><p class="help" style="margin:0">ไม่ต้องติด QR บนโต๊ะ เมื่อ<b>เปิดโต๊ะ</b> ระบบจะขึ้น QR ของบิลนั้นให้ลูกค้าสแกนจากจอ หรือกด "พิมพ์ QR นี้" วางไว้ที่โต๊ะ · เปิดดูได้อีกจากปุ่ม 📱 QR ที่หัวบิล · ชำระเงินแล้ว QR นั้นใช้ไม่ได้ทันที</p></div>
+     ${s.qrWalkin!==false?`<div class="card"><h3>QR สั่งเอง (ไม่ระบุโต๊ะ): เปลี่ยนทุกวัน</h3><p class="help" style="margin:0">พิมพ์ใหม่ทุกเช้า หรือเปิดจอนี้ให้ลูกค้าสแกน · ใช้ได้ถึงตี 4 ของวันถัดไป</p><div class="qrbig" style="margin-top:10px">${card}</div></div>`:''}
+     <p class="help" style="margin:0">ถ้าอยากกลับไปใช้ QR ติดโต๊ะแบบเดิม (ไม่เปลี่ยน) ให้เอาติ๊ก "QR ปลอดภัย" ออกในตั้งค่าร้าน</p></div>
+     <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button>${s.qrWalkin!==false?'<button class="btn pri wide" data-act="qrDayPrint" type="button">พิมพ์ QR สั่งเองของวันนี้</button>':''}</div>`;return}
   if(!s.qrKey){$('#panel').innerHTML=head('QR ประจำโต๊ะ')+`<div class="sh-body"><div class="empty"><b>ยังไม่มีรหัส QR</b>กดสร้างเพื่อเริ่มใช้งาน</div></div><div class="sh-foot"><button class="btn pri wide" data-act="qrRotate" type="button">สร้าง QR</button></div>`;return}
   const cards=[];if(s.qrWalkin!==false)cards.push(qrCard(tableUrl(0,s.qrKey),'สั่งเอง','ไม่ระบุโต๊ะ · สแกนสั่ง แล้วรอเรียกชื่อ'));for(let i=1;i<=n;i++)cards.push(qrCard(tableUrl(i,s.qrKey),'โต๊ะ '+i,'สแกนสั่งอาหาร · ดูรายการ · เรียกพนักงาน'));
   $('#printArea').className='qrs';$('#printArea').innerHTML=cards.join('');
@@ -1506,7 +1585,7 @@ async function saveSettings(){const pp=val('cPP').replace(/\D/g,'');if(pp&&!ppVa
     logo:S.sheet.logo??S.settings.logo??'',address:val('cAddr'),phone:val('cPhone'),taxId:val('cTax'),receiptFooter:val('cFoot'),paper:+val('cPaper')||80,
     defSeats:Math.max(1,Math.min(30,Math.round(nval('cDefSeats'))||4)),seats:Object.fromEntries([...document.querySelectorAll('[data-seat]')].map(e=>[e.dataset.seat,Math.round(parseFloat(e.value))]).filter(([,v])=>v>0&&v<=30)),
     vat:{on:$('#cVatOn').checked,rate:Math.min(30,Math.max(0,nval('cVatRate'))),mode:val('cVatMode')==='excl'?'excl':'incl'},
-    qrRequireOpen:$('#cQrOpen').checked,qrWalkin:$('#cQrWalk').checked,channels:Object.fromEntries(DELIV.map(c=>[c,{on:$('#chOn_'+c).checked,markup:Math.max(0,nval('chMk_'+c)),gp:Math.min(100,Math.max(0,nval('chGp_'+c)))}])),
+    qrRequireOpen:$('#cQrOpen').checked,qrSecure:$('#cQrSecure').checked,callOptions:(readCo(),(S.sheet.co||callOpts()).filter(o=>o.label).slice(0,8).map(o=>({id:o.id,label:o.label.slice(0,40),...(o.pay?{pay:true}:{})}))),qrWalkin:$('#cQrWalk').checked,channels:Object.fromEntries(DELIV.map(c=>[c,{on:$('#chOn_'+c).checked,markup:Math.max(0,nval('chMk_'+c)),gp:Math.min(100,Math.max(0,nval('chGp_'+c)))}])),
     pointsOn:$('#cPtsOn').checked,pointsPer:Math.max(1,nval('cPtsPer')||50),pointValue:Math.max(0.01,nval('cPtsVal')||1)};
   if(!data.cats.length)data.cats=DEFAULTS.cats;if(!data.expCats.length)data.expCats=DEFAULTS.expCats;
   const back=S.sheet.back;const ok=await write('config/settings',r=>r.set(data));if(!ok)return;
@@ -1543,6 +1622,15 @@ const ACT={
   bellTest:d=>{Bell.unlock();setTimeout(()=>{Bell.ring(d.k==='pay'?'pay':'staff');if(!d.k)toast(Bell.ok?'ถ้าไม่ได้ยิน ให้เพิ่มเสียงมือถือ':'กดอีกครั้งเพื่อทดสอบเสียง')},150)},
   pushOn:async(d,b)=>{if(b)b.disabled=true;try{const sub=await PUSH.subscribe();const ok=await pushSaveStaff(sub);if(ok)toast('เปิดแจ้งเตือนแล้ว ลองกด "ส่งทดสอบ" แล้วล็อกจอดู')}catch(e){toast(PUSH.errText(e),'bad')}if(b)b.disabled=false;pushStatus()},
   pushTest:async()=>{const {data,error}=await SB.rpc('push_test');if(error)return toast('ส่งไม่ได้: ฐานข้อมูลยังไม่ได้อัปเดต (รัน SQL)','bad');toast(data?'ส่งแล้ว ล็อกจอรอ 2–5 วินาที':'ยังไม่พบเครื่องนี้ในระบบ กดเปิดแจ้งเตือนอีกครั้ง',data?'':'bad')},
+  coAdd:()=>{readCo();if(S.sheet.co.length>=8)return toast('ได้สูงสุด 8 ประโยค','bad');S.sheet.co.push({id:'c'+Date.now().toString(36).slice(-6),label:''});renderCo();const ins=document.querySelectorAll('[data-co]');ins[ins.length-1]?.focus()},
+  coDel:d=>{readCo();if(S.sheet.co.length<2)return;S.sheet.co.splice(+d.i,1);renderCo()},
+  vRec:d=>voiceRecToggle(d.k),
+  vFile:d=>{VREC.fileKey=d.k;const fi=$('#vFileIn');if(fi){fi.value='';fi.click()}},
+  vPlay:d=>{const w=(S.voice||{})[d.k];if(w){Bell.unlock();Bell.seq([w])}},
+  vDel:async d=>{const v={...S.voice};delete v[d.k];S.voice=v;sheetVoiceRec();await write('voice/'+d.k,r=>r.delete())},
+  vTest:d=>{Bell.unlock();const cl=voiceClips({table:'2',kind:d.k});if(!cl)return toast('อัด "โต๊ะที่ 2" และ "'+callLabel(d.k)+'" ก่อน','bad');Bell.seq(cl)},
+  vOpen:()=>{if(S.role!=='owner')return deny();if(S.sheet&&S.sheet.type==='settings'&&S.sheet.co){readCo();const cur=JSON.stringify(S.sheet.co.filter(o=>o.label).map(o=>[o.id,o.label,!!o.pay])),sv=JSON.stringify(callOpts().map(o=>[o.id,o.label,!!o.pay]));if(cur!==sv)return toast('กด "บันทึกการตั้งค่า" ก่อน แล้วค่อยอัดเสียงประโยคใหม่','bad')}openSheet({type:'voiceRec',back:S.sheet?{...S.sheet}:null})},
+  vDone:()=>{const c=bellCfg();c.mode='rec';bellSave(c);const b=S.sheet&&S.sheet.back;toast('ตั้งเป็นเสียงที่อัดเองแล้ว (เครื่องนี้) · เครื่องอื่นเลือก "แบบเสียง" เป็นเสียงที่อัดเอง');if(b)openSheet(b);else closeSheet()},
   bellSay:()=>{Bell.unlock();if(!window.speechSynthesis)return toast('เบราว์เซอร์นี้พูดไม่ได้ ลองใช้ Chrome หรือ Safari','bad');Bell.sayNow('โต๊ะ 2 ขอชำระเงิน เช็คบิล');
     setTimeout(()=>{const n=(speechSynthesis.getVoices()||[]).length;if(!thVoice())toast(n?'เครื่องนี้ไม่มีเสียงพูดภาษาไทย ต้องติดตั้งเพิ่มในตั้งค่ามือถือ (ดูวิธีในการ์ดนี้)':'กำลังโหลดเสียง ลองกดอีกครั้ง','bad')},700)},
   bellDel:()=>{try{localStorage.removeItem('nl_bell_custom')}catch(e){}const c=bellCfg();if(c.staff==='custom')c.staff='chime';if(c.pay==='custom')c.pay='cash';bellSave(c);refreshBellCard();toast('ลบเสียงของฉันแล้ว')},
@@ -1555,7 +1643,7 @@ const ACT={
   openOrder:d=>openSheet({type:'order',id:d.id,cat:'all',q:'',edit:null}),
   quickOrder:()=>can('tables')?(S.floor='other',createOrder({table:'TA',channel:'walkin',label:'ออร์เดอร์ '+hm(Date.now())})):deny(),
   walkinQr:()=>openSheet({type:'walkinQr'}),
-  wqPrint:()=>{const pa=$('#printArea');pa.className='qrs';pa.innerHTML=`<div class="pq" style="grid-column:1/-1;max-width:90mm;margin:0 auto">${qrSvg(tableUrl(0,S.settings.qrKey))}<b>สแกนสั่งอาหาร</b><small>ไม่ต้องรอโต๊ะ · ${esc(S.settings.shopName)}</small></div>`;setTimeout(()=>window.print(),50)},
+  wqPrint:()=>{const pa=$('#printArea');pa.className='qrs';pa.innerHTML=`<div class="pq" style="grid-column:1/-1;max-width:90mm;margin:0 auto">${qrSvg(tableUrl(0,walkKey()))}<b>สแกนสั่งอาหาร</b><small>ไม่ต้องรอโต๊ะ · ${esc(S.settings.shopName)}${qrSecure()?' · ใช้ได้วันที่ '+dayLabel():''}</small></div>`;setTimeout(()=>window.print(),50)},
   moveTbl:async()=>{const id=S.sheet.id,t=val('mvT'),cur=S.open[id];if(!t||!cur)return;const fromTA=cur.table==='TA';if(!(fromTA?can('tables')||can('move'):can('move')))return deny();
     const tgt=Object.values(S.open).filter(x=>x.table===t&&x.id!==id).sort((a,b)=>a.openedAt-b.openedAt)[0];
     if(!tgt)return toast('โต๊ะ '+t+' ยังไม่เปิด เปิดโต๊ะก่อนแล้วค่อยย้าย','bad');if(!(cur.items||[]).length)return toast('บิลนี้ยังไม่มีรายการ','bad');
@@ -1573,7 +1661,7 @@ const ACT={
   newTakeaway:()=>openSheet({type:'newDel',ch:'takeaway'}),
   newDel:d=>can('tables')?openSheet({type:'newDel',ch:d.ch}):deny(),
   gst:d=>{S.sheet.guests=Math.max(1,Math.min(50,S.sheet.guests+ +d.d));$('#gN').textContent=S.sheet.guests;seatUpdate()},
-  doOpenTbl:()=>{const s=S.sheet;if(Object.values(S.open).some(o=>o.table===s.t))return openTable(s.t);createOrder({table:s.t,channel:'dinein',guests:s.guests,customerName:val('otName')});toast('เปิดโต๊ะ '+s.t+' แล้ว')},
+  doOpenTbl:()=>{const s=S.sheet;if(Object.values(S.open).some(o=>o.table===s.t))return openTable(s.t);createOrder({table:s.t,channel:'dinein',guests:s.guests,customerName:val('otName')}).then(()=>{if(qrSecure()&&S.sheet&&S.sheet.type==='order')openSheet({type:'qrOne',id:S.sheet.id,fresh:1})});toast('เปิดโต๊ะ '+s.t+' แล้ว')},
   doNewDel:()=>{S.floor='deliv';const s=S.sheet,ref=val('ndRef').toUpperCase(),nm=val('ndName');createOrder({table:'TA',channel:s.ch,ref,customerName:nm,label:CH[s.ch].n+(ref?' #'+ref:' '+hm(Date.now()))})},
   closeTbl:async()=>{const id=S.sheet.id,o=S.open[id];if(!o)return;if((o.items||[]).length)return toast('มีรายการอยู่ ต้องยกเลิกบิลแทน','bad');
     const ok=await write('orders/'+id,r=>r.transform(d=>d.status==='open'&&!(d.items||[]).length?{status:'void',closedEmpty:true,voidedAt:Date.now()}:null));if(ok){closeSheet();toast(o.table==='TA'?'ยกเลิกออร์เดอร์แล้ว':'ปิดโต๊ะแล้ว')}},
@@ -1631,7 +1719,8 @@ const ACT={
   saveSettings,
   logout,
   qrSheet:()=>openSheet({type:'qr'}),
-  qrOne:()=>{const id=S.sheet&&S.sheet.id;if(!id||!S.settings.qrKey)return;openSheet({type:'qrOne',id})},
+  qrOne:()=>{const id=S.sheet&&S.sheet.id;if(!id)return;openSheet({type:'qrOne',id})},
+  qrDayPrint:()=>{sheetQr();setTimeout(()=>window.print(),50)},
   qrOnePrint:()=>{sheetQrOne();setTimeout(()=>window.print(),50)},
   staffNew:()=>openSheet({type:'staffNew'}),
   viewAs:d=>{try{localStorage.setItem('nl_mode',d.r)}catch(e){}S.viewAs=d.r;S.tab='tables';S.backTab='stock';closeSheet();render();window.scrollTo(0,0);toast('สลับเป็นมุมมอง '+roleName(d.r))},

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.06-1830">
+<meta name="app-version" content="2026.10.06-2010">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -239,7 +239,9 @@ function ppPayload(id,amount){
   p+='6304';return p+crc16(p);}
 function qrSvg(text){try{const q=qrcode(0,'M');q.addData(text);q.make();return q.createSvgTag({cellSize:6,margin:2,scalable:true})}catch(e){return ''}}
 function toast(m){const o=document.querySelector('.toast');if(o)o.remove();const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
-const CALLS={staff:'เรียกพนักงาน',pay:'ขอชำระเงิน / เช็คบิล',paid:'แจ้งโอนเงินแล้ว',water:'ขอน้ำ / น้ำแข็งเพิ่ม'};
+const CALL_DEF=[{id:'staff',label:'เรียกพนักงาน'},{id:'pay',label:'ขอชำระเงิน / เช็คบิล',pay:true},{id:'water',label:'ขอน้ำ / น้ำแข็งเพิ่ม'}];
+const callOpts=()=>Array.isArray(S.callOpts)&&S.callOpts.length?S.callOpts:CALL_DEF;
+const callLabel=k=>k==='paid'?'แจ้งโอนเงินแล้ว':((callOpts().find(o=>o.id===k)||{}).label||'เรียกพนักงาน');
 function billCalc(st){const sub=r2(st.total||0),v=st.vat||{};if(!v.on||!(+v.rate>0))return {sub,vat:0,total:sub,mode:''};const rt=+v.rate;
   if(v.mode==='excl'){const vat=r2(sub*rt/100);return {sub,vat,total:r2(sub+vat),mode:'excl',rate:rt}}const vat=r2(sub*rt/(100+rt));return {sub,vat,total:sub,mode:'incl',rate:rt}}
 
@@ -278,10 +280,10 @@ const TO_KEY='nl_to_'+K+'_'+T;
 const getTO=()=>{try{const v=JSON.parse(localStorage.getItem(TO_KEY)||'null');return v&&Date.now()-v.ts<4*3600e3?v.id:null}catch(e){return null}};
 const setTO=id=>{try{id?localStorage.setItem(TO_KEY,JSON.stringify({id,ts:Date.now()})):localStorage.removeItem(TO_KEY)}catch(e){}};
 const myOrder=()=>WALK?getWO():(S.myOrder||getTO());
-function followMove(t){if(WALK)setWO(null);else setTO(null);
+function followMove(t,key){if(WALK)setWO(null);else setTO(null);
   const v=$('#view');if(v)v.innerHTML=`<div class="msg"><h2>ย้ายไปโต๊ะ ${esc(t)} แล้ว</h2><p class="muted">พนักงานย้ายรายการของคุณไปรวมที่โต๊ะ ${esc(t)} กำลังเปิดหน้าโต๊ะใหม่…</p></div>`;
   $('#foot').hidden=true;
-  setTimeout(()=>{try{const u=new URL(location.href);u.searchParams.set('t',t);u.searchParams.delete('o');location.replace(u.href)}catch(e){location.reload()}},1500)}
+  setTimeout(()=>{try{const u=new URL(location.href);u.searchParams.set('t',t);if(key)u.searchParams.set('k',key);u.searchParams.delete('o');location.replace(u.href)}catch(e){location.reload()}},1500)}
 const where=()=>WALK?'ของคุณ':'ของโต๊ะ '+esc(T);
 const loadName=()=>{try{return localStorage.getItem(NAME_KEY)||''}catch(e){return ''}};
 const saveName=n=>{try{localStorage.setItem(NAME_KEY,n)}catch(e){}};
@@ -290,7 +292,8 @@ let sb=null;
 
 function fail(title,text){$('#view').innerHTML=`<div class="msg"><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p></div>`;$('#foot').hidden=true}
 function rpcErr(e){const m=String(e&&e.message||'');
-  if(/bad_key/.test(m))return ['QR นี้ใช้ไม่ได้แล้ว','ร้านเปลี่ยน QR ใหม่ รบกวนแจ้งพนักงานหรือสแกน QR ที่ติดอยู่บนโต๊ะอีกครั้ง'];
+  if(/bad_key/.test(m))return ['QR นี้หมดอายุแล้ว','QR ของร้านเปลี่ยนใหม่ทุกวัน และ QR โต๊ะใช้ได้เฉพาะบิลที่ยังเปิดอยู่ รบกวนขอ QR ใหม่จากพนักงาน'];
+  if(/moved/.test(m))return ['ย้ายโต๊ะแล้ว','พนักงานย้ายรายการของคุณไปโต๊ะใหม่ กำลังเปิดหน้าใหม่…'];
   if(/bad_table/.test(m))return ['ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน'];
   if(/empty/.test(m))return ['เมนูที่เลือกปิดขายแล้ว','ลองเลือกเมนูอื่น'];
   if(/need_option/.test(m))return ['ยังเลือกตัวเลือกไม่ครบ','ร้านเพิ่งปรับตัวเลือกเมนู ลบรายการในตะกร้าแล้วเลือกใหม่อีกครั้ง'];
@@ -306,7 +309,7 @@ async function start(){
   const {data,error}=await sb.rpc('public_menu',{p_key:K});
   if(error){const [a,b]=rpcErr(error);return fail(a,b)}
   if(!WALK&&(+T<1||+T>data.tables))return fail('ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน');
-  S.menu=data.menu||[];S.cats=(data.cats||[]).filter(c=>S.menu.some(m=>m.cat===c));
+  S.menu=data.menu||[];S.callOpts=data.callOptions||null;S.cats=(data.cats||[]).filter(c=>S.menu.some(m=>m.cat===c));
   document.title=(data.shopName||'NueaLwoan')+(WALK?' · สั่งอาหาร':' · โต๊ะ '+T);
   if(data.logo){$('#logo').src=data.logo;$('#logo').hidden=false}
   $('#shop').textContent=data.shopName||'สั่งอาหาร';$('#tnum').textContent=WALK?'':T;$('#tno').hidden=WALK;
@@ -321,7 +324,7 @@ async function start(){
 }
 let lastSig='';
 async function loadStatus(force){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T,p_order:myOrder()});if(error)return;
-  if(data.moved&&data.moved!==T){S.view='off';followMove(data.moved);return}
+  if(data.moved&&(data.moved!==T||data.movedKey)){S.view='off';followMove(data.moved,data.movedKey);return}
   S.status=data;if(!WALK&&data.open&&data.orderId&&data.orderId!==S.myOrder){S.myOrder=data.orderId;setTO(data.orderId)}if(data.now)S.skew=data.now-Date.now();
   const sig=JSON.stringify([data.items,data.call,data.ahead,data.open]);const changed=sig!==lastSig;lastSig=sig;setCall();
   if(WALK&&!data.open&&getWO())setWO(null);
@@ -348,8 +351,8 @@ async function doCall(kind){const {data,error}=await sb.rpc('customer_call',{p_k
   if(error){toast(/no_order/.test(error.message)?'สั่งอาหารก่อน แล้วค่อยเรียกพนักงาน':'เรียกไม่สำเร็จ ลองอีกครั้ง');return false}
   if(S.status)S.status.call=data&&data.call;setCall();toast(kind==='paid'?'แจ้งพนักงานแล้ว รอตรวจสอบยอดสักครู่':'เรียกพนักงานแล้ว รอสักครู่นะครับ');return true}
 function callAsk(){const o=document.querySelector('.callpop');if(o)o.remove();const st=S.status||{};const c=st.call;
-  const el=document.createElement('div');el.className='callpop';el.innerHTML=`<div class="cc" role="dialog" aria-modal="true"><h2>ต้องการให้ช่วยอะไร</h2>${c&&(Date.now()+(S.skew||0)-c.at)<15*60000?`<p class="muted" style="margin:0">เรียกไปแล้วเมื่อ ${hm(c.at)} (${esc(CALLS[c.kind]||'')}) พนักงานกำลังมา</p>`:''}
-    ${['staff','pay','water'].map(k=>`<button class="btn${k==='staff'?' pri':''}" data-call="${k}" type="button">${CALLS[k]}</button>`).join('')}<button class="btn" data-call="" type="button">ยกเลิก</button></div>`;
+  const el=document.createElement('div');el.className='callpop';el.innerHTML=`<div class="cc" role="dialog" aria-modal="true"><h2>ต้องการให้ช่วยอะไร</h2>${c&&(Date.now()+(S.skew||0)-c.at)<15*60000?`<p class="muted" style="margin:0">เรียกไปแล้วเมื่อ ${hm(c.at)} (${esc(callLabel(c.kind))}) พนักงานกำลังมา</p>`:''}
+    ${callOpts().map((o,i)=>`<button class="btn${i?'':' pri'}" data-call="${esc(o.id)}" type="button">${esc(o.label)}</button>`).join('')}<button class="btn" data-call="" type="button">ยกเลิก</button></div>`;
   el.addEventListener('click',async e=>{if(e.target===el)return el.remove();const b=e.target.closest('[data-call]');if(!b)return;e.stopPropagation();el.remove();if(b.dataset.call)await doCall(b.dataset.call)});
   document.body.appendChild(el)}
 
@@ -422,6 +425,7 @@ async function send(){
   if(!error&&WALK&&res&&res.order){setWO(res.order);keepOrderInUrl(res.order)}
   S.sending=false;
   if(error){if(/table_closed/.test(String(error.message))){S.after='cart';S.view='closed';render();return}
+    if(/moved/.test(String(error.message))){loadStatus();return}
     render();if($('#note'))$('#note').value=note;const [a,b]=rpcErr(error);$('#sendErr').textContent=a+' · '+b;return}
   S.cart={};S.view='done';render();loadStatus();window.scrollTo(0,0);$('main').scrollTop=0;
 }
