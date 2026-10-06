@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.06-2010">
+<meta name="app-version" content="2026.10.06-2020">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -647,7 +647,7 @@ async function init(){
   render();
   const cfg=window.APP_CONFIG||{};
   if(!window.supabase||!cfg.SUPABASE_URL||/x{6}/.test(cfg.SUPABASE_URL)||!cfg.SUPABASE_KEY||/ใส่/.test(cfg.SUPABASE_KEY)){S.state='noconfig';render();return}
-  SB=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,lock:async(_n,_t,fn)=>await fn()}});
+  SB=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
   let data={};try{data=(await Promise.race([SB.auth.getSession(),new Promise((_,no)=>setTimeout(()=>no(new Error('t')),15000))])).data||{}}catch(e){S.state='loading';S.loadErr='เชื่อมต่อระบบเข้าสู่ระบบไม่ได้';render();setTimeout(()=>location.reload(),8000);return}
   if(!data.session){S.state='login';render();return}
   startData();
@@ -672,7 +672,9 @@ async function startData(){
   S.state='loading';S.loadStep='ตรวจสิทธิ์ผู้ใช้';S.loadErr='';render();
   const tmo=(p,ms)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),ms))]);
   let st;try{st=await tmo(SB.rpc('my_role'),15000)}catch(e){S.loadErr='เชื่อมต่อฐานข้อมูลช้าเกินไป (ขั้นตอน: '+S.loadStep+')';render();setTimeout(()=>{if(S.state==='loading')startData()},5000);return}
-  if(st.error){S.state='offline';S.loadErr=String(st.error.message||'');render();return}
+  if(st.error){const m=String(st.error.message||st.error.code||'');
+    if(/jwt|token|401|refresh|session/i.test(m+' '+(st.error.code||''))){try{await SB.auth.signOut()}catch(e){}S.state='login';render();toast('หมดเวลาเข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่','bad');return}
+    S.state='offline';S.loadErr=m;render();return}
   S.loadStep='โหลดบัญชี';
   if(!['owner','staff','waiter','chef','partner'].includes(st.data)){S.state='nostaff';render();return}
   S.role=st.data;
@@ -818,7 +820,7 @@ function render(){
   const bb=$('#bBack');bb.hidden=!low;bb.textContent=low;
   const v=$('#view');
   if(S.state==='noconfig'){v.innerHTML=`<div class="empty"><b>ยังไม่ได้ตั้งค่าการเชื่อมต่อ</b>เปิดไฟล์ config.js แล้วใส่ Project URL และ anon key จาก Supabase ตามคู่มือ</div>`;return}
-  if(S.state==='offline'){v.innerHTML=`<div class="empty"><b>เชื่อมต่อฐานข้อมูลไม่ได้</b>ตรวจอินเทอร์เน็ต หรือเช็กว่ารัน schema.sql ใน Supabase แล้ว<div style="margin-top:12px"><button class="btn sm" onclick="location.reload()" type="button">ลองใหม่</button></div></div>`;return}
+  if(S.state==='offline'){v.innerHTML=`<div class="empty"><b>เชื่อมต่อฐานข้อมูลไม่ได้</b>ตรวจอินเทอร์เน็ต หรือเช็กว่ารัน schema.sql ใน Supabase แล้ว${S.loadErr?`<br><small style="opacity:.8">รายละเอียด: ${esc(S.loadErr)}</small>`:''}<div style="margin-top:12px;display:flex;gap:8px;justify-content:center"><button class="btn sm pri" onclick="location.reload()" type="button">ลองใหม่</button><button class="btn sm" data-act="logout" type="button">ออกจากระบบ แล้วเข้าใหม่</button></div></div>`;return}
   if(S.state==='nostaff'){v.innerHTML=`<div class="empty"><b>บัญชีนี้ยังไม่มีสิทธิ์ใช้ระบบร้าน</b>ให้เจ้าของร้านเพิ่มชื่อผู้ใช้นี้ที่ ตั้งค่าร้าน &gt; พนักงาน<div style="margin-top:12px"><button class="btn sm" data-act="logout" type="button">ออกจากระบบ</button></div></div>`;return}
   if(S.state==='login'){let last='';try{last=localStorage.getItem('nl_user')||''}catch(e){}
     v.innerHTML=`<form class="login" id="lgForm" novalidate>
