@@ -51,6 +51,7 @@ img{max-width:100%}
 @media print{
   body>*:not(#printArea){display:none!important}
   #printArea.qrs{display:grid!important;grid-template-columns:repeat(3,1fr);gap:10mm;padding:8mm}
+  #printArea.qrs.one{grid-template-columns:90mm;justify-content:center}
   #printArea.rcpt{display:block!important}
   #printArea .rc{width:100%;box-shadow:none;border:0;padding:0;margin:0}
   body{background:#fff;color:#000}
@@ -59,6 +60,7 @@ img{max-width:100%}
 .pq svg{width:100%;max-width:200px;height:auto}
 .pq b{display:block;font-family:var(--f-display);font-size:22px;font-weight:500}
 .pq small{display:block;font-size:12px}
+.qrbig{max-width:340px;margin:0 auto;width:100%}.qrbig .pq{border:0;border-radius:16px;padding:16px}.qrbig .pq svg{max-width:280px}.qrbig .pq b{font-size:30px}
 .login{max-width:380px;margin:40px auto;display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px}
 .login h2{font-size:22px}
 .sm-sel{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 8px;min-height:34px;font-size:13.5px}
@@ -434,6 +436,18 @@ html,body{max-width:100%;overflow-x:clip}
 .og input,.og select,.og-tools select{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 10px;min-height:42px;width:100%;color:var(--fg)}
 .og-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .og-tools select{width:auto;flex:1;min-width:150px}
+
+/* ลูกค้าเรียกพนักงาน */
+.callbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;flex-direction:column;gap:8px;width:min(560px,calc(100% - 24px))}
+.callcard{display:flex;align-items:center;gap:10px;background:#ffd58a;color:#2b1c00;border-radius:14px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.45);animation:callin .3s ease}
+.callcard .grow{flex:1;min-width:0}.callcard b{font-size:16px}.callcard small{display:block;font-size:12.5px;opacity:.8}
+.callcard .btn{background:#2b1c00;color:#ffd58a;border-color:#2b1c00}
+.callcard .btn.ghost{background:transparent;color:#2b1c00;border-color:rgba(43,28,0,.35)}
+.callcard.paid{background:#7fe0b4}
+@keyframes callin{from{transform:translateY(16px);opacity:0}}
+.bell{display:inline-block;background:#ffd58a;color:#2b1c00;border-radius:999px;font-size:12px;font-weight:700;padding:1px 8px;animation:ring 1s ease-in-out infinite}
+@keyframes ring{50%{transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.bell,.callcard{animation:none}}
 </style>
 </head>
 <body>
@@ -447,6 +461,7 @@ html,body{max-width:100%;overflow-x:clip}
 
 <div class="viewas" id="viewAs" hidden></div>
 <main class="wrap" id="view"></main>
+<div class="callbar" id="callbar" hidden aria-live="assertive"></div>
 
 <nav class="tabs" aria-label="เมนูหลัก"><div class="tabs-in" id="tabs">
   <button class="tab" data-act="tab" data-v="tables" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="5" rx="1.5"/><path d="M6 10v9M18 10v9"/></svg>โต๊ะ</button>
@@ -562,7 +577,7 @@ function can(k){const r=effRole();if(r==='owner')return true;const dp=DEFAULT_PE
 const TAB_OK={tables:()=>can('tables'),kitchen:()=>can('kitchen'),menu:()=>true,back:()=>can('stock')||can('expenses')||can('members'),report:()=>can('report')};
 const deny=()=>{toast('ตำแหน่งของคุณไม่มีสิทธิ์ใช้ส่วนนี้ ติดต่อแอดมิน','bad');return true};
 const S={floor:(()=>{try{return localStorage.getItem('nl_floor')||'tables'}catch(e){return 'tables'}})(),tab:'tables',perms:null,backTab:'stock',menuCat:'all',settings:{...DEFAULTS},
-  menu:[],stock:[],members:[],open:{},today:[],purch:[],exp:[],
+  menu:[],stock:[],members:[],open:{},today:[],calls:[],purch:[],exp:[],
   db:null,state:'loading',sheet:null,cust:null,
   report:{range:'today',data:null,loading:false}};
 
@@ -642,11 +657,23 @@ async function startData(){
   db.collection('stock').onSnapshot(s=>{S.stock=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.name).localeCompare(String(b.name),'th'));render()},onErr);
   db.collection('orders').where('status','==','open').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]={id:d.id,...d.data()});S.open=o;render();refreshSheet('order')},onErr);
   db.collection('orders').where('status','==','paid').where('paidAt','>=',sod()).onSnapshot(s=>{S.today=s.docs.map(d=>({id:d.id,...d.data()}));render()},onErr);
+  db.collection('calls').onSnapshot(s=>{const prev=new Set(S.calls.map(c=>c.id+':'+c.at));S.calls=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.at-b.at);
+    if(S.calls.some(c=>!prev.has(c.id+':'+c.at)&&Date.now()-c.at<120000))callAlert();renderCalls();render()},onErr);
   db.collection('members').onSnapshot(s=>{S.members=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.lastAt||0)-(a.lastAt||0));if(S.tab==='back')render()},onErr);
   const since=sod()-30*DAY;
   db.collection('purchases').where('at','>=',since).onSnapshot(s=>{S.purch=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
   db.collection('expenses').where('at','>=',since).onSnapshot(s=>{S.exp=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
 }
+const CALLK={staff:'เรียกพนักงาน',pay:'ขอชำระเงิน / เช็คบิล',paid:'แจ้งโอนเงินแล้ว รอตรวจยอด',water:'ขอน้ำ / น้ำแข็ง'};
+const callOf=o=>S.calls.find(c=>o.table==='TA'?c.order===o.id:c.table===o.table);
+const canCall=()=>can('tables')||can('pay')||can('kitchen');
+function callAlert(){if(!canCall())return;try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
+  try{const A=window.__ac||(window.__ac=new (window.AudioContext||window.webkitAudioContext)());[0,0.25].forEach(t=>{const o=A.createOscillator(),g=A.createGain();o.frequency.value=880;o.connect(g);g.connect(A.destination);g.gain.setValueAtTime(0.0001,A.currentTime+t);g.gain.exponentialRampToValueAtTime(0.3,A.currentTime+t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,A.currentTime+t+0.2);o.start(A.currentTime+t);o.stop(A.currentTime+t+0.22)})}catch(e){}}
+function renderCalls(){const el=$('#callbar');if(!el)return;const list=S.state==='ready'&&canCall()?S.calls.filter(c=>Date.now()-c.at<6*3600e3):[];el.hidden=!list.length;
+  el.innerHTML=list.map(c=>{const o=c.table==='TA'?S.open[c.order]:Object.values(S.open).find(x=>x.table===c.table);const where=c.table==='TA'?(o?tableLabel(o):'ลูกค้าสั่งเอง'):'โต๊ะ '+c.table;
+    return `<div class="callcard${c.kind==='paid'?' paid':''}" role="alert"><span style="font-size:22px">🔔</span><div class="grow"><b>${esc(where)} · ${esc(CALLK[c.kind]||'เรียกพนักงาน')}</b><small>${c.name?'คุณ'+esc(c.name)+' · ':''}${ago(c.at).replace('เพิ่งเปิด','เมื่อสักครู่')}${/นาที|ชม/.test(ago(c.at))?'ที่แล้ว':''}</small></div>${o&&(c.kind==='pay'||c.kind==='paid')&&can('pay')?`<button class="btn sm" data-act="callBill" data-id="${o.id}" data-c="${esc(c.id)}" type="button">เก็บเงิน</button>`:o?`<button class="btn sm ghost" data-act="openOrder" data-id="${o.id}" type="button">ดูบิล</button>`:''}<button class="btn sm${o&&(c.kind==='pay'||c.kind==='paid')?' ghost':''}" data-act="callAck" data-c="${esc(c.id)}" type="button">รับทราบ</button></div>`}).join('');}
+setInterval(()=>{if(S.calls.length)renderCalls()},30000);
+document.addEventListener('pointerdown',()=>{try{const A=window.__ac||(window.__ac=new (window.AudioContext||window.webkitAudioContext)());if(A.state==='suspended')A.resume()}catch(e){}},{once:true});
 function sortMenu(){const cats=S.settings.cats||[];S.menu.sort((a,b)=>{const ca=cats.indexOf(a.cat),cb=cats.indexOf(b.cat);return (ca<0?99:ca)-(cb<0?99:cb)||String(a.name).localeCompare(String(b.name),'th')})}
 
 /* ---------- main render ---------- */
@@ -657,7 +684,7 @@ function render(){
   const c=$('#conn');
   c.innerHTML=S.state==='ready'?'<span class="dot on"></span>ออนไลน์ · '+esc(dlong(Date.now())):['noconfig','offline','nostaff'].includes(S.state)?'<span class="dot off"></span>ไม่ได้เชื่อมฐานข้อมูล':S.state==='login'?'<span class="dot"></span>ยังไม่ได้เข้าสู่ระบบ':'<span class="dot"></span>กำลังเชื่อมต่อ…';
   document.querySelector('[data-act="settings"]').hidden=S.state!=='ready';
-  $('#hdrLogout').hidden=S.state!=='ready';
+  $('#hdrLogout').hidden=S.state!=='ready';if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!S.calls.length||!canCall();
   const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){$('#hdrMode').value=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs)}
   const va=$('#viewAs');va.hidden=!(S.state==='ready'&&S.viewAs);if(!va.hidden)va.innerHTML=`<span>โหมด <b>${roleName(S.viewAs)}</b> · ใช้งานจริงตามสิทธิ์ของตำแหน่งนี้</span><button class="btn sm" data-act="viewAsOff" type="button">กลับโหมดแอดมิน</button>`;
   $('#tabs').parentElement.hidden=S.state!=='ready';
@@ -710,7 +737,7 @@ function viewTables(){
   for(let i=1;i<=n;i++){const o=byTable[String(i)];
     if(o){const un=(o.items||[]).filter(l=>!l.served).reduce((a,l)=>a+l.qty,0);
       const cn=custNames(o);
-      h+=`<button class="tcard busy" data-act="openTable" data-t="${i}" type="button"><div class="no">${i}<small>โต๊ะ</small></div>${ordNoTag(o)}${cn.length?`<div class="tname">คุณ${esc(cn.join(', คุณ'))}</div>`:''}
+      const cl=callOf(o);h+=`<button class="tcard busy" data-act="openTable" data-t="${i}" type="button"><div class="no">${i}<small>โต๊ะ</small></div>${cl?`<span class="bell">🔔 ${esc((CALLK[cl.kind]||'').split(' /')[0])}</span>`:''}${ordNoTag(o)}${cn.length?`<div class="tname">คุณ${esc(cn.join(', คุณ'))}</div>`:''}
       <div>${un?`<span class="pill warn">รอเสิร์ฟ ${un}</span>`:(o.items||[]).length?'<span class="pill ok">เสิร์ฟครบ</span>':'<span class="pill info">เปิดแล้ว · รอสั่ง</span>'}<span class="pill ${o.guests>seatsOf(i)?'warn':'mute'}">${o.guests?o.guests+'/':''}${seatsOf(i)} ที่นั่ง</span></div>
       <div class="meta"><span>${ago(o.openedAt)}</span><span class="tot">${baht(linesTotal(o.items))}</span></div></button>`}
     else h+=`<button class="tcard" data-act="openTable" data-t="${i}" type="button"><div class="no">${i}<small>โต๊ะ</small></div><div class="seats">${'<i></i>'.repeat(Math.min(seatsOf(i),8))}<span>${seatsOf(i)} ที่นั่ง</span></div><div class="meta"><span>ปิดอยู่</span><span>+ เปิดโต๊ะ</span></div></button>`}
@@ -863,7 +890,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order')renderOrderLines();else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,receipt:sheetReceipt,member:sheetMember}[s.type])();}
+  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,receipt:sheetReceipt,member:sheetMember}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -945,7 +972,8 @@ function renderOrderLines(){const o=S.open[S.sheet.id];const box=$('#ordLines');
   if(keep){$('#edNote').value=keep.note;$('#edExtra').value=keep.extra;if(keep.focus)document.getElementById(keep.focus)?.focus()}
   const mv=$('#ordMove');if(mv){const opened=[...new Set(Object.values(S.open).filter(x=>x.table!=='TA'&&x.table!==o.table&&x.id!==o.id).map(x=>x.table))].sort((a,b)=>a-b);
     const canMv=!isDel(o)&&(o.table==='TA'?can('tables')||can('move'):can('move'));
-    mv.innerHTML=canMv?`<div class="inrow"><select id="mvT" class="sm-sel" aria-label="ย้ายไปโต๊ะที่เปิดอยู่">${opened.map(t=>`<option value="${t}">โต๊ะ ${t}</option>`).join('')}</select><button class="btn sm" data-act="moveTbl" type="button" ${opened.length&&items.length?'':'disabled'}>${o.table==='TA'?'ย้ายไปโต๊ะ':'ย้ายโต๊ะ'}</button><span class="help">${opened.length?'ย้ายได้เฉพาะโต๊ะที่เปิดแล้ว รายการจะรวมเข้าบิลโต๊ะนั้น':'ยังไม่มีโต๊ะอื่นที่เปิดอยู่ เปิดโต๊ะปลายทางก่อนแล้วค่อยย้าย'}</span></div>`:''}
+    const qrOk=S.settings.qrKey&&(o.table!=='TA'||chOf(o)==='walkin');
+    mv.innerHTML=(qrOk?`<div class="inrow" style="margin-bottom:10px"><button class="btn sm" data-act="qrOne" type="button">📱 QR ให้ลูกค้าสแกน ${o.table==='TA'?'(ออร์เดอร์นี้)':'(โต๊ะ '+esc(o.table)+')'}</button><span class="help">ลูกค้าออกจากหน้าแล้ว สแกนเพื่อดูรายการและสั่งต่อได้</span></div>`:'')+(canMv?`<div class="inrow"><select id="mvT" class="sm-sel" aria-label="ย้ายไปโต๊ะที่เปิดอยู่">${opened.map(t=>`<option value="${t}">โต๊ะ ${t}</option>`).join('')}</select><button class="btn sm" data-act="moveTbl" type="button" ${opened.length&&items.length?'':'disabled'}>${o.table==='TA'?'ย้ายไปโต๊ะ':'ย้ายโต๊ะ'}</button><span class="help">${opened.length?'ย้ายได้เฉพาะโต๊ะที่เปิดแล้ว รายการจะรวมเข้าบิลโต๊ะนั้น':'ยังไม่มีโต๊ะอื่นที่เปิดอยู่ เปิดโต๊ะปลายทางก่อนแล้วค่อยย้าย'}</span></div>`:'')}
   const dz=$('#ordDanger');if(dz)dz.innerHTML=items.length?(can('void')?`<button class="btn danger sm" data-act="voidOrder" data-confirm="1" type="button">ยกเลิกบิลนี้</button>`:''):`<button class="btn sm" data-act="closeTbl" type="button">${o.table==='TA'?'ยกเลิกออร์เดอร์':'ปิดโต๊ะ (ไม่มีรายการ)'}</button>${o.table!=='TA'&&S.settings.qrRequireOpen!==false?'<span class="help" style="align-self:center">โต๊ะเปิดอยู่ ลูกค้าสแกน QR สั่งได้</span>':''}`;
   const tot=linesTotal(items);
   $('#ordFoot').innerHTML=`<div class="total-line"><small>${linesCount(items)} รายการ</small><b>${baht(tot)}</b></div><button class="btn" data-act="custMode" type="button">โหมดลูกค้า</button>${can('pay')?`<button class="btn pri" data-act="pay" ${items.length?'':'disabled'} type="button">ชำระเงิน</button>`:''}`;}
@@ -1037,6 +1065,7 @@ async function confirmPay(){const id=S.sheet.id,o=S.open[id];if(!o)return;const 
   if(changed){toast('มีรายการเพิ่มเข้ามาในบิลนี้ ตรวจยอดใหม่ก่อนรับเงิน','bad');payUpdate();return}
   if(!paidItems){closeSheet();toast('บิลนี้ถูกปิดไปแล้วจากอีกเครื่อง','bad');return}
   deductStock(paidItems);
+  {const cl=callOf(o);if(cl){S.calls=S.calls.filter(c=>c.id!==cl.id);renderCalls();write('calls/'+cl.id,r=>r.delete())}}
   const paid={id,table:o.table,label:o.label,openedAt:o.openedAt,...patch};
   if(mem){try{const bal=await applyPoints(mem.phone,mem.name,c.use,c.earn,c.total);if(bal!==paid.ptsBalance){paid.ptsBalance=bal;write('orders/'+id,r=>r.update({ptsBalance:bal}))}}catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
   openSheet({type:'receipt',order:paid,mode:'receipt'});
@@ -1344,9 +1373,18 @@ async function logoDataUrl(file){let bmp;try{bmp=await createImageBitmap(file)}c
   return u;}
 const newQrKey=()=>Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>b.toString(16).padStart(2,'0')).join('');
 const tableUrl=(t,k)=>new URL('order.html',location.href).href.split('?')[0].split('#')[0]+'?t='+t+'&k='+k;
+const orderUrl=o=>o.table==='TA'?tableUrl(0,S.settings.qrKey)+'&o='+encodeURIComponent(o.id):tableUrl(o.table,S.settings.qrKey);
+function qrCard(url,big,sub){const s=S.settings;return `<div class="pq">${s.logo?`<img src="${esc(s.logo)}" alt="" style="height:34px;width:auto;margin:0 auto 4px;display:block">`:''}<small style="font-weight:600">${esc(s.shopName)}</small>${qrSvg(url)}<b>${big}</b><small>${sub}</small></div>`}
+function sheetQrOne(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const url=orderUrl(o),walk=o.table==='TA';
+  const card=qrCard(url,walk?esc(orderTitle(o)):'โต๊ะ '+esc(o.table),walk?'สแกนเพื่อดูรายการ / สั่งเพิ่ม · '+esc(o.orderNo||''):'สแกนสั่งอาหาร · ดูรายการ · เรียกพนักงาน');
+  $('#printArea').className='qrs one';$('#printArea').innerHTML=card;
+  $('#panel').innerHTML=head(walk?'QR ออร์เดอร์นี้':'QR โต๊ะ '+esc(o.table),walk?'ใช้ได้จนกว่าจะชำระเงิน':'ใช้ได้ทุกครั้งที่โต๊ะเปิดอยู่')+`<div class="sh-body">
+   <div class="qrbig">${card}</div>
+   <p class="help" style="margin:0">ให้ลูกค้าสแกนจากหน้าจอนี้ ลูกค้าจะเห็นรายการที่สั่งไปแล้ว สถานะคิว ยอดเงิน และสั่งเพิ่มเข้าบิลเดิมได้${walk?' (QR นี้ผูกกับออร์เดอร์นี้เท่านั้น)':' · QR นี้เหมือนกับที่ติดบนโต๊ะ'}</p></div>
+   <div class="sh-foot"><button class="btn" data-act="openOrder" data-id="${o.id}" type="button">กลับไปบิล</button><button class="btn pri wide" data-act="qrOnePrint" type="button">พิมพ์ QR นี้</button></div>`;}
 function sheetQr(){const s=S.settings,n=Math.max(1,Math.min(60,+s.tables||10));
   if(!s.qrKey){$('#panel').innerHTML=head('QR ประจำโต๊ะ')+`<div class="sh-body"><div class="empty"><b>ยังไม่มีรหัส QR</b>กดสร้างเพื่อเริ่มใช้งาน</div></div><div class="sh-foot"><button class="btn pri wide" data-act="qrRotate" type="button">สร้าง QR</button></div>`;return}
-  const cards=[];if(s.qrWalkin!==false)cards.push(`<div class="pq">${qrSvg(tableUrl(0,s.qrKey))}<b>สั่งเอง</b><small>ไม่ระบุโต๊ะ · ${esc(s.shopName)}</small></div>`);for(let i=1;i<=n;i++)cards.push(`<div class="pq">${qrSvg(tableUrl(i,s.qrKey))}<b>โต๊ะ ${i}</b><small>สแกนเพื่อสั่งอาหาร · ${esc(s.shopName)}</small></div>`);
+  const cards=[];if(s.qrWalkin!==false)cards.push(qrCard(tableUrl(0,s.qrKey),'สั่งเอง','ไม่ระบุโต๊ะ · สแกนสั่ง แล้วรอเรียกชื่อ'));for(let i=1;i<=n;i++)cards.push(qrCard(tableUrl(i,s.qrKey),'โต๊ะ '+i,'สแกนสั่งอาหาร · ดูรายการ · เรียกพนักงาน'));
   $('#printArea').className='qrs';$('#printArea').innerHTML=cards.join('');
   $('#panel').innerHTML=head('QR ประจำโต๊ะ',n+' โต๊ะ')+`<div class="sh-body"><p class="help" style="margin:0">ทดลองสแกนด้วยมือถือก่อนติดจริง ถ้า QR หลุดไปนอกร้าน กด "เปลี่ยนรหัส QR" แล้วพิมพ์ชุดใหม่ ชุดเก่าจะใช้ไม่ได้ทันที</p>
    <div class="field"><label>ลิงก์โต๊ะ 1 (ไว้ทดสอบ)</label><a href="${esc(tableUrl(1,s.qrKey))}" target="_blank" rel="noopener" style="overflow-wrap:anywhere;color:var(--jade)">${esc(tableUrl(1,s.qrKey))}</a></div>
@@ -1392,6 +1430,8 @@ function custSend(){const c=S.cust,oid=c.id;if(!S.open[oid])return;const note=va
 
 /* ---------- actions ---------- */
 const ACT={
+  callAck:d=>{S.calls=S.calls.filter(c=>c.id!==d.c);renderCalls();render();write('calls/'+d.c,r=>r.delete())},
+  callBill:d=>{if(!S.open[d.id])return toast('บิลนี้ปิดไปแล้ว','bad');if(!can('pay'))return deny();const p=payOpen(d.id);if((S.calls.find(c=>c.id===d.c)||{}).kind==='paid'&&!isDel(S.open[d.id]))p.method='promptpay';openSheet(p)},
   tab:d=>{S.tab=d.v;render();window.scrollTo(0,0)},
   settings:()=>openSheet({type:'settings',back:S.sheet&&S.sheet.type==='pay'?{...S.sheet}:null}),
   close:closeSheet,
@@ -1472,6 +1512,8 @@ const ACT={
   saveSettings,
   logout,
   qrSheet:()=>openSheet({type:'qr'}),
+  qrOne:()=>{const id=S.sheet&&S.sheet.id;if(!id||!S.settings.qrKey)return;openSheet({type:'qrOne',id})},
+  qrOnePrint:()=>{sheetQrOne();setTimeout(()=>window.print(),50)},
   staffNew:()=>openSheet({type:'staffNew'}),
   viewAs:d=>{try{localStorage.setItem('nl_mode',d.r)}catch(e){}S.viewAs=d.r;S.tab='tables';S.backTab='stock';closeSheet();render();window.scrollTo(0,0);toast('สลับเป็นมุมมอง '+roleName(d.r))},
   viewAsOff:()=>{try{localStorage.removeItem('nl_mode')}catch(e){}S.viewAs=null;render();toast('กลับเป็นมุมมองแอดมินแล้ว')},
