@@ -2,6 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
+<meta name="app-version" content="2026.10.06-1750">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -158,6 +159,8 @@ body.welcome .callb{display:none}
 .callpop h2{font-size:20px}
 @media (min-width:700px){.callpop{align-items:center}.callpop .cc{border-radius:18px}}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#ffd58a;color:#3a2600;padding:10px 16px;border-radius:12px;font-weight:600;z-index:99;box-shadow:0 6px 24px rgba(0,0,0,.4);max-width:90vw;text-align:center}
+.updbar{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:99;background:#ffd58a;color:#2b1c00;border-radius:12px;padding:8px 10px 8px 14px;display:flex;gap:10px;align-items:center;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.45);white-space:nowrap}
+.updbar button{border:0;border-radius:9px;background:#2b1c00;color:#ffd58a;font:inherit;padding:6px 12px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -401,6 +404,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   else if(d.a==='editName'){S.view='name';render();$('main').scrollTop=0}
   else if(d.a==='skipName'){if(!WALK){S.view='menu';render()}}});
 start();
+
+/* ---------- แจ้งเตือนเวอร์ชันใหม่ (กันมือถือจำหน้าเก่าไว้) ---------- */
+const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||'';
+async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
+  if(m&&APP_VER&&m[1]!==APP_VER&&!document.getElementById('updBar')){const b=document.createElement('div');b.id='updBar';b.className='updbar';b.innerHTML='มีเวอร์ชันใหม่ของเว็บ <button type="button">อัปเดตเลย</button>';
+    b.querySelector('button').onclick=()=>{const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)};document.body.appendChild(b)}}catch(e){}}
+setTimeout(checkUpdate,3000);setInterval(checkUpdate,5*60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 </script>
 </body>
 </html>

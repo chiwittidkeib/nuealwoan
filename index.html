@@ -2,6 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
+<meta name="app-version" content="2026.10.06-1750">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -449,6 +450,8 @@ html,body{max-width:100%;overflow-x:clip}
 .bell{display:inline-block;background:#ffd58a;color:#2b1c00;border-radius:999px;font-size:12px;font-weight:700;padding:1px 8px;animation:ring 1s ease-in-out infinite}
 @keyframes ring{50%{transform:scale(1.08)}}
 @media (prefers-reduced-motion:reduce){.bell,.callcard{animation:none}}
+.updbar{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:99;background:#ffd58a;color:#2b1c00;border-radius:12px;padding:8px 10px 8px 14px;display:flex;gap:10px;align-items:center;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.45);white-space:nowrap}
+.updbar button{border:0;border-radius:9px;background:#2b1c00;color:#ffd58a;font:inherit;padding:6px 12px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -1297,7 +1300,7 @@ function applyBg(v){document.documentElement.style.setProperty('--veil-a',String
 applyBg(getBg());
 const bgCard=()=>`<div class="card"><h3>รูปพื้นหลัง (เฉพาะเครื่องนี้)</h3><div class="bgctl"><span class="help">จาง</span><input id="bgRange" type="range" min="0" max="100" step="5" value="${getBg()}" aria-label="ความชัดของรูปพื้นหลัง"><span class="help">ชัด</span><output id="bgOut">${getBg()}%</output></div><p class="help" style="margin:0">ตั้ง 0% เพื่อปิดรูปพื้นหลัง</p></div>`;
 function bindBg(){const r=$('#bgRange');if(!r)return;r.addEventListener('input',()=>{const v=+r.value;$('#bgOut').textContent=v+'%';applyBg(v);try{localStorage.setItem(BG_KEY,String(v))}catch(e){}})}
-const accountCard=()=>`${bgCard()}<div class="card"><h3>บัญชีของฉัน</h3><p class="help" style="margin:0">เข้าสู่ระบบด้วยชื่อผู้ใช้ <b>${esc(S.me||'')}</b> · ${S.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</p>
+const accountCard=()=>`${bgCard()}<div class="card"><h3>บัญชีของฉัน <small class="muted" style="font-size:12px;font-weight:400">เว็บเวอร์ชัน ${esc(APP_VER)}</small></h3><p class="help" style="margin:0">เข้าสู่ระบบด้วยชื่อผู้ใช้ <b>${esc(S.me||'')}</b> · ${S.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</p>
    <div class="field"><label for="myPw">ตั้งรหัสผ่านใหม่</label><div class="inrow"><input id="myPw" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"><button class="btn sm" data-act="myPwSave" type="button">เปลี่ยนรหัส</button></div></div>
    <button class="btn sm danger" data-act="logout" data-confirm="1" type="button" style="align-self:flex-start">ออกจากระบบ</button></div>`;
 function sheetAccount(){$('#panel').innerHTML=head('บัญชีของฉัน')+`<form class="sh-body">${accountCard()}</form>`;bindBg();}
@@ -1580,6 +1583,13 @@ $('#hdrMode').addEventListener('change',e=>{const v=e.target.value;if(v)ACT.view
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet()});
 setInterval(()=>{if(S.state==='ready'&&(!S.sheet||S.sheet.type!=='pay'))render()},60000);
+/* ---------- แจ้งเตือนเวอร์ชันใหม่ (กันมือถือจำหน้าเก่าไว้) ---------- */
+const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||'';
+async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
+  if(m&&APP_VER&&m[1]!==APP_VER&&!document.getElementById('updBar')){const b=document.createElement('div');b.id='updBar';b.className='updbar';b.innerHTML='มีเวอร์ชันใหม่ของเว็บ <button type="button">อัปเดตเลย</button>';
+    b.querySelector('button').onclick=()=>{const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)};document.body.appendChild(b)}}catch(e){}}
+setTimeout(checkUpdate,3000);setInterval(checkUpdate,5*60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
+
 init();
 </script>
 </body>
