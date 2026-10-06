@@ -123,6 +123,11 @@ const T=(P.get('t')||'').replace(/\D/g,''),K=P.get('k')||'';
 const NOTES=['ไม่ใส่ผัก','ไม่ใส่ถั่วงอก','ไม่เผ็ด','เผ็ดมาก','ไม่ใส่ผงชูรส','ใส่ห่อ'];
 const S={menu:[],cats:[],cat:'all',cart:{},view:'menu',status:null,sending:false,name:''};
 const NAME_KEY='nl_name';
+const WALK=T==='0';
+const WO_KEY='nl_wo_'+K;
+const getWO=()=>{try{const v=JSON.parse(localStorage.getItem(WO_KEY)||'null');return v&&Date.now()-v.ts<12*3600e3?v.id:null}catch(e){return null}};
+const setWO=id=>{try{id?localStorage.setItem(WO_KEY,JSON.stringify({id,ts:Date.now()})):localStorage.removeItem(WO_KEY)}catch(e){}};
+const where=()=>WALK?'ของคุณ':'ของโต๊ะ '+esc(T);
 const loadName=()=>{try{return localStorage.getItem(NAME_KEY)||''}catch(e){return ''}};
 const saveName=n=>{try{localStorage.setItem(NAME_KEY,n)}catch(e){}};
 function setSub(){$('#sub').innerHTML=S.name?`สวัสดี คุณ${esc(S.name)} · <button class="lnk-w" data-a="editName" type="button">แก้ชื่อ</button>`:'สั่งอาหารได้จากมือถือ'}
@@ -133,6 +138,7 @@ function rpcErr(e){const m=String(e&&e.message||'');
   if(/bad_key/.test(m))return ['QR นี้ใช้ไม่ได้แล้ว','ร้านเปลี่ยน QR ใหม่ รบกวนแจ้งพนักงานหรือสแกน QR ที่ติดอยู่บนโต๊ะอีกครั้ง'];
   if(/bad_table/.test(m))return ['ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน'];
   if(/empty/.test(m))return ['เมนูที่เลือกปิดขายแล้ว','ลองเลือกเมนูอื่น'];
+  if(/walkin_off/.test(m))return ['ร้านปิดรับออร์เดอร์แบบสั่งเอง','สั่งกับพนักงานที่เคาน์เตอร์ได้เลย'];
   if(/table_closed/.test(m))return ['โต๊ะนี้ยังไม่เปิด','แจ้งพนักงานให้เปิดโต๊ะก่อน แล้วสั่งได้เลย'];
   return ['เชื่อมต่อไม่ได้','ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง'];}
 
@@ -143,18 +149,20 @@ async function start(){
   sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}});
   const {data,error}=await sb.rpc('public_menu',{p_key:K});
   if(error){const [a,b]=rpcErr(error);return fail(a,b)}
-  if(+T<1||+T>data.tables)return fail('ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน');
+  if(!WALK&&(+T<1||+T>data.tables))return fail('ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน');
   S.menu=data.menu||[];S.cats=(data.cats||[]).filter(c=>S.menu.some(m=>m.cat===c));
-  document.title=(data.shopName||'NueaLwoan')+' · โต๊ะ '+T;
+  document.title=(data.shopName||'NueaLwoan')+(WALK?' · สั่งอาหาร':' · โต๊ะ '+T);
   if(data.logo){$('#logo').src=data.logo;$('#logo').hidden=false}
-  $('#shop').textContent=data.shopName||'สั่งอาหาร';$('#tnum').textContent=T;$('#tno').hidden=false;
+  $('#shop').textContent=data.shopName||'สั่งอาหาร';$('#tnum').textContent=WALK?'':T;$('#tno').hidden=WALK;
   S.name=loadName();if(!S.name)S.view='name';setSub();
   await loadStatus();
   if(S.status&&S.status.requireOpen&&!S.status.open){S.after=S.view;S.view='closed'}
   render();
   setInterval(()=>{if(S.view==='status'&&!document.hidden)loadStatus()},15000);
 }
-async function loadStatus(){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T});if(error)return;S.status=data;
+async function loadStatus(){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T,p_order:WALK?getWO():null});if(error)return;S.status=data;
+  if(WALK&&!data.open&&getWO())setWO(null);
+  if(WALK&&data.walkinOn===false){fail('ร้านปิดรับออร์เดอร์แบบสั่งเอง','สั่งกับพนักงานที่เคาน์เตอร์ได้เลย');S.view='off';return}
   if(S.view==='closed'&&(data.open||!data.requireOpen)){S.view=S.after||'menu';render();return}
   if(S.view==='status'||S.view==='done')render()}
 setInterval(()=>{if(S.view==='closed'&&!document.hidden)loadStatus()},6000);
@@ -170,14 +178,14 @@ function render(){
     f.innerHTML='';$('#foot').hidden=true;return;
   }
   if(S.view==='name'){
-    h=`<form class="namebox" id="nameForm"><h2>ยินดีต้อนรับ</h2><p class="muted" style="margin:0">โต๊ะ ${esc(T)} · ใส่ชื่อของคุณ ร้านจะได้เสิร์ฟถูกคน</p>
+    h=`<form class="namebox" id="nameForm"><h2>ยินดีต้อนรับ</h2><p class="muted" style="margin:0">${WALK?'สั่งอาหารเองได้เลย · ใส่ชื่อไว้ให้พนักงานเรียกตอนอาหารพร้อม':'โต๊ะ '+esc(T)+' · ใส่ชื่อของคุณ ร้านจะได้เสิร์ฟถูกคน'}</p>
       <div class="field"><label for="nm">ชื่อของคุณ</label><input id="nm" maxlength="40" autocomplete="given-name" placeholder="เช่น ต้น, พี่หนิง" value="${esc(S.name)}"></div>
       <p class="err" id="nmErr" role="alert"></p>
       <button class="btn pri" type="submit">เริ่มสั่งอาหาร</button>
-      ${S.name?'':'<button class="lnk-g" data-a="skipName" type="button">ข้าม ไม่ใส่ชื่อ</button>'}</form>`;
+      ${S.name||WALK?'':'<button class="lnk-g" data-a="skipName" type="button">ข้าม ไม่ใส่ชื่อ</button>'}</form>`;
     v.innerHTML=h;f.innerHTML='';$('#foot').hidden=true;
     $('#nameForm').addEventListener('submit',e=>{e.preventDefault();const n=$('#nm').value.trim().replace(/\s+/g,' ');
-      if(!n){$('#nmErr').textContent='ใส่ชื่อก่อน หรือกด "ข้าม"';return}
+      if(!n){$('#nmErr').textContent=WALK?'ใส่ชื่อก่อน พนักงานจะเรียกชื่อนี้ตอนอาหารพร้อม':'ใส่ชื่อก่อน หรือกด "ข้าม"';return}
       S.name=n.slice(0,40);saveName(S.name);setSub();S.view='menu';render()});
     setTimeout(()=>$('#nm')?.focus(),50);return;
   }
@@ -188,14 +196,14 @@ function render(){
     ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()?'':'disabled'} type="button">ดูตะกร้า</button>`;
   }else if(S.view==='cart'){
     const rows=Object.entries(S.cart).map(([id,q])=>{const m=S.menu.find(x=>x.id===id);return m?`<div class="row">${m.img?`<div class="mini"><img src="${esc(m.img)}" alt=""></div>`:''}<div class="g">${esc(m.name)}</div><div class="stepper"><button data-a="qty" data-m="${esc(id)}" data-d="-1" type="button" aria-label="ลด">−</button><span>${q}</span><button data-a="qty" data-m="${esc(id)}" data-d="1" type="button" aria-label="เพิ่ม">+</button></div><div class="r" style="min-width:60px;text-align:right">${baht(m.price*q)}</div></div>`:''}).join('');
-    h=`<h2>ตะกร้าของโต๊ะ ${esc(T)}</h2>${S.name?`<p class="muted" style="margin:0">สั่งในชื่อ <b>คุณ${esc(S.name)}</b> · <button class="lnk-g" data-a="editName" type="button">เปลี่ยน</button></p>`:''}${rows?`<div class="list">${rows}</div>`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}
+    h=`<h2>ตะกร้า${where()}</h2>${S.name?`<p class="muted" style="margin:0">สั่งในชื่อ <b>คุณ${esc(S.name)}</b> · <button class="lnk-g" data-a="editName" type="button">เปลี่ยน</button></p>`:''}${rows?`<div class="list">${rows}</div>`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}
     <div class="field"><label for="note">บอกครัว (ถ้ามี)</label><input id="note" placeholder="เช่น ไม่ใส่ผัก ไม่เผ็ด" maxlength="120" autocomplete="off"></div>
     <div class="qn">${NOTES.map(n=>`<button class="chip" data-a="note" data-v="${esc(n)}" type="button">${esc(n)}</button>`).join('')}</div>
     <p class="err" id="sendErr" role="alert"></p>`;
     ft=`<button class="btn" data-a="view" data-v="menu" type="button">เลือกเพิ่ม</button><button class="btn pri wide" data-a="send" ${cartN()&&!S.sending?'':'disabled'} type="button">${S.sending?'กำลังส่ง…':'ส่งรายการ '+baht(cartT())}</button>`;
   }else{
     const st=S.status||{items:[],total:0};
-    h=(S.view==='done'?`<div class="msg" style="padding:24px 8px"><h2>ส่งรายการเข้าครัวแล้ว${S.name?' คุณ'+esc(S.name):''}</h2><p class="muted">รออาหารที่โต๊ะ ${esc(T)} ได้เลย ชำระเงินกับพนักงานเมื่อทานเสร็จ</p></div>`:`<h2>รายการของโต๊ะ ${esc(T)}</h2>`)+
+    h=(S.view==='done'?`<div class="msg" style="padding:24px 8px"><h2>ส่งรายการเข้าครัวแล้ว${S.name?' คุณ'+esc(S.name):''}</h2><p class="muted">${WALK?'พนักงานจะเรียกชื่อ คุณ'+esc(S.name)+' เมื่ออาหารพร้อม · ชำระเงินที่เคาน์เตอร์':'รออาหารที่โต๊ะ '+esc(T)+' ได้เลย ชำระเงินกับพนักงานเมื่อทานเสร็จ'}</p></div>`:`<h2>รายการ${where()}</h2>`)+
       (st.items.length?`<div class="list">${st.items.map(l=>`<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.cname?`<div class="who">คุณ${esc(l.cname)}</div>`:''}</div><span class="pill ${l.served?'ok':'warn'}">${l.served?'เสิร์ฟแล้ว':'กำลังทำ'}</span><div class="r">${baht(l.amount)}</div></div>`).join('')}<div class="row"><div class="g"><b>ยอดรวมตอนนี้</b></div><div class="r"><b>${baht(st.total)}</b></div></div></div>`:'<p class="muted">ยังไม่มีรายการ</p>');
     ft=`<button class="btn pri wide" data-a="view" data-v="menu" type="button">สั่งเพิ่ม</button>`;
   }
@@ -206,7 +214,9 @@ function render(){
 async function send(){
   if(S.sending||!cartN())return;S.sending=true;const note=($('#note')?.value||'').trim();render();if($('#note'))$('#note').value=note;
   const items=Object.entries(S.cart).map(([menuId,qty])=>({menuId,qty}));
-  const {error}=await sb.rpc('customer_add',{p_key:K,p_table:T,p_items:items,p_note:note,p_name:S.name||''});
+  if(WALK&&!S.name){S.sending=false;S.view='name';render();return}
+  const {data:res,error}=await sb.rpc('customer_add',{p_key:K,p_table:T,p_items:items,p_note:note,p_name:S.name||'',p_order:WALK?getWO():null});
+  if(!error&&WALK&&res&&res.order)setWO(res.order);
   S.sending=false;
   if(error){if(/table_closed/.test(String(error.message))){S.after='cart';S.view='closed';render();return}
     render();if($('#note'))$('#note').value=note;const [a,b]=rpcErr(error);$('#sendErr').textContent=a+' · '+b;return}
@@ -220,7 +230,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   else if(d.a==='note'){const n=$('#note');n.value=n.value?n.value+', '+d.v:d.v}
   else if(d.a==='send')send();
   else if(d.a==='editName'){S.view='name';render();$('main').scrollTop=0}
-  else if(d.a==='skipName'){S.view='menu';render()}});
+  else if(d.a==='skipName'){if(!WALK){S.view='menu';render()}}});
 start();
 </script>
 </body>
