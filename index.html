@@ -377,6 +377,20 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .floorseg .cnt{font-variant-numeric:tabular-nums;font-size:12px;background:rgba(0,0,0,.18);border-radius:999px;padding:0 7px}
 .ordno{display:block;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;letter-spacing:.02em;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kno{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--muted);padding:4px 14px 0}
+.seats{display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+.seats i{width:9px;height:9px;border-radius:3px;background:var(--line)}
+.seats span{font-size:12px;color:var(--muted);margin-left:4px}
+.seatviz{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--sunk);border-radius:10px;padding:10px 12px}
+.seatviz i{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);background:transparent}
+.seatviz i.on{background:var(--jade);border-color:var(--jade)}
+.seatviz i.over{background:var(--amber);border-color:var(--amber)}
+.seatviz span{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums}
+.seatgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.seatcell span{white-space:nowrap}
+.seatdef{width:52px;text-align:center;border:1px solid var(--line);border-radius:7px;background:var(--sunk);padding:4px 2px;color:var(--fg);margin:0 4px}
+.seatcell{display:flex;align-items:center;justify-content:space-between;gap:6px;border:1px solid var(--line);border-radius:9px;padding:4px 4px 4px 10px;font-size:13px;background:var(--surface)}
+.seatcell input{width:42px;text-align:center;border:1px solid var(--line);border-radius:7px;background:var(--sunk);padding:6px 2px;color:var(--fg)}
+@media (max-width:600px){.floorbar{flex-direction:column;align-items:stretch;gap:6px}.floorseg{display:flex}.floorseg button{flex:1;flex-direction:column;justify-content:center;gap:3px;padding:7px 4px;font-size:13px;text-align:center;line-height:1.2}.floorseg .nw{display:block;white-space:nowrap}.newch{display:grid;grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -446,7 +460,7 @@ const chChip=o=>{const c=chOf(o);return c==='dinein'?'':`<span class="chip-ch" s
 const orderTitle=o=>o.ref?'#'+o.ref:o.customerName?'คุณ'+o.customerName:hm(o.openedAt);
 const methodName=m=>m==='cash'?'เงินสด':m==='promptpay'?'พร้อมเพย์':(CH[m]?.n||m);
 
-const DEFAULTS={qrRequireOpen:true,qrWalkin:true,channels:{lineman:{on:true,markup:0,gp:0},grab:{on:true,markup:0,gp:0},shopee:{on:true,markup:0,gp:0}},shopName:'NueaLwoan',address:'',phone:'',taxId:'',receiptFooter:'ขอบคุณที่อุดหนุนครับ',paper:80,logo:'',pointsOn:true,pointsPer:50,pointValue:1,tables:10,promptpay:'',cats:['ก๋วยเตี๋ยว','ข้าว','ของทานเล่น','เครื่องดื่ม'],expCats:['ค่าเช่า','ค่าแรง','ค่าไฟ/น้ำ','ค่าแก๊ส','อุปกรณ์','อื่นๆ'],extraPrice:10};
+const DEFAULTS={seats:{},defSeats:4,qrRequireOpen:true,qrWalkin:true,channels:{lineman:{on:true,markup:0,gp:0},grab:{on:true,markup:0,gp:0},shopee:{on:true,markup:0,gp:0}},shopName:'NueaLwoan',address:'',phone:'',taxId:'',receiptFooter:'ขอบคุณที่อุดหนุนครับ',paper:80,logo:'',pointsOn:true,pointsPer:50,pointValue:1,tables:10,promptpay:'',cats:['ก๋วยเตี๋ยว','ข้าว','ของทานเล่น','เครื่องดื่ม'],expCats:['ค่าเช่า','ค่าแรง','ค่าไฟ/น้ำ','ค่าแก๊ส','อุปกรณ์','อื่นๆ'],extraPrice:10};
 const QUICK_NOTES=['พิเศษ','ไม่ใส่ผัก','ไม่ใส่ถั่วงอก','ไม่เผ็ด','เผ็ดมาก','ไม่ใส่ผงชูรส','ใส่ห่อ'];
 
 const PERMS=[['tables','เปิดโต๊ะ / รับออร์เดอร์'],['kitchen','หน้าครัว / กดเสิร์ฟ'],['pay','เก็บเงิน / ออกใบเสร็จ'],['discount','ให้ส่วนลด'],['void','ยกเลิกบิล'],['menu_edit','แก้เมนูและราคา'],['stock','สต็อก / ซื้อของเข้า'],['expenses','รายจ่ายร้าน'],['members','สมาชิกสะสมแต้ม'],['report','สรุปเงิน / รายงานกำไร']];
@@ -599,24 +613,28 @@ function viewTables(){
     <div class="stat"><b class="num">${busy}/${n}</b><span>โต๊ะที่มีลูกค้า</span></div>
     <div class="stat"><b class="money">${baht(pend)}</b><span>ยอดรอชำระ</span></div></div>`;
   h+=`<div class="quickbar"><button class="btn pri qb" data-act="quickOrder" type="button"><b>+ สั่ง Order</b><small>ไม่ต้องเลือกโต๊ะ</small></button>${S.settings.qrWalkin!==false?`<button class="btn qb" data-act="walkinQr" type="button"><b>QR ให้ลูกค้าสั่งเอง</b><small>ไม่ต้องเลือกโต๊ะ</small></button>`:''}</div>`;
-  const fl=S.floor==='other'?'other':'tables';
-  h+=`<div class="sec-h floorbar"><div class="floorseg" role="tablist" aria-label="มุมมองผังโต๊ะ"><button role="tab" aria-selected="${fl==='tables'}" data-act="floor" data-v="tables" type="button">เปิดโต๊ะ <span class="cnt">${busy}/${n}</span></button><button role="tab" aria-selected="${fl==='other'}" data-act="floor" data-v="other" type="button">ไม่ระบุโต๊ะ <span class="cnt">${ta.length}</span></button></div><span class="hint">${fl==='tables'?'แตะโต๊ะเพื่อเปิดโต๊ะหรือสั่งเพิ่ม':'ออร์เดอร์ไม่ระบุโต๊ะ · กลับบ้าน · เดลิเวอรี่'}</span></div>`;
+  const fl=['tables','other','deliv'].includes(S.floor)?S.floor:'tables';
+  const walk=ta.filter(o=>chOf(o)==='walkin'),dl=ta.filter(o=>chOf(o)!=='walkin');
+  const tabBtn=(v,label,cnt)=>`<button role="tab" aria-selected="${fl===v}" data-act="floor" data-v="${v}" type="button">${label} <span class="cnt">${cnt}</span></button>`;
+  h+=`<div class="sec-h floorbar"><div class="floorseg" role="tablist" aria-label="มุมมองผังโต๊ะ">${tabBtn('tables','เปิดโต๊ะ',busy+'/'+n)}${tabBtn('other','ไม่ระบุโต๊ะ',walk.length)}${tabBtn('deliv','<span class="nw">กลับบ้าน /</span> <span class="nw">เดลิเวอรี่</span>',dl.length)}</div><span class="hint">${fl==='tables'?'แตะโต๊ะเพื่อเปิดโต๊ะหรือสั่งเพิ่ม':fl==='other'?'ออร์เดอร์ที่ไม่ได้นั่งโต๊ะ และลูกค้าสั่งเองผ่าน QR':'เลือกช่องทางเพื่อเปิดออร์เดอร์ใหม่'}</span></div>`;
   if(fl==='tables'){h+=`<div class="tgrid">`;
   for(let i=1;i<=n;i++){const o=byTable[String(i)];
     if(o){const un=(o.items||[]).filter(l=>!l.served).reduce((a,l)=>a+l.qty,0);
       const cn=custNames(o);
       h+=`<button class="tcard busy" data-act="openTable" data-t="${i}" type="button"><div class="no">${i}<small>โต๊ะ</small></div>${ordNoTag(o)}${cn.length?`<div class="tname">คุณ${esc(cn.join(', คุณ'))}</div>`:''}
-      <div>${un?`<span class="pill warn">รอเสิร์ฟ ${un}</span>`:(o.items||[]).length?'<span class="pill ok">เสิร์ฟครบ</span>':'<span class="pill info">เปิดแล้ว · รอสั่ง</span>'}${o.guests?` <span class="pill mute">${o.guests} ท่าน</span>`:''}</div>
+      <div>${un?`<span class="pill warn">รอเสิร์ฟ ${un}</span>`:(o.items||[]).length?'<span class="pill ok">เสิร์ฟครบ</span>':'<span class="pill info">เปิดแล้ว · รอสั่ง</span>'}<span class="pill ${o.guests>seatsOf(i)?'warn':'mute'}">${o.guests?o.guests+'/':''}${seatsOf(i)} ที่นั่ง</span></div>
       <div class="meta"><span>${ago(o.openedAt)}</span><span class="tot">${baht(linesTotal(o.items))}</span></div></button>`}
-    else h+=`<button class="tcard" data-act="openTable" data-t="${i}" type="button"><div class="no">${i}<small>โต๊ะ</small></div><div class="meta"><span>ปิดอยู่</span><span>+ เปิดโต๊ะ</span></div></button>`}
+    else h+=`<button class="tcard" data-act="openTable" data-t="${i}" type="button"><div class="no">${i}<small>โต๊ะ</small></div><div class="seats">${'<i></i>'.repeat(Math.min(seatsOf(i),8))}<span>${seatsOf(i)} ที่นั่ง</span></div><div class="meta"><span>ปิดอยู่</span><span>+ เปิดโต๊ะ</span></div></button>`}
   h+=`</div>`;return h}
-  const chans=['takeaway',...DELIV.filter(c=>chCfg(c).on)];
-  h+=`<div class="newch">${chans.map(c=>`<button class="btn ch-btn" style="--chc:${CH[c].c}" data-act="newDel" data-ch="${c}" type="button">+ ${CH[c].n}</button>`).join('')}</div><div class="tgrid">`;
-  ta.sort((a,b)=>a.openedAt-b.openedAt).forEach(o=>{const un=(o.items||[]).filter(l=>!l.served).reduce((a,l)=>a+l.qty,0);
+  const list=fl==='other'?walk:dl;
+  if(fl==='deliv'){const chans=['takeaway',...DELIV.filter(c=>chCfg(c).on)];
+    h+=`<div class="newch">${chans.map(c=>`<button class="btn ch-btn" style="--chc:${CH[c].c}" data-act="newDel" data-ch="${c}" type="button">${CH[c].n}</button>`).join('')}</div>`}
+  h+=`<div class="tgrid">`;
+  list.sort((a,b)=>a.openedAt-b.openedAt).forEach(o=>{const un=(o.items||[]).filter(l=>!l.served).reduce((a,l)=>a+l.qty,0);
     h+=`<button class="tcard busy del" style="--chc:${CH[chOf(o)].c}" data-act="openOrder" data-id="${o.id}" type="button"><div>${chChip(o)}</div><div class="no" style="font-size:18px">${esc(orderTitle(o))}</div>${ordNoTag(o)}${o.customerName&&(o.ref)?`<div class="tname">คุณ${esc(o.customerName)}</div>`:''}
     <div>${un?`<span class="pill warn">รอทำ ${un}</span>`:(o.items||[]).length?'<span class="pill ok">พร้อมส่ง</span>':'<span class="pill info">รอใส่รายการ</span>'}</div>
     <div class="meta"><span>${ago(o.openedAt)}</span><span class="tot">${baht(linesTotal(o.items))}</span></div></button>`});
-  if(!ta.length)h+=`<div class="empty" style="grid-column:1/-1;padding:16px">ยังไม่มีออร์เดอร์ กด "+ สั่ง Order" หรือเลือกช่องทางด้านบน</div>`;
+  if(!list.length)h+=`<div class="empty" style="grid-column:1/-1;padding:16px">${fl==='other'?'ยังไม่มีออร์เดอร์ไม่ระบุโต๊ะ กด "+ สั่ง Order" หรือให้ลูกค้าสแกน QR สั่งเอง':'ยังไม่มีออร์เดอร์กลับบ้านหรือเดลิเวอรี่ กดเลือกช่องทางด้านบนเพื่อเปิดออร์เดอร์'}</div>`;
   h+=`</div>`;
   return h;
 }
@@ -760,7 +778,7 @@ const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`
 async function openTable(t){
   const ex=Object.values(S.open).find(o=>o.table===String(t));
   if(ex)return openSheet({type:'order',id:ex.id,cat:'all',q:'',edit:null});
-  openSheet({type:'openTbl',t:String(t),guests:2});}
+  openSheet({type:'openTbl',t:String(t),guests:Math.min(2,seatsOf(t))});}
 function sheetWalkinQr(){const k=S.settings.qrKey;
   if(!k){$('#panel').innerHTML=head('QR ให้ลูกค้าสั่งเอง')+`<div class="sh-body"><div class="empty"><b>ยังไม่มีรหัส QR</b>ให้แอดมินเปิด ตั้งค่าร้าน → QR ประจำโต๊ะ ก่อน</div></div>`;return}
   const url=tableUrl(0,k);
@@ -768,17 +786,24 @@ function sheetWalkinQr(){const k=S.settings.qrKey;
    <p class="help" style="margin:0">ให้ลูกค้าสแกนจากจอนี้ หรือพิมพ์ไปวางที่เคาน์เตอร์ ลูกค้าใส่ชื่อแล้วสั่งได้เลย ออร์เดอร์จะขึ้นในหมวด "ไม่ระบุโต๊ะ" และเข้าครัวทันที ถ้าลูกค้านั่งโต๊ะทีหลัง เปิดออร์เดอร์แล้วกด "ย้ายไปโต๊ะ" ได้</p></div>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="wqPrint" type="button">พิมพ์ QR</button></div>`;}
 function sheetOpenTbl(){const s=S.sheet;
-  $('#panel').innerHTML=head('เปิดโต๊ะ '+esc(s.t),'โต๊ะว่าง')+`<form class="sh-body" id="fOpen">
+  $('#panel').innerHTML=head('เปิดโต๊ะ '+esc(s.t),'โต๊ะว่าง · '+seatsOf(s.t)+' ที่นั่ง')+`<form class="sh-body" id="fOpen">
+   <div class="seatviz" id="seatViz"></div>
    <div class="field"><label>จำนวนลูกค้า</label><div class="stepper big"><button data-act="gst" data-d="-1" type="button" aria-label="ลด">−</button><span id="gN">${s.guests}</span><button data-act="gst" data-d="1" type="button" aria-label="เพิ่ม">+</button></div></div>
+   <p class="help" id="gWarn" style="margin:0"></p>
    <div class="field"><label for="otName">ชื่อลูกค้า (ถ้ามี)</label><input id="otName" maxlength="40" autocomplete="off" placeholder="เช่น คุณต้น"></div>
    <p class="help" style="margin:0">${S.settings.qrRequireOpen!==false?'เปิดโต๊ะแล้ว ลูกค้าสแกน QR ที่โต๊ะสั่งอาหารได้ทันที ก่อนเปิดโต๊ะ QR จะสั่งไม่ได้':'ร้านตั้งให้ลูกค้าสั่งผ่าน QR ได้โดยไม่ต้องเปิดโต๊ะ'}</p></form>
-   <div class="sh-foot"><button class="btn" data-act="close" type="button">ยกเลิก</button><button class="btn pri wide" data-act="doOpenTbl" type="button">เปิดโต๊ะ</button></div>`;}
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ยกเลิก</button><button class="btn pri wide" data-act="doOpenTbl" type="button">เปิดโต๊ะ</button></div>`;
+  seatUpdate();}
+function seatUpdate(){const s=S.sheet,n=seatsOf(s.t),g=s.guests;const v=$('#seatViz');if(!v)return;
+  v.innerHTML=Array.from({length:Math.max(n,g)},(_,i)=>`<i class="${i<g?(i<n?'on':'over'):''}" title="${i<n?'เก้าอี้ '+(i+1):'เสริม'}"></i>`).join('')+`<span>${g}/${n} ที่นั่ง</span>`;
+  $('#gWarn').textContent=g>n?`เกินจำนวนเก้าอี้ ${g-n} ที่ ต้องเสริมเก้าอี้หรือต่อโต๊ะ`:'';$('#gWarn').style.color=g>n?'var(--amber)':''}
 function sheetNewDel(){const s=S.sheet,c=CH[s.ch],cfg=chCfg(s.ch),del=DELIV.includes(s.ch);
   $('#panel').innerHTML=head('ออร์เดอร์ใหม่ · '+c.n,del?(cfg.markup?`ราคาเมนู +${cfg.markup}%`:'ราคาเท่าหน้าร้าน')+(cfg.gp?` · GP ${cfg.gp}%`:''):'ลูกค้ามารับที่ร้าน')+`<form class="sh-body">
    ${del?`<div class="field"><label for="ndRef">เลขออร์เดอร์ในแอป ${c.n}</label><input id="ndRef" maxlength="30" autocomplete="off" autocapitalize="characters" placeholder="เช่น ${s.ch==='grab'?'GF-123':s.ch==='lineman'?'LM123':'SF123'}"><span class="help">ไว้เทียบกับแอปตอนไรเดอร์มารับ</span></div>`:''}
    <div class="field"><label for="ndName">ชื่อลูกค้า${del?' / ไรเดอร์':''} (ถ้ามี)</label><input id="ndName" maxlength="40" autocomplete="off"></div></form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ยกเลิก</button><button class="btn pri wide" data-act="doNewDel" type="button">สร้างออร์เดอร์</button></div>`;
   setTimeout(()=>($('#ndRef')||$('#ndName'))?.focus(),50);}
+const seatsOf=t=>Math.max(1,+((S.settings.seats||{})[String(t)])||+S.settings.defSeats||4);
 const ordPrefix=t=>t==='TA'?'TX':'T'+t;
 function localOrderNo(prefix){const d=new Date(),p2=n=>String(n).padStart(2,'0');return prefix+'-'+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'-'+p2(d.getHours())+p2(d.getMinutes())+'-L'+String(Date.now()).slice(-3)}
 async function nextOrderNo(prefix){try{const {data,error}=await SB.rpc('next_order_no',{p_prefix:prefix});if(!error&&data)return data}catch(e){}return localOrderNo(prefix)}
@@ -1109,6 +1134,9 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
   $('#panel').innerHTML=head('ตั้งค่าร้าน')+
   `<form class="sh-body"><div class="field"><label for="cName">ชื่อร้าน</label><input id="cName" value="${esc(s.shopName)}"></div>
   <div class="grid2"><div class="field"><label for="cTables">จำนวนโต๊ะ</label><input id="cTables" inputmode="numeric" value="${s.tables}"></div><div class="field"><label for="cExtra">ราคา "พิเศษ" (บาท)</label><input id="cExtra" inputmode="decimal" value="${s.extraPrice??10}"></div></div>
+  <div class="card"><div class="sec-h"><h3>จำนวนเก้าอี้แต่ละโต๊ะ</h3><span class="hint">ค่าเริ่มต้น <input class="seatdef" id="cDefSeats" inputmode="numeric" value="${s.defSeats||4}" aria-label="ที่นั่งเริ่มต้น"> ที่</span></div>
+   <div class="seatgrid" id="seatGrid">${Array.from({length:Math.max(1,Math.min(60,+s.tables||10))},(_,k)=>{const t=k+1,v=(s.seats||{})[t];return `<label class="seatcell"><span>โต๊ะ ${t}</span><input inputmode="numeric" id="seat_${t}" data-seat="${t}" value="${v||''}" placeholder="${s.defSeats||4}"></label>`}).join('')}</div>
+   <p class="help" style="margin:0">เว้นว่าง = ใช้ค่าเริ่มต้น · เพิ่มจำนวนโต๊ะแล้วกดบันทึก ช่องของโต๊ะใหม่จะขึ้นเมื่อเปิดหน้านี้อีกครั้ง</p></div>
   <div class="field"><label for="cPP">พร้อมเพย์ของร้าน</label><input id="cPP" inputmode="numeric" value="${esc(s.promptpay)}" placeholder="เบอร์มือถือ 10 หลัก หรือเลขบัตร 13 หลัก"><span class="help">ใช้สร้าง QR พร้อมยอดเงินตอนเก็บเงิน</span></div>
   <div class="field"><label for="cCats">หมวดเมนู (คั่นด้วย ,)</label><input id="cCats" value="${esc((s.cats||[]).join(', '))}"></div>
   <div class="field"><label for="cExp">หมวดรายจ่าย (คั่นด้วย ,)</label><input id="cExp" value="${esc((s.expCats||[]).join(', '))}"></div>
@@ -1199,6 +1227,7 @@ async function saveSettings(){const pp=val('cPP').replace(/\D/g,'');if(pp&&!ppVa
   const split=v=>v.split(/[,，]/).map(x=>x.trim()).filter(Boolean);
   const data={...S.settings,shopName:val('cName')||'NueaLwoan',tables:Math.max(1,Math.min(60,Math.round(nval('cTables'))||10)),extraPrice:nval('cExtra'),promptpay:pp,cats:split(val('cCats')),expCats:split(val('cExp')),qrKey:S.settings.qrKey||newQrKey(),
     logo:S.sheet.logo??S.settings.logo??'',address:val('cAddr'),phone:val('cPhone'),taxId:val('cTax'),receiptFooter:val('cFoot'),paper:+val('cPaper')||80,
+    defSeats:Math.max(1,Math.min(30,Math.round(nval('cDefSeats'))||4)),seats:Object.fromEntries([...document.querySelectorAll('[data-seat]')].map(e=>[e.dataset.seat,Math.round(parseFloat(e.value))]).filter(([,v])=>v>0&&v<=30)),
     qrRequireOpen:$('#cQrOpen').checked,qrWalkin:$('#cQrWalk').checked,channels:Object.fromEntries(DELIV.map(c=>[c,{on:$('#chOn_'+c).checked,markup:Math.max(0,nval('chMk_'+c)),gp:Math.min(100,Math.max(0,nval('chGp_'+c)))}])),
     pointsOn:$('#cPtsOn').checked,pointsPer:Math.max(1,nval('cPtsPer')||50),pointValue:Math.max(0.01,nval('cPtsVal')||1)};
   if(!data.cats.length)data.cats=DEFAULTS.cats;if(!data.expCats.length)data.expCats=DEFAULTS.expCats;
@@ -1244,9 +1273,9 @@ const ACT={
   floor:d=>{S.floor=d.v;try{localStorage.setItem('nl_floor',d.v)}catch(e){}render()},
   newTakeaway:()=>openSheet({type:'newDel',ch:'takeaway'}),
   newDel:d=>can('tables')?openSheet({type:'newDel',ch:d.ch}):deny(),
-  gst:d=>{S.sheet.guests=Math.max(1,Math.min(50,S.sheet.guests+ +d.d));$('#gN').textContent=S.sheet.guests},
+  gst:d=>{S.sheet.guests=Math.max(1,Math.min(50,S.sheet.guests+ +d.d));$('#gN').textContent=S.sheet.guests;seatUpdate()},
   doOpenTbl:()=>{const s=S.sheet;if(Object.values(S.open).some(o=>o.table===s.t))return openTable(s.t);createOrder({table:s.t,channel:'dinein',guests:s.guests,customerName:val('otName')});toast('เปิดโต๊ะ '+s.t+' แล้ว')},
-  doNewDel:()=>{const s=S.sheet,ref=val('ndRef').toUpperCase(),nm=val('ndName');createOrder({table:'TA',channel:s.ch,ref,customerName:nm,label:CH[s.ch].n+(ref?' #'+ref:' '+hm(Date.now()))})},
+  doNewDel:()=>{S.floor='deliv';const s=S.sheet,ref=val('ndRef').toUpperCase(),nm=val('ndName');createOrder({table:'TA',channel:s.ch,ref,customerName:nm,label:CH[s.ch].n+(ref?' #'+ref:' '+hm(Date.now()))})},
   closeTbl:async()=>{const id=S.sheet.id,o=S.open[id];if(!o)return;if((o.items||[]).length)return toast('มีรายการอยู่ ต้องยกเลิกบิลแทน','bad');
     const ok=await write('orders/'+id,r=>r.transform(d=>d.status==='open'&&!(d.items||[]).length?{status:'void',closedEmpty:true,voidedAt:Date.now()}:null));if(ok){closeSheet();toast(o.table==='TA'?'ยกเลิกออร์เดอร์แล้ว':'ปิดโต๊ะแล้ว')}},
   pcat:d=>{S.sheet.cat=d.v;renderPicker()},
