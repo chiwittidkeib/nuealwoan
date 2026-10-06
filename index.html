@@ -770,7 +770,7 @@ function viewKitchen(){
 
 function viewMenu(){
   const cats=S.settings.cats||[];
-  let h=`<div class="sec-h"><h2>เมนูและราคา</h2>${can('menu_edit')?'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
+  let h=`<div class="sec-h"><h2>เมนูและราคา</h2>${can('menu_edit')?'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
   <div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div>`;
   const list=S.menu.filter(m=>S.menuCat==='all'||m.cat===S.menuCat);
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุนต่อจาน</div>`;
@@ -891,7 +891,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order')renderOrderLines();else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,receipt:sheetReceipt,member:sheetMember}[s.type])();}
+  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,receipt:sheetReceipt,member:sheetMember}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -1197,6 +1197,24 @@ function renderIng(){const box=$('#ingList');if(!box)return;const R=S.sheet.reci
    <div class="field"><label for="iq${i}">ใช้ (${esc(s?.unit||'หน่วย')})</label><input id="iq${i}" data-ing="${i}" data-k="qty" inputmode="decimal" value="${g.qty??''}"></div>
    <button class="btn sm ghost" data-act="delIng" data-i="${i}" type="button" aria-label="ลบ">×</button></div>`}).join(''):(S.stock.length?'':'<p class="help" style="margin:8px 0 0">ยังไม่มีวัตถุดิบในสต็อก เพิ่มได้ที่แท็บหลังบ้าน</p>');}
 const OPT_TPL={noodle:['เลือกเส้น','req1',['เส้นเล็ก','เส้นใหญ่','เส้นหมี่','บะหมี่','วุ้นเส้น','เกาเหลา (ไม่ใส่เส้น)']],soup:['น้ำซุป','req1',['น้ำใส','น้ำตก','ต้มยำ','แห้ง']],size:['ขนาด','req1',[['ธรรมดา',0],['พิเศษ',10]]],top:['เพิ่มท็อปปิ้ง','multi',[['เพิ่มเนื้อ',20],['เพิ่มลูกชิ้น',10],['ไข่ต้ม',10]]],spicy:['ความเผ็ด','opt1',['ไม่เผ็ด','เผ็ดน้อย','เผ็ดกลาง','เผ็ดมาก']]};
+function sheetOptBulk(){const sh=S.sheet;const cats=[...new Set(S.menu.map(m=>m.cat||'ไม่มีหมวด'))];
+  if(!sh.tpl){sh.tpl={noodle:true,soup:false,size:true,top:true,spicy:false};const nc=cats.find(c=>/ก๋วยเตี๋ยว|เส้น/.test(c));sh.pick=Object.fromEntries(S.menu.map(m=>[m.id,!!nc&&(m.cat||'ไม่มีหมวด')===nc]))}
+  const tplRow=k=>{const t=OPT_TPL[k];return `<label class="check" style="align-items:flex-start"><input type="checkbox" data-tpl="${k}" ${sh.tpl[k]?'checked':''}><span><b>${t[0]}</b> <span class="muted" style="font-size:12.5px">(${t[1]==='req1'?'ต้องเลือก 1':t[1]==='opt1'?'เลือกได้ 1':'เลือกได้หลายอย่าง'})</span><br><small class="muted">${t[2].map(c=>Array.isArray(c)?c[0]+(c[1]?' +'+c[1]:''):c).join(' · ')}</small></span></label>`};
+  $('#panel').innerHTML=head('ตั้งตัวเลือกหลายเมนู','ใส่เส้น / ขนาด / ท็อปปิ้ง ให้หลายเมนูพร้อมกัน')+`<div class="sh-body">
+   <div class="card"><h3>1. เลือกชุดตัวเลือก</h3><div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">${Object.keys(OPT_TPL).map(tplRow).join('')}</div>
+   <p class="help" style="margin:8px 0 0">ใส่แล้วแก้ชื่อหรือราคาทีละเมนูได้ที่ แก้ไขเมนู → ตัวเลือกเมนู · เมนูที่มีกลุ่มชื่อเดียวกันอยู่แล้วจะข้ามกลุ่มนั้น</p></div>
+   <div class="card"><h3>2. เลือกเมนูที่จะใส่</h3>${cats.map(c=>{const ms=S.menu.filter(m=>(m.cat||'ไม่มีหมวด')===c);return `<div style="margin-top:10px"><div class="sec-h" style="margin:0"><b>${esc(c)}</b><button class="lnk" data-act="obCat" data-v="${esc(c)}" type="button">${ms.every(m=>sh.pick[m.id])?'ไม่เลือกทั้งหมวด':'เลือกทั้งหมวด'}</button></div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:6px">${ms.map(m=>`<label class="check"><input type="checkbox" data-obm="${m.id}" ${sh.pick[m.id]?'checked':''}><span>${esc(m.name)}${hasOpts(m)?' <small class="muted">(มีแล้ว '+optGroups(m).length+')</small>':''}</span></label>`).join('')}</div></div>`}).join('')}</div></div>
+   <div class="sh-foot"><button class="btn pri wide" data-act="obSave" type="button">ใส่ตัวเลือกให้เมนูที่เลือก</button></div>`;
+  $('#panel').querySelectorAll('[data-tpl]').forEach(e=>e.addEventListener('change',()=>sh.tpl[e.dataset.tpl]=e.checked));
+  $('#panel').querySelectorAll('[data-obm]').forEach(e=>e.addEventListener('change',()=>sh.pick[e.dataset.obm]=e.checked));}
+async function optBulkSave(){const sh=S.sheet,keys=Object.keys(OPT_TPL).filter(k=>sh.tpl[k]),ids=S.menu.filter(m=>sh.pick[m.id]).map(m=>m.id);
+  if(!keys.length)return toast('เลือกชุดตัวเลือกอย่างน้อย 1 ชุด','bad');if(!ids.length)return toast('เลือกเมนูอย่างน้อย 1 เมนู','bad');
+  const b=document.querySelector('[data-act="obSave"]');if(b){b.disabled=true;b.textContent='กำลังบันทึก…'}let n=0;
+  for(const id of ids){const m=S.menu.find(x=>x.id===id);const cur=Array.isArray(m.options)?m.options.slice():[];
+    keys.forEach(k=>{const t=OPT_TPL[k];if(cur.some(g=>g.name===t[0]))return;cur.push({id:uid(),name:t[0],req:t[1]==='req1',max:t[1]==='multi'?0:1,choices:t[2].map(c=>Array.isArray(c)?{id:uid(),name:c[0],price:c[1]}:{id:uid(),name:c,price:0})})});
+    const ok=await write('menu/'+id,r=>r.update({options:cur}));if(ok){n++;m.options=cur}}
+  closeSheet();render();toast('ใส่ตัวเลือกให้ '+n+' เมนูแล้ว');}
 function renderOpts(){const box=$('#optList');if(!box)return;const O=S.sheet.opts;
   box.innerHTML=O.map((g,i)=>`<div class="og"><div class="og-h"><input data-eg="${i}" data-k="name" value="${esc(g.name)}" placeholder="ชื่อกลุ่ม เช่น เลือกเส้น" aria-label="ชื่อกลุ่มตัวเลือก"><button class="btn sm ghost" data-act="ogDel" data-i="${i}" type="button">ลบกลุ่ม</button></div>
     <select data-eg="${i}" data-k="type" aria-label="วิธีเลือก"><option value="req1" ${g.type==='req1'?'selected':''}>ต้องเลือก 1 อย่าง (บังคับ)</option><option value="opt1" ${g.type==='opt1'?'selected':''}>เลือกได้ 1 อย่าง (ไม่บังคับ)</option><option value="multi" ${g.type==='multi'?'selected':''}>เลือกได้หลายอย่าง (ไม่บังคับ)</option></select>
@@ -1494,6 +1512,9 @@ const ACT={
   serve:d=>mutateItems(d.id,items=>{const l=items.find(x=>x.id===d.l);if(l)l.served=true;return items}),
   serveAll:d=>mutateItems(d.id,items=>items.map(l=>({...l,served:true}))),
   menuCat:d=>{S.menuCat=d.v;render()},
+  optBulk:()=>can('menu_edit')?openSheet({type:'optBulk'}):deny(),
+  obCat:d=>{const sh=S.sheet,ms=S.menu.filter(m=>(m.cat||'ไม่มีหมวด')===d.v),on=!ms.every(m=>sh.pick[m.id]);ms.forEach(m=>sh.pick[m.id]=on);sheetOptBulk()},
+  obSave:optBulkSave,
   menuEdit:d=>{if(!can('menu_edit'))return deny();openSheet({type:'menuEdit',id:d.id||null})},
   addIng:()=>{readIng();S.sheet.recipe.push({stockId:'',qty:0});renderIng()},
   delIng:d=>{readIng();S.sheet.recipe.splice(+d.i,1);renderIng()},
