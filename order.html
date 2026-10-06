@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.06-1820">
+<meta name="app-version" content="2026.10.06-1900">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -161,6 +161,10 @@ body.welcome .callb{display:none}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#ffd58a;color:#3a2600;padding:10px 16px;border-radius:12px;font-weight:600;z-index:99;box-shadow:0 6px 24px rgba(0,0,0,.4);max-width:90vw;text-align:center}
 .updbar{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:99;background:#ffd58a;color:#2b1c00;border-radius:12px;padding:8px 10px 8px 14px;display:flex;gap:10px;align-items:center;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.45);white-space:nowrap}
 .updbar button{border:0;border-radius:9px;background:#2b1c00;color:#ffd58a;font:inherit;padding:6px 12px;cursor:pointer}
+.pushbtn{display:flex;flex-direction:column;align-items:center;gap:2px;white-space:normal;text-align:center;border-color:#ffd58a;color:#ffd58a}
+.pushbtn small{font-weight:400;font-size:12.5px;color:var(--muted)}
+.pushc{font-size:13px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;text-align:center}
+.pushc.on{color:var(--jade);border-style:solid}
 </style>
 </head>
 <body>
@@ -238,6 +242,26 @@ function toast(m){const o=document.querySelector('.toast');if(o)o.remove();const
 const CALLS={staff:'เรียกพนักงาน',pay:'ขอชำระเงิน / เช็คบิล',paid:'แจ้งโอนเงินแล้ว',water:'ขอน้ำ / น้ำแข็งเพิ่ม'};
 function billCalc(st){const sub=r2(st.total||0),v=st.vat||{};if(!v.on||!(+v.rate>0))return {sub,vat:0,total:sub,mode:''};const rt=+v.rate;
   if(v.mode==='excl'){const vat=r2(sub*rt/100);return {sub,vat,total:r2(sub+vat),mode:'excl',rate:rt}}const vat=r2(sub*rt/(100+rt));return {sub,vat,total:sub,mode:'incl',rate:rt}}
+
+/* ---------- แจ้งเตือนแม้ล็อกจอ (Web Push) ใช้ร่วมกันทั้งหน้าพนักงานและหน้าลูกค้า ---------- */
+const PUSH={reg:null,key:null,
+  ok:()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window,
+  ios:/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),
+  standalone:()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}},
+  fn:()=>String((window.APP_CONFIG||{}).SUPABASE_URL||'').replace(/\/$/,'')+'/functions/v1/push',
+  async init(){if(this.reg||!('serviceWorker' in navigator))return this.reg;try{this.reg=await navigator.serviceWorker.register('sw.js');await navigator.serviceWorker.ready}catch(e){this.reg=null}return this.reg},
+  async loadKey(){if(this.key)return this.key;const cfg=window.APP_CONFIG||{};let r;try{r=await fetch(this.fn(),{method:'POST',headers:{'Content-Type':'application/json',apikey:cfg.SUPABASE_KEY||''},body:'{"op":"pubkey"}'})}catch(e){throw new Error('nofn')}
+    if(!r.ok)throw new Error('nofn');const j=await r.json();if(!j.key)throw new Error('nofn');return this.key=j.key},
+  b64(s){const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))},
+  async current(){const r=await this.init();return r?await r.pushManager.getSubscription():null},
+  async subscribe(){if(!this.ok())throw new Error('unsupported');
+    const perm=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(perm!=='granted')throw new Error('denied');
+    const reg=await this.init();if(!reg)throw new Error('nosw');const key=await this.loadKey();let sub=await reg.pushManager.getSubscription();
+    if(sub){try{const k=sub.options&&sub.options.applicationServerKey;if(k&&btoa(String.fromCharCode(...new Uint8Array(k))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')!==key){await sub.unsubscribe();sub=null}}catch(e){}}
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:this.b64(key)});return JSON.parse(JSON.stringify(sub))},
+  async hash(s){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].slice(0,12).map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))|0;return 'h'+(h>>>0).toString(16)}},
+  errText(e){const m=String(e&&e.message||e);return /denied/.test(m)?'ถูกปิดการแจ้งเตือนไว้ ไปเปิดที่ ตั้งค่าเบราว์เซอร์/ตั้งค่ามือถือ → การแจ้งเตือน':/unsupported/.test(m)?(this.ios&&!this.standalone()?'iPhone/iPad ต้องเพิ่มเว็บไปที่หน้าจอโฮมก่อน (Safari → ปุ่มแชร์ → เพิ่มไปยังหน้าจอโฮม) แล้วเปิดจากไอคอน':'เบราว์เซอร์นี้ไม่รองรับ ลองใช้ Chrome'):/nofn/.test(m)?'ติดต่อระบบแจ้งเตือนไม่ได้ (ตรวจว่าติดตั้ง Edge Function "push" และปิด Verify JWT แล้ว)':'เปิดแจ้งเตือนไม่สำเร็จ ลองอีกครั้ง'}};
+
 const P=new URLSearchParams(location.search);
 const T=(P.get('t')||'').replace(/\D/g,''),K=P.get('k')||'';
 const NOTES=['ไม่ใส่ผัก','ไม่ใส่ถั่วงอก','ไม่เผ็ด','เผ็ดมาก','ไม่ใส่ผงชูรส','ใส่ห่อ'];
@@ -309,6 +333,15 @@ setInterval(()=>{if(S.view==='closed'&&!document.hidden)loadStatus()},6000);
 let tick=0;setInterval(()=>{if(!sb||document.hidden||['name','closed','off'].includes(S.view))return;tick++;
   if(['status','done','bill'].includes(S.view)||tick%3===0)loadStatus()},4000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&sb&&!['name','off'].includes(S.view))loadStatus()});
+const pushKey=()=>'nl_push_'+(myOrder()||'');
+function pushCard(st){if(!st.items.length)return '';let on=false;try{on=!!localStorage.getItem(pushKey())}catch(e){}
+  if(on&&PUSH.ok()&&Notification.permission==='granted')return `<div class="pushc on">🔔 เปิดแจ้งเตือนแล้ว · ล็อกจอได้เลย จะแจ้งเมื่อคิวขยับ ถึงคิว และเสิร์ฟครบ</div>`;
+  if(!PUSH.ok())return PUSH.ios&&!PUSH.standalone()?`<div class="pushc">📱 iPhone: แจ้งเตือนบนหน้าจอล็อกใช้ได้เมื่อเพิ่มเว็บนี้ไว้ที่หน้าจอโฮม (ปุ่มแชร์ → เพิ่มไปยังหน้าจอโฮม) · หรือเปิดหน้านี้ค้างไว้ สถานะอัปเดตเอง</div>`:'';
+  return `<button class="btn pushbtn" data-a="pushOn" type="button">🔔 แจ้งเตือนคิวบนหน้าจอล็อก<small>ล็อกจอได้ จะแจ้งเมื่อคิวขยับ ถึงคิว และอาหารเสิร์ฟครบ</small></button>`}
+async function pushOn(b){if(b)b.disabled=true;try{const sub=await PUSH.subscribe();
+  const {error}=await sb.rpc('customer_push_sub',{p_key:K,p_table:T,p_order:myOrder(),p_sub:sub,p_url:location.href});if(error)throw new Error(/no_order/.test(error.message)?'noorder':'rpc');
+  try{localStorage.setItem(pushKey(),'1')}catch(e){}toast('เปิดแจ้งเตือนแล้ว ล็อกจอได้เลย');render()}
+  catch(e){toast(/noorder/.test(String(e.message))?'สั่งอาหารก่อน แล้วค่อยเปิดแจ้งเตือน':/rpc/.test(String(e.message))?'ร้านยังไม่ได้เปิดระบบแจ้งเตือน':PUSH.errText(e));if(b)b.disabled=false}}
 function setCall(){const b=$('#callBtn');if(!b)return;const st=S.status||{};const can=!['name','closed','off'].includes(S.view)&&(!WALK||!!getWO());b.hidden=!can;
   const c=st.call,on=c&&(Date.now()+(S.skew||0)-c.at)<15*60000;b.classList.toggle('on',!!on);b.textContent=on?'🔔 เรียกแล้ว':'🔔 เรียกพนักงาน'}
 async function doCall(kind){const {data,error}=await sb.rpc('customer_call',{p_key:K,p_table:T,p_order:WALK?getWO():null,p_kind:kind,p_name:S.name||''});
@@ -374,7 +407,7 @@ function render(){
       :`<div class="qcard ok"><small>สถานะ</small><b>เสิร์ฟครบแล้ว ✓</b><span class="t">ทานให้อร่อยนะครับ ต้องการอะไรเพิ่มกด "สั่งเพิ่ม" หรือ "เรียกพนักงาน"</span></div>`;
     h=(S.view==='done'?`<div class="msg" style="padding:16px 8px 4px"><h2>ส่งรายการเข้าครัวแล้ว${S.name?' คุณ'+esc(S.name):''}</h2><p class="muted" style="margin:0">${WALK?'พนักงานจะเรียกชื่อ คุณ'+esc(S.name)+' เมื่ออาหารพร้อม':'รออาหารที่โต๊ะ '+esc(T)+' ได้เลย'}</p></div>`:`<h2>รายการ${where()}</h2>`)+q+
       (st.items.length?`<div class="list">${st.items.map(l=>`<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opt?`<div class="optx">${esc(l.opt)}</div>`:''}${l.note?`<div class="who">${esc(l.note)}</div>`:''}<div class="tm">${l.at?'สั่ง '+hm(l.at):''}${l.cname?' · คุณ'+esc(l.cname):''}</div></div><span class="pill ${l.served?'ok':'warn'}">${l.served?'เสิร์ฟแล้ว':'กำลังทำ'}</span><div class="r">${baht(l.amount)}</div></div>`).join('')}<div class="row"><div class="g"><b>ยอดรวมตอนนี้</b></div><div class="r"><b>${baht(st.total)}</b></div></div></div>
-      <p class="tm" style="margin:0;text-align:center">อัปเดตสถานะอัตโนมัติ</p>`:'<p class="muted">ยังไม่มีรายการ</p>');
+      <p class="tm" style="margin:0;text-align:center">อัปเดตสถานะอัตโนมัติ</p>${pushCard(st)}`:'<p class="muted">ยังไม่มีรายการ</p>');
     ft=st.items.length?`<button class="btn" data-a="view" data-v="menu" type="button">สั่งเพิ่ม</button><button class="btn pri wide" data-a="view" data-v="bill" type="button">ตรวจสอบยอด / ชำระเงิน</button>`:`<button class="btn pri wide" data-a="view" data-v="menu" type="button">สั่งเพิ่ม</button>`;
   }
   const keep=$('#note')?.value;
@@ -398,6 +431,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   else if(d.a==='qty'){const e=S.cart[d.k];if(!e)return;e.qty+= +d.d;if(e.qty<1)delete S.cart[d.k];render()}
   else if(d.a==='view'){S.view=d.v;render();$('main').scrollTop=0;window.scrollTo(0,0);if(d.v==='status'||d.v==='bill')loadStatus()}
   else if(d.a==='callAsk')callAsk();
+  else if(d.a==='pushOn')pushOn(b);
   else if(d.a==='call')doCall(d.v);
   else if(d.a==='note'){const n=$('#note');n.value=n.value?n.value+', '+d.v:d.v}
   else if(d.a==='send')send();

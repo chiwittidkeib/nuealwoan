@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.06-1820">
+<meta name="app-version" content="2026.10.06-1900">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -10,6 +10,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>NueaLwoan</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="images/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="NueaLwoan">
 <meta name="application-name" content="NueaLwoan">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -542,6 +546,26 @@ function optPick(m,cfg){cfg=cfg||{};const G=optGroups(m);const pick={};G.forEach
       note=(el.querySelector('#opNote')?.value||'').trim();const opts=sel();close();cfg.onAdd&&cfg.onAdd({opts,qty,note,unit:unit()})}});
   draw();}
 
+
+/* ---------- แจ้งเตือนแม้ล็อกจอ (Web Push) ใช้ร่วมกันทั้งหน้าพนักงานและหน้าลูกค้า ---------- */
+const PUSH={reg:null,key:null,
+  ok:()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window,
+  ios:/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),
+  standalone:()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}},
+  fn:()=>String((window.APP_CONFIG||{}).SUPABASE_URL||'').replace(/\/$/,'')+'/functions/v1/push',
+  async init(){if(this.reg||!('serviceWorker' in navigator))return this.reg;try{this.reg=await navigator.serviceWorker.register('sw.js');await navigator.serviceWorker.ready}catch(e){this.reg=null}return this.reg},
+  async loadKey(){if(this.key)return this.key;const cfg=window.APP_CONFIG||{};let r;try{r=await fetch(this.fn(),{method:'POST',headers:{'Content-Type':'application/json',apikey:cfg.SUPABASE_KEY||''},body:'{"op":"pubkey"}'})}catch(e){throw new Error('nofn')}
+    if(!r.ok)throw new Error('nofn');const j=await r.json();if(!j.key)throw new Error('nofn');return this.key=j.key},
+  b64(s){const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0))},
+  async current(){const r=await this.init();return r?await r.pushManager.getSubscription():null},
+  async subscribe(){if(!this.ok())throw new Error('unsupported');
+    const perm=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(perm!=='granted')throw new Error('denied');
+    const reg=await this.init();if(!reg)throw new Error('nosw');const key=await this.loadKey();let sub=await reg.pushManager.getSubscription();
+    if(sub){try{const k=sub.options&&sub.options.applicationServerKey;if(k&&btoa(String.fromCharCode(...new Uint8Array(k))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')!==key){await sub.unsubscribe();sub=null}}catch(e){}}
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:this.b64(key)});return JSON.parse(JSON.stringify(sub))},
+  async hash(s){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].slice(0,12).map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))|0;return 'h'+(h>>>0).toString(16)}},
+  errText(e){const m=String(e&&e.message||e);return /denied/.test(m)?'ถูกปิดการแจ้งเตือนไว้ ไปเปิดที่ ตั้งค่าเบราว์เซอร์/ตั้งค่ามือถือ → การแจ้งเตือน':/unsupported/.test(m)?(this.ios&&!this.standalone()?'iPhone/iPad ต้องเพิ่มเว็บไปที่หน้าจอโฮมก่อน (Safari → ปุ่มแชร์ → เพิ่มไปยังหน้าจอโฮม) แล้วเปิดจากไอคอน':'เบราว์เซอร์นี้ไม่รองรับ ลองใช้ Chrome'):/nofn/.test(m)?'ติดต่อระบบแจ้งเตือนไม่ได้ (ตรวจว่าติดตั้ง Edge Function "push" และปิด Verify JWT แล้ว)':'เปิดแจ้งเตือนไม่สำเร็จ ลองอีกครั้ง'}};
+
 const hm=t=>new Date(t).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
 const dshort=t=>new Date(t).toLocaleDateString('th-TH',{day:'numeric',month:'short'});
 const dlong=t=>new Date(t).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -650,10 +674,11 @@ async function startData(){
   if(!['owner','staff','waiter','chef','partner'].includes(st.data)){S.state='nostaff';render();return}
   S.role=st.data;
   if(S.role==='owner'){try{const m=localStorage.getItem('nl_mode');if(m&&ROLES[m]&&m!=='owner')S.viewAs=m}catch(e){}}
-  const u=await SB.auth.getUser();S.me=emailToUser(u.data.user?.email||'');
+  const u=await SB.auth.getUser();S.me=emailToUser(u.data.user?.email||'');S.email=String(u.data.user?.email||'').toLowerCase();
 
   const db=makeDb(SB);
   S.db=db;S.state='ready';render();
+  pushBoot();
   const day0=sod();setInterval(()=>{if(sod()!==day0&&!S.sheet&&!S.cust)location.reload()},60000);
   db.doc('config/permissions').onSnapshot(s=>{S.perms=s.exists?(s.data().roles||null):null;render();refreshSheet()},onErr);
   db.doc('config/settings').onSnapshot(s=>{S.settings={...DEFAULTS,...(s.exists?s.data():{})};render();refreshSheet()},onErr);
@@ -1342,11 +1367,20 @@ function bellCard(){const c=bellCfg(),opt=v=>Object.entries(BELLS).map(([k,n])=>
      <div class="inrow" style="margin-top:6px"><button class="btn sm" data-act="bellSay" type="button">🗣 ฟังตัวอย่างเสียงพูด</button><span class="help">${window.speechSynthesis?(thVoice()?'มีเสียงพูดภาษาไทยในเครื่องนี้':'ถ้าไม่ได้ยินเสียงพูดไทย ให้ติดตั้งเสียงภาษาไทยในตั้งค่ามือถือ'):'เบราว์เซอร์นี้พูดไม่ได้ จะใช้กริ่งแทน'}</span></div></div>
    <div class="grid2"><div class="field"><label for="bVol">ความดัง ${Math.round((+c.vol||1)*100)}%</label><input id="bVol" type="range" min="10" max="100" step="10" value="${Math.round((+c.vol||1)*100)}" data-bell="vol" style="min-height:0;padding:0;border:0;background:none"></div>
    <div class="field"><label for="bRep">ดังซ้ำจนกดรับทราบ</label><select id="bRep" data-bell="rep">${[[0,'ดังครั้งเดียว'],[8,'ทุก 8 วินาที'],[12,'ทุก 12 วินาที'],[20,'ทุก 20 วินาที'],[30,'ทุก 30 วินาที']].map(([v,n])=>`<option value="${v}" ${+c.rep===v?'selected':''}>${n}</option>`).join('')}</select></div></div>
+   <div class="field" style="border-top:1px solid var(--line);padding-top:10px;margin-top:4px"><label>📲 แจ้งเตือนแม้ล็อกจอ / ปิดแอปอยู่</label><span class="help" id="pushStat">กำลังตรวจสอบ…</span>
+     <div class="inrow" style="flex-wrap:wrap;gap:8px;margin-top:6px"><button class="btn sm pri" id="pushOnBtn" data-act="pushOn" type="button">เปิดแจ้งเตือนบนเครื่องนี้</button><button class="btn sm" id="pushTestBtn" data-act="pushTest" type="button" hidden>ส่งทดสอบ</button></div></div>
    <div class="inrow" style="flex-wrap:wrap;gap:8px"><label class="btn sm" for="bFile">อัปโหลดเสียงของฉัน</label><input id="bFile" type="file" accept="audio/*" hidden>${bellCustom()?'<button class="btn sm ghost" data-act="bellDel" type="button">ลบเสียงของฉัน</button>':''}<span class="help">${Bell.ok?'เสียงเปิดอยู่':'แตะ ▶ เพื่อเปิดเสียงในเครื่องนี้'} · ไฟล์ mp3/m4a ไม่เกิน 1 MB</span></div></div>`}
-function bellBind(){document.querySelectorAll('[data-bell]').forEach(e=>e.addEventListener(e.type==='range'?'input':'change',()=>{const c=bellCfg(),k=e.dataset.bell;c[k]=k==='vol'?(+e.value/100):k==='rep'?+e.value:e.value;bellSave(c);if(k==='mode')return;
+function bellBind(){pushStatus();if(PUSH.ok())PUSH.loadKey().catch(()=>{});document.querySelectorAll('[data-bell]').forEach(e=>e.addEventListener(e.type==='range'?'input':'change',()=>{const c=bellCfg(),k=e.dataset.bell;c[k]=k==='vol'?(+e.value/100):k==='rep'?+e.value:e.value;bellSave(c);if(k==='mode')return;
     if(k==='vol'){const l=e.closest('.field').querySelector('label');if(l)l.textContent='ความดัง '+e.value+'%'}else if(k!=='rep'){Bell.unlock();Bell.ring(null,e.value)}}));
   const f=$('#bFile');if(f)f.addEventListener('change',()=>{const x=f.files&&f.files[0];if(!x)return;if(x.size>1048576)return toast('ไฟล์ใหญ่เกิน 1 MB ตัดเสียงให้สั้นลงก่อน','bad');
     const r=new FileReader();r.onload=()=>{try{localStorage.setItem('nl_bell_custom',r.result)}catch(e){return toast('เครื่องนี้เก็บไฟล์ไม่พอ ลองไฟล์ที่เล็กลง','bad')}const c=bellCfg();c.staff='custom';bellSave(c);Bell.unlock();Bell.ring(null,'custom');toast('ใช้เสียงของคุณแล้ว');refreshBellCard()};r.readAsDataURL(x)})}
+async function pushBoot(){try{SB.rpc('push_setup',{p_url:PUSH.fn()}).then(()=>{},()=>{})}catch(e){}
+  if(!PUSH.ok())return;await PUSH.init();try{if(Notification.permission==='granted'){const sub=await PUSH.current();if(sub)await pushSaveStaff(JSON.parse(JSON.stringify(sub)))}}catch(e){}}
+async function pushSaveStaff(sub){const id='s-'+await PUSH.hash(sub.endpoint);return write('push/'+id,r=>r.set({role:'staff',email:S.email||'',sub,at:Date.now(),ua:navigator.userAgent.slice(0,90)}))}
+async function pushStatus(){const el=$('#pushStat');if(!el)return;let t,on=false;
+  if(!PUSH.ok())t=PUSH.errText('unsupported');else if(Notification.permission==='denied')t=PUSH.errText('denied');
+  else{const sub=await PUSH.current().catch(()=>null);on=!!sub&&Notification.permission==='granted';t=on?'✓ เปิดอยู่บนเครื่องนี้ · ล็อกจอก็ยังได้รับแจ้งเตือน':'ยังไม่ได้เปิดบนเครื่องนี้'}
+  el.textContent=t;const b1=$('#pushOnBtn'),b2=$('#pushTestBtn');if(b1)b1.textContent=on?'เปิดใหม่อีกครั้ง':'เปิดแจ้งเตือนบนเครื่องนี้';if(b2)b2.hidden=!on;}
 function refreshBellCard(){const old=document.getElementById('bStaff')?.closest('.card');if(!old)return;old.outerHTML=bellCard();bellBind()}
 const accountCard=()=>`${bellCard()}${bgCard()}<div class="card"><h3>บัญชีของฉัน <small class="muted" style="font-size:12px;font-weight:400">เว็บเวอร์ชัน ${esc(APP_VER)}</small></h3><p class="help" style="margin:0">เข้าสู่ระบบด้วยชื่อผู้ใช้ <b>${esc(S.me||'')}</b> · ${S.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</p>
    <div class="field"><label for="myPw">ตั้งรหัสผ่านใหม่</label><div class="inrow"><input id="myPw" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"><button class="btn sm" data-act="myPwSave" type="button">เปลี่ยนรหัส</button></div></div>
@@ -1502,6 +1536,8 @@ function custSend(){const c=S.cust,oid=c.id;if(!S.open[oid])return;const note=va
 /* ---------- actions ---------- */
 const ACT={
   bellTest:d=>{Bell.unlock();setTimeout(()=>{Bell.ring(d.k==='pay'?'pay':'staff');if(!d.k)toast(Bell.ok?'ถ้าไม่ได้ยิน ให้เพิ่มเสียงมือถือ':'กดอีกครั้งเพื่อทดสอบเสียง')},150)},
+  pushOn:async(d,b)=>{if(b)b.disabled=true;try{const sub=await PUSH.subscribe();const ok=await pushSaveStaff(sub);if(ok)toast('เปิดแจ้งเตือนแล้ว ลองกด "ส่งทดสอบ" แล้วล็อกจอดู')}catch(e){toast(PUSH.errText(e),'bad')}if(b)b.disabled=false;pushStatus()},
+  pushTest:async()=>{const {data,error}=await SB.rpc('push_test');if(error)return toast('ส่งไม่ได้: ฐานข้อมูลยังไม่ได้อัปเดต (รัน SQL)','bad');toast(data?'ส่งแล้ว ล็อกจอรอ 2–5 วินาที':'ยังไม่พบเครื่องนี้ในระบบ กดเปิดแจ้งเตือนอีกครั้ง',data?'':'bad')},
   bellSay:()=>{Bell.unlock();const c=bellCfg();setTimeout(()=>Bell.ring('pay',null,'โต๊ะ 2 ขอชำระเงิน เช็คบิล'),150)},
   bellDel:()=>{try{localStorage.removeItem('nl_bell_custom')}catch(e){}const c=bellCfg();if(c.staff==='custom')c.staff='chime';if(c.pay==='custom')c.pay='cash';bellSave(c);refreshBellCard();toast('ลบเสียงของฉันแล้ว')},
   callAck:d=>{S.calls=S.calls.filter(c=>c.id!==d.c);renderCalls();render();write('calls/'+d.c,r=>r.delete())},
