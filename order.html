@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.08-1610">
+<meta name="app-version" content="2026.10.08-1625">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -214,7 +214,8 @@ function optPick(m,cfg){cfg=cfg||{};const G=optGroups(m);const pick={};G.forEach
     <button type="button" class="op-x" data-ox="1" aria-label="ปิด">×</button></div>`;
     const n=el.querySelector('#opNote');n.value=keepNote!=null?keepNote:note;n.addEventListener('input',()=>note=n.value);
     el.querySelector('.op-body').scrollTop=sc;}
-  el.addEventListener('click',e=>{if(e.target===el)return close();const b=e.target.closest('button');if(!b)return;e.stopPropagation();
+  let downBg=false;el.addEventListener('pointerdown',e=>{downBg=e.target===el});
+  el.addEventListener('click',e=>{if(e.target===el){if(downBg)close();return}const b=e.target.closest('button');if(!b)return;e.stopPropagation();
     if(b.dataset.ox)return close();
     if(b.dataset.og){const g=G.find(x=>x.id===b.dataset.og),cid=b.dataset.oc,a=pick[g.id];
       if(+g.max===1)pick[g.id]=a.includes(cid)&&!g.req?[]:[cid];
@@ -353,7 +354,8 @@ async function doCall(kind){const {data,error}=await sb.rpc('customer_call',{p_k
 function callAsk(){const o=document.querySelector('.callpop');if(o)o.remove();const st=S.status||{};const c=st.call;
   const el=document.createElement('div');el.className='callpop';el.innerHTML=`<div class="cc" role="dialog" aria-modal="true"><h2>ต้องการให้ช่วยอะไร</h2>${c&&(Date.now()+(S.skew||0)-c.at)<15*60000?`<p class="muted" style="margin:0">เรียกไปแล้วเมื่อ ${hm(c.at)} (${esc(callLabel(c.kind))}) พนักงานกำลังมา</p>`:''}
     ${callOpts().map((o,i)=>`<button class="btn${i?'':' pri'}" data-call="${esc(o.id)}" type="button">${esc(o.label)}</button>`).join('')}<button class="btn" data-call="" type="button">ยกเลิก</button></div>`;
-  el.addEventListener('click',async e=>{if(e.target===el)return el.remove();const b=e.target.closest('[data-call]');if(!b)return;e.stopPropagation();el.remove();if(b.dataset.call)await doCall(b.dataset.call)});
+  let downBg=false;el.addEventListener('pointerdown',e=>{downBg=e.target===el});
+  el.addEventListener('click',async e=>{if(e.target===el){if(downBg)el.remove();return}const b=e.target.closest('[data-call]');if(!b)return;e.stopPropagation();el.remove();if(b.dataset.call)await doCall(b.dataset.call)});
   document.body.appendChild(el)}
 
 const eUnit=e=>(+(S.menu.find(m=>m.id===e.menuId)||{}).price||0)+(e.opts||[]).reduce((a,o)=>a+(+o.p||0),0);
