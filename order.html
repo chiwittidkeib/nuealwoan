@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.06-2020">
+<meta name="app-version" content="2026.10.08-1540">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -266,7 +266,7 @@ const PUSH={reg:null,key:null,
 
 const P=new URLSearchParams(location.search);
 const T=(P.get('t')||'').replace(/\D/g,''),K=P.get('k')||'';
-const NOTES=['ไม่ใส่ผัก','ไม่ใส่ถั่วงอก','ไม่เผ็ด','เผ็ดมาก','ไม่ใส่ผงชูรส','ใส่ห่อ'];
+const NOTES=[];
 const S={menu:[],cats:[],cat:'all',cart:{},view:'menu',status:null,sending:false,name:''};
 const NAME_KEY='nl_name';
 const WALK=T==='0';
