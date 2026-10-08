@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.08-1600">
+<meta name="app-version" content="2026.10.08-1610">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1343,7 +1343,8 @@ function sheetOptBulk(){const sh=S.sheet;const cats=[...new Set([...(S.settings.
    ${src.length?`<div class="field" style="margin-top:10px"><label for="obSrc">หรือคัดลอกตัวเลือกทั้งหมดจากเมนู</label><select id="obSrc"><option value="">— ไม่ใช้ —</option>${src.map(m=>`<option value="${m.id}" ${sh.src===m.id?'selected':''}>${esc(m.name)} (${optGroups(m).map(g=>esc(g.name)).join(', ')})</option>`).join('')}</select></div>`:''}
    <p class="help" style="margin:8px 0 0">ใส่แล้วแก้ชื่อหรือราคาทีละเมนูได้ที่ แก้ไขเมนู → ตัวเลือกเมนู · เมนูที่มีกลุ่มชื่อเดียวกันอยู่แล้วจะข้ามกลุ่มนั้น</p></div>
    <div class="card"><div class="sec-h" style="margin:0"><h3>2. เลือกเมนูที่จะใส่</h3><div class="inrow" style="gap:6px">${S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">+ หมวด</button>':''}${can('menu_edit')?'<button class="btn sm" data-act="obNewMenu" type="button">+ เพิ่มเมนูใหม่</button>':''}</div></div>${cats.map(c=>{const ms=S.menu.filter(m=>(m.cat||'ไม่มีหมวด')===c);if(!ms.length)return `<div style="margin-top:10px"><b>${esc(c)}</b> <small class="muted">· ยังไม่มีเมนูในหมวดนี้</small></div>`;return `<div style="margin-top:10px"><div class="sec-h" style="margin:0"><b>${esc(c)}</b><button class="lnk" data-act="obCat" data-v="${esc(c)}" type="button">${ms.every(m=>sh.pick[m.id])?'ไม่เลือกทั้งหมวด':'เลือกทั้งหมวด'}</button></div>
-     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:6px">${ms.map(m=>`<label class="check"><input type="checkbox" data-obm="${m.id}" ${sh.pick[m.id]?'checked':''}><span>${esc(m.name)}${hasOpts(m)?' <small class="muted">(มีแล้ว '+optGroups(m).length+')</small>':''}</span></label>`).join('')}</div></div>`}).join('')}</div></div>
+     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:6px">${ms.map(m=>`<label class="check"><input type="checkbox" data-obm="${m.id}" ${sh.pick[m.id]?'checked':''}><span>${esc(m.name)}${hasOpts(m)?' <small class="muted">(มีแล้ว '+optGroups(m).length+')</small>':''}</span></label>`).join('')}</div></div>`}).join('')}
+   ${can('menu_edit')?`<div class="og-tools" style="border-top:1px solid var(--line);padding-top:10px;margin-top:12px"><span class="help" style="flex-basis:100%">ย้ายเมนูที่ติ๊กไว้ไปหมวดอื่น</span><select id="obMoveTo" aria-label="ย้ายไปหมวด">${cats.filter(c=>c!=='ไม่มีหมวด').map(c=>`<option>${esc(c)}</option>`).join('')}</select><button class="btn sm" data-act="obMove" type="button">ย้ายไปหมวดนี้</button></div>`:''}</div></div>
    <div class="sh-foot"><button class="btn pri wide" data-act="obSave" type="button">ใส่ตัวเลือกให้เมนูที่เลือก</button></div>`;
   $('#panel').querySelectorAll('[data-tpl]').forEach(x=>x.addEventListener('change',()=>sh.tpl[x.dataset.tpl]=x.checked));
   $('#panel').querySelectorAll('[data-obm]').forEach(x=>x.addEventListener('change',()=>sh.pick[x.dataset.obm]=x.checked));
@@ -1743,6 +1744,9 @@ const ACT={
     c[+d.i]=n;if(!(await saveCats(c)))return;const ms=S.menu.filter(m=>m.cat===old);for(const m of ms){if(await write('menu/'+m.id,r=>r.update({cat:n})))m.cat=n}sheetCats();render();toast('เปลี่ยนชื่อหมวดแล้ว ('+ms.length+' เมนู)')},
   catDel:async d=>{const c=(S.settings.cats||[]).slice(),name=c[+d.i];const n=S.menu.filter(m=>m.cat===name).length;if(n)return toast('ย้ายเมนู '+n+' รายการออกจากหมวด "'+name+'" ก่อน แล้วค่อยลบ','bad');
     if(!confirm('ลบหมวด "'+name+'" ?'))return;c.splice(+d.i,1);if(await saveCats(c)){sheetCats();render()}},
+  obMove:async()=>{const sh=S.sheet,to=val('obMoveTo'),ids=S.menu.filter(m=>sh.pick[m.id]&&m.cat!==to).map(m=>m.id);if(!to)return;if(!ids.length)return toast('ติ๊กเมนูที่จะย้ายก่อน','bad');
+    let n=0;for(const id of ids){const m=S.menu.find(x=>x.id===id);if(await write('menu/'+id,r=>r.update({cat:to}))){m.cat=to;n++}}
+    ids.forEach(id=>sh.pick[id]=false);sortMenu();sheetOptBulk();render();toast('ย้าย '+n+' เมนูไปหมวด "'+to+'" แล้ว')},
   obNewMenu:()=>openSheet({type:'menuEdit',id:null}),
   tplNew:()=>{S.sheet.edit={name:'',type:'multi',choices:[['',0],['',0]]};sheetOptBulk()},
   tplEdit:d=>{const t=myTpl().find(x=>x.id===d.id);if(!t)return;S.sheet.edit={id:t.id,name:t.name,type:t.type||'req1',choices:(t.choices||[]).map(c=>[c[0],+c[1]||0])};sheetOptBulk()},
