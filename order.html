@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.08-1640">
+<meta name="app-version" content="2026.10.08-1940">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -170,6 +170,10 @@ body.welcome .callb{display:none}
 .imgview .iv-cap{color:#fff;margin-top:12px;font-size:16px;text-align:center}
 .imgview .iv-x{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:24px;cursor:pointer}
 .zoomable{cursor:zoom-in}
+.stamp{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);width:86px;height:86px;border:3px solid #e5383b;border-radius:50%;color:#ff4d4f;font-weight:800;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;background:rgba(20,0,0,.45);box-shadow:inset 0 0 0 3px rgba(229,56,59,.35),0 0 0 2px rgba(229,56,59,.25);pointer-events:none;z-index:2}
+.item.is-out{cursor:not-allowed}.item.is-out .ph img{filter:grayscale(1);opacity:.45}.item.is-out .tx{opacity:.55}
+.leftq{display:inline-block;font-size:12px;font-weight:700;color:#ffd58a;background:rgba(255,190,80,.14);border-radius:999px;padding:1px 8px;align-self:flex-start}
+.leftq.low{color:#fff;background:#c2410c}
 </style>
 </head>
 <body>
@@ -308,6 +312,7 @@ function rpcErr(e){const m=String(e&&e.message||'');
   if(/moved/.test(m))return ['ย้ายโต๊ะแล้ว','พนักงานย้ายรายการของคุณไปโต๊ะใหม่ กำลังเปิดหน้าใหม่…'];
   if(/bad_table/.test(m))return ['ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน'];
   if(/empty/.test(m))return ['เมนูที่เลือกปิดขายแล้ว','ลองเลือกเมนูอื่น'];
+  {const so=m.match(/sold_out:([^:]+)(?::(\d+))?/);if(so)return [so[1]+' หมดแล้ว',so[2]&&+so[2]>0?'เหลือแค่ '+so[2]+' ที่ ลดจำนวนในตะกร้าแล้วส่งใหม่':'ลบเมนูนี้ออกจากตะกร้า แล้วเลือกเมนูอื่นแทน']}
   if(/need_option/.test(m))return ['ยังเลือกตัวเลือกไม่ครบ','ร้านเพิ่งปรับตัวเลือกเมนู ลบรายการในตะกร้าแล้วเลือกใหม่อีกครั้ง'];
   if(/walkin_off/.test(m))return ['ร้านปิดรับออร์เดอร์แบบสั่งเอง','สั่งกับพนักงานที่เคาน์เตอร์ได้เลย'];
   if(/table_closed/.test(m))return ['โต๊ะนี้ยังไม่เปิด','แจ้งพนักงานให้เปิดโต๊ะก่อน แล้วสั่งได้เลย'];
@@ -335,6 +340,8 @@ async function start(){
   setInterval(()=>{if(S.view==='status'&&!document.hidden)loadStatus()},15000);
 }
 let lastSig='';
+async function loadMenu(){try{const {data,error}=await sb.rpc('public_menu',{p_key:K});if(error||!data)return;S.menu=data.menu||[];if(S.view==='menu')render()}catch(e){}}
+setInterval(()=>{if(sb&&!document.hidden&&(S.view==='menu'||S.view==='cart'))loadMenu()},30000);
 async function loadStatus(force){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T,p_order:myOrder()});if(error)return;
   if(data.moved&&(data.moved!==T||data.movedKey)){S.view='off';followMove(data.moved,data.movedKey);return}
   S.status=data;if(!WALK&&data.open&&data.orderId&&data.orderId!==S.myOrder){S.myOrder=data.orderId;setTO(data.orderId)}if(data.now)S.skew=data.now-Date.now();
@@ -396,7 +403,7 @@ function render(){
   }
   if(S.view==='menu'){
     h=`<div class="chips">${['all',...S.cats].map(c=>`<button class="chip" aria-pressed="${S.cat===c}" data-a="cat" data-v="${esc(c)}" type="button">${c==='all'?'ทั้งหมด':esc(c)}</button>`).join('')}</div>
-    <div class="grid">${S.menu.filter(m=>S.cat==='all'||m.cat===S.cat).map(m=>`<button class="item" data-a="add" data-m="${esc(m.id)}" type="button"><div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span></div></button>`).join('')||'<p class="muted">ยังไม่มีเมนูเปิดขาย</p>'}</div>
+    <div class="grid">${S.menu.filter(m=>S.cat==='all'||m.cat===S.cat).map(m=>`<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp">หมดแล้ว</span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`).join('')||'<p class="muted">ยังไม่มีเมนูเปิดขาย</p>'}</div>
     ${S.status&&S.status.items.length?`<button class="btn" data-a="view" data-v="status" type="button">ดูรายการที่สั่งแล้ว · ${baht(S.status.total)}</button>`:''}`;
     ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()?'':'disabled'} type="button">ดูตะกร้า</button>`;
   }else if(S.view==='cart'){
@@ -439,8 +446,9 @@ async function send(){
   S.sending=false;
   if(error){if(/table_closed/.test(String(error.message))){S.after='cart';S.view='closed';render();return}
     if(/moved/.test(String(error.message))){loadStatus();return}
+    if(/sold_out/.test(String(error.message)))loadMenu();
     render();if($('#note'))$('#note').value=note;const [a,b]=rpcErr(error);$('#sendErr').textContent=a+' · '+b;return}
-  S.cart={};S.view='done';render();loadStatus();window.scrollTo(0,0);$('main').scrollTop=0;
+  S.cart={};S.view='done';render();loadStatus();loadMenu();window.scrollTo(0,0);$('main').scrollTop=0;
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const d=b.dataset;
   if(d.a==='cat'){S.cat=d.v;render()}

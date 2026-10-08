@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.08-1640">
+<meta name="app-version" content="2026.10.08-1940">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -462,6 +462,18 @@ html,body{max-width:100%;overflow-x:clip}
 .imgview .iv-cap{color:#fff;margin-top:12px;font-size:16px;text-align:center}
 .imgview .iv-x{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:24px;cursor:pointer}
 .zoomable{cursor:zoom-in}
+.soldwrap{position:relative}
+.stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);width:78px;height:78px;border:3px solid #e5383b;border-radius:50%;color:#ff4d4f;font-weight:800;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;text-align:center;background:rgba(20,0,0,.45);box-shadow:inset 0 0 0 3px rgba(229,56,59,.35),0 0 0 2px rgba(229,56,59,.25);pointer-events:none;z-index:2;letter-spacing:.5px}
+.stamp.sm{width:44px;height:44px;font-size:10px;border-width:2px;box-shadow:inset 0 0 0 2px rgba(229,56,59,.35)}
+.is-out img,.is-out .pimg{filter:grayscale(1);opacity:.45}
+.is-out b,.is-out span{opacity:.55}
+.leftq{display:inline-block;font-size:11.5px;font-weight:700;color:#ffd58a;background:rgba(255,190,80,.14);border-radius:999px;padding:1px 7px;margin-top:2px}
+.leftq.low{color:#fff;background:#c2410c}
+.pitem{position:relative}
+.pitem .stamp{color:#ff4d4f;opacity:1;margin:0;top:50%;left:auto;right:10px;transform:translateY(-50%) rotate(-14deg)}
+.pitem .leftq{color:#ffd58a;margin-top:4px;align-self:flex-start;width:auto}
+.pitem .leftq.low{color:#fff}
+.citem .stamp{top:40%}
 </style>
 </head>
 <body>
@@ -592,6 +604,11 @@ const linesTotal=items=>(items||[]).reduce((s,l)=>s+lineAmt(l),0);
 const linesCost=items=>(items||[]).reduce((s,l)=>s+(+l.cost||0)*l.qty,0);
 const linesCount=items=>(items||[]).reduce((s,l)=>s+l.qty,0);
 const thumb=(m,cls)=>m.img?`<div class="${cls}"><img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy"></div>`:`<div class="${cls} none"><span>${esc(String(m.name||'?').trim().charAt(0))}</span></div>`;
+const soldToday=mid=>{const t0=sod();let n=0;const f=o=>(o.items||[]).forEach(l=>{if(l.menuId===mid&&(+l.at||0)>=t0)n+=+l.qty||0});Object.values(S.open).forEach(f);(S.today||[]).forEach(f);return n};
+const menuLeft=m=>typeof m.dailyLimit==='number'?Math.max(0,m.dailyLimit-soldToday(m.id)):null;
+const isSoldOut=m=>m.active===false||(typeof m.dailyLimit==='number'&&menuLeft(m)<=0);
+const stampHtml=(sm)=>`<span class="stamp${sm?' sm':''}">หมดแล้ว</span>`;
+const leftTag=m=>{const l=menuLeft(m);return l===null||isSoldOut(m)?'':`<span class="leftq${l<=3?' low':''}">เหลือ ${l}</span>`};
 const optLine=l=>l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:'';
 const custTag=l=>l.by==='customer'?`<span class="pill mute">${l.cname?'คุณ'+esc(l.cname):'ลูกค้าสั่ง'}</span>`:'';
 const custNames=o=>[...new Set([o.customerName,...(o.items||[]).map(l=>l.cname)].filter(Boolean))];
@@ -907,7 +924,7 @@ function viewMenu(){
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุนต่อจาน</div>`;
   h+='<div class="list">';
   list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${m.active===false?'<span class="pill mute">ปิดขาย</span>':''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div><div class="r"><b>${baht(p)}</b></div></div>`});
+    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?' <span class="pill mute">ซ่อน</span>':''}${typeof m.dailyLimit==='number'?` <span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div>${can('menu_edit')?`<button class="btn sm${m.active===false?' pri':''}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิด (หมด)'}</button>`:''}<div class="r"><b>${baht(p)}</b></div></div>`});
   return h+'</div>';
 }
 
@@ -1019,7 +1036,7 @@ function openSheet(s){S.sheet=s;renderSheet();$('#sheet').hidden=false}
 function closeSheet(){S.sheet=null;$('#sheet').hidden=true;$('#panel').innerHTML=''}
 function refreshSheet(kind){const s=S.sheet;if(!s)return;
   if((s.type==='order'||s.type==='pay')&&kind!=='menu'){if(!S.open[s.id]){closeSheet();return}
-    if(s.type==='order')renderOrderLines();else payUpdate()}
+    if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
   ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,receipt:sheetReceipt,member:sheetMember}[s.type])();}
@@ -1088,8 +1105,8 @@ function sheetOrder(){const o=S.open[S.sheet.id];if(!o)return closeSheet();
   renderOrderLines();renderPicker();}
 function renderPicker(){const g=$('#ordGrid');if(!g)return;const s=S.sheet;
   document.querySelectorAll('#ordCats .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.v===s.cat)));
-  const list=S.menu.filter(m=>m.active!==false&&(s.cat==='all'||m.cat===s.cat)&&(!s.q||String(m.name).includes(s.q)));
-  g.innerHTML=list.length?list.map(m=>`<button class="pitem" data-act="add" data-m="${m.id}" type="button">${m.img?`<img class="pimg" src="${esc(m.img)}" alt="" loading="lazy">`:''}<b>${esc(m.name)}</b><span>${baht(m.price)}${hasOpts(m)?' <small class="muted">· เลือกแบบ</small>':''}</span></button>`).join(''):'<p class="muted" style="margin:0">ไม่พบเมนู เพิ่มเมนูได้ที่แท็บ "เมนู"</p>';}
+  const list=S.menu.filter(m=>!m.hidden&&(s.cat==='all'||m.cat===s.cat)&&(!s.q||String(m.name).includes(s.q)));
+  g.innerHTML=list.length?list.map(m=>{const out=isSoldOut(m);return `<button class="pitem${out?' is-out':''}" data-act="add" data-m="${m.id}" type="button">${out?stampHtml(!m.img):''}${m.img?`<img class="pimg" src="${esc(m.img)}" alt="" loading="lazy">`:''}<b>${esc(m.name)}</b><span>${baht(m.price)}${hasOpts(m)?' <small class="muted">· เลือกแบบ</small>':''}</span>${leftTag(m)}</button>`}).join(''):'<p class="muted" style="margin:0">ไม่พบเมนู เพิ่มเมนูได้ที่แท็บ "เมนู"</p>';}
 function renderOrderLines(){const o=S.open[S.sheet.id];const box=$('#ordLines');if(!o||!box)return;
   const ed=S.sheet.edit;let keep=null;
   if(ed&&$('#edNote'))keep={note:$('#edNote').value,extra:$('#edExtra').value,focus:document.activeElement&&document.activeElement.id};
@@ -1120,6 +1137,7 @@ function newLine(m,by,ch,sel){const opts=(sel&&sel.opts)||[];const raw=(+m.price
   const l={id:uid(),menuId:m.id,name:m.name,price:chMul(ch)(raw),cost:+m.cost||0,qty:(sel&&sel.qty)||1,note:(sel&&sel.note)||'',extra:0,served:false,by,at:Date.now()};
   if(opts.length)l.opts=opts.map(o=>({g:o.g,n:o.n,p:+o.p||0,cid:o.cid}));return l}
 function addItem(oid,mid,sel){const m=S.menu.find(x=>x.id===mid);if(!m||!S.open[oid])return;
+  if(!sel){const l=menuLeft(m);if(isSoldOut(m)&&!confirm('"'+m.name+'" '+(m.active===false?'ปิดขายอยู่':'ขายครบจำนวนของวันนี้แล้ว')+'\nยังต้องการเพิ่มลงบิลไหม?'))return 'pick'}
   if(!sel&&hasOpts(m)){optPick(m,{mul:chMul(chOf(S.open[oid])),notes:QUICK_NOTES,addLabel:'เพิ่มในบิล',onAdd:s=>{addItem(oid,mid,s);toast('เพิ่ม '+m.name+(s.opts.length?' ('+optNames(s.opts)+')':'')+' แล้ว')}});return 'pick'}
   const nl=newLine(m,'staff',chOf(S.open[oid]),sel);
   mutateItems(oid,items=>{const ex=items.find(l=>l.menuId===mid&&optKey(l.opts)===optKey(nl.opts)&&(l.note||'')===(nl.note||'')&&!l.extra&&!l.served&&l.by!=='customer');
@@ -1295,7 +1313,11 @@ function sheetMenu(){const m=S.menu.find(x=>x.id===S.sheet.id)||{name:'',cat:(S.
    <div class="field"><label for="mCat">หมวด</label><select id="mCat">${cats.map(c=>`<option ${c===m.cat?'selected':''}>${esc(c)}</option>`).join('')}${m.cat&&!cats.includes(m.cat)?`<option selected>${esc(m.cat)}</option>`:''}${S.role==='owner'?'<option value="__new">+ เพิ่มหมวดใหม่…</option>':''}</select></div>
    <div class="grid2"><div class="field"><label for="mPrice">ราคาขาย (บาท)</label><input id="mPrice" inputmode="decimal" required value="${m.price??''}"></div>
    <div class="field"><label for="mCost">ต้นทุนต่อจาน (บาท)</label><input id="mCost" inputmode="decimal" value="${m.cost??''}"></div></div>
-   <label class="check"><input type="checkbox" id="mActive" ${m.active!==false?'checked':''}> เปิดขาย</label>
+   <div class="grid2"><div class="field"><label for="mLimit">ขายได้ต่อวัน (ที่)</label><input id="mLimit" inputmode="numeric" value="${typeof m.dailyLimit==='number'?m.dailyLimit:''}" placeholder="∞ ไม่จำกัด"></div>
+   <div class="field"><label>วันนี้</label><div class="help" style="padding-top:10px">${S.sheet.id?'สั่งไปแล้ว '+soldToday(S.sheet.id)+' ที่'+(typeof m.dailyLimit==='number'?' · เหลือ '+menuLeft(m):''):'—'}</div></div></div>
+   <p class="help" style="margin:-6px 0 0">เว้นว่าง = ไม่จำกัด (∞) · ใส่ตัวเลข เช่น 20 ระบบนับจากที่สั่งวันนี้ ครบแล้วขึ้น "หมดแล้ว" เอง · เริ่มนับใหม่ทุกวัน</p>
+   <label class="check"><input type="checkbox" id="mActive" ${m.active!==false?'checked':''}> เปิดขาย <small class="muted">(เอาติ๊กออก = ขึ้นตรา "หมดแล้ว")</small></label>
+   <label class="check"><input type="checkbox" id="mHidden" ${m.hidden?'checked':''}> ซ่อนเมนูนี้ <small class="muted">(ไม่แสดงในหน้าสั่งอาหารเลย)</small></label>
    <div class="card"><div class="sec-h"><h3>สูตร / วัตถุดิบต่อ 1 ที่</h3><button class="lnk" data-act="addIng" type="button">+ เพิ่มวัตถุดิบ</button></div>
    <p class="help" style="margin:0">ใส่แล้วระบบจะตัดสต็อกให้เมื่อรับเงิน และคิดต้นทุนจากราคาซื้อล่าสุดได้</p><div id="ingList"></div>
    <button class="btn sm" data-act="calcCost" type="button">คิดต้นทุนจากสูตร</button></div>
@@ -1399,7 +1421,7 @@ const cleanOpts=O=>O.map(g=>({id:g.id,name:g.name,req:g.type==='req1',max:g.type
 function readIng(){document.querySelectorAll('[data-ing]').forEach(e=>{const g=S.sheet.recipe[+e.dataset.ing];if(!g)return;g[e.dataset.k]=e.dataset.k==='qty'?(parseFloat(e.value)||0):e.value})}
 async function saveMenu(){readIng();const name=val('mName');if(!name)return toast('ใส่ชื่อเมนูก่อน','bad');
   readOpts();const bad=S.sheet.opts.find(g=>!g.name&&g.choices.some(c=>c.name))||S.sheet.opts.find(g=>g.name&&!g.choices.some(c=>c.name));if(bad)return toast(bad.name?'กลุ่ม "'+bad.name+'" ยังไม่มีตัวเลือก':'ตั้งชื่อกลุ่มตัวเลือกก่อน','bad');
-  const data={name,desc:val('mDesc'),cat:val('mCat'),price:nval('mPrice'),cost:nval('mCost'),active:$('#mActive').checked,recipe:S.sheet.recipe.filter(g=>g.stockId&&g.qty>0),options:cleanOpts(S.sheet.opts)};
+  const data={name,desc:val('mDesc'),cat:val('mCat'),price:nval('mPrice'),cost:nval('mCost'),active:$('#mActive').checked,hidden:$('#mHidden').checked,dailyLimit:(v=>v===''?null:Math.max(0,Math.round(+v)||0))(val('mLimit').replace(/[^0-9]/g,'')),recipe:S.sheet.recipe.filter(g=>g.stockId&&g.qty>0),options:cleanOpts(S.sheet.opts)};
   const id=S.sheet.id||S.sheet.newId||(S.sheet.newId=S.db.collection('menu').doc().id);
   const ph=S.sheet.photo,oldPath=ph.path;let drop=null;
   if(ph.file){const btn=document.querySelector('[data-act="saveMenu"]');btn.disabled=true;btn.textContent='กำลังอัปโหลดรูป…';
@@ -1659,7 +1681,7 @@ function renderCust(){const c=S.cust,o=S.open[c?.id];const el=$('#cust');if(!c)r
     <div class="field"><label for="cNote">บอกครัว (ถ้ามี)</label><input id="cNote" placeholder="เช่น ไม่ใส่ผัก ไม่เผ็ด" autocomplete="off"></div>
     ${(o.items||[]).length?`<details><summary class="muted" style="cursor:pointer">ที่สั่งไปแล้ว ${linesCount(o.items)} รายการ · ${baht(linesTotal(o.items))}</summary><div class="list" style="margin-top:8px">${o.items.map(l=>`<div class="row"><div class="grow">${l.qty}× ${esc(l.name)}${optLine(l)}</div><div class="r">${l.served?'เสิร์ฟแล้ว':'กำลังทำ'}</div></div>`).join('')}</div></details>`:''}`;
   else body=`<div class="chips">${['all',...cats].map(k=>`<button class="chip" aria-pressed="${c.cat===k}" data-act="cCat" data-v="${esc(k)}" type="button">${k==='all'?'ทั้งหมด':esc(k)}</button>`).join('')}</div>
-    <div class="cgrid">${S.menu.filter(m=>m.active!==false&&(c.cat==='all'||m.cat===c.cat)).map(m=>`<button class="citem" data-act="cAdd" data-m="${m.id}" type="button">${thumb(m,'cimg')}${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<b>${esc(m.name)}</b><span>${baht(m.price)}</span></button>`).join('')}</div>`;
+    <div class="cgrid">${S.menu.filter(m=>!m.hidden&&(c.cat==='all'||m.cat===c.cat)).map(m=>`<button class="citem soldwrap${isSoldOut(m)?' is-out':''}" data-act="cAdd" data-m="${m.id}" type="button" ${isSoldOut(m)?'disabled':''}>${isSoldOut(m)?stampHtml():''}${thumb(m,'cimg')}${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<b>${esc(m.name)}</b><span>${baht(m.price)}</span></button>`).join('')}</div>`;
   const foot=c.view==='done'?'':c.view==='cart'?`<button class="btn" data-act="cView" data-v="menu" type="button">เลือกเพิ่ม</button><button class="btn pri wide" data-act="cSend" ${cartN?'':'disabled'} type="button">ส่งรายการ ${cartN?baht(cartT):''}</button>`
     :`<div class="total-line"><small>ในตะกร้า ${cartN} รายการ</small><b>${baht(cartT)}</b></div><button class="btn pri" data-act="cView" data-v="cart" ${cartN?'':'disabled'} type="button">ดูตะกร้า</button>`;
   const keepNote=$('#cNote')?.value;
@@ -1751,6 +1773,8 @@ const ACT={
   menuCat:d=>{S.menuCat=d.v;render()},
   optBulk:()=>can('menu_edit')?openSheet({type:'optBulk'}):deny(),
   obCat:d=>{const sh=S.sheet,ms=S.menu.filter(m=>(m.cat||'ไม่มีหมวด')===d.v),on=!ms.every(m=>sh.pick[m.id]);ms.forEach(m=>sh.pick[m.id]=on);sheetOptBulk()},
+  menuToggle:async(d,b,e)=>{if(e)e.stopPropagation();if(!can('menu_edit'))return deny();const m=S.menu.find(x=>x.id===d.id);if(!m)return;const on=m.active===false;
+    if(await write('menu/'+m.id,r=>r.update({active:on}))){m.active=on;render();toast(on?'เปิดขาย "'+m.name+'" แล้ว':'"'+m.name+'" ขึ้นตรา หมดแล้ว')}},
   imgv:(d,b,e)=>{if(e)e.stopPropagation();viewImg(d.src,d.cap)},
   obSave:optBulkSave,
   catOpen:()=>{if(S.role!=='owner')return deny();openSheet({type:'cats',back:S.sheet&&S.sheet.type==='optBulk'?{...S.sheet}:null})},
