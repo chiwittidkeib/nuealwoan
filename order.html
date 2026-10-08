@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.08-1625">
+<meta name="app-version" content="2026.10.08-1640">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -165,6 +165,11 @@ body.welcome .callb{display:none}
 .pushbtn small{font-weight:400;font-size:12.5px;color:var(--muted)}
 .pushc{font-size:13px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;text-align:center}
 .pushc.on{color:var(--jade);border-style:solid}
+.imgview{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;cursor:zoom-out}
+.imgview img{max-width:100%;max-height:calc(100% - 60px);object-fit:contain;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.imgview .iv-cap{color:#fff;margin-top:12px;font-size:16px;text-align:center}
+.imgview .iv-x{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:24px;cursor:pointer}
+.zoomable{cursor:zoom-in}
 </style>
 </head>
 <body>
@@ -190,6 +195,12 @@ const optKey=opts=>(opts||[]).map(o=>o.cid||o.n).join(',');
 const optNames=opts=>(opts||[]).map(o=>o.n).join(', ');
 const optRule=g=>g.req?(+g.max===1?'ต้องเลือก 1':'ต้องเลือก'+(+g.max>1?' สูงสุด '+g.max:'อย่างน้อย 1')):(+g.max===1?'เลือกได้ 1':'เลือกได้'+(+g.max>1?' สูงสุด '+g.max:'หลายอย่าง'));
 const minPrice=m=>(+m.price||0)+optGroups(m).filter(g=>g.req).reduce((s,g)=>s+Math.min(...g.choices.map(c=>+c.price||0)),0);
+
+/* ---------- ดูรูปเต็มจอ ---------- */
+function viewImg(src,cap){if(!src)return;const o=document.getElementById('imgView');if(o)o.remove();const el=document.createElement('div');el.id='imgView';el.className='imgview';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+  el.innerHTML=`<img src="${esc(src)}" alt="${esc(cap||'')}">${cap?`<div class="iv-cap">${esc(cap)}</div>`:''}<button type="button" class="iv-x" aria-label="ปิด">×</button>`;
+  const close=()=>{el.remove();window.removeEventListener('keydown',k,true)};const k=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};window.addEventListener('keydown',k,true);
+  el.addEventListener('click',e=>{e.stopPropagation();close()});document.body.appendChild(el)}
 function optPick(m,cfg){cfg=cfg||{};const G=optGroups(m);const pick={};G.forEach(g=>pick[g.id]=[]);let qty=1,note='',warn=false;
   const mul=cfg.mul||(x=>x);
   const old=document.getElementById('optPop');if(old)old.remove();
@@ -201,7 +212,7 @@ function optPick(m,cfg){cfg=cfg||{};const G=optGroups(m);const pick={};G.forEach
   const onKey=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};window.addEventListener('keydown',onKey,true);
   function draw(){const miss=missing(),keepNote=el.querySelector('#opNote')?.value,sc=el.querySelector('.op-body')?.scrollTop||0;
     el.innerHTML=`<div class="op-card"><div class="op-body">
-      ${m.img?`<div class="op-img"><img src="${esc(m.img)}" alt=""></div>`:''}
+      ${m.img?`<div class="op-img zoomable" data-oimg="1"><img src="${esc(m.img)}" alt=""></div>`:''}
       <div class="op-hd"><div class="op-t"><h2>${esc(m.name)}</h2>${m.desc?`<p>${esc(m.desc)}</p>`:''}</div><b>${baht(mul(+m.price||0))}</b></div>
       ${G.map(g=>{const bad=warn&&miss.includes(g);return `<section class="op-g${bad?' bad':''}" data-g="${esc(g.id)}"><div class="op-gh"><b>${esc(g.name)}</b><span class="op-rule${g.req?' req':''}">${optRule(g)}</span></div>
         ${g.choices.map(c=>{const on=pick[g.id].includes(c.id);return `<button type="button" class="op-c${on?' on':''}" data-og="${esc(g.id)}" data-oc="${esc(c.id)}" aria-pressed="${on}"><i class="${+g.max===1?'rd':'ck'}"></i><span>${esc(c.name)}</span><em>${+c.price?'+'+baht(mul(+c.price)).replace('฿',''):''}</em></button>`}).join('')}</section>`}).join('')}
@@ -215,7 +226,7 @@ function optPick(m,cfg){cfg=cfg||{};const G=optGroups(m);const pick={};G.forEach
     const n=el.querySelector('#opNote');n.value=keepNote!=null?keepNote:note;n.addEventListener('input',()=>note=n.value);
     el.querySelector('.op-body').scrollTop=sc;}
   let downBg=false;el.addEventListener('pointerdown',e=>{downBg=e.target===el});
-  el.addEventListener('click',e=>{if(e.target===el){if(downBg)close();return}const b=e.target.closest('button');if(!b)return;e.stopPropagation();
+  el.addEventListener('click',e=>{if(e.target===el){if(downBg)close();return}if(e.target.closest('[data-oimg]'))return viewImg(m.img,m.name);const b=e.target.closest('button');if(!b)return;e.stopPropagation();
     if(b.dataset.ox)return close();
     if(b.dataset.og){const g=G.find(x=>x.id===b.dataset.og),cid=b.dataset.oc,a=pick[g.id];
       if(+g.max===1)pick[g.id]=a.includes(cid)&&!g.req?[]:[cid];

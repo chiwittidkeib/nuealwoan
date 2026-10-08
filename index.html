@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.08-1625">
+<meta name="app-version" content="2026.10.08-1640">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -457,6 +457,11 @@ html,body{max-width:100%;overflow-x:clip}
 .updbar{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:99;background:#ffd58a;color:#2b1c00;border-radius:12px;padding:8px 10px 8px 14px;display:flex;gap:10px;align-items:center;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.45);white-space:nowrap}
 .updbar button{border:0;border-radius:9px;background:#2b1c00;color:#ffd58a;font:inherit;padding:6px 12px;cursor:pointer}
 #coList input[data-co]{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:9px;padding:8px 10px;min-height:42px;width:100%}
+.imgview{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;cursor:zoom-out}
+.imgview img{max-width:100%;max-height:calc(100% - 60px);object-fit:contain;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.imgview .iv-cap{color:#fff;margin-top:12px;font-size:16px;text-align:center}
+.imgview .iv-x{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:24px;cursor:pointer}
+.zoomable{cursor:zoom-in}
 </style>
 </head>
 <body>
@@ -510,6 +515,12 @@ const optKey=opts=>(opts||[]).map(o=>o.cid||o.n).join(',');
 const optNames=opts=>(opts||[]).map(o=>o.n).join(', ');
 const optRule=g=>g.req?(+g.max===1?'ต้องเลือก 1':'ต้องเลือก'+(+g.max>1?' สูงสุด '+g.max:'อย่างน้อย 1')):(+g.max===1?'เลือกได้ 1':'เลือกได้'+(+g.max>1?' สูงสุด '+g.max:'หลายอย่าง'));
 const minPrice=m=>(+m.price||0)+optGroups(m).filter(g=>g.req).reduce((s,g)=>s+Math.min(...g.choices.map(c=>+c.price||0)),0);
+
+/* ---------- ดูรูปเต็มจอ ---------- */
+function viewImg(src,cap){if(!src)return;const o=document.getElementById('imgView');if(o)o.remove();const el=document.createElement('div');el.id='imgView';el.className='imgview';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+  el.innerHTML=`<img src="${esc(src)}" alt="${esc(cap||'')}">${cap?`<div class="iv-cap">${esc(cap)}</div>`:''}<button type="button" class="iv-x" aria-label="ปิด">×</button>`;
+  const close=()=>{el.remove();window.removeEventListener('keydown',k,true)};const k=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};window.addEventListener('keydown',k,true);
+  el.addEventListener('click',e=>{e.stopPropagation();close()});document.body.appendChild(el)}
 function optPick(m,cfg){cfg=cfg||{};const G=optGroups(m);const pick={};G.forEach(g=>pick[g.id]=[]);let qty=1,note='',warn=false;
   const mul=cfg.mul||(x=>x);
   const old=document.getElementById('optPop');if(old)old.remove();
@@ -521,7 +532,7 @@ function optPick(m,cfg){cfg=cfg||{};const G=optGroups(m);const pick={};G.forEach
   const onKey=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};window.addEventListener('keydown',onKey,true);
   function draw(){const miss=missing(),keepNote=el.querySelector('#opNote')?.value,sc=el.querySelector('.op-body')?.scrollTop||0;
     el.innerHTML=`<div class="op-card"><div class="op-body">
-      ${m.img?`<div class="op-img"><img src="${esc(m.img)}" alt=""></div>`:''}
+      ${m.img?`<div class="op-img zoomable" data-oimg="1"><img src="${esc(m.img)}" alt=""></div>`:''}
       <div class="op-hd"><div class="op-t"><h2>${esc(m.name)}</h2>${m.desc?`<p>${esc(m.desc)}</p>`:''}</div><b>${baht(mul(+m.price||0))}</b></div>
       ${G.map(g=>{const bad=warn&&miss.includes(g);return `<section class="op-g${bad?' bad':''}" data-g="${esc(g.id)}"><div class="op-gh"><b>${esc(g.name)}</b><span class="op-rule${g.req?' req':''}">${optRule(g)}</span></div>
         ${g.choices.map(c=>{const on=pick[g.id].includes(c.id);return `<button type="button" class="op-c${on?' on':''}" data-og="${esc(g.id)}" data-oc="${esc(c.id)}" aria-pressed="${on}"><i class="${+g.max===1?'rd':'ck'}"></i><span>${esc(c.name)}</span><em>${+c.price?'+'+baht(mul(+c.price)).replace('฿',''):''}</em></button>`}).join('')}</section>`}).join('')}
@@ -535,7 +546,7 @@ function optPick(m,cfg){cfg=cfg||{};const G=optGroups(m);const pick={};G.forEach
     const n=el.querySelector('#opNote');n.value=keepNote!=null?keepNote:note;n.addEventListener('input',()=>note=n.value);
     el.querySelector('.op-body').scrollTop=sc;}
   let downBg=false;el.addEventListener('pointerdown',e=>{downBg=e.target===el});
-  el.addEventListener('click',e=>{if(e.target===el){if(downBg)close();return}const b=e.target.closest('button');if(!b)return;e.stopPropagation();
+  el.addEventListener('click',e=>{if(e.target===el){if(downBg)close();return}if(e.target.closest('[data-oimg]'))return viewImg(m.img,m.name);const b=e.target.closest('button');if(!b)return;e.stopPropagation();
     if(b.dataset.ox)return close();
     if(b.dataset.og){const g=G.find(x=>x.id===b.dataset.og),cid=b.dataset.oc,a=pick[g.id];
       if(+g.max===1)pick[g.id]=a.includes(cid)&&!g.req?[]:[cid];
@@ -896,7 +907,7 @@ function viewMenu(){
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุนต่อจาน</div>`;
   h+='<div class="list">';
   list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${m.active===false?'<span class="pill mute">ปิดขาย</span>':''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div><div class="r"><b>${baht(p)}</b></div></div>`});
+    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${m.active===false?'<span class="pill mute">ปิดขาย</span>':''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div><div class="r"><b>${baht(p)}</b></div></div>`});
   return h+'</div>';
 }
 
@@ -1300,7 +1311,7 @@ function sheetMenu(){const m=S.menu.find(x=>x.id===S.sheet.id)||{name:'',cat:(S.
     if(!/^image\//.test(f.type))return toast('เลือกไฟล์รูปภาพ','bad');
     const ph=S.sheet.photo;if(ph.preview)URL.revokeObjectURL(ph.preview);ph.file=f;ph.preview=URL.createObjectURL(f);ph.removed=false;renderPhoto();});}
 function renderPhoto(){const ph=S.sheet.photo,box=$('#mPhotoBox');if(!box)return;const src=ph.preview||(!ph.removed&&ph.url)||'';
-  box.innerHTML=src?`<img src="${esc(src)}" alt="รูปเมนู">`:'<span>ยังไม่มีรูป</span>';$('#mPhotoDel').hidden=!src;}
+  box.innerHTML=src?`<img src="${esc(src)}" alt="รูปเมนู" class="zoomable" title="แตะเพื่อดูรูปเต็ม">`:'<span>ยังไม่มีรูป</span>';box.onclick=src?()=>viewImg(src,val('mName')):null;$('#mPhotoDel').hidden=!src;}
 async function shrinkImage(file,max=900,q=0.82){
   let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'})}catch(e){bmp=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(file)})}
   const w=bmp.width,h=bmp.height,k=Math.min(1,max/Math.max(w,h));const c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);
@@ -1740,6 +1751,7 @@ const ACT={
   menuCat:d=>{S.menuCat=d.v;render()},
   optBulk:()=>can('menu_edit')?openSheet({type:'optBulk'}):deny(),
   obCat:d=>{const sh=S.sheet,ms=S.menu.filter(m=>(m.cat||'ไม่มีหมวด')===d.v),on=!ms.every(m=>sh.pick[m.id]);ms.forEach(m=>sh.pick[m.id]=on);sheetOptBulk()},
+  imgv:(d,b,e)=>{if(e)e.stopPropagation();viewImg(d.src,d.cap)},
   obSave:optBulkSave,
   catOpen:()=>{if(S.role!=='owner')return deny();openSheet({type:'cats',back:S.sheet&&S.sheet.type==='optBulk'?{...S.sheet}:null})},
   catBack:()=>{const b=S.sheet.back;if(b)openSheet(b);else closeSheet()},
