@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.08-1540">
+<meta name="app-version" content="2026.10.08-1600">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -889,7 +889,7 @@ function viewKitchen(){
 
 function viewMenu(){
   const cats=S.settings.cats||[];
-  let h=`<div class="sec-h"><h2>เมนูและราคา</h2>${can('menu_edit')?'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
+  let h=`<div class="sec-h"><h2>เมนูและราคา</h2>${can('menu_edit')?(S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
   <div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div>`;
   const list=S.menu.filter(m=>S.menuCat==='all'||m.cat===S.menuCat);
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุนต่อจาน</div>`;
@@ -1010,7 +1010,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order')renderOrderLines();else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,receipt:sheetReceipt,member:sheetMember}[s.type])();}
+  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,receipt:sheetReceipt,member:sheetMember}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -1280,7 +1280,7 @@ function sheetMenu(){const m=S.menu.find(x=>x.id===S.sheet.id)||{name:'',cat:(S.
      <p class="help" style="margin:0">ถ่ายจากมือถือได้เลย ระบบย่อรูปให้อัตโนมัติ</p></div></div>
    <div class="field"><label for="mName">ชื่อเมนู</label><input id="mName" required value="${esc(m.name)}" placeholder="เช่น เส้นเล็กต้มยำ" autocomplete="off"></div>
    <div class="field"><label for="mDesc">คำอธิบายสั้นๆ (ลูกค้าเห็น)</label><input id="mDesc" maxlength="80" value="${esc(m.desc||'')}" placeholder="เช่น น้ำซุปกระดูกหมูเคี่ยว 8 ชั่วโมง" autocomplete="off"></div>
-   <div class="field"><label for="mCat">หมวด</label><select id="mCat">${cats.map(c=>`<option ${c===m.cat?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+   <div class="field"><label for="mCat">หมวด</label><select id="mCat">${cats.map(c=>`<option ${c===m.cat?'selected':''}>${esc(c)}</option>`).join('')}${m.cat&&!cats.includes(m.cat)?`<option selected>${esc(m.cat)}</option>`:''}${S.role==='owner'?'<option value="__new">+ เพิ่มหมวดใหม่…</option>':''}</select></div>
    <div class="grid2"><div class="field"><label for="mPrice">ราคาขาย (บาท)</label><input id="mPrice" inputmode="decimal" required value="${m.price??''}"></div>
    <div class="field"><label for="mCost">ต้นทุนต่อจาน (บาท)</label><input id="mCost" inputmode="decimal" value="${m.cost??''}"></div></div>
    <label class="check"><input type="checkbox" id="mActive" ${m.active!==false?'checked':''}> เปิดขาย</label>
@@ -1294,6 +1294,7 @@ function sheetMenu(){const m=S.menu.find(x=>x.id===S.sheet.id)||{name:'',cat:(S.
    <div class="og-tools" id="ogCopyBox"></div></div></form>
    <div class="sh-foot">${S.sheet.id?`<button class="btn danger" data-act="delMenu" data-confirm="1" type="button">ลบเมนู</button>`:''}<button class="btn pri wide" data-act="saveMenu" type="button">บันทึกเมนู</button></div>`;
   renderIng();renderPhoto();renderOpts();
+  {const mc=$('#mCat');let prev=mc.value;mc.addEventListener('change',async()=>{if(mc.value!=='__new'){prev=mc.value;return}const n=await addCat();if(n){const o=document.createElement('option');o.textContent=n;mc.insertBefore(o,mc.lastElementChild);mc.value=n;prev=n}else mc.value=prev})}
   $('#mPhoto').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
     if(!/^image\//.test(f.type))return toast('เลือกไฟล์รูปภาพ','bad');
     const ph=S.sheet.photo;if(ph.preview)URL.revokeObjectURL(ph.preview);ph.file=f;ph.preview=URL.createObjectURL(f);ph.removed=false;renderPhoto();});}
@@ -1324,7 +1325,7 @@ function allTpl(){const o={};Object.entries(OPT_TPL).forEach(([k,t])=>o[k]={name
 const tplGroup=t=>({id:uid(),name:t.name,req:t.type==='req1',max:t.type==='multi'?0:1,choices:t.choices.map(c=>({id:uid(),name:c[0],price:+c[1]||0}))});
 function readTplEdit(){const e=S.sheet.edit;if(!e)return;const n=$('#teName');if(n)e.name=n.value.trim();const ty=$('#teType');if(ty)e.type=ty.value;
   document.querySelectorAll('[data-tec]').forEach(x=>{const c=e.choices[+x.dataset.tec];if(!c)return;if(x.dataset.k==='n')c[0]=x.value.trim();else c[1]=Math.max(0,parseFloat(x.value)||0)})}
-function sheetOptBulk(){const sh=S.sheet;const cats=[...new Set(S.menu.map(m=>m.cat||'ไม่มีหมวด'))];const T=allTpl();
+function sheetOptBulk(){const sh=S.sheet;const cats=[...new Set([...(S.settings.cats||[]),...S.menu.map(m=>m.cat||'ไม่มีหมวด')])];const T=allTpl();
   if(!sh.tpl){sh.tpl={noodle:true,soup:false,size:true,top:true,spicy:false};const nc=cats.find(c=>/ก๋วยเตี๋ยว|เส้น/.test(c));sh.pick=Object.fromEntries(S.menu.map(m=>[m.id,!!nc&&(m.cat||'ไม่มีหมวด')===nc]))}
   const own=S.role==='owner';
   const tplRow=k=>{const t=T[k];return `<div style="display:flex;align-items:flex-start;gap:6px"><label class="check" style="align-items:flex-start;flex:1;justify-content:flex-start;text-align:left"><input type="checkbox" style="flex:none;width:20px;height:20px;margin-top:3px" data-tpl="${esc(k)}" ${sh.tpl[k]?'checked':''}><span><b>${esc(t.name)}</b>${t.builtin?'':' <span class="pill info">ของร้าน</span>'} <span class="muted" style="font-size:12.5px">(${TYPE_TXT(t.type)})</span><br><small class="muted">${t.choices.map(c=>esc(c[0])+(+c[1]?' +'+c[1]:'')).join(' · ')}</small></span></label>${!t.builtin&&own?`<button class="btn sm ghost" data-act="tplEdit" data-id="${esc(t.id)}" type="button">แก้</button>`:''}</div>`};
@@ -1341,7 +1342,7 @@ function sheetOptBulk(){const sh=S.sheet;const cats=[...new Set(S.menu.map(m=>m.
    ${editor}${!e&&own?'<button class="btn sm" style="margin-top:10px" data-act="tplNew" type="button">+ สร้างชุดตัวเลือกเอง</button>':''}
    ${src.length?`<div class="field" style="margin-top:10px"><label for="obSrc">หรือคัดลอกตัวเลือกทั้งหมดจากเมนู</label><select id="obSrc"><option value="">— ไม่ใช้ —</option>${src.map(m=>`<option value="${m.id}" ${sh.src===m.id?'selected':''}>${esc(m.name)} (${optGroups(m).map(g=>esc(g.name)).join(', ')})</option>`).join('')}</select></div>`:''}
    <p class="help" style="margin:8px 0 0">ใส่แล้วแก้ชื่อหรือราคาทีละเมนูได้ที่ แก้ไขเมนู → ตัวเลือกเมนู · เมนูที่มีกลุ่มชื่อเดียวกันอยู่แล้วจะข้ามกลุ่มนั้น</p></div>
-   <div class="card"><div class="sec-h" style="margin:0"><h3>2. เลือกเมนูที่จะใส่</h3>${can('menu_edit')?'<button class="btn sm" data-act="obNewMenu" type="button">+ เพิ่มเมนูใหม่</button>':''}</div>${cats.map(c=>{const ms=S.menu.filter(m=>(m.cat||'ไม่มีหมวด')===c);return `<div style="margin-top:10px"><div class="sec-h" style="margin:0"><b>${esc(c)}</b><button class="lnk" data-act="obCat" data-v="${esc(c)}" type="button">${ms.every(m=>sh.pick[m.id])?'ไม่เลือกทั้งหมวด':'เลือกทั้งหมวด'}</button></div>
+   <div class="card"><div class="sec-h" style="margin:0"><h3>2. เลือกเมนูที่จะใส่</h3><div class="inrow" style="gap:6px">${S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">+ หมวด</button>':''}${can('menu_edit')?'<button class="btn sm" data-act="obNewMenu" type="button">+ เพิ่มเมนูใหม่</button>':''}</div></div>${cats.map(c=>{const ms=S.menu.filter(m=>(m.cat||'ไม่มีหมวด')===c);if(!ms.length)return `<div style="margin-top:10px"><b>${esc(c)}</b> <small class="muted">· ยังไม่มีเมนูในหมวดนี้</small></div>`;return `<div style="margin-top:10px"><div class="sec-h" style="margin:0"><b>${esc(c)}</b><button class="lnk" data-act="obCat" data-v="${esc(c)}" type="button">${ms.every(m=>sh.pick[m.id])?'ไม่เลือกทั้งหมวด':'เลือกทั้งหมวด'}</button></div>
      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:6px">${ms.map(m=>`<label class="check"><input type="checkbox" data-obm="${m.id}" ${sh.pick[m.id]?'checked':''}><span>${esc(m.name)}${hasOpts(m)?' <small class="muted">(มีแล้ว '+optGroups(m).length+')</small>':''}</span></label>`).join('')}</div></div>`}).join('')}</div></div>
    <div class="sh-foot"><button class="btn pri wide" data-act="obSave" type="button">ใส่ตัวเลือกให้เมนูที่เลือก</button></div>`;
   $('#panel').querySelectorAll('[data-tpl]').forEach(x=>x.addEventListener('change',()=>sh.tpl[x.dataset.tpl]=x.checked));
@@ -1358,6 +1359,16 @@ async function optBulkSave(){const sh=S.sheet;if(sh.edit)return toast('กด "�
     const ok=await write('menu/'+id,r=>r.update({options:cur}));if(ok){n++;m.options=cur}}
   closeSheet();render();toast('ใส่ตัวเลือกให้ '+n+' เมนูแล้ว');}
 async function tplSaveAll(list){const ok=await write('config/settings',r=>r.update({optTpl:list}));if(ok)S.settings={...S.settings,optTpl:list};return ok}
+async function saveCats(list){list=[...new Set(list.map(x=>String(x).trim()).filter(Boolean))].slice(0,30);const ok=await write('config/settings',r=>r.update({cats:list}));if(ok)S.settings={...S.settings,cats:list};return ok}
+async function addCat(){if(S.role!=='owner'){deny();return null}const n=(prompt('ชื่อหมวดใหม่ เช่น ของหวาน, เมนูพิเศษ')||'').trim().slice(0,30);if(!n)return null;
+  const cats=S.settings.cats||[];if(cats.includes(n)){toast('มีหมวดนี้อยู่แล้ว');return n}if(await saveCats([...cats,n])){toast('เพิ่มหมวด "'+n+'" แล้ว');return n}return null}
+function sheetCats(){const cats=S.settings.cats||[];const cnt=c=>S.menu.filter(m=>m.cat===c).length;
+  $('#panel').innerHTML=head('จัดการหมวดเมนู',cats.length+' หมวด · เรียงตามนี้ในหน้าสั่งอาหาร')+`<div class="sh-body">
+   <div class="list">${cats.map((c,i)=>`<div class="row"><div class="grow"><div class="t">${esc(c)}</div><div class="s">${cnt(c)} เมนู</div></div>
+     <button class="btn sm ghost" data-act="catMove" data-i="${i}" data-d="-1" type="button" aria-label="เลื่อนขึ้น" ${i?'':'disabled'}>▲</button><button class="btn sm ghost" data-act="catMove" data-i="${i}" data-d="1" type="button" aria-label="เลื่อนลง" ${i<cats.length-1?'':'disabled'}>▼</button>
+     <button class="btn sm" data-act="catRename" data-i="${i}" type="button">แก้ชื่อ</button><button class="btn sm ghost" data-act="catDel" data-i="${i}" type="button" aria-label="ลบ">🗑</button></div>`).join('')||'<div class="empty">ยังไม่มีหมวด</div>'}</div>
+   <p class="help" style="margin:0">แก้ชื่อหมวด เมนูในหมวดนั้นจะย้ายตามให้เอง · ลบหมวดได้เมื่อไม่มีเมนูอยู่ในหมวด</p></div>
+   <div class="sh-foot">${S.sheet.back?'<button class="btn" data-act="catBack" type="button">กลับ</button>':''}<button class="btn pri wide" data-act="catAdd" type="button">+ เพิ่มหมวดใหม่</button></div>`}
 function renderCo(){const box=$('#coList');if(!box)return;const L=S.sheet.co;
   box.innerHTML=L.map((o,i)=>`<div class="oc-row" style="grid-template-columns:minmax(0,1fr) auto 40px;margin-top:8px"><input data-co="${i}" value="${esc(o.label)}" maxlength="40" placeholder="เช่น ขอช้อนส้อมเพิ่ม" aria-label="ประโยคเรียกพนักงาน">
     <label class="check" style="font-size:13px;white-space:nowrap"><input type="checkbox" data-cop="${i}" ${o.pay?'checked':''}> เก็บเงิน</label><button class="btn sm ghost" data-act="coDel" data-i="${i}" type="button" aria-label="ลบ" ${L.length<2?'disabled':''}>×</button></div>`).join('')}
@@ -1724,6 +1735,14 @@ const ACT={
   optBulk:()=>can('menu_edit')?openSheet({type:'optBulk'}):deny(),
   obCat:d=>{const sh=S.sheet,ms=S.menu.filter(m=>(m.cat||'ไม่มีหมวด')===d.v),on=!ms.every(m=>sh.pick[m.id]);ms.forEach(m=>sh.pick[m.id]=on);sheetOptBulk()},
   obSave:optBulkSave,
+  catOpen:()=>{if(S.role!=='owner')return deny();openSheet({type:'cats',back:S.sheet&&S.sheet.type==='optBulk'?{...S.sheet}:null})},
+  catBack:()=>{const b=S.sheet.back;if(b)openSheet(b);else closeSheet()},
+  catAdd:async()=>{if(await addCat())sheetCats()},
+  catMove:async d=>{const c=(S.settings.cats||[]).slice(),i=+d.i,j=i+ +d.d;if(j<0||j>=c.length)return;[c[i],c[j]]=[c[j],c[i]];if(await saveCats(c)){sortMenu();sheetCats();render()}},
+  catRename:async d=>{const c=(S.settings.cats||[]).slice(),old=c[+d.i];const n=(prompt('ชื่อหมวดใหม่',old)||'').trim().slice(0,30);if(!n||n===old)return;if(c.includes(n))return toast('มีหมวดนี้อยู่แล้ว','bad');
+    c[+d.i]=n;if(!(await saveCats(c)))return;const ms=S.menu.filter(m=>m.cat===old);for(const m of ms){if(await write('menu/'+m.id,r=>r.update({cat:n})))m.cat=n}sheetCats();render();toast('เปลี่ยนชื่อหมวดแล้ว ('+ms.length+' เมนู)')},
+  catDel:async d=>{const c=(S.settings.cats||[]).slice(),name=c[+d.i];const n=S.menu.filter(m=>m.cat===name).length;if(n)return toast('ย้ายเมนู '+n+' รายการออกจากหมวด "'+name+'" ก่อน แล้วค่อยลบ','bad');
+    if(!confirm('ลบหมวด "'+name+'" ?'))return;c.splice(+d.i,1);if(await saveCats(c)){sheetCats();render()}},
   obNewMenu:()=>openSheet({type:'menuEdit',id:null}),
   tplNew:()=>{S.sheet.edit={name:'',type:'multi',choices:[['',0],['',0]]};sheetOptBulk()},
   tplEdit:d=>{const t=myTpl().find(x=>x.id===d.id);if(!t)return;S.sheet.edit={id:t.id,name:t.name,type:t.type||'req1',choices:(t.choices||[]).map(c=>[c[0],+c[1]||0])};sheetOptBulk()},
