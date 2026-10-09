@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1020">
+<meta name="app-version" content="2026.10.09-1140">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -207,6 +207,7 @@ body.welcome .callb{display:none}
 a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-decoration:none}
 .rowb{width:100%;border:0;border-top:1px solid var(--line);background:none;text-align:left;cursor:pointer;font:inherit}
 .rowb:first-child{border-top:0}
+.cath{font-size:18px;margin:6px 2px -4px;display:flex;align-items:center;gap:8px}.cath::after{content:"";flex:1;height:1px;background:var(--line)}
 </style>
 </head>
 <body>
@@ -358,6 +359,12 @@ async function loadOrder(){if(!S.cur)return;try{const {data,error}=await sb.rpc(
 function openOrder(id,token){S.cur={id,token};S.order=null;S.view='status';try{const u=new URL(location.href);u.searchParams.set('o',id);u.searchParams.set('t',token);history.replaceState(null,'',u.href)}catch(e){}
   render();loadOrder().then(render)}
 
+function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
+function menuGrid(empty){const list=S.menu.filter(m=>S.cat==='all'||m.cat===S.cat);if(!list.length)return empty;
+  if(S.cat!=='all')return `<div class="grid">${list.map(menuCard).join('')}</div>`;
+  const order=[...S.cats,...new Set(list.map(m=>m.cat||'').filter(c=>!S.cats.includes(c)))];
+  return order.map(c=>{const g=list.filter(m=>(m.cat||'')===c);return g.length?`${c?`<h3 class="cath">${esc(c)}</h3>`:''}<div class="grid">${g.map(menuCard).join('')}</div>`:''}).join('')}
+
 function render(){
   const v=$('#view'),f=$('#footIn'),c=S.cfg||{},st=c.state||{};let h='',ft='';
   const keep={};document.querySelectorAll('#view input,#view textarea').forEach(i=>{if(i.id)keep[i.id]=i.value});
@@ -367,7 +374,7 @@ function render(){
     <div class="pobar ${st.open?'on':'off'}"><b>${st.open?'เปิดรับพรีออเดอร์':'ปิดรับออร์เดอร์'}</b><span>${stateLine(st)}</span></div>
     ${mine.length?`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน (${mine.length})</button>`:''}
     ${S.cats.length>1?`<div class="chips">${['all',...S.cats].map(x=>`<button class="chip" aria-pressed="${S.cat===x}" data-a="cat" data-v="${esc(x)}" type="button">${x==='all'?'ทั้งหมด':esc(x)}</button>`).join('')}</div>`:''}
-    <div class="grid">${S.menu.filter(m=>S.cat==='all'||m.cat===S.cat).map(m=>`<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`).join('')||'<p class="muted">ยังไม่มีเมนู</p>'}</div>`;
+    ${menuGrid('<p class="muted">ยังไม่มีเมนู</p>')}`;
     ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()&&st.open?'':'disabled'} type="button">${st.open?'ถัดไป':'ปิดรับแล้ว'}</button>`;
   }else if(S.view==='cart'){
     const me=lsGet(ME_KEY,{})||{};const pts=c.points||[];
@@ -380,7 +387,7 @@ function render(){
     <div class="pobar on"><b>ได้รับ${esc(thDate(st.deliverDate))}</b><span>${st.window?'ช่วงเวลา '+esc(st.window)+' · ':''}สั่งได้ถึง ${esc(st.cutoff)} น. วันนี้</span></div>
     ${rows?`<div class="list">${rows}<div class="row"><div class="g"><b>รวม</b></div><div class="r"><b>${baht(cartT())}</b></div></div></div>`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}
     <section class="box"><h3>ผู้รับ</h3>
-      <div class="field"><label for="pName">ชื่อ</label><input id="pName" maxlength="40" autocomplete="name" value="${esc(me.name||'')}" placeholder="เช่น ต้น ฝ่ายบัญชี"></div>
+      <div class="field"><label for="pName">ชื่อ</label><input id="pName" maxlength="40" autocomplete="name" value="${esc(me.name||'')}" placeholder="กรุณากรอกชื่อลูกค้า"></div>
       <div class="field"><label for="pPhone">เบอร์โทร</label><input id="pPhone" type="tel" inputmode="tel" maxlength="12" autocomplete="tel" value="${esc(me.phone||'')}" placeholder="08x-xxx-xxxx"></div></section>
     <section class="box"><h3>รับของที่ไหน</h3><div class="seg">
       ${pts.length?`<button type="button" class="segb" data-a="method" data-v="point" aria-pressed="${S.method==='point'}">ส่งที่จุดรับ</button>`:''}

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="app-version" content="2026.10.09-1230">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5a2e14">
+<meta name="robots" content="noindex">
+<title>ใบเสร็จรับเงิน · เนื้อล้วนๆ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Kanit:wght@500;600;700;800&display=swap">
+<style>
+:root{--brown:#5a2e14;--brown2:#7a4a26;--gold:#c98a3c;--red:#c8102e;--ink:#2b1a10;--muted:#8a6f5a;--line:#e3d4c3;--paper:#fffdf9;--bg:#efe7dc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1410}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+.wrap{max-width:520px;margin:0 auto;padding:16px 12px calc(110px + env(safe-area-inset-bottom,0px))}
+.rc{background:var(--paper);border-radius:6px;box-shadow:0 10px 30px rgba(40,20,5,.25);padding:22px 20px 18px;position:relative;overflow:hidden}
+.rc a{color:inherit;text-decoration:none}
+.logo{display:block;width:170px;max-width:52%;margin:0 auto 2px}
+.nm{font-family:Kanit,sans-serif;font-weight:800;font-size:44px;line-height:1.05;text-align:center;color:var(--red);margin:0;letter-spacing:.5px;-webkit-text-stroke:.8px #7d0b1c;text-shadow:0 2px 0 #e9c27a}
+.en{font-family:Kanit,sans-serif;font-weight:800;font-size:23px;line-height:1.15;text-align:center;color:var(--brown);letter-spacing:1.5px;margin:2px 0 0}
+.tag{font-family:Kanit,sans-serif;font-weight:600;font-size:11px;letter-spacing:1.1px;text-align:center;color:var(--brown2);margin-top:2px}
+.contact{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 16px;margin-top:12px;font-size:13.5px;color:var(--ink)}
+.contact a,.contact span{display:inline-flex;align-items:center;gap:6px}
+.ic{width:18px;height:18px;flex:none;fill:var(--brown)}
+.contact .map{flex-basis:100%;justify-content:center}
+hr.br{border:0;border-top:2px solid var(--brown);margin:12px 0 0}
+.head{display:flex;gap:14px;padding:14px 2px 12px;align-items:stretch}
+.title{flex:1.15;min-width:0}
+.title h1{font-family:Kanit,sans-serif;font-weight:700;font-size:28px;line-height:1.1;color:var(--brown);margin:0}
+.title h1.long{font-size:19px}
+.title small{display:block;font-family:Kanit,sans-serif;font-weight:500;letter-spacing:4px;color:var(--brown2);font-size:12px;margin-top:2px}
+.title .tax{letter-spacing:0;font-family:inherit;font-size:11.5px;color:var(--muted);margin-top:4px}
+.meta{flex:1;border-left:2px solid var(--brown);padding-left:12px;display:flex;flex-direction:column;justify-content:center;gap:2px;font-size:13.5px}
+.meta div{display:flex;gap:6px}.meta b{font-weight:500;color:var(--brown);min-width:38px}.meta span{flex:1;border-bottom:1px dotted #b9a48f;font-weight:600;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+thead th{background:var(--brown);color:#fff;font-family:Kanit,sans-serif;font-weight:500;padding:7px 4px;font-size:13px;white-space:nowrap}
+thead th:first-child{border-radius:8px 0 0 8px}thead th:last-child{border-radius:0 8px 8px 0}
+thead th+th{border-left:1px solid rgba(255,255,255,.35)}
+tbody td{padding:7px 4px;border-bottom:1px dashed var(--line);vertical-align:top}
+tbody td+td{border-left:1px solid var(--line)}
+td.n,td.q{text-align:center;width:1%;white-space:nowrap}td.p,td.t{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.i small{display:block;color:var(--muted);font-size:11.5px;line-height:1.3}
+tbody tr.pad td{height:26px}
+.sum{display:flex;gap:10px;margin-top:12px;align-items:flex-end}
+.sum .no{flex:1;font-size:12.5px;color:var(--muted);padding-bottom:4px}
+.sum .no b{display:block;color:var(--ink);font-weight:600;font-size:13px;word-break:break-all}
+.tot{flex:1.4;display:flex;flex-direction:column;gap:3px}
+.tot div{display:flex;justify-content:flex-end;gap:10px;font-size:13.5px}
+.tot div span:first-child{color:var(--brown);font-weight:500}
+.tot div span:last-child{min-width:84px;text-align:right;border-bottom:1px dotted #b9a48f;font-variant-numeric:tabular-nums}
+.tot .net span:first-child{font-family:Kanit,sans-serif;font-weight:700;font-size:19px;color:var(--brown)}
+.tot .net span:last-child{font-family:Kanit,sans-serif;font-weight:700;font-size:21px;color:var(--red);border-bottom:2px solid var(--brown)}
+.paid{margin-top:10px;font-size:12.5px;color:var(--muted);text-align:right}
+.pts{margin-top:8px;background:#fbf1e2;border:1px dashed var(--gold);border-radius:10px;padding:7px 10px;font-size:12.5px;color:var(--brown);text-align:center}
+.foot{margin-top:16px;border-top:2px solid var(--brown);padding-top:12px;text-align:center;color:var(--brown)}
+.foot .ty{font-family:Kanit,sans-serif;font-weight:500;font-size:17px;font-style:italic;display:flex;align-items:center;justify-content:center;gap:10px}
+.foot .ty::before,.foot .ty::after{content:"";width:34px;height:1.5px;background:var(--brown)}
+.foot small{display:block;font-size:12.5px;margin-top:2px}
+.foot .hrt{font-size:14px;margin-top:4px;color:var(--gold)}
+.stamp{position:absolute;top:150px;right:14px;transform:rotate(-12deg);border:3px solid #2f8a3e;color:#2f8a3e;border-radius:10px;padding:2px 10px;font-family:Kanit,sans-serif;font-weight:800;font-size:18px;opacity:.75;letter-spacing:1px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,253,249,.96);border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;justify-content:center;box-shadow:0 -6px 20px rgba(40,20,5,.15)}
+.bar button{flex:1;max-width:250px;min-height:50px;border-radius:12px;border:1px solid var(--brown);background:#fff;color:var(--brown);font:inherit;font-weight:600;font-size:15px;cursor:pointer}
+.bar button.pri{background:var(--brown);color:#fff}
+.bar button:disabled{opacity:.5}
+.msg{text-align:center;padding:60px 16px;color:var(--muted)}
+.msg h2{font-family:Kanit,sans-serif;color:var(--brown);margin:0 0 6px}
+.ov{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:10px}
+.ov img{max-width:100%;max-height:calc(100% - 110px);border-radius:6px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.ov p{color:#fff;margin:0;text-align:center;font-weight:500}
+.ov button{min-height:46px;padding:0 22px;border-radius:12px;border:0;background:#fff;color:var(--brown);font:inherit;font-weight:600}
+@media (max-width:380px){.nm{font-size:38px}.en{font-size:20px}.title h1{font-size:24px}thead th{font-size:12px}table{font-size:12.5px}}
+@media print{body{background:#fff}.bar{display:none}.wrap{padding:0;max-width:none}.rc{box-shadow:none;border-radius:0}@page{margin:10mm}}
+</style>
+</head>
+<body>
+<div class="wrap"><div id="view"><div class="msg">กำลังโหลดใบเสร็จ…</div></div></div>
+<div class="bar" id="bar" hidden><button type="button" id="bImg" class="pri">บันทึกเป็นรูป</button><button type="button" id="bPrint">พิมพ์ / PDF</button></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=n=>(Math.round((+n||0)*100)/100).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const safeUrl=u=>/^https?:\/\//i.test(String(u||''))?String(u):'';
+const P=new URLSearchParams(location.search),RID=(P.get('r')||'').slice(0,80),TOK=(P.get('t')||'').replace(/[^0-9a-f]/gi,'').slice(0,32);
+const IC={fb:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-1.6 19.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 12 2z"/></svg>',
+  tel:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.3 13.6-.7.8c-.4.4-1 .6-1.6.4-3.1-1-5.6-3.5-6.6-6.6-.2-.6 0-1.2.4-1.6l.8-.7c.4-.4 1-.3 1.3.1l1 1.5c.2.4.2.9-.1 1.2l-.5.5c.6 1.3 1.6 2.3 2.9 2.9l.5-.5c.3-.3.8-.4 1.2-.1l1.5 1c.4.3.5.9.1 1.3z"/></svg>',
+  pin:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>'};
+const METHOD={cash:'เงินสด',promptpay:'โอน / พร้อมเพย์',lineman:'LINE MAN',grab:'Grab',shopee:'ShopeeFood'};
+function render(d){const s=d.shop,b=d.bill,dt=new Date(+b.paidAt||Date.now());
+  const date=dt.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Bangkok'}),time=dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
+  const where=b.table&&b.table!=='TA'?b.table:(b.label||'กลับบ้าน');
+  const items=b.items||[];const vat=+b.vat>0;const taxInv=vat&&s.taxId;
+  const rows=items.map((l,i)=>{const opt=(l.opts||[]).map(o=>o.n).filter(Boolean).join(', ');return `<tr><td class="n">${i+1}</td><td class="i">${esc(l.name)}${opt?`<small>${esc(opt)}</small>`:''}${l.note?`<small>${esc(l.note)}</small>`:''}</td><td class="q">${+l.qty||0}</td><td class="p">${num(l.price)}</td><td class="t">${num((+l.price||0)*(+l.qty||0))}</td></tr>`}).join('');
+  const pad=Array.from({length:Math.max(0,4-items.length)},()=>'<tr class="pad"><td></td><td></td><td></td><td></td><td></td></tr>').join('');
+  const disc=(+b.discount||0)+(+b.redeem||0);
+  const fbHtml=s.fb?(safeUrl(s.fbUrl)?`<a href="${esc(safeUrl(s.fbUrl))}" target="_blank" rel="noopener">${IC.fb}${esc(s.fb)}</a>`:`<span>${IC.fb}${esc(s.fb)}</span>`):'';
+  const telHtml=s.phone?`<a href="tel:${esc(String(s.phone).replace(/[^\d+]/g,''))}">${IC.tel}${esc(s.phone)}</a>`:'';
+  const mapHtml=s.mapText||safeUrl(s.mapUrl)?(safeUrl(s.mapUrl)?`<a class="map" href="${esc(safeUrl(s.mapUrl))}" target="_blank" rel="noopener">${IC.pin}${esc(s.mapText||'ดูแผนที่ร้าน')}</a>`:`<span class="map">${IC.pin}${esc(s.mapText)}</span>`):'';
+  $('#view').innerHTML=`<div class="rc" id="rc">
+   <img class="logo" src="images/logo-nl-t.png" alt="" crossorigin="anonymous">
+   <h2 class="nm">${esc(s.name)}</h2>${s.nameEn?`<div class="en">${esc(s.nameEn)}</div>`:''}${s.tagline?`<div class="tag">${esc(s.tagline)}</div>`:''}
+   ${fbHtml||telHtml||mapHtml?`<div class="contact">${fbHtml}${telHtml}${mapHtml}</div>`:''}
+   <hr class="br">
+   <div class="head"><div class="title"><h1 class="${taxInv?'long':''}">${taxInv?'ใบเสร็จรับเงิน/<br>ใบกำกับภาษีอย่างย่อ':'ใบเสร็จรับเงิน'}</h1><small>RECEIPT</small>${taxInv?`<small class="tax">เลขประจำตัวผู้เสียภาษี ${esc(s.taxId)}</small>`:''}</div>
+     <div class="meta"><div><b>วันที่ :</b><span>${esc(date)}</span></div><div><b>เวลา :</b><span>${esc(time)}</span></div><div><b>โต๊ะ :</b><span>${esc(where)}</span></div></div></div>
+   <table><thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>ราคา</th><th>รวมเงิน</th></tr></thead><tbody>${rows}${pad}</tbody></table>
+   <div class="sum"><div class="no">Receipt No. :<b>${esc(b.billNo||'-')}</b></div><div class="tot">
+     <div><span>รวมเงิน</span><span>${num(b.subtotal)}</span></div>
+     ${disc?`<div><span>ส่วนลด${+b.redeem?` (ใช้ ${+b.ptsUsed||0} แต้ม)`:''}</span><span>-${num(disc)}</span></div>`:''}
+     ${vat&&b.vatMode==='excl'?`<div><span>ภาษีมูลค่าเพิ่ม ${+b.vatRate||0}%</span><span>${num(b.vat)}</span></div>`:''}
+     ${+b.roundOff?`<div><span>ส่วนลดปัดเศษ</span><span>-${num(b.roundOff)}</span></div>`:''}
+     <div class="net"><span>ยอดสุทธิ</span><span>${num(b.total)}</span></div>
+     ${vat&&b.vatMode!=='excl'?`<div style="font-size:11.5px"><span style="font-weight:400;color:var(--muted)">รวมภาษีมูลค่าเพิ่ม ${+b.vatRate||0}% แล้ว (มูลค่าก่อนภาษี ${num(b.beforeVat)})</span><span style="border:0;min-width:0">VAT ${num(b.vat)}</span></div>`:''}
+   </div></div>
+   <div class="paid">ชำระโดย ${esc(METHOD[b.method]||b.method||'-')}${b.method==='cash'&&+b.received?` · รับ ${num(b.received)} · ทอน ${num(b.change)}`:''}</div>
+   ${+b.ptsEarned||+b.ptsUsed?`<div class="pts">⭐ ได้รับ ${+b.ptsEarned||0} แต้ม${b.ptsBalance!=null?` · แต้มสะสมคงเหลือ ${+b.ptsBalance} แต้ม`:''}</div>`:''}
+   <div class="stamp">PAID</div>
+   <div class="foot"><div class="ty">${esc(s.thanks)}</div>${s.thanks2?`<small>${esc(s.thanks2)}</small>`:''}<div class="hrt">♡</div></div></div>`;
+  document.title='ใบเสร็จ '+(b.billNo||'')+' · '+s.name;$('#bar').hidden=false}
+async function start(){const cfg=window.APP_CONFIG||{};
+  if(!RID||!TOK)return $('#view').innerHTML='<div class="msg"><h2>ไม่พบใบเสร็จ</h2>ลิงก์ไม่ครบ ขอลิงก์ใหม่จากพนักงาน</div>';
+  if(!window.supabase||!cfg.SUPABASE_URL)return $('#view').innerHTML='<div class="msg"><h2>ระบบยังไม่พร้อม</h2>ลองใหม่อีกครั้ง</div>';
+  const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}});
+  const {data,error}=await sb.rpc('public_receipt',{p_id:RID,p_tok:TOK});
+  if(error||!data)return $('#view').innerHTML='<div class="msg"><h2>ไม่พบใบเสร็จ</h2>ลิงก์อาจไม่ถูกต้อง หรือบิลถูกยกเลิก</div>';
+  render(data)}
+const loadScript=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
+async function saveImg(){const b=$('#bImg');b.disabled=true;b.textContent='กำลังสร้างรูป…';
+  try{if(!window.html2canvas)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+    const cv=await html2canvas($('#rc'),{scale:Math.min(3,Math.max(2,window.devicePixelRatio||2)),backgroundColor:'#fffdf9',useCORS:true});
+    const blob=await new Promise(r=>cv.toBlob(r,'image/png'));const name='receipt-'+(document.title.match(/ใบเสร็จ (\S+)/)||[,'nuealwoan'])[1]+'.png';
+    const file=new File([blob],name,{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'ใบเสร็จ'});return}catch(e){if(e&&e.name==='AbortError')return}}
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    const ov=document.createElement('div');ov.className='ov';ov.innerHTML=`<img src="${url}" alt="ใบเสร็จ"><p>ถ้ายังไม่ได้บันทึก ให้กดค้างที่รูป แล้วเลือก "บันทึกรูป"</p><button type="button">ปิด</button>`;ov.querySelector('button').onclick=()=>ov.remove();document.body.appendChild(ov);
+  }catch(e){alert('สร้างรูปไม่สำเร็จ ลองกด "พิมพ์ / PDF" แทน')}
+  finally{b.disabled=false;b.textContent='บันทึกเป็นรูป'}}
+$('#bImg').onclick=saveImg;$('#bPrint').onclick=()=>window.print();
+start();
+</script>
+</body>
+</html>

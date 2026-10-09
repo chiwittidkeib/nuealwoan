@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1005">
+<meta name="app-version" content="2026.10.09-1230">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -179,6 +179,13 @@ body.welcome .callb{display:none}
 .stamp i{display:block;font-style:normal;font-weight:800;font-size:.62em;letter-spacing:.6px;text-transform:uppercase;line-height:1;color:inherit;opacity:1}
 .stamp b,.stamp i{color:var(--jade)!important;opacity:1!important;font-family:var(--f-body)}
 .item .stamp b{font-size:17px}
+.cath{font-size:18px;margin:6px 2px -4px;display:flex;align-items:center;gap:8px}.cath::after{content:"";flex:1;height:1px;background:var(--line)}
+.slipbox{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:2px dashed #ffd58a;border-radius:14px;padding:12px}
+.slipimg{max-height:340px;width:auto;max-width:100%;align-self:center;border-radius:10px;border:1px solid var(--line)}
+.sliprow{display:flex;gap:8px}.sliprow .btn{min-height:46px}
+.slipok{display:flex;gap:12px;align-items:center;background:var(--jade-soft);border:1px solid var(--jade);border-radius:12px;padding:10px}.slipok img{width:64px;height:84px;object-fit:cover;border-radius:8px;flex:none}.slipok b{color:var(--jade);display:block}.slipok small{color:var(--muted);font-size:12.5px}.grow{flex:1;min-width:0}
+label.btn{display:flex;align-items:center;justify-content:center;text-align:center}
+.btn[data-armed]{color:#ffd58a;border:2px solid #e5383b}
 </style>
 </head>
 <body>
@@ -263,8 +270,9 @@ function toast(m){const o=document.querySelector('.toast');if(o)o.remove();const
 const CALL_DEF=[{id:'staff',label:'เรียกพนักงาน'},{id:'pay',label:'ขอชำระเงิน / เช็คบิล',pay:true},{id:'water',label:'ขอน้ำ / น้ำแข็งเพิ่ม'}];
 const callOpts=()=>Array.isArray(S.callOpts)&&S.callOpts.length?S.callOpts:CALL_DEF;
 const callLabel=k=>k==='paid'?'แจ้งโอนเงินแล้ว':((callOpts().find(o=>o.id===k)||{}).label||'เรียกพนักงาน');
-function billCalc(st){const sub=r2(st.total||0),v=st.vat||{};if(!v.on||!(+v.rate>0))return {sub,vat:0,total:sub,mode:''};const rt=+v.rate;
-  if(v.mode==='excl'){const vat=r2(sub*rt/100);return {sub,vat,total:r2(sub+vat),mode:'excl',rate:rt}}const vat=r2(sub*rt/(100+rt));return {sub,vat,total:sub,mode:'incl',rate:rt}}
+const roundDown=o=>{const fl=Math.floor(o.total+1e-6);o.round=r2(o.total-fl);o.total=fl;return o};
+function billCalc(st){const sub=r2(st.total||0),v=st.vat||{};if(!v.on||!(+v.rate>0))return roundDown({sub,vat:0,total:sub,mode:''});const rt=+v.rate;
+  if(v.mode==='excl'){const vat=r2(sub*rt/100);return roundDown({sub,vat,total:r2(sub+vat),mode:'excl',rate:rt})}const vat=r2(sub*rt/(100+rt));return roundDown({sub,vat,total:sub,mode:'incl',rate:rt})}
 
 /* ---------- แจ้งเตือนแม้ล็อกจอ (Web Push) ใช้ร่วมกันทั้งหน้าพนักงานและหน้าลูกค้า ---------- */
 const PUSH={reg:null,key:null,
@@ -329,7 +337,7 @@ async function start(){
   if(!window.supabase||!cfg.SUPABASE_URL||!cfg.SUPABASE_KEY)return fail('ระบบยังไม่พร้อม','แจ้งพนักงานได้เลย');
   sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}});
   const {data,error}=await sb.rpc('public_menu',{p_key:K});
-  if(error){const [a,b]=rpcErr(error);return fail(a,b)}
+  if(error){if(lastOid()&&await tryReceipt())return;const [a,b]=rpcErr(error);return fail(a,b)}
   if(!WALK&&(+T<1||+T>data.tables))return fail('ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน');
   S.menu=data.menu||[];S.callOpts=data.callOptions||null;S.cats=(data.cats||[]).filter(c=>S.menu.some(m=>m.cat===c));
   document.title=(data.shopName||'NueaLwoan')+(WALK?' · สั่งอาหาร':' · โต๊ะ '+T);
@@ -347,7 +355,8 @@ async function start(){
 let lastSig='';
 async function loadMenu(){try{const {data,error}=await sb.rpc('public_menu',{p_key:K});if(error||!data)return;S.menu=data.menu||[];if(S.view==='menu')render()}catch(e){}}
 setInterval(()=>{if(sb&&!document.hidden&&(S.view==='menu'||S.view==='cart'))loadMenu()},30000);
-async function loadStatus(force){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T,p_order:myOrder()});if(error)return;
+async function loadStatus(force){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T,p_order:myOrder()});if(error){if(lastOid())tryReceipt();return}
+  if(data.open&&(data.items||[]).length){const oid=WALK?getWO():(data.orderId||S.myOrder);if(oid)setLast(oid)}else if(!data.open&&!data.moved&&lastOid()){tryReceipt();}
   if(data.moved&&(data.moved!==T||data.movedKey)){S.view='off';followMove(data.moved,data.movedKey);return}
   S.status=data;if(!WALK&&data.open&&data.orderId&&data.orderId!==S.myOrder){S.myOrder=data.orderId;setTO(data.orderId)}if(data.now)S.skew=data.now-Date.now();
   const sig=JSON.stringify([data.items,data.call,data.ahead,data.open]);const changed=sig!==lastSig;lastSig=sig;setCall();
@@ -357,7 +366,7 @@ async function loadStatus(force){const {data,error}=await sb.rpc('customer_statu
   if(S.view==='status'||S.view==='done'||S.view==='bill')render();else if(changed&&(S.view==='menu'))render()}
 setInterval(()=>{if(S.view==='closed'&&!document.hidden)loadStatus()},6000);
 /* อัปเดตสถานะเร็ว: หน้าดูรายการ/ยอด ทุก 4 วินาที หน้าอื่นทุก 12 วินาที */
-let tick=0;setInterval(()=>{if(!sb||document.hidden||['name','closed','off'].includes(S.view))return;tick++;
+let tick=0;setInterval(()=>{if(!sb||document.hidden||['name','closed','off','paid'].includes(S.view))return;tick++;
   if(['status','done','bill'].includes(S.view)||tick%3===0)loadStatus()},4000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&sb&&!['name','off'].includes(S.view))loadStatus()});
 const pushKey=()=>'nl_push_'+(myOrder()||'');
@@ -387,7 +396,14 @@ const cartT=()=>Object.values(S.cart).reduce((s,e)=>s+eUnit(e)*e.qty,0);
 const inCart=id=>Object.values(S.cart).reduce((a,e)=>a+(e.menuId===id?e.qty:0),0);
 function putCart(m,sel){const k=m.id+'|'+optKey(sel.opts)+'|'+sel.note;if(S.cart[k])S.cart[k].qty+=sel.qty;else S.cart[k]={menuId:m.id,opts:sel.opts,note:sel.note,qty:sel.qty};render()}
 
+function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
+function menuGrid(empty){const list=S.menu.filter(m=>S.cat==='all'||m.cat===S.cat);if(!list.length)return empty;
+  if(S.cat!=='all')return `<div class="grid">${list.map(menuCard).join('')}</div>`;
+  const order=[...S.cats,...new Set(list.map(m=>m.cat||'').filter(c=>!S.cats.includes(c)))];
+  return order.map(c=>{const g=list.filter(m=>(m.cat||'')===c);return g.length?`${c?`<h3 class="cath">${esc(c)}</h3>`:''}<div class="grid">${g.map(menuCard).join('')}</div>`:''}).join('')}
+
 function render(){
+  if(S.view==='paid')return viewPaid();
   document.body.classList.toggle('welcome',S.view==='name'||S.view==='closed');setCall();
   const v=$('#view'),f=$('#footIn');let h='',ft='';
   if(S.view==='closed'){
@@ -396,7 +412,7 @@ function render(){
   }
   if(S.view==='name'){
     h=`<form class="namebox" id="nameForm"><h2>ยินดีต้อนรับ</h2><p class="muted" style="margin:0">${WALK?'สั่งอาหารเองได้เลย · ใส่ชื่อไว้ให้พนักงานเรียกตอนอาหารพร้อม':'โต๊ะ '+esc(T)+' · ใส่ชื่อของคุณ ร้านจะได้เสิร์ฟถูกคน'}</p>
-      <div class="field"><label for="nm">ชื่อของคุณ</label><input id="nm" maxlength="40" autocomplete="given-name" placeholder="เช่น ต้น, พี่หนิง" value="${esc(S.name)}"></div>
+      <div class="field"><label for="nm">ชื่อของคุณ</label><input id="nm" maxlength="40" autocomplete="given-name" placeholder="กรุณากรอกชื่อลูกค้า" value="${esc(S.name)}"></div>
       <p class="err" id="nmErr" role="alert"></p>
       <button class="btn pri" type="submit">เริ่มสั่งอาหาร</button>
       ${S.name||WALK?'':'<button class="lnk-g" data-a="skipName" type="button">ข้าม ไม่ใส่ชื่อ</button>'}</form>`;
@@ -408,7 +424,7 @@ function render(){
   }
   if(S.view==='menu'){
     h=`<div class="chips">${['all',...S.cats].map(c=>`<button class="chip" aria-pressed="${S.cat===c}" data-a="cat" data-v="${esc(c)}" type="button">${c==='all'?'ทั้งหมด':esc(c)}</button>`).join('')}</div>
-    <div class="grid">${S.menu.filter(m=>S.cat==='all'||m.cat===S.cat).map(m=>`<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`).join('')||'<p class="muted">ยังไม่มีเมนูเปิดขาย</p>'}</div>
+    ${menuGrid('<p class="muted">ยังไม่มีเมนูเปิดขาย</p>')}
     ${S.status&&S.status.items.length?`<button class="btn" data-a="view" data-v="status" type="button">ดูรายการที่สั่งแล้ว · ${baht(S.status.total)}</button>`:''}`;
     ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()?'':'disabled'} type="button">ดูตะกร้า</button>`;
   }else if(S.view==='cart'){
@@ -419,14 +435,14 @@ function render(){
     <p class="err" id="sendErr" role="alert"></p>`;
     ft=`<button class="btn" data-a="view" data-v="menu" type="button">เลือกเพิ่ม</button><button class="btn pri wide" data-a="send" ${cartN()&&!S.sending?'':'disabled'} type="button">${S.sending?'กำลังส่ง…':'ส่งรายการ '+baht(cartT())}</button>`;
   }else if(S.view==='bill'){
-    const st=S.status||{items:[],total:0},bc=billCalc(st),pp=String(st.promptpay||'').replace(/\D/g,'');
+    const st=S.status||{items:[],total:0},bc=billCalc(st),pp=String(st.promptpay||'').replace(/\D/g,'');slipLoad();
     h=`<h2>ตรวจสอบยอด${where()}</h2>${st.orderNo?`<p class="muted" style="margin:0">เลขที่ ${esc(st.orderNo)}</p>`:''}`+
       (st.items.length?`<div class="list bill">${st.items.map(l=>`<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opt?`<div class="optx">${esc(l.opt)}</div>`:''}</div><div class="r">${baht(l.amount)}</div></div>`).join('')}
         ${bc.vat?`<div class="row"><div class="g muted">${bc.mode==='excl'?'รวมก่อนภาษี':'ยอดรวม'}</div><div class="r">${baht(bc.sub)}</div></div><div class="row"><div class="g muted">VAT ${bc.rate}%${bc.mode==='incl'?' (รวมในราคาแล้ว)':''}</div><div class="r">${baht(bc.vat)}</div></div>`:''}
-        <div class="row sum"><div class="g"><b>ยอดที่ต้องชำระ</b></div><div class="r"><b>${baht(bc.total)}</b></div></div></div>
+        ${bc.round?`<div class="row"><div class="g muted">ส่วนลดปัดเศษ</div><div class="r" style="color:var(--chili)">−${baht(bc.round)}</div></div>`:''}<div class="row sum"><div class="g"><b>ยอดที่ต้องชำระ</b></div><div class="r"><b>${baht(bc.total)}</b></div></div></div>
         ${st.waiting?`<p class="muted" style="margin:0">ยังมี ${st.waiting} รายการที่กำลังทำ ยอดนี้รวมไว้แล้ว</p>`:''}
-        ${pp&&bc.total>0?`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,bc.total))}<b>${baht(bc.total)}</b><small>โอนแล้วกด "แจ้งโอนแล้ว" ให้พนักงานตรวจสอบ</small></div>`:''}
-        <div class="stack">${pp&&bc.total>0?`<button class="btn pri" data-a="call" data-v="paid" type="button">โอนแล้ว แจ้งพนักงาน</button>`:''}<button class="btn${pp?'':' pri'}" data-a="call" data-v="pay" type="button">ชำระเงินสด / เรียกพนักงานเก็บเงิน</button></div>
+        ${pp&&bc.total>0?`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,bc.total))}<b>${baht(bc.total)}</b><small>โอนแล้วกด "แนบสลิป" ตรวจรูปให้ถูก แล้วกดยืนยันส่ง</small></div>`:''}
+        <div class="stack">${pp&&bc.total>0?slipBox(st):''}<button class="btn${pp?'':' pri'}" data-a="call" data-v="pay" type="button">ชำระเงินสด / เรียกพนักงานเก็บเงิน</button></div>
         <p class="muted" style="margin:0;font-size:13px">ส่วนลดหรือแต้มสะสม พนักงานจะหักให้ตอนชำระเงิน ยอดสุดท้ายตามใบเสร็จ</p>`:'<p class="muted">ยังไม่มีรายการ</p>');
     ft=`<button class="btn" data-a="view" data-v="status" type="button">ดูสถานะ</button><button class="btn pri wide" data-a="view" data-v="menu" type="button">สั่งเพิ่ม</button>`;
   }else{
@@ -471,6 +487,54 @@ start();
 
 /* ---------- แจ้งเตือนเวอร์ชันใหม่ (กันมือถือจำหน้าเก่าไว้) ---------- */
 const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||'';
+
+/* ---------- แนบสลิปโอนเงิน: เลือกรูป → ดูตัวอย่าง → ยืนยันส่ง · ลบ/แนบใหม่ได้ ---------- */
+function slipLoad(){if(S.slipSent===undefined){try{S.slipSent=JSON.parse(sessionStorage.getItem('nl_slip')||'null')}catch(e){S.slipSent=null}}}
+function slipSave(v){S.slipSent=v;try{v?sessionStorage.setItem('nl_slip',JSON.stringify(v)):sessionStorage.removeItem('nl_slip')}catch(e){}}
+function slipBox(st){const sent=S.slipSent&&S.slipSent.o===(st.orderNo||'')?S.slipSent:null,draft=S.slipDraft;
+  const inp='<input id="slipIn" type="file" accept="image/*" hidden>';
+  if(draft)return `<div class="slipbox"><b>ตรวจสลิปก่อนส่ง</b><img src="${draft}" alt="สลิปที่เลือก" class="slipimg zoomable" data-a="slipView" data-v="draft"><small class="muted">ดูให้แน่ใจว่าเป็นสลิปของยอดนี้ ถ้าผิดกด "ลบ เลือกใหม่"</small>
+    <div class="sliprow"><button class="btn" data-a="slipDel" type="button">ลบ เลือกใหม่</button><button class="btn pri wide" data-a="slipSend" type="button" ${S.slipBusy?'disabled':''}>${S.slipBusy?'กำลังส่ง…':'ยืนยันส่งสลิป'}</button></div>${inp}</div>`;
+  if(sent)return `<div class="slipok"><img src="${sent.img}" alt="สลิป" class="zoomable" data-a="slipView" data-v="sent"><div class="grow"><b>✓ ส่งสลิปแล้ว</b><small>พนักงานกำลังตรวจยอด</small></div></div>
+    <div class="sliprow"><button class="btn" data-a="slipRemove" type="button" ${S.slipBusy?'disabled':''}>ลบสลิปนี้</button><label class="btn wide" for="slipIn">แนบสลิปใหม่</label></div>${inp}`;
+  return `<label class="btn pri" for="slipIn">📎 โอนแล้ว แนบสลิป</label>${inp}`}
+function shrink(file){return new Promise((ok,no)=>{const fr=new FileReader();fr.onerror=no;fr.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{
+  let w=im.width,h=im.height,mx=1280;if(Math.max(w,h)>mx){const r=mx/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r)}
+  const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);
+  let q=.75,u=c.toDataURL('image/jpeg',q);while(u.length>450000&&q>.35){q-=.1;u=c.toDataURL('image/jpeg',q)}ok(u)};im.src=fr.result};fr.readAsDataURL(file)})}
+const slipErr=m=>/no_order/.test(m)?'ยังไม่มีบิลที่เปิดอยู่':/bad_slip/.test(m)?'ไฟล์รูปใช้ไม่ได้ ลองรูปอื่น':'ทำรายการไม่สำเร็จ ลองอีกครั้ง';
+document.addEventListener('change',async e=>{const i=e.target;if(i.id!=='slipIn'||!i.files||!i.files[0])return;
+  try{S.slipDraft=await shrink(i.files[0])}catch(x){return toast('เปิดรูปไม่ได้ ลองรูปอื่น')}render()});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a^="slip"]');if(!b)return;const a=b.dataset.a;
+  if(a==='slipView')return viewImg(b.dataset.v==='draft'?S.slipDraft:S.slipSent&&S.slipSent.img,'สลิป');
+  if(a==='slipDel'){S.slipDraft=null;render();setTimeout(()=>$('#slipIn')?.click(),50);return}
+  if(a==='slipSend'&&S.slipDraft&&!S.slipBusy){S.slipBusy=true;render();
+    try{const {error}=await sb.rpc('customer_slip',{p_key:K,p_table:T,p_order:WALK?getWO():null,p_img:S.slipDraft,p_name:S.name||''});S.slipBusy=false;
+      if(error){render();return toast(slipErr(String(error.message||'')))}
+      slipSave({o:(S.status&&S.status.orderNo)||'',img:S.slipDraft});S.slipDraft=null;toast('ส่งสลิปแล้ว พนักงานกำลังตรวจยอด');await loadStatus(true);render()}
+    catch(x){S.slipBusy=false;render();toast('ส่งสลิปไม่สำเร็จ ลองอีกครั้ง')}return}
+  if(a==='slipRemove'&&!S.slipBusy){if(!b.dataset.armed){b.dataset.armed='1';b.textContent='แตะอีกครั้งเพื่อลบ';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent='ลบสลิปนี้'}},3500);return}
+    S.slipBusy=true;render();
+    try{const {error}=await sb.rpc('customer_slip_del',{p_key:K,p_table:T,p_order:WALK?getWO():null});S.slipBusy=false;
+      if(error){render();return toast(slipErr(String(error.message||'')))}slipSave(null);toast('ลบสลิปแล้ว แนบใหม่ได้เลย');render()}
+    catch(x){S.slipBusy=false;render();toast('ลบไม่สำเร็จ ลองอีกครั้ง')}}});
+
+/* ---------- จ่ายเงินเสร็จ → ใบเสร็จออนไลน์ ---------- */
+const LAST_KEY='nl_last_order';
+const lastOid=()=>{try{const v=JSON.parse(localStorage.getItem(LAST_KEY)||'null');return v&&Date.now()-v.ts<12*3600e3?v.id:null}catch(e){return null}};
+const setLast=id=>{try{id?localStorage.setItem(LAST_KEY,JSON.stringify({id,ts:Date.now()})):localStorage.removeItem(LAST_KEY)}catch(e){}};
+let rcBusy=false;
+async function tryReceipt(){const id=lastOid();if(!id||rcBusy||S.view==='paid')return false;rcBusy=true;
+  try{const {data,error}=await sb.rpc('customer_receipt',{p_order:id});if(error||!data)return false;
+    S.rcpt=data;setLast(null);try{localStorage.setItem('nl_rcpt',JSON.stringify({...data,ts:Date.now()}))}catch(e){}
+    S.view='paid';S.cart={};render();return true}catch(e){return false}finally{rcBusy=false}}
+const rcptUrl=r=>{const u=new URL('receipt.html',location.href);return u.origin+u.pathname+'?r='+encodeURIComponent(r.id)+'&t='+encodeURIComponent(r.tok)};
+function viewPaid(){const r=S.rcpt;document.body.classList.add('welcome');setCall&&setCall();const cb=$('#callBtn');if(cb)cb.hidden=true;
+  $('#view').innerHTML=`<div class="namebox" style="text-align:center"><div style="font-size:46px;line-height:1">🙏</div><h2>ชำระเงินเรียบร้อย</h2>
+    <p class="muted" style="margin:0">ยอดชำระ <b style="color:var(--fg)">${baht(r.total)}</b>${r.billNo?' · เลขที่ '+esc(r.billNo):''}<br>ขอบคุณที่อุดหนุนครับ</p>
+    <a class="btn pri" href="${esc(rcptUrl(r))}" style="display:flex;align-items:center;justify-content:center;text-decoration:none">🧾 ดู / บันทึกใบเสร็จ</a>
+    <p class="muted" style="margin:0;font-size:12.5px">เปิดใบเสร็จแล้วกด "บันทึกเป็นรูป" เก็บไว้ในมือถือได้</p></div>`;
+  $('#footIn').innerHTML='';$('#foot').hidden=true}
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
   if(m&&APP_VER&&m[1]!==APP_VER&&!document.getElementById('updBar')){const b=document.createElement('div');b.id='updBar';b.className='updbar';b.innerHTML='มีเวอร์ชันใหม่ของเว็บ <button type="button">อัปเดตเลย</button>';
     b.querySelector('button').onclick=()=>{const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)};document.body.appendChild(b)}}catch(e){}}
