@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-0945">
+<meta name="app-version" content="2026.10.09-1000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -339,6 +339,9 @@ body.app::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:non
 @media (max-width:700px),(orientation:portrait){body.app::before{
   background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-m.jpg) center 20%/cover no-repeat,url(bg-m.jpg) center 20%/cover no-repeat,var(--bg)}}
 body.app.nobg::before{display:none}
+/* ร้านข้าวมันไก่: ฉากหลังของร้านเอง */
+body.app.shop-po::before{background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-po.jpg) center/cover no-repeat,url(bg-po.jpg) center/cover no-repeat,var(--bg)}
+@media (max-width:700px),(orientation:portrait){body.app.shop-po::before{background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-po-m.jpg) center 20%/cover no-repeat,url(bg-po-m.jpg) center 20%/cover no-repeat,var(--bg)}}
 body.app .top{background:rgba(var(--veil-rgb),.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 body.app .tcard:not(.busy){background:color-mix(in srgb,var(--surface) 72%,transparent);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 body.app .sec-h{background:rgba(var(--veil-rgb),.7);border-radius:10px;padding:6px 10px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
@@ -521,7 +524,7 @@ body.shop-po .top{box-shadow:inset 0 -3px 0 #f0a54a}
 
 <header class="top"><div class="top-in">
   <div class="brand"><h1 id="shopName">NueaLwoan</h1><small id="conn"><span class="dot"></span>กำลังเชื่อมต่อ…</small></div>
-  <div class="shopsw" id="shopSw" role="group" aria-label="เลือกร้าน" hidden><button type="button" data-act="shopSw" data-v="noodle">🍜 ก๋วยเตี๋ยว</button><button type="button" data-act="shopSw" data-v="po">🍗 ข้าวมันไก่</button></div>
+  <div class="shopsw" id="shopSw" role="group" aria-label="เลือกร้าน" hidden><button type="button" data-act="shopSw" data-v="noodle">🍜 ก๋วยเตี๋ยว</button><button type="button" data-act="shopSw" data-v="po">🍗 Khao Man Gai</button></div>
   <label class="modesel" id="hdrModeWrap" hidden><span>โหมด</span><select id="hdrMode" aria-label="โหมดหน้าจอ"><option value="">Admin</option><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">แม่ครัว</option><option value="partner">หุ้นส่วน</option></select></label>
   <button class="btn sm" data-act="settings" type="button">ตั้งค่าร้าน</button>
   <button class="btn sm" id="hdrLogout" data-act="logout" data-confirm="1" type="button">ออกจากระบบ</button>
@@ -1924,7 +1927,7 @@ async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck=
 setTimeout(checkUpdate,3000);setInterval(checkUpdate,5*60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
 /* ======================= ร้านพรีออเดอร์ (ข้าวมันไก่) ======================= */
-const PO_DEF={open:false,shopName:'ข้าวมันไก่',openFrom:'',cutoff:'20:00',leadDays:1,window:'',notice:'',phone:'',promptpay:'',pickup:true,pickupText:'',payBefore:true,payAfter:true,points:[],cats:[]};
+const PO_DEF={open:false,shopName:'Khao Man Gai',openFrom:'',cutoff:'20:00',leadDays:1,window:'',notice:'',phone:'',promptpay:'',pickup:true,pickupText:'',payBefore:true,payAfter:true,points:[],cats:[]};
 const poCfg=()=>({...PO_DEF,...(S.po||{})});
 const canPo=()=>['owner','chef'].includes(roleKey(effRole()));
 const bkkDay=(add=0)=>new Date(Date.now()+7*3600e3+add*DAY).toISOString().slice(0,10);
@@ -2037,7 +2040,7 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
 function poRenderPts(){const L=S.sheet.d.points;$('#pPts').innerHTML=L.map((p,i)=>`<div class="oc-row" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 40px;margin-bottom:8px"><input data-pt="${i}" data-k="name" value="${esc(p.name)}" maxlength="50" placeholder="ชื่อจุด เช่น ตึก A ล็อบบี้" aria-label="ชื่อจุดส่ง"><input data-pt="${i}" data-k="note" value="${esc(p.note||'')}" maxlength="60" placeholder="รายละเอียด (ถ้ามี)" aria-label="รายละเอียดจุดส่ง"><button class="btn sm ghost" data-act="poPtDel" data-i="${i}" type="button" aria-label="ลบ">×</button></div>`).join('')||'<p class="help" style="margin:0">ยังไม่มีจุดส่ง ถ้าไม่ใส่ ลูกค้าเลือกได้แค่มารับที่ร้าน</p>'}
 function poReadPts(){document.querySelectorAll('[data-pt]').forEach(e=>{const p=S.sheet.d.points[+e.dataset.pt];if(p)p[e.dataset.k]=e.value.trim()})}
 async function poSave(){if(S.role!=='owner')return deny();poReadPts();const d=S.sheet.d;
-  const data={...(S.po||{}),open:$('#pOpen').checked,shopName:val('pShop')||'ข้าวมันไก่',openFrom:val('pFrom'),cutoff:val('pCut')||'20:00',leadDays:+val('pLead')||0,window:val('pWin'),
+  const data={...(S.po||{}),open:$('#pOpen').checked,shopName:val('pShop')||'Khao Man Gai',openFrom:val('pFrom'),cutoff:val('pCut')||'20:00',leadDays:+val('pLead')||0,window:val('pWin'),
     pickup:$('#pPick').checked,pickupText:val('pPickT'),payBefore:$('#pPB').checked,payAfter:$('#pPA').checked,promptpay:val('pPP').replace(/\D/g,'')||String(S.settings.promptpay||'').replace(/\D/g,''),
     phone:val('pPhone'),logo:val('pLogo'),notice:val('pNotice'),
     points:d.points.filter(p=>p.name).map(p=>({id:p.id||('p'+uid()),name:p.name.slice(0,50),note:(p.note||'').slice(0,60)})),cats:(S.po&&S.po.cats)||[]};
