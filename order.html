@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1430">
+<meta name="app-version" content="2026.10.09-1550">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -516,7 +516,7 @@ function render(){
         ${st.waiting?`<p class="muted" style="margin:0">ยังมี ${st.waiting} รายการที่กำลังทำ ยอดนี้รวมไว้แล้ว</p>`:''}
         ${memBox(st,bc)}
         ${pp&&bc.total>0?`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,bc.total))}<b>${baht(bc.total)}</b><small>โอนแล้วกด "แนบสลิป" ตรวจรูปให้ถูก แล้วกดยืนยันส่ง</small></div>`:''}
-        <div class="stack">${pp&&bc.total>0?slipBox(st):''}<button class="btn${pp?'':' pri'}" data-a="call" data-v="pay" type="button">ชำระเงินสด / เรียกพนักงานเก็บเงิน</button></div>
+        <div class="stack">${pp&&bc.total>0?slipBox(st):''}${S.slipSent&&S.slipSent.o===(st.orderNo||'')?'':`<button class="btn${pp?'':' pri'}" data-a="call" data-v="pay" type="button">ชำระเงินสด / เรียกพนักงานเก็บเงิน</button>`}</div>
         <p class="muted" style="margin:0;font-size:13px">ส่วนลดหรือแต้มสะสม พนักงานจะหักให้ตอนชำระเงิน ยอดสุดท้ายตามใบเสร็จ</p>`:'<p class="muted">ยังไม่มีรายการ</p>');
     ft=`<button class="btn" data-a="view" data-v="status" type="button">ดูสถานะ</button><button class="btn pri wide" data-a="view" data-v="menu" type="button">สั่งเพิ่ม</button>`;
   }else{

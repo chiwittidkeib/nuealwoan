@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1540">
+<meta name="app-version" content="2026.10.09-1550">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -646,6 +646,14 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .rc-ty::before,.rc-ty::after{content:"";width:24px;height:1.5px;background:currentColor}
 .rc-brand .rc-foot small{display:block;font-size:11.5px}
 .rc-hrt{color:var(--rg)}
+.sgtabs{position:sticky;top:-14px;z-index:3;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:-4px 0 4px;padding:6px 0;background:var(--bg)}
+.sgtabs button{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:12px;padding:8px 4px;font:inherit;font-size:12px;font-weight:600;line-height:1.2;text-align:center;cursor:pointer;min-height:58px}
+.sgtabs button span{font-size:20px}
+.sgtabs button[aria-selected="true"]{border-color:#ffd58a;background:#3a2a0b;color:#ffd58a;box-shadow:0 0 0 1px #ffd58a}
+.sg{display:flex;flex-direction:column;gap:14px}.sg[hidden]{display:none!important}
+.sg[data-sg="3"] .qrbig .pq{max-width:240px;margin:0 auto}
+.sg-h{font-size:15px;color:var(--muted);font-weight:500;margin:4px 0 0}
+@media (max-width:420px){.sgtabs button{font-size:11px;padding:6px 2px}}
 </style>
 </head>
 <body>
@@ -1351,7 +1359,7 @@ function sheetPay(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const s
    ${can('discount')?`<div class="field"><label for="payDisc">ส่วนลด (บาท)</label><input id="payDisc" inputmode="decimal" placeholder="0" value="${esc(s.discount||'')}"></div>`:''}
    ${isDel(o)?`<div class="card" id="payPlat"></div>`:''}
    ${S.settings.pointsOn&&!isDel(o)?`<div class="card"><h3>สมาชิกสะสมแต้ม</h3><div class="inrow"><input id="payPhone" inputmode="tel" placeholder="เบอร์โทรลูกค้า" value="${esc(s.phone||'')}" autocomplete="off" aria-label="เบอร์โทรลูกค้า"><button class="btn sm" data-act="findMember" type="button">ค้นหา</button></div><div id="payMem"></div></div>`:''}
- <div class="seg" role="group" ${isDel(o)?'hidden':''}><button data-act="method" data-v="cash" aria-pressed="${s.method==='cash'}" type="button">เงินสด</button><button data-act="method" data-v="promptpay" aria-pressed="${s.method==='promptpay'}" type="button">พร้อมเพย์</button></div>
+ <div class="seg" role="group" ${isDel(o)?'hidden':''}>${o.slipAt?'':`<button data-act="method" data-v="cash" aria-pressed="${s.method==='cash'}" type="button">เงินสด</button>`}<button data-act="method" data-v="promptpay" aria-pressed="${s.method==='promptpay'}" type="button">พร้อมเพย์</button></div>
    <section id="payCash" ${s.method==='cash'?'':'hidden'} style="display:flex;flex-direction:column;gap:12px">
      <div class="field"><label for="payRecv">รับเงินมา (บาท)</label><input id="payRecv" inputmode="decimal" placeholder="0" value="${esc(s.received||'')}"></div>
      <div class="quick" id="payQuick"></div>
@@ -1363,7 +1371,7 @@ function sheetPay(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const s
   if($('#payPhone')){$('#payPhone').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();findMember()}});renderMem()}
   $('#payRecv').addEventListener('input',e=>{S.sheet.received=e.target.value;payUpdate()});
   payUpdate();}
-const payOpen=id=>{const o=S.open[id];const p={type:'pay',id,method:o&&isDel(o)?chOf(o):'cash',discount:'',received:''};
+const payOpen=id=>{const o=S.open[id];const p={type:'pay',id,method:o&&isDel(o)?chOf(o):(o&&o.slipAt?'promptpay':'cash'),discount:'',received:''};
   if(o&&o.memberPhone&&S.settings.pointsOn&&!isDel(o)){p.phone=o.memberPhone;p.member=S.members.find(m=>m.id===o.memberPhone)||null;p.memberNew=!p.member;p.custMem=true}return p};
 function payCalc(){const o=S.open[S.sheet.id],s=S.sheet,st=S.settings;const sub=linesTotal(o.items);const disc=Math.min(sub,Math.max(0,parseFloat(s.discount)||0));
   let use=0,redeem=0;const pv=Math.max(0.01,+st.pointValue||1);
@@ -1731,20 +1739,36 @@ async function pushStatus(){const el=$('#pushStat');if(!el)return;let t,on=false
   else{const sub=await PUSH.current().catch(()=>null);on=!!sub&&Notification.permission==='granted';t=on?'✓ เปิดอยู่บนเครื่องนี้ · ล็อกจอก็ยังได้รับแจ้งเตือน':'ยังไม่ได้เปิดบนเครื่องนี้'}
   el.textContent=t;const b1=$('#pushOnBtn'),b2=$('#pushTestBtn');if(b1)b1.textContent=on?'เปิดใหม่อีกครั้ง':'เปิดแจ้งเตือนบนเครื่องนี้';if(b2)b2.hidden=!on;}
 function refreshBellCard(){const old=document.getElementById('bStaff')?.closest('.card');if(!old)return;old.outerHTML=bellCard();bellBind()}
-const accountCard=()=>`${bellCard()}${bgCard()}<div class="card"><h3>บัญชีของฉัน <small class="muted" style="font-size:12px;font-weight:400">เว็บเวอร์ชัน ${esc(APP_VER)}</small></h3><p class="help" style="margin:0">เข้าสู่ระบบด้วยชื่อผู้ใช้ <b>${esc(S.me||'')}</b> · ${S.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</p>
+const accountCard=()=>bellCard()+bgCard()+myAccountCard();
+const myAccountCard=()=>`<div class="card"><h3>บัญชีของฉัน <small class="muted" style="font-size:12px;font-weight:400">เว็บเวอร์ชัน ${esc(APP_VER)}</small></h3><p class="help" style="margin:0">เข้าสู่ระบบด้วยชื่อผู้ใช้ <b>${esc(S.me||'')}</b> · ${S.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</p>
    <div class="field"><label for="myPw">ตั้งรหัสผ่านใหม่</label><div class="inrow"><input id="myPw" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"><button class="btn sm" data-act="myPwSave" type="button">เปลี่ยนรหัส</button></div></div>
    <button class="btn sm danger" data-act="logout" data-confirm="1" type="button" style="align-self:flex-start">ออกจากระบบ</button></div>`;
 function sheetAccount(){$('#panel').innerHTML=head('บัญชีของฉัน')+`<form class="sh-body">${accountCard()}</form>`;bindBg();bellBind();}
 function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.settings;
   $('#panel').innerHTML=head('ตั้งค่าร้าน')+
-  `<form class="sh-body"><div class="field"><label for="cName">ชื่อร้าน</label><input id="cName" value="${esc(s.shopName)}"></div>
+  `<form class="sh-body">
+  <div class="sgtabs" role="tablist">${[['1','🏪','ร้าน & พนักงาน'],['2','💳','เงิน & ใบเสร็จ'],['3','⭐','สมาชิก'],['4','📷','หน้าลูกค้า & เสียง'],['5','🛵','เดลิเวอรี่']].map(([k,i,t])=>`<button type="button" role="tab" data-act="sgTab" data-v="${k}" aria-selected="${(S.sheet.sg||1)==k}"><span>${i}</span>${t}</button>`).join('')}</div>
+  <section class="sg" data-sg="1" ${(S.sheet.sg||1)==1?'':'hidden'}><h3 class="sg-h">🏪 ข้อมูลร้าน · หมวดหมู่ · พนักงาน · สิทธิ์การใช้งาน</h3>
+  <div class="field"><label for="cName">ชื่อร้าน</label><input id="cName" value="${esc(s.shopName)}"></div>
   <div class="grid2"><div class="field"><label for="cTables">จำนวนโต๊ะ</label><input id="cTables" inputmode="numeric" value="${s.tables}"></div><div class="field"><label for="cExtra">ราคา "พิเศษ" (บาท)</label><input id="cExtra" inputmode="decimal" value="${s.extraPrice??10}"></div></div>
   <div class="card"><div class="sec-h"><h3>จำนวนเก้าอี้แต่ละโต๊ะ</h3><span class="hint">ค่าเริ่มต้น <input class="seatdef" id="cDefSeats" inputmode="numeric" value="${s.defSeats||4}" aria-label="ที่นั่งเริ่มต้น"> ที่</span></div>
    <div class="seatgrid" id="seatGrid">${Array.from({length:Math.max(1,Math.min(60,+s.tables||10))},(_,k)=>{const t=k+1,v=(s.seats||{})[t];return `<label class="seatcell"><span>โต๊ะ ${t}</span><input inputmode="numeric" id="seat_${t}" data-seat="${t}" value="${v||''}" placeholder="${s.defSeats||4}"></label>`}).join('')}</div>
    <p class="help" style="margin:0">เว้นว่าง = ใช้ค่าเริ่มต้น · เพิ่มจำนวนโต๊ะแล้วกดบันทึก ช่องของโต๊ะใหม่จะขึ้นเมื่อเปิดหน้านี้อีกครั้ง</p></div>
-  <div class="field"><label for="cPP">พร้อมเพย์ของร้าน</label><input id="cPP" inputmode="numeric" value="${esc(s.promptpay)}" placeholder="เบอร์มือถือ 10 หลัก หรือเลขบัตร 13 หลัก"><span class="help">ใช้สร้าง QR พร้อมยอดเงินตอนเก็บเงิน</span></div>
   <div class="field"><label for="cCats">หมวดเมนู (คั่นด้วย ,)</label><input id="cCats" value="${esc((s.cats||[]).join(', '))}"></div>
   <div class="field"><label for="cExp">หมวดรายจ่าย (คั่นด้วย ,)</label><input id="cExp" value="${esc((s.expCats||[]).join(', '))}"></div>
+  <div class="card"><div class="sec-h"><h3>พนักงาน</h3><button class="lnk" data-act="staffNew" type="button">+ เพิ่มพนักงาน</button></div>
+   <p class="help" style="margin:0">เฉพาะแอดมินที่สร้าง ตั้งรหัส ลบบัญชี และเปลี่ยนตำแหน่งได้</p><div id="staffList"><p class="help" style="margin:0">กำลังโหลด…</p></div></div>
+  <div class="card"><div class="sec-h"><h3>สิทธิ์การใช้งาน</h3><button class="lnk" data-act="permReset" type="button">คืนค่าเริ่มต้น</button></div>
+   <p class="help" style="margin:0">ติ๊กว่าแต่ละตำแหน่งใช้ส่วนไหนได้ แอดมินใช้ได้ทุกส่วนเสมอ ตั้งค่าร้านและจัดการบัญชีเป็นของแอดมินเท่านั้น</p>
+   <div class="perm-wrap"><table class="perm"><thead><tr><th>ฟังก์ชัน</th><th class="rolec-owner">Admin</th><th class="rolec-waiter">เสิร์ฟ</th><th class="rolec-chef">แม่ครัว</th><th class="rolec-partner">หุ้นส่วน</th></tr></thead><tbody id="permBody"></tbody></table></div>
+   <button class="btn pri sm" data-act="permSave" type="button" style="align-self:flex-start">บันทึกสิทธิ์</button>
+   <div class="field"><label>ลองดูหน้าจอของแต่ละตำแหน่ง</label><div class="newch">${['waiter','chef','partner'].map(r=>`<button class="btn sm" data-act="viewAs" data-r="${r}" type="button">ดูแบบ${ROLES[r]}</button>`).join('')}</div><span class="help">บันทึกสิทธิ์ก่อนแล้วค่อยกดดู จะเห็นหน้าจอตามสิทธิ์ล่าสุด</span></div></div>
+
+  ${myAccountCard()}
+  </section>
+  <section class="sg" data-sg="2" ${(S.sheet.sg||1)==2?'':'hidden'}><h3 class="sg-h">💳 การชำระเงิน · ใบเสร็จ · ใบเสร็จออนไลน์</h3>
+  <div class="card"><h3>การชำระเงิน</h3>
+  <div class="field"><label for="cPP">พร้อมเพย์ของร้าน</label><input id="cPP" inputmode="numeric" value="${esc(s.promptpay)}" placeholder="เบอร์มือถือ 10 หลัก หรือเลขบัตร 13 หลัก"><span class="help">ใช้สร้าง QR พร้อมยอดเงินตอนเก็บเงิน</span></div></div>
   <div class="card"><h3>ภาษีมูลค่าเพิ่ม (VAT)</h3>
    <label class="check"><input type="checkbox" id="cVatOn" ${vatCfg().on?'checked':''}> คิดภาษีมูลค่าเพิ่ม</label>
    <div class="grid2"><div class="field"><label for="cVatRate">อัตรา (%)</label><input id="cVatRate" inputmode="decimal" value="${vatCfg().rate}"></div>
@@ -1755,7 +1779,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <div class="field"><label for="cAddr">ที่อยู่ร้าน</label><input id="cAddr" value="${esc(s.address||'')}" placeholder="เช่น 12 ถ.สุขุมวิท บางนา กทม." autocomplete="off"></div>
    <div class="grid2"><div class="field"><label for="cPhone">เบอร์โทรร้าน</label><input id="cPhone" inputmode="tel" value="${esc(s.phone||'')}"></div><div class="field"><label for="cTax">เลขผู้เสียภาษี (ถ้ามี)</label><input id="cTax" inputmode="numeric" value="${esc(s.taxId||'')}"></div></div>
    <div class="field"><label for="cFoot">ข้อความท้ายใบเสร็จ</label><input id="cFoot" value="${esc(s.receiptFooter||'')}" placeholder="ขอบคุณที่อุดหนุนครับ"></div>
-   <details class="rcx"><summary><b>ใบเสร็จออนไลน์ (ลูกค้าโหลดเอง)</b> <small class="muted">โลโก้ · ชื่อร้าน · Facebook · เบอร์ · หมุดพิกัด</small></summary>
+   <details class="rcx" open><summary><b>📱 ใบเสร็จออนไลน์ (ลูกค้าโหลดเอง)</b> <small class="muted">โลโก้ · ชื่อร้าน · Facebook · เบอร์ · หมุดพิกัด</small></summary>
     ${rcLogoField('rcLogo',s.rcLogo,'images/logo-nl-t.png')}
     <div class="grid2"><div class="field"><label for="rcName">ชื่อร้าน (ไทย)</label><input id="rcName" maxlength="40" value="${esc(s.rcName??'เนื้อล้วนๆ')}"></div><div class="field"><label for="rcNameEn">ชื่อร้าน (อังกฤษ)</label><input id="rcNameEn" maxlength="40" value="${esc(s.rcNameEn??'NUEA LWOON')}"></div></div>
     <div class="field"><label for="rcTag">คำโปรยใต้ชื่อ</label><input id="rcTag" maxlength="80" value="${esc(s.rcTag===undefined||s.rcTag==='BEEF NOODLES • BRAISED BEEF • KHAO SOI'?'':s.rcTag)}" placeholder="เว้นว่าง = ไม่แสดง"></div>
@@ -1764,23 +1788,27 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
     <div class="field"><label for="rcThanks2">ข้อความท้ายบรรทัดที่ 2</label><input id="rcThanks2" maxlength="60" value="${esc(s.rcThanks2??'แล้วพบกันใหม่นะคะ')}"></div>
     <p class="help" style="margin:0">เบอร์โทรใช้ช่อง "เบอร์โทรร้าน" ด้านบน · ภาษีมูลค่าเพิ่มแสดงบนใบเสร็จเฉพาะเมื่อเปิด VAT · ถ้าใส่เลขผู้เสียภาษีด้วย หัวจะเป็น "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ"</p></details>
    <div class="field"><label for="cPaper">ขนาดกระดาษเครื่องพิมพ์</label><select id="cPaper"><option value="80" ${+s.paper!==58?'selected':''}>80 มม.</option><option value="58" ${+s.paper===58?'selected':''}>58 มม.</option></select></div></div>
+  </section>
+  <section class="sg" data-sg="3" ${(S.sheet.sg||1)==3?'':'hidden'}><h3 class="sg-h">⭐ สมาชิกสะสมแต้ม · QR สมัครสมาชิก</h3>
   <div class="card"><h3>สะสมแต้ม</h3>
    <label class="check"><input type="checkbox" id="cPtsOn" ${s.pointsOn?'checked':''}> เปิดระบบสะสมแต้มด้วยเบอร์โทร</label>
    <div class="grid2"><div class="field"><label for="cPtsPer">ซื้อครบกี่บาท ได้ 1 แต้ม</label><input id="cPtsPer" inputmode="decimal" value="${s.pointsPer??50}"></div><div class="field"><label for="cPtsVal">1 แต้ม แลกส่วนลดกี่บาท</label><input id="cPtsVal" inputmode="decimal" value="${s.pointValue??1}"></div></div>
    <p class="help" style="margin:0" id="cPtsHelp"></p></div>
+  <div class="card"><h3>QR สมัครสมาชิก</h3><p class="help" style="margin:0">พิมพ์ติดที่โต๊ะหรือเคาน์เตอร์ ลูกค้าสแกนสมัครสมาชิกเองได้ (แต้มเริ่มสะสมครั้งถัดไป)</p>
+   <div class="qrbig"><div class="pq"><small style="font-weight:600">${esc(s.rcName||'เนื้อล้วนๆ')}</small>${qrSvg(memberUrl())}<b>สมัครสมาชิกสะสมแต้ม</b><small>ทุก ${num(+s.pointsPer||50)} บาท ได้ 1 แต้ม · ใช้ได้ทั้ง 2 ร้าน</small></div></div>
+   <div class="inrow" style="flex-wrap:wrap"><button class="btn sm" data-act="memQrPrint" type="button">พิมพ์ QR นี้</button><a class="btn sm ghost" href="${esc(memberUrl())}" target="_blank" rel="noopener">เปิดหน้าสมัคร</a></div></div>
+  </section>
+  <section class="sg" data-sg="4" ${(S.sheet.sg||1)==4?'':'hidden'}><h3 class="sg-h">📷 QR สั่งอาหาร · ปุ่มเรียกพนักงาน · เสียงและการแจ้งเตือน</h3>
+  <div class="card"><h3>ลูกค้าสั่งเองผ่าน QR</h3><p class="help" style="margin:0">พิมพ์ QR ไปติดที่โต๊ะ ลูกค้าสแกนแล้วสั่งได้เลย รายการจะเข้าบิลของโต๊ะนั้น</p> <label class="check" style="align-items:flex-start"><input type="checkbox" id="cQrSecure" ${s.qrSecure!==false?'checked':''}><span><b>QR ปลอดภัย (แนะนำ)</b><br><small class="muted">QR สั่งเองเปลี่ยนใหม่ทุกวัน · QR โต๊ะสร้างใหม่ทุกครั้งที่เปิดโต๊ะ และใช้ไม่ได้หลังชำระเงิน กันคนเอา QR เก่ามาแกล้งสั่ง (ไม่ต้องติด QR บนโต๊ะ ให้ลูกค้าสแกนจากจอพนักงานหรือพิมพ์ใบ QR ตอนเปิดโต๊ะ)</small></span></label><label class="check"><input type="checkbox" id="cQrWalk" ${s.qrWalkin!==false?'checked':''}> เปิดให้ลูกค้าสั่งเองแบบไม่ระบุโต๊ะ (QR เคาน์เตอร์)</label><label class="check"><input type="checkbox" id="cQrOpen" ${s.qrRequireOpen!==false?'checked':''}> ให้สั่งผ่าน QR ได้เฉพาะโต๊ะที่พนักงานเปิดแล้ว</label><button class="btn sm" data-act="qrSheet" type="button">${s.qrSecure!==false?'ดู QR สั่งเองของวันนี้':'ดูและพิมพ์ QR ประจำโต๊ะ'}</button></div>
   <div class="card"><h3>ปุ่มเรียกพนักงาน (หน้าลูกค้า)</h3><p class="help" style="margin:0">ลูกค้ากด 🔔 แล้วจะเห็นปุ่มตามรายการนี้ · พิมพ์ประโยคเองได้ เพิ่ม/ลบได้ (สูงสุด 8) · ติ๊ก "เก็บเงิน" ถ้าเป็นการขอจ่ายเงิน (ใช้เสียงเก็บเงิน และมีปุ่มไปหน้าคิดเงิน) · เสียงของแต่ละประโยค อัดหรือเลือกไฟล์ได้ที่ 🎙 อัดเสียงเรียกโต๊ะ</p><div id="coList"></div>
    <div class="inrow" style="margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-act="coAdd" type="button">+ เพิ่มประโยค</button><button class="btn sm ghost" data-act="vOpen" type="button">🎙 อัด / เลือกไฟล์เสียงของแต่ละประโยค</button></div></div>
-  <div class="card"><h3>ลูกค้าสั่งเองผ่าน QR</h3><p class="help" style="margin:0">พิมพ์ QR ไปติดที่โต๊ะ ลูกค้าสแกนแล้วสั่งได้เลย รายการจะเข้าบิลของโต๊ะนั้น</p> <label class="check" style="align-items:flex-start"><input type="checkbox" id="cQrSecure" ${s.qrSecure!==false?'checked':''}><span><b>QR ปลอดภัย (แนะนำ)</b><br><small class="muted">QR สั่งเองเปลี่ยนใหม่ทุกวัน · QR โต๊ะสร้างใหม่ทุกครั้งที่เปิดโต๊ะ และใช้ไม่ได้หลังชำระเงิน กันคนเอา QR เก่ามาแกล้งสั่ง (ไม่ต้องติด QR บนโต๊ะ ให้ลูกค้าสแกนจากจอพนักงานหรือพิมพ์ใบ QR ตอนเปิดโต๊ะ)</small></span></label><label class="check"><input type="checkbox" id="cQrWalk" ${s.qrWalkin!==false?'checked':''}> เปิดให้ลูกค้าสั่งเองแบบไม่ระบุโต๊ะ (QR เคาน์เตอร์)</label><label class="check"><input type="checkbox" id="cQrOpen" ${s.qrRequireOpen!==false?'checked':''}> ให้สั่งผ่าน QR ได้เฉพาะโต๊ะที่พนักงานเปิดแล้ว</label><button class="btn sm" data-act="qrSheet" type="button">${s.qrSecure!==false?'ดู QR สั่งเองของวันนี้':'ดูและพิมพ์ QR ประจำโต๊ะ'}</button></div>
+  ${bellCard()}${bgCard()}
+  </section>
+  <section class="sg" data-sg="5" ${(S.sheet.sg||1)==5?'':'hidden'}><h3 class="sg-h">🛵 เดลิเวอรี่</h3>
   <div class="card"><h3>ช่องทางเดลิเวอรี่</h3><p class="help" style="margin:0">ราคาบวกเพิ่มใช้ตอนเพิ่มรายการในออร์เดอร์ของช่องทางนั้น GP ใช้คิดเงินที่ร้านได้รับจริงในรายงาน ใส่ตามสัญญาของร้าน</p>
    <div class="perm-wrap"><table class="perm"><thead><tr><th>ช่องทาง</th><th>เปิดใช้</th><th>ราคา +%</th><th>GP %</th></tr></thead><tbody>${DELIV.map(c=>{const g=chCfg(c);return `<tr><td><span class="chip-ch" style="--chc:${CH[c].c}">${CH[c].n}</span></td><td class="c"><input type="checkbox" id="chOn_${c}" ${g.on?'checked':''} aria-label="เปิดใช้ ${CH[c].n}"></td><td class="c"><input class="pct" id="chMk_${c}" inputmode="decimal" value="${g.markup||0}" aria-label="ราคาบวกเพิ่ม ${CH[c].n}"></td><td class="c"><input class="pct" id="chGp_${c}" inputmode="decimal" value="${g.gp||0}" aria-label="GP ${CH[c].n}"></td></tr>`}).join('')}</tbody></table></div></div>
-  <div class="card"><div class="sec-h"><h3>พนักงาน</h3><button class="lnk" data-act="staffNew" type="button">+ เพิ่มพนักงาน</button></div>
-   <p class="help" style="margin:0">เฉพาะแอดมินที่สร้าง ตั้งรหัส ลบบัญชี และเปลี่ยนตำแหน่งได้</p><div id="staffList"><p class="help" style="margin:0">กำลังโหลด…</p></div></div>
-  <div class="card"><div class="sec-h"><h3>สิทธิ์การใช้งาน</h3><button class="lnk" data-act="permReset" type="button">คืนค่าเริ่มต้น</button></div>
-   <p class="help" style="margin:0">ติ๊กว่าแต่ละตำแหน่งใช้ส่วนไหนได้ แอดมินใช้ได้ทุกส่วนเสมอ ตั้งค่าร้านและจัดการบัญชีเป็นของแอดมินเท่านั้น</p>
-   <div class="perm-wrap"><table class="perm"><thead><tr><th>ฟังก์ชัน</th><th class="rolec-owner">Admin</th><th class="rolec-waiter">เสิร์ฟ</th><th class="rolec-chef">แม่ครัว</th><th class="rolec-partner">หุ้นส่วน</th></tr></thead><tbody id="permBody"></tbody></table></div>
-   <button class="btn pri sm" data-act="permSave" type="button" style="align-self:flex-start">บันทึกสิทธิ์</button>
-   <div class="field"><label>ลองดูหน้าจอของแต่ละตำแหน่ง</label><div class="newch">${['waiter','chef','partner'].map(r=>`<button class="btn sm" data-act="viewAs" data-r="${r}" type="button">ดูแบบ${ROLES[r]}</button>`).join('')}</div><span class="help">บันทึกสิทธิ์ก่อนแล้วค่อยกดดู จะเห็นหน้าจอตามสิทธิ์ล่าสุด</span></div></div>
-  ${accountCard()}</form>
+  </section>
+  </form>
   <div class="sh-foot"><button class="btn pri wide" data-act="saveSettings" type="button">บันทึกการตั้งค่า</button></div>`;
   loadStaff();bindBg();bellBind();renderPerm();if(!S.sheet.co)S.sheet.co=callOpts().map(o=>({...o}));renderCo();
   const vx=()=>{const on=$('#cVatOn').checked,r=parseFloat(val('cVatRate'))||0,ex=val('cVatMode')==='excl';$('#cVatEx').textContent=!on?'ปิดอยู่ ใบเสร็จจะไม่แสดงภาษี':ex?`ตัวอย่าง: อาหาร 100 บาท + VAT ${r}% = ${baht(r2(100+100*r/100))}`:`ตัวอย่าง: อาหาร 100 บาท (รวม VAT แล้ว) = ก่อนภาษี ${baht(r2(100-100*r/(100+r)))} + VAT ${baht(r2(100*r/(100+r)))}`};
@@ -2310,7 +2338,10 @@ function sheetPoRcQr(){const o=S.poOrders.find(x=>x.id===S.sheet.id);if(!o)retur
    <p class="help" style="margin:0">ลูกค้าที่สั่งผ่านลิงก์ จะเห็นปุ่ม "ใบเสร็จ" ในหน้าติดตามออร์เดอร์เองหลังร้านกดรับเงิน · หรือคัดลอกลิงก์ส่งทางไลน์</p>
    <div class="field"><label for="rcLink">ลิงก์ใบเสร็จ</label><input id="rcLink" readonly value="${esc(url)}"></div></div>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button>${o.memberPhone?'<button class="btn" data-act="memCard" type="button">💳 บัตรสมาชิก</button>':''}<button class="btn" data-act="rcCopy" type="button">คัดลอกลิงก์</button><a class="btn pri wide" href="${esc(url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none">เปิดดูใบเสร็จ</a></div>`}
+const memberUrl=()=>{const u=new URL('member.html',location.href);return u.origin+u.pathname+'?per='+(+S.settings.pointsPer||50)};
 Object.assign(ACT,{
+  sgTab:d=>{S.sheet.sg=+d.v;document.querySelectorAll('#panel .sg').forEach(x=>x.hidden=x.dataset.sg!==d.v);document.querySelectorAll('#panel .sgtabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===d.v)));const b=$('#panel .sh-body');if(b)b.scrollTop=0},
+  memQrPrint:()=>{const card=`<div class="pq"><small style="font-weight:600">${esc(S.settings.rcName||'เนื้อล้วนๆ')}</small>${qrSvg(memberUrl())}<b>สมัครสมาชิกสะสมแต้ม</b><small>ทุก ${num(+S.settings.pointsPer||50)} บาท ได้ 1 แต้ม · ใช้ได้ทั้ง 2 ร้าน</small></div>`;$('#printArea').className='qrs one';$('#printArea').innerHTML=card;setTimeout(()=>window.print(),50)},
   memCard:()=>{const sh=S.sheet;const o=sh&&(sh.order||S.poOrders.find(x=>x.id===sh.id));if(!o||!o.memberPhone)return;const m=S.members.find(x=>x.id===o.memberPhone)||{};
     showMemberCard({phone:maskPhone(o.memberPhone),name:o.memberName||m.name||o.name||'',points:o.ptsBalance!=null?o.ptsBalance:m.points,note:+o.ptsEarned?`ได้รับ +${+o.ptsEarned} แต้มจากบิลนี้ 🎉`:''})},
   rcLogoReset:d=>{RCLOGO[d.id]='';if(S.sheet)S.sheet.dirty=true;const b=$('#'+d.id+'Box');if(b)b.innerHTML=`<img src="${esc(d.def)}" alt="โลโก้">`;const m=$('#'+d.id+'Msg');if(m)m.textContent='ใช้โลโก้ตั้งต้น · กด "บันทึก" เพื่อใช้งาน'},
