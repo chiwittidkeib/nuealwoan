@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1320">
+<meta name="app-version" content="2026.10.09-1400">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -571,6 +571,27 @@ body:not(.shop-po) .top-in .brandlogo:not([hidden])+.brand{flex-basis:auto}
 body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .rcx{border:1px dashed var(--line);border-radius:10px;padding:8px 10px}.rcx summary{cursor:pointer;padding:4px 0}.rcx[open]{display:flex;flex-direction:column;gap:10px}
 .rcframe{width:100%;min-height:600px;border:0;display:block;background:transparent}
+.mcard-ov{position:fixed;inset:0;z-index:140;background:rgba(8,5,3,.9);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;animation:mcIn .25s ease-out}
+@keyframes mcIn{from{opacity:0}to{opacity:1}}
+.mcard{position:relative;overflow:hidden;width:min(350px,92vw);aspect-ratio:1.586;border-radius:18px;padding:16px 18px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;
+  background:radial-gradient(circle at 88% 12%,rgba(255,213,138,.38),transparent 46%),radial-gradient(circle at 8% 100%,rgba(200,16,46,.35),transparent 50%),linear-gradient(135deg,#3a1a0c,#120a06 58%,#5a2e14);
+  border:1.5px solid #d9a441;box-shadow:0 18px 50px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.06);animation:mcPop .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes mcPop{from{transform:scale(.85) rotate(-3deg)}to{transform:none}}
+.mc-top{display:flex;align-items:center;justify-content:space-between}
+.mc-logos{display:flex;gap:6px}.mc-logos img{width:38px;height:38px;border-radius:9px;object-fit:cover;border:1px solid rgba(217,164,65,.7)}
+.mc-top span{font-family:Kanit,var(--f-display,system-ui);font-weight:600;letter-spacing:3px;font-size:12px;color:#f2c46d}
+.mc-mid b{display:block;font-family:Kanit,var(--f-display,system-ui);font-weight:600;font-size:20px;line-height:1.2}
+.mc-mid span{display:block;font-size:19px;letter-spacing:2.5px;color:#f6e6c8;font-variant-numeric:tabular-nums}
+.mc-bot{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.mc-bot small{display:block;font-size:12px;color:#e9d3ad}
+.mc-bot strong{font-family:Kanit,var(--f-display,system-ui);font-weight:800;font-size:38px;line-height:1;color:#ffd58a;text-shadow:0 2px 10px rgba(255,190,80,.35)}
+.mc-bot em{font-style:normal;font-size:11px;text-align:right;color:#e9d3ad;line-height:1.35}
+.mc-shine{position:absolute;inset:-40% -60%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.14) 50%,transparent 60%);animation:mcSh 3.2s ease-in-out infinite;pointer-events:none}
+@keyframes mcSh{0%{transform:translateX(-30%)}60%,100%{transform:translateX(30%)}}
+.mc-note{margin:0;color:#ffd58a;font-weight:600;text-align:center;max-width:340px}
+.mc-act{min-height:48px;padding:0 22px;border-radius:12px;border:0;background:#ffd58a;color:#3a2600;font:inherit;font-weight:700;cursor:pointer}
+.mc-x{min-height:44px;padding:0 26px;border-radius:12px;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.mcbtn{display:inline-flex;align-items:center;gap:6px}
 </style>
 </head>
 <body>
@@ -611,6 +632,21 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 <script>window.makeDb||document.write('<script src="db.js"><\/script>')</script>
 <script>
 "use strict";
+/* ---------- บัตรสมาชิก (ใช้ได้ทั้งร้านเนื้อล้วนๆ และข้าวมันไก่) ---------- */
+function showMemberCard(m){const o=document.getElementById('mCardOv');if(o)o.remove();if(!m)return;
+  const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pts=(+m.points||0).toLocaleString('th-TH');
+  const el=document.createElement('div');el.id='mCardOv';el.className='mcard-ov';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','บัตรสมาชิก');
+  el.innerHTML=`<div class="mcard"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
+    <div class="mc-mid"><b>${m.name?'คุณ'+e(m.name):'สมาชิก'}</b><span>${e(m.phone||'')}</span></div>
+    <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${pts}</strong></div><em>ใช้ได้ทั้ง 2 ร้าน<br>เนื้อล้วนๆ · ข้าวมันไก่</em></div><i class="mc-shine"></i></div>
+    ${m.note?`<p class="mc-note">${e(m.note)}</p>`:''}
+    ${m.action?`<button type="button" class="mc-act" data-mc="act">${e(m.action)}</button>`:''}
+    <button type="button" class="mc-x" data-mc="x">ปิด</button>`;
+  const close=()=>{el.remove();window.removeEventListener('keydown',k,true)};const k=ev=>{if(ev.key==='Escape'){ev.stopPropagation();close()}};window.addEventListener('keydown',k,true);
+  el.addEventListener('click',ev=>{const b=ev.target.closest('[data-mc]');if(ev.target===el||(b&&b.dataset.mc==='x'))return close();if(b&&b.dataset.mc==='act'){close();m.onAction&&m.onAction()}});
+  document.body.appendChild(el);}
+
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1279,8 +1315,10 @@ function payCalc(){const o=S.open[S.sheet.id],s=S.sheet,st=S.settings;const sub=
   if(st.pointsOn&&s.member){use=Math.max(0,Math.min(Math.floor(parseFloat(s.usePts)||0),Math.floor(+s.member.points||0),Math.floor((sub-disc)/pv)));redeem=r2(use*pv)}
   const vc=vatCalc(sub-disc-redeem);const total=vc.total;const recv=parseFloat(s.received)||0;
   const gpPct=DELIV.includes(s.method)?(+chCfg(s.method).gp||0):0;const gp=r2(total*gpPct/100);
-  const earn=st.pointsOn&&(s.member||s.memberNew)?Math.floor(total/Math.max(1,+st.pointsPer||50)):0;
-  return {sub,disc,use,redeem,total,recv,change:r2(recv-total),earn,gp,gpPct,net:r2(total-gp),vat:vc.vat,vatRate:vc.rate,vatMode:vc.mode,beforeVat:vc.beforeVat,round:vc.round}}
+  // แต้มคิดจากยอดไม่รวมเงิน VAT (หลังหักส่วนลด) ปัดลง: 50 บาท = 1 แต้ม → 110 ได้ 2, 150 ได้ 3
+  const ptsBase=Math.max(0,r2(+vc.beforeVat||0));
+  const earn=st.pointsOn&&(s.member||s.memberNew)?Math.floor(ptsBase/Math.max(1,+st.pointsPer||50)+1e-9):0;
+  return {sub,disc,use,redeem,total,recv,change:r2(recv-total),earn,gp,gpPct,net:r2(total-gp),vat:vc.vat,vatRate:vc.rate,vatMode:vc.mode,beforeVat:vc.beforeVat,round:vc.round,ptsBase}}
 const normPhone=v=>String(v||'').replace(/\D/g,'').replace(/^66(?=\d{9}$)/,'0');
 const maskPhone=p=>{const d=String(p||'');return d.length>=9?d.slice(0,3)+'-xxx-'+d.slice(-4):d};
 function findMember(){const ph=normPhone(val('payPhone'));const s=S.sheet;
@@ -1332,6 +1370,7 @@ async function confirmPay(){const id=S.sheet.id,o=S.open[id];if(!o)return;const 
   const paid={id,table:o.table,label:o.label,openedAt:o.openedAt,...patch};
   if(mem){try{const bal=await applyPoints(mem.phone,mem.name,c.use,c.earn,c.total);if(bal!==paid.ptsBalance){paid.ptsBalance=bal;write('orders/'+id,r=>r.update({ptsBalance:bal}))}}catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
   openSheet({type:'receipt',order:paid,mode:'receipt'});
+  if(paid.memberPhone)setTimeout(()=>{if(S.sheet&&S.sheet.type==='receipt')ACT.memCard()},500);
   toast(m==='cash'?`รับเงิน ${baht(c.total)} · ทอน ${baht(c.change)}`:m==='promptpay'?`รับพร้อมเพย์ ${baht(c.total)} แล้ว`:`ปิดออร์เดอร์ ${CH[m].n} แล้ว`);}
 async function nextBillNo(){const d=new Date(),day=String(d.getFullYear()%100).padStart(2,'0')+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
   const ref=S.db.doc('config/counter');
@@ -1385,7 +1424,7 @@ function sheetReceipt(){const s=S.sheet,o=s.order,isBill=s.mode==='bill';
   $('#panel').innerHTML=head(isBill?'ใบแจ้งยอด':'ใบเสร็จ '+esc(o.billNo||''),esc(tableLabel(o)))+
   (!isBill&&o.id&&o.rcptTok?`<div class="sh-body" style="background:var(--sunk);padding:10px"><iframe class="rcframe" id="rcFrame" title="ใบเสร็จ" src="${esc(rcptLink(o).replace(/\?/,'?embed=1&'))}"></iframe></div><div id="rcView" hidden>${receiptHTML(o,s.mode)}</div>`
    :`<div class="sh-body" id="rcView" style="background:var(--sunk)">${receiptHTML(o,s.mode)}</div>`)+`
-   <div class="sh-foot">${isBill?`<button class="btn" data-act="backPay" type="button">กลับไปรับเงิน</button>`:`<button class="btn" data-act="close" type="button">เสร็จ</button>`}${!isBill&&o.id?`<button class="btn" data-act="rcQr" type="button">🧾 QR ใบเสร็จ</button>`:''}<button class="btn" data-act="rcShare" id="rcShare" type="button">${!isBill&&o.rcptTok?'บันทึกรูป':'ส่งเป็นรูป'}</button><button class="btn pri wide" data-act="rcPrint" type="button">${!isBill&&o.rcptTok?'พิมพ์ (เครื่องพิมพ์)':'พิมพ์'}</button></div>`;}
+   <div class="sh-foot">${isBill?`<button class="btn" data-act="backPay" type="button">กลับไปรับเงิน</button>`:`<button class="btn" data-act="close" type="button">เสร็จ</button>`}${!isBill&&o.memberPhone?`<button class="btn" data-act="memCard" type="button">💳 บัตรสมาชิก</button>`:''}${!isBill&&o.id?`<button class="btn" data-act="rcQr" type="button">🧾 QR ใบเสร็จ</button>`:''}<button class="btn" data-act="rcShare" id="rcShare" type="button">${!isBill&&o.rcptTok?'บันทึกรูป':'ส่งเป็นรูป'}</button><button class="btn pri wide" data-act="rcPrint" type="button">${!isBill&&o.rcptTok?'พิมพ์ (เครื่องพิมพ์)':'พิมพ์'}</button></div>`;}
 window.addEventListener('message',e=>{const f=$('#rcFrame');if(f&&e.data&&e.data.rcH)f.style.height=(e.data.rcH+6)+'px'});
 function printReceipt(){const pa=$('#printArea');pa.className='rcpt';pa.innerHTML=$('#rcView').innerHTML;
   const w=+S.settings.paper===58?58:80;let ps=$('#pageStyle');if(!ps){ps=document.createElement('style');ps.id='pageStyle';document.head.appendChild(ps)}
@@ -2041,7 +2080,7 @@ function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
     ${!S.po&&own?'<p class="help" style="margin:0">ยังไม่ได้ตั้งค่าร้าน กด "ตั้งค่าร้านพรีออเดอร์" เพื่อใส่เวลาปิดรับ จุดส่ง และพร้อมเพย์</p>':''}</div>`}
 function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=PO_PREV[o.status];
   return `<div class="card poc st-${esc(o.status)}"><div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${st[1]}">${st[0]}</span><span class="grow"></span><small class="muted">สั่ง ${hm(o.at)}${o.at<sod()?' · '+esc(poDate(new Date(o.at+7*3600e3).toISOString().slice(0,10))):''}</small></div>
-    <div class="poc-who"><b>${esc(o.name)}</b> · <a href="tel:${esc(o.phone)}">${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a></div>
+    <div class="poc-who"><b>${esc(o.name)}</b>${o.memberPhone?` <span class="pill ok" title="สมาชิกสะสมแต้ม">⭐${+o.ptsEarned?' +'+o.ptsEarned:''}</span>`:''} · <a href="tel:${esc(o.phone)}">${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a></div>
     <div class="poc-items">${(o.items||[]).map(l=>`<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
     ${o.note?`<div class="poc-note">📝 ${esc(o.note)}</div>`:''}
     <div class="poc-f"><b>${baht(+o.total||0)}</b>${poPayPill(o)}<span class="grow"></span>${o.pay==='before'&&o.payStatus!=='waiting'?`<button class="btn sm" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button>`:''}${o.payStatus==='paid'&&poLive(o)?`<button class="btn sm" data-act="poRc" data-id="${esc(o.id)}" type="button">🧾 ใบเสร็จ</button>`:''}${o.payStatus!=='paid'&&poLive(o)?`<button class="btn sm" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">รับเงินแล้ว</button>`:''}</div>
@@ -2143,7 +2182,13 @@ Object.assign(ACT,{
   poStep:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;const nx=PO_NEXT[o.status];if(!nx)return;poSet(o.id,{status:nx[0],[nx[0]+'At']:Date.now(),by:S.me||''},PO_ST[nx[0]][0]+' · '+poShort(o))},
   poBack:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;const pv=PO_PREV[o.status];if(pv)poSet(o.id,{status:pv},'ย้อนเป็น '+PO_ST[pv][0])},
   poCancel:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(o)poSet(o.id,{status:'cancelled',cancelledBy:'shop',cancelledAt:Date.now()},'ยกเลิก '+poShort(o)+' แล้ว')},
-  poPaid:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(o)poSet(o.id,{payStatus:'paid',payAt:Date.now(),payBy:S.me||''},'บันทึกรับเงิน '+poShort(o)+' แล้ว')},
+  poPaid:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o||o.payStatus==='paid')return;
+    const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='paid'?null:{payStatus:'paid',payAt:Date.now(),payBy:S.me||''}));if(!ok)return;
+    Object.assign(o,{payStatus:'paid',payAt:Date.now()});let msg='บันทึกรับเงิน '+poShort(o)+' แล้ว';
+    if(o.memberPhone&&S.settings.pointsOn&&!o.ptsDone){const earn=Math.floor((+o.total||0)/Math.max(1,+S.settings.pointsPer||50));
+      try{const bal=await applyPoints(o.memberPhone,o.name||'',0,earn,+o.total||0);await write('po_orders/'+o.id,r=>r.update({ptsEarned:earn,ptsBalance:bal,ptsDone:true}));Object.assign(o,{ptsEarned:earn,ptsBalance:bal,ptsDone:true});msg+=' · สมาชิก +'+earn+' แต้ม (รวม '+bal+')'}
+      catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
+    render();toast(msg)},
   poSlip:async d=>{const o=S.poOrders.find(x=>x.id===d.id);try{const s=await S.db.doc('po_slips/'+d.id).get();const x=s.exists?s.data():null;if(!x||!x.img)return toast('ไม่พบรูปสลิป','bad');viewImg(x.img,'สลิป '+poShort(o||{id:d.id})+' · '+baht(+(o&&o.total)||0))}catch(e){toast('โหลดสลิปไม่ได้','bad')}}
 });
 setInterval(()=>{if(S.state==='ready'&&isPo()&&S.tab==='po'&&!S.sheet)render()},60000);
@@ -2151,10 +2196,10 @@ setInterval(()=>{if(S.state==='ready'&&isPo()&&S.tab==='po'&&!S.sheet)render()},
 function payGo(){const sh=S.sheet;if(!sh||sh.type!=='pay')return;const o=S.open[sh.id];if(!o)return;
   if(!S.settings.pointsOn||isDel(o)||sh.member||sh.memberNew||sh.memAsked)return confirmPay();
   memAsk()}
-function memAsk(){const sh=S.sheet,c0=payCalc(),per=Math.max(1,+S.settings.pointsPer||50),earn=Math.floor(c0.total/per);
+function memAsk(){const sh=S.sheet,c0=payCalc(),per=Math.max(1,+S.settings.pointsPer||50),earn=Math.floor(Math.max(0,+c0.ptsBase||0)/per+1e-9);
   const old=$('#memPop');if(old)old.remove();
   const el=document.createElement('div');el.id='memPop';el.className='mempop';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
-  el.innerHTML=`<div class="mp-card"><div class="mp-h"><span class="mp-ic">⭐</span><div><h2>สะสมแต้มให้ลูกค้าไหม?</h2><small>ยอด ${baht(c0.total)} · ได้ +${earn} แต้ม</small></div></div>
+  el.innerHTML=`<div class="mp-card"><div class="mp-h"><span class="mp-ic">⭐</span><div><h2>สะสมแต้มให้ลูกค้าไหม?</h2><small>ยอด ${baht(c0.total)} · ได้ +${earn} แต้ม${c0.vat?' (คิดจากยอดไม่รวม VAT '+baht(c0.ptsBase)+')':''}</small></div></div>
     <input id="mpPhone" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="เบอร์โทรลูกค้า 10 หลัก" aria-label="เบอร์โทรลูกค้า">
     <div id="mpInfo" class="mp-info">ใส่เบอร์โทร ระบบจะหาสมาชิกให้ ถ้ายังไม่เคยสมัคร จะสมัครให้อัตโนมัติ</div>
     <div class="mp-pad">${['1','2','3','4','5','6','7','8','9','C','0','⌫'].map(k=>`<button type="button" data-k="${k}">${k==='C'?'ล้าง':k}</button>`).join('')}</div>
@@ -2207,8 +2252,10 @@ function sheetPoRcQr(){const o=S.poOrders.find(x=>x.id===S.sheet.id);if(!o)retur
   $('#panel').innerHTML=head('ใบเสร็จ '+esc(poShort(o)),esc(o.name||''))+`<div class="sh-body"><div class="qrbig"><div class="pq"><small style="font-weight:600">${esc(poCfg().rcName||poCfg().shopName)}</small>${qrSvg(url)}<b>สแกนรับใบเสร็จ</b><small>ยอด ${baht(+o.total||0)}</small></div></div>
    <p class="help" style="margin:0">ลูกค้าที่สั่งผ่านลิงก์ จะเห็นปุ่ม "ใบเสร็จ" ในหน้าติดตามออร์เดอร์เองหลังร้านกดรับเงิน · หรือคัดลอกลิงก์ส่งทางไลน์</p>
    <div class="field"><label for="rcLink">ลิงก์ใบเสร็จ</label><input id="rcLink" readonly value="${esc(url)}"></div></div>
-   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn" data-act="rcCopy" type="button">คัดลอกลิงก์</button><a class="btn pri wide" href="${esc(url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none">เปิดดูใบเสร็จ</a></div>`}
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button>${o.memberPhone?'<button class="btn" data-act="memCard" type="button">💳 บัตรสมาชิก</button>':''}<button class="btn" data-act="rcCopy" type="button">คัดลอกลิงก์</button><a class="btn pri wide" href="${esc(url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none">เปิดดูใบเสร็จ</a></div>`}
 Object.assign(ACT,{
+  memCard:()=>{const sh=S.sheet;const o=sh&&(sh.order||S.poOrders.find(x=>x.id===sh.id));if(!o||!o.memberPhone)return;const m=S.members.find(x=>x.id===o.memberPhone)||{};
+    showMemberCard({phone:maskPhone(o.memberPhone),name:o.memberName||m.name||o.name||'',points:o.ptsBalance!=null?o.ptsBalance:m.points,note:+o.ptsEarned?`ได้รับ +${+o.ptsEarned} แต้มจากบิลนี้ 🎉`:''})},
   rcLogoReset:d=>{RCLOGO[d.id]='';if(S.sheet)S.sheet.dirty=true;const b=$('#'+d.id+'Box');if(b)b.innerHTML=`<img src="${esc(d.def)}" alt="โลโก้">`;const m=$('#'+d.id+'Msg');if(m)m.textContent='ใช้โลโก้ตั้งต้น · กด "บันทึก" เพื่อใช้งาน'},
   poRc:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;if(!o.rcptTok){const t=rcTok();const ok=await write('po_orders/'+o.id,r=>r.update({rcptTok:t}));if(!ok)return;o.rcptTok=t}openSheet({type:'poRcQr',id:o.id})}
 });
