@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1230">
+<meta name="app-version" content="2026.10.09-1240">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -191,6 +191,7 @@ label.btn{display:flex;align-items:center;justify-content:center;text-align:cent
 <body>
 <header><div class="in"><img id="logo" class="hlogo" alt="" hidden><div style="flex:1;min-width:0"><h1 id="shop">กำลังโหลดเมนู…</h1><small id="sub">สั่งอาหารได้จากมือถือ</small></div><button class="callb" id="callBtn" type="button" data-a="callAsk" hidden>🔔 เรียกพนักงาน</button><div class="tno" id="tno" hidden><span>โต๊ะ</span><b id="tnum"></b></div></div></header>
 <main><div class="wrap" id="view"><div class="msg"><p class="muted">กำลังโหลดเมนู…</p></div></div></main>
+<input id="slipIn" type="file" accept="image/*" hidden aria-hidden="true">
 <footer id="foot" hidden><div class="in" id="footIn"></div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
@@ -492,10 +493,10 @@ const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||
 function slipLoad(){if(S.slipSent===undefined){try{S.slipSent=JSON.parse(sessionStorage.getItem('nl_slip')||'null')}catch(e){S.slipSent=null}}}
 function slipSave(v){S.slipSent=v;try{v?sessionStorage.setItem('nl_slip',JSON.stringify(v)):sessionStorage.removeItem('nl_slip')}catch(e){}}
 function slipBox(st){const sent=S.slipSent&&S.slipSent.o===(st.orderNo||'')?S.slipSent:null,draft=S.slipDraft;
-  const inp='<input id="slipIn" type="file" accept="image/*" hidden>';
+  const inp='';
   if(draft)return `<div class="slipbox"><b>ตรวจสลิปก่อนส่ง</b><img src="${draft}" alt="สลิปที่เลือก" class="slipimg zoomable" data-a="slipView" data-v="draft"><small class="muted">ดูให้แน่ใจว่าเป็นสลิปของยอดนี้ ถ้าผิดกด "ลบ เลือกใหม่"</small>
     <div class="sliprow"><button class="btn" data-a="slipDel" type="button">ลบ เลือกใหม่</button><button class="btn pri wide" data-a="slipSend" type="button" ${S.slipBusy?'disabled':''}>${S.slipBusy?'กำลังส่ง…':'ยืนยันส่งสลิป'}</button></div>${inp}</div>`;
-  if(sent)return `<div class="slipok"><img src="${sent.img}" alt="สลิป" class="zoomable" data-a="slipView" data-v="sent"><div class="grow"><b>✓ ส่งสลิปแล้ว</b><small>พนักงานกำลังตรวจยอด</small></div></div>
+  if(sent)return `<div class="slipok"><img src="${sent.img}" alt="สลิป" class="zoomable" data-a="slipView" data-v="sent"><div class="grow"><b>✓ ส่งสลิปสำเร็จ</b><small>${sent.at?'ส่งเมื่อ '+hm(sent.at)+' · ':''}พนักงานกำลังตรวจยอด<br>แตะรูปเพื่อดูสลิปที่ส่งไป</small></div></div>
     <div class="sliprow"><button class="btn" data-a="slipRemove" type="button" ${S.slipBusy?'disabled':''}>ลบสลิปนี้</button><label class="btn wide" for="slipIn">แนบสลิปใหม่</label></div>${inp}`;
   return `<label class="btn pri" for="slipIn">📎 โอนแล้ว แนบสลิป</label>${inp}`}
 function shrink(file){return new Promise((ok,no)=>{const fr=new FileReader();fr.onerror=no;fr.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{
@@ -503,15 +504,17 @@ function shrink(file){return new Promise((ok,no)=>{const fr=new FileReader();fr.
   const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);
   let q=.75,u=c.toDataURL('image/jpeg',q);while(u.length>450000&&q>.35){q-=.1;u=c.toDataURL('image/jpeg',q)}ok(u)};im.src=fr.result};fr.readAsDataURL(file)})}
 const slipErr=m=>/no_order/.test(m)?'ยังไม่มีบิลที่เปิดอยู่':/bad_slip/.test(m)?'ไฟล์รูปใช้ไม่ได้ ลองรูปอื่น':'ทำรายการไม่สำเร็จ ลองอีกครั้ง';
-document.addEventListener('change',async e=>{const i=e.target;if(i.id!=='slipIn'||!i.files||!i.files[0])return;
-  try{S.slipDraft=await shrink(i.files[0])}catch(x){return toast('เปิดรูปไม่ได้ ลองรูปอื่น')}render()});
+const slipFocus=sel=>setTimeout(()=>{const el=document.querySelector(sel);if(el)el.scrollIntoView({block:'center',behavior:'smooth'})},80);
+document.addEventListener('change',async e=>{const i=e.target;if(i.id!=='slipIn'||!i.files||!i.files[0])return;const f=i.files[0];i.value='';
+  toast('กำลังเปิดรูป…');try{S.slipDraft=await shrink(f)}catch(x){return toast('เปิดรูปไม่ได้ ลองรูปอื่น')}document.querySelector('.toast')?.remove();
+  if(S.view!=='bill')S.view='bill';render();slipFocus('.slipbox')});
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a^="slip"]');if(!b)return;const a=b.dataset.a;
   if(a==='slipView')return viewImg(b.dataset.v==='draft'?S.slipDraft:S.slipSent&&S.slipSent.img,'สลิป');
   if(a==='slipDel'){S.slipDraft=null;render();setTimeout(()=>$('#slipIn')?.click(),50);return}
   if(a==='slipSend'&&S.slipDraft&&!S.slipBusy){S.slipBusy=true;render();
     try{const {error}=await sb.rpc('customer_slip',{p_key:K,p_table:T,p_order:WALK?getWO():null,p_img:S.slipDraft,p_name:S.name||''});S.slipBusy=false;
       if(error){render();return toast(slipErr(String(error.message||'')))}
-      slipSave({o:(S.status&&S.status.orderNo)||'',img:S.slipDraft});S.slipDraft=null;toast('ส่งสลิปแล้ว พนักงานกำลังตรวจยอด');await loadStatus(true);render()}
+      slipSave({o:(S.status&&S.status.orderNo)||'',img:S.slipDraft,at:Date.now()});S.slipDraft=null;toast('✓ ส่งสลิปสำเร็จ พนักงานกำลังตรวจยอด');await loadStatus(true);render();slipFocus('.slipok')}
     catch(x){S.slipBusy=false;render();toast('ส่งสลิปไม่สำเร็จ ลองอีกครั้ง')}return}
   if(a==='slipRemove'&&!S.slipBusy){if(!b.dataset.armed){b.dataset.armed='1';b.textContent='แตะอีกครั้งเพื่อลบ';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent='ลบสลิปนี้'}},3500);return}
     S.slipBusy=true;render();

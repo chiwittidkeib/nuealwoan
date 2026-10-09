@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1230">
+<meta name="app-version" content="2026.10.09-1250">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1139,13 +1139,13 @@ function viewReport(){
 
 /* ---------- sheets ---------- */
 function openSheet(s){S.sheet=s;renderSheet();$('#sheet').hidden=false;document.body.classList.add('sheet-on')}
-function closeSheet(){S.sheet=null;$('#sheet').hidden=true;$('#panel').innerHTML='';document.body.classList.remove('sheet-on')}
+function closeSheet(){try{for(const k in RCLOGO)delete RCLOGO[k]}catch(e){}S.sheet=null;$('#sheet').hidden=true;$('#panel').innerHTML='';document.body.classList.remove('sheet-on')}
 function refreshSheet(kind){const s=S.sheet;if(!s)return;
   if((s.type==='order'||s.type==='pay')&&kind!=='menu'){if(!S.open[s.id]){closeSheet();return}
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -1655,7 +1655,8 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <div class="field"><label for="cAddr">ที่อยู่ร้าน</label><input id="cAddr" value="${esc(s.address||'')}" placeholder="เช่น 12 ถ.สุขุมวิท บางนา กทม." autocomplete="off"></div>
    <div class="grid2"><div class="field"><label for="cPhone">เบอร์โทรร้าน</label><input id="cPhone" inputmode="tel" value="${esc(s.phone||'')}"></div><div class="field"><label for="cTax">เลขผู้เสียภาษี (ถ้ามี)</label><input id="cTax" inputmode="numeric" value="${esc(s.taxId||'')}"></div></div>
    <div class="field"><label for="cFoot">ข้อความท้ายใบเสร็จ</label><input id="cFoot" value="${esc(s.receiptFooter||'')}" placeholder="ขอบคุณที่อุดหนุนครับ"></div>
-   <details class="rcx"><summary><b>ใบเสร็จออนไลน์ (ลูกค้าโหลดเอง)</b> <small class="muted">ชื่อร้าน · Facebook · เบอร์ · หมุดพิกัด</small></summary>
+   <details class="rcx"><summary><b>ใบเสร็จออนไลน์ (ลูกค้าโหลดเอง)</b> <small class="muted">โลโก้ · ชื่อร้าน · Facebook · เบอร์ · หมุดพิกัด</small></summary>
+    ${rcLogoField('rcLogo',s.rcLogo,'images/logo-nl-t.png')}
     <div class="grid2"><div class="field"><label for="rcName">ชื่อร้าน (ไทย)</label><input id="rcName" maxlength="40" value="${esc(s.rcName??'เนื้อล้วนๆ')}"></div><div class="field"><label for="rcNameEn">ชื่อร้าน (อังกฤษ)</label><input id="rcNameEn" maxlength="40" value="${esc(s.rcNameEn??'NUEA LWOON')}"></div></div>
     <div class="field"><label for="rcTag">คำโปรยใต้ชื่อ</label><input id="rcTag" maxlength="80" value="${esc(s.rcTag??'BEEF NOODLES • BRAISED BEEF • KHAO SOI')}"></div>
     <div class="grid2"><div class="field"><label for="rcFb">ชื่อเพจ Facebook</label><input id="rcFb" maxlength="60" value="${esc(s.rcFb??'เนื้อล้วนๆ ก๋วยเตี๋ยวเนื้อ')}" placeholder="เว้นว่าง = ไม่แสดง"></div><div class="field"><label for="rcFbUrl">ลิงก์เพจ Facebook</label><input id="rcFbUrl" inputmode="url" value="${esc(s.rcFbUrl||'')}" placeholder="https://facebook.com/..."></div></div>
@@ -1774,7 +1775,7 @@ function sheetQr(){const s=S.settings,n=Math.max(1,Math.min(60,+s.tables||10));
 async function saveSettings(){const pp=val('cPP').replace(/\D/g,'');if(pp&&!ppValid(pp))return toast('พร้อมเพย์ต้องเป็นเบอร์ 10 หลัก หรือเลข 13 หลัก','bad');
   const split=v=>v.split(/[,，]/).map(x=>x.trim()).filter(Boolean);
   const data={...S.settings,shopName:val('cName')||'NueaLwoan',tables:Math.max(1,Math.min(60,Math.round(nval('cTables'))||10)),extraPrice:nval('cExtra'),promptpay:pp,cats:split(val('cCats')),expCats:split(val('cExp')),qrKey:S.settings.qrKey||newQrKey(),
-    logo:S.sheet.logo??S.settings.logo??'',address:val('cAddr'),phone:val('cPhone'),taxId:val('cTax'),receiptFooter:val('cFoot'),rcName:val('rcName'),rcNameEn:val('rcNameEn'),rcTag:val('rcTag'),rcFb:val('rcFb'),rcFbUrl:val('rcFbUrl'),rcMap:val('rcMap'),rcMapUrl:val('rcMapUrl'),rcThanks2:val('rcThanks2'),paper:+val('cPaper')||80,
+    logo:S.sheet.logo??S.settings.logo??'',address:val('cAddr'),phone:val('cPhone'),taxId:val('cTax'),receiptFooter:val('cFoot'),rcName:val('rcName'),rcNameEn:val('rcNameEn'),rcTag:val('rcTag'),rcFb:val('rcFb'),rcFbUrl:val('rcFbUrl'),rcMap:val('rcMap'),rcMapUrl:val('rcMapUrl'),rcThanks2:val('rcThanks2'),rcLogo:rcLogoVal('rcLogo',S.settings.rcLogo),paper:+val('cPaper')||80,
     defSeats:Math.max(1,Math.min(30,Math.round(nval('cDefSeats'))||4)),seats:Object.fromEntries([...document.querySelectorAll('[data-seat]')].map(e=>[e.dataset.seat,Math.round(parseFloat(e.value))]).filter(([,v])=>v>0&&v<=30)),
     vat:{on:$('#cVatOn').checked,rate:Math.min(30,Math.max(0,nval('cVatRate'))),mode:val('cVatMode')==='excl'?'excl':'incl'},
     qrRequireOpen:$('#cQrOpen').checked,qrSecure:$('#cQrSecure').checked,callOptions:(readCo(),(S.sheet.co||callOpts()).filter(o=>o.label).slice(0,8).map(o=>({id:o.id,label:o.label.slice(0,40),...(o.pay?{pay:true}:{})}))),qrWalkin:$('#cQrWalk').checked,channels:Object.fromEntries(DELIV.map(c=>[c,{on:$('#chOn_'+c).checked,markup:Math.max(0,nval('chMk_'+c)),gp:Math.min(100,Math.max(0,nval('chGp_'+c)))}])),
@@ -2039,7 +2040,7 @@ function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=P
     <div class="poc-who"><b>${esc(o.name)}</b> · <a href="tel:${esc(o.phone)}">${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a></div>
     <div class="poc-items">${(o.items||[]).map(l=>`<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
     ${o.note?`<div class="poc-note">📝 ${esc(o.note)}</div>`:''}
-    <div class="poc-f"><b>${baht(+o.total||0)}</b>${poPayPill(o)}<span class="grow"></span>${o.pay==='before'&&o.payStatus!=='waiting'?`<button class="btn sm" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button>`:''}${o.payStatus!=='paid'&&poLive(o)?`<button class="btn sm" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">รับเงินแล้ว</button>`:''}</div>
+    <div class="poc-f"><b>${baht(+o.total||0)}</b>${poPayPill(o)}<span class="grow"></span>${o.pay==='before'&&o.payStatus!=='waiting'?`<button class="btn sm" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button>`:''}${o.payStatus==='paid'&&poLive(o)?`<button class="btn sm" data-act="poRc" data-id="${esc(o.id)}" type="button">🧾 ใบเสร็จ</button>`:''}${o.payStatus!=='paid'&&poLive(o)?`<button class="btn sm" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">รับเงินแล้ว</button>`:''}</div>
     ${o.status==='cancelled'?`<div class="poc-a"><span class="muted grow">ยกเลิก${o.cancelledBy==='customer'?'โดยลูกค้า':''}</span><button class="btn sm" data-act="poBack" data-id="${esc(o.id)}" type="button">กู้คืน</button></div>`
       :`<div class="poc-a">${pv?`<button class="btn sm ghost" data-act="poBack" data-id="${esc(o.id)}" type="button" aria-label="ย้อนสถานะ" title="ย้อนสถานะ">↩</button>`:''}${o.status!=='done'?`<button class="btn sm ghost" data-act="poCancel" data-id="${esc(o.id)}" data-confirm="1" type="button">ยกเลิก</button>`:''}<span class="grow"></span>${nx?`<button class="btn pri" data-act="poStep" data-id="${esc(o.id)}" type="button">${nx[1]}</button>`:''}</div>`}</div>`}
 function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliverDate===day),live=all.filter(poLive);
@@ -2096,6 +2097,14 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
     <label class="check"><input type="checkbox" id="pPA" ${c.payAfter?'checked':''}> จ่ายตอนรับของ</label>
     <div class="field"><label for="pPP">พร้อมเพย์</label><input id="pPP" inputmode="numeric" value="${esc(c.promptpay||'')}" placeholder="${esc(S.settings.promptpay?'เว้นว่าง = ใช้ของร้านก๋วยเตี๋ยว ('+S.settings.promptpay+')':'เบอร์มือถือ หรือเลขบัตร 13 หลัก')}"></div></div>
    <div class="grid2"><div class="field"><label for="pPhone">เบอร์ร้าน (ลูกค้ากดโทรได้)</label><input id="pPhone" inputmode="tel" maxlength="20" value="${esc(c.phone||'')}"></div><div class="field"><label for="pLogo">โลโก้ (ลิงก์รูป ถ้ามี)</label><input id="pLogo" value="${esc(c.logo||'')}" placeholder="เว้นว่างได้"></div></div>
+   <div class="card"><h3>หัวใบเสร็จออนไลน์ (ร้านข้าวมันไก่)</h3>
+    ${rcLogoField('poRcLogo',c.rcLogo,'images/logo-po-t.png')}
+    <div class="grid2"><div class="field"><label for="poRcName">ชื่อร้าน (ไทย)</label><input id="poRcName" maxlength="40" value="${esc(c.rcName??c.shopName??'ข้าวมันไก่')}"></div><div class="field"><label for="poRcNameEn">ชื่อร้าน (อังกฤษ)</label><input id="poRcNameEn" maxlength="40" value="${esc(c.rcNameEn??'KHAO MAN GAI')}"></div></div>
+    <div class="field"><label for="poRcTag">คำโปรยใต้ชื่อ</label><input id="poRcTag" maxlength="80" value="${esc(c.rcTag??'CHICKEN RICE')}"></div>
+    <div class="grid2"><div class="field"><label for="poRcFb">ชื่อเพจ Facebook</label><input id="poRcFb" maxlength="60" value="${esc(c.rcFb||'')}" placeholder="เว้นว่าง = ไม่แสดง"></div><div class="field"><label for="poRcFbUrl">ลิงก์เพจ Facebook</label><input id="poRcFbUrl" inputmode="url" value="${esc(c.rcFbUrl||'')}" placeholder="https://facebook.com/..."></div></div>
+    <div class="grid2"><div class="field"><label for="poRcMap">ข้อความหมุดพิกัด</label><input id="poRcMap" maxlength="80" value="${esc(c.rcMap||'')}" placeholder="เว้นว่าง = ไม่แสดง"></div><div class="field"><label for="poRcMapUrl">ลิงก์ Google Maps</label><input id="poRcMapUrl" inputmode="url" value="${esc(c.rcMapUrl||'')}" placeholder="https://maps.app.goo.gl/..."></div></div>
+    <div class="grid2"><div class="field"><label for="poRcThanks">ข้อความขอบคุณ</label><input id="poRcThanks" maxlength="60" value="${esc(c.rcThanks??'ขอบคุณที่อุดหนุน')}"></div><div class="field"><label for="poRcThanks2">บรรทัดที่ 2</label><input id="poRcThanks2" maxlength="60" value="${esc(c.rcThanks2??'แล้วพบกันใหม่นะคะ')}"></div></div>
+    <p class="help" style="margin:0">เบอร์โทรบนใบเสร็จใช้ "เบอร์ร้าน" ด้านล่าง · ใบเสร็จออกให้เมื่อกด "รับเงินแล้ว"</p></div>
    <div class="field"><label for="pNotice">ประกาศบนหน้าสั่ง</label><textarea id="pNotice" rows="2" maxlength="300" placeholder="เช่น ขั้นต่ำส่ง 3 กล่อง / หยุดวันอาทิตย์">${esc(c.notice||'')}</textarea></div>
    <p class="help" style="margin:0">เมนูของร้านนี้ แก้ที่แท็บ "เมนู" ตอนเลือกร้านข้าวมันไก่ (แยกจากเมนูร้านก๋วยเตี๋ยว) · จำกัดจำนวนต่อวัน = ต่อวันส่ง</p></form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="poSave" type="button">บันทึก</button></div>`;
@@ -2105,7 +2114,7 @@ function poReadPts(){document.querySelectorAll('[data-pt]').forEach(e=>{const p=
 async function poSave(){if(S.role!=='owner')return deny();poReadPts();const d=S.sheet.d;
   const data={...(S.po||{}),open:$('#pOpen').checked,shopName:val('pShop')||'ข้าวมันไก่',openFrom:val('pFrom'),cutoff:val('pCut')||'20:00',leadDays:+val('pLead')||0,window:val('pWin'),
     pickup:$('#pPick').checked,pickupText:val('pPickT'),payBefore:$('#pPB').checked,payAfter:$('#pPA').checked,promptpay:val('pPP').replace(/\D/g,'')||String(S.settings.promptpay||'').replace(/\D/g,''),
-    phone:val('pPhone'),logo:val('pLogo'),notice:val('pNotice'),
+    phone:val('pPhone'),logo:val('pLogo'),notice:val('pNotice'),rcLogo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo),rcName:val('poRcName'),rcNameEn:val('poRcNameEn'),rcTag:val('poRcTag'),rcFb:val('poRcFb'),rcFbUrl:val('poRcFbUrl'),rcMap:val('poRcMap'),rcMapUrl:val('poRcMapUrl'),rcThanks:val('poRcThanks'),rcThanks2:val('poRcThanks2'),
     points:d.points.filter(p=>p.name).map(p=>({id:p.id||('p'+uid()),name:p.name.slice(0,50),note:(p.note||'').slice(0,60)})),cats:(S.po&&S.po.cats)||[]};
   if(!data.payBefore&&!data.payAfter)return toast('เลือกวิธีชำระเงินอย่างน้อย 1 แบบ','bad');
   if(!data.pickup&&!data.points.length)return toast('ต้องมีจุดส่ง หรือเปิดให้มารับที่ร้าน','bad');
@@ -2173,6 +2182,31 @@ Object.assign(ACT,{
     S.sheet={type:'rcQr',order:o,prev:sh};renderSheet()},
   rcBack:()=>{const p=S.sheet&&S.sheet.prev;if(p){S.sheet=p;renderSheet()}else closeSheet()},
   rcCopy:async()=>{const i=$('#rcLink');try{await navigator.clipboard.writeText(i.value);toast('คัดลอกลิงก์แล้ว')}catch(e){i.select();document.execCommand&&document.execCommand('copy');toast('คัดลอกลิงก์แล้ว')}}
+});
+
+/* ---------- โลโก้หัวใบเสร็จออนไลน์ (แยกแต่ละร้าน) ---------- */
+const RCLOGO={};
+function rcLogoField(id,url,def){const v=RCLOGO[id]!==undefined?RCLOGO[id]:(url||'');return `<div class="logo-edit"><div class="logo-box" id="${id}Box"><img src="${esc(v||def)}" alt="โลโก้"></div><div class="photo-act"><label class="btn sm" for="${id}File">เปลี่ยนโลโก้</label><input id="${id}File" type="file" accept="image/*" hidden data-rclogo="${id}"><button class="btn sm ghost" data-act="rcLogoReset" data-id="${id}" data-def="${esc(def)}" type="button">ใช้โลโก้ตั้งต้น</button><small class="muted" id="${id}Msg">${v?'ใช้โลโก้ที่อัปโหลด':'ใช้โลโก้ตั้งต้นของร้าน'} · แนะนำ PNG พื้นใส</small></div></div>`}
+const rcLogoVal=(id,cur)=>RCLOGO[id]!==undefined?RCLOGO[id]:(cur||'');
+async function uploadBrandLogo(key,file){let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'})}catch(e){bmp=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(file)})}
+  const k=Math.min(1,700/Math.max(bmp.width,bmp.height));const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+  const blob=await new Promise(ok=>c.toBlob(ok,'image/png'));const path='brand/'+key+'-'+Date.now()+'.png';
+  const {error}=await SB.storage.from('menu-photos').upload(path,blob,{contentType:'image/png',cacheControl:'31536000',upsert:false});
+  if(error)throw error;return SB.storage.from('menu-photos').getPublicUrl(path).data.publicUrl}
+document.addEventListener('change',async e=>{const i=e.target;if(!i.dataset||!i.dataset.rclogo||!i.files||!i.files[0])return;const id=i.dataset.rclogo,f=i.files[0];i.value='';
+  const msg=$('#'+id+'Msg');if(msg)msg.textContent='กำลังอัปโหลด…';
+  try{const url=await uploadBrandLogo(id==='poRcLogo'?'po':'nl',f);RCLOGO[id]=url;if(S.sheet)S.sheet.dirty=true;const b=$('#'+id+'Box');if(b)b.innerHTML=`<img src="${esc(url)}" alt="โลโก้">`;if(msg)msg.textContent='อัปโหลดแล้ว · กด "บันทึก" เพื่อใช้งาน'}
+  catch(err){if(msg)msg.textContent='อัปโหลดไม่สำเร็จ';toast('อัปโหลดโลโก้ไม่สำเร็จ: '+(err.message||err),'bad')}});
+/* ---------- ใบเสร็จร้านข้าวมันไก่ ---------- */
+const poRcptLink=o=>{const u=new URL('receipt.html',location.href);return u.origin+u.pathname+'?s=po&r='+encodeURIComponent(o.id)+'&t='+encodeURIComponent(o.rcptTok)};
+function sheetPoRcQr(){const o=S.poOrders.find(x=>x.id===S.sheet.id);if(!o)return closeSheet();const url=poRcptLink(o);
+  $('#panel').innerHTML=head('ใบเสร็จ '+esc(poShort(o)),esc(o.name||''))+`<div class="sh-body"><div class="qrbig"><div class="pq"><small style="font-weight:600">${esc(poCfg().rcName||poCfg().shopName)}</small>${qrSvg(url)}<b>สแกนรับใบเสร็จ</b><small>ยอด ${baht(+o.total||0)}</small></div></div>
+   <p class="help" style="margin:0">ลูกค้าที่สั่งผ่านลิงก์ จะเห็นปุ่ม "ใบเสร็จ" ในหน้าติดตามออร์เดอร์เองหลังร้านกดรับเงิน · หรือคัดลอกลิงก์ส่งทางไลน์</p>
+   <div class="field"><label for="rcLink">ลิงก์ใบเสร็จ</label><input id="rcLink" readonly value="${esc(url)}"></div></div>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn" data-act="rcCopy" type="button">คัดลอกลิงก์</button><a class="btn pri wide" href="${esc(url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none">เปิดดูใบเสร็จ</a></div>`}
+Object.assign(ACT,{
+  rcLogoReset:d=>{RCLOGO[d.id]='';if(S.sheet)S.sheet.dirty=true;const b=$('#'+d.id+'Box');if(b)b.innerHTML=`<img src="${esc(d.def)}" alt="โลโก้">`;const m=$('#'+d.id+'Msg');if(m)m.textContent='ใช้โลโก้ตั้งต้น · กด "บันทึก" เพื่อใช้งาน'},
+  poRc:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;if(!o.rcptTok){const t=rcTok();const ok=await write('po_orders/'+o.id,r=>r.update({rcptTok:t}));if(!ok)return;o.rcptTok=t}openSheet({type:'poRcQr',id:o.id})}
 });
 
 init();

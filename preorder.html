@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1140">
+<meta name="app-version" content="2026.10.09-1250">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -208,11 +208,14 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 .rowb{width:100%;border:0;border-top:1px solid var(--line);background:none;text-align:left;cursor:pointer;font:inherit}
 .rowb:first-child{border-top:0}
 .cath{font-size:18px;margin:6px 2px -4px;display:flex;align-items:center;gap:8px}.cath::after{content:"";flex:1;height:1px;background:var(--line)}
+.slipok{display:flex;gap:12px;align-items:center;background:var(--jade-soft);border:1px solid var(--jade);border-radius:12px;padding:10px}.slipok .slipprev{width:64px;height:84px;object-fit:cover;max-width:none}.slipok b{color:var(--jade);display:block}.slipok small{color:var(--muted);font-size:12.5px;display:block}
+.slipbox{display:flex;flex-direction:column;gap:10px;border:2px dashed var(--jade);border-radius:14px;padding:12px}.slipbox .slipprev{max-height:340px;max-width:100%}
 </style>
 </head>
 <body>
 <header><div class="in"><img id="logo" class="hlogo" alt="" hidden><div style="flex:1;min-width:0"><h1 id="shop">กำลังโหลด…</h1><small id="sub">สั่งล่วงหน้า รับพรุ่งนี้</small></div></div></header>
 <main><div class="wrap" id="view"><div class="msg"><p class="muted">กำลังโหลดเมนู…</p></div></div></main>
+<input id="slipIn" type="file" accept="image/*" hidden aria-hidden="true"><input id="slipLate" type="file" accept="image/*" hidden aria-hidden="true">
 <footer id="foot" hidden><div class="in" id="footIn"></div></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -398,8 +401,8 @@ function render(){
       ${c.payBefore?`<button type="button" class="segb" data-a="pay" data-v="before" aria-pressed="${S.pay==='before'}">โอนก่อน</button>`:''}
       ${c.payAfter?`<button type="button" class="segb" data-a="pay" data-v="after" aria-pressed="${S.pay==='after'}">จ่ายตอนรับของ</button>`:''}</div>
       ${S.pay==='before'?`${pp&&cartT()>0?`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,cartT()))}<b>${baht(cartT())}</b></div>`:''}
-        <label class="btn slipbtn" for="slipIn">${S.slip?'✓ แนบสลิปแล้ว · เปลี่ยนรูป':'แนบสลิปโอนเงิน'}</label><input id="slipIn" type="file" accept="image/*" hidden>
-        ${S.slip?`<img class="slipprev" src="${S.slip}" alt="สลิป">`:'<p class="muted" style="margin:0;font-size:13px">ยังไม่สะดวกโอนตอนนี้ แนบสลิปภายหลังได้ในหน้าติดตามออร์เดอร์</p>'}`
+        <label class="btn slipbtn" for="slipIn">${S.slip?'เปลี่ยนรูปสลิป':'📎 แนบสลิปโอนเงิน'}</label>${S.slip?'<button class="btn" data-a="slipClear" type="button">ลบสลิปนี้</button>':''}
+        ${S.slip?`<div class="slipok"><img class="slipprev" src="${S.slip}" alt="สลิป" data-a="slipView"><div><b>✓ แนบสลิปแล้ว</b><small>ตรวจรูปให้ถูก สลิปจะส่งพร้อมกด "ยืนยันสั่ง"</small></div></div>`:'<p class="muted" style="margin:0;font-size:13px">ยังไม่สะดวกโอนตอนนี้ แนบสลิปภายหลังได้ในหน้าติดตามออร์เดอร์</p>'}`
         :'<p class="muted" style="margin:0">ชำระเงินสดหรือโอนตอนรับของ</p>'}</section>
     <div class="field"><label for="pNote">หมายเหตุถึงร้าน (ถ้ามี)</label><input id="pNote" maxlength="200" autocomplete="off" placeholder="เช่น แยกถุงให้ด้วย"></div>
     <p class="err" id="sendErr" role="alert">${esc(S.err||'')}</p>`;
@@ -423,7 +426,9 @@ function render(){
         <div class="row"><div class="g">ชำระเงิน</div>${pay}</div>
         <div class="row"><div class="g">ผู้รับ</div><div class="r">${esc(o.name)} · ${esc(o.phone)}</div></div></div>
       ${!cx&&o.pay==='before'&&o.payStatus!=='paid'?`${pp&&o.payStatus==='waiting'?`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,+o.total))}<b>${baht(o.total)}</b></div>`:''}
-        <label class="btn ${o.payStatus==='waiting'?'pri ':''}slipbtn" for="slipLate">${o.hasSlip?'ส่งสลิปใหม่':'แนบสลิปโอนเงิน'}</label><input id="slipLate" type="file" accept="image/*" hidden>`:''}
+        ${S.lateDraft?`<div class="slipbox"><b>ตรวจสลิปก่อนส่ง</b><img class="slipprev" src="${S.lateDraft}" alt="สลิป" data-a="slipView" data-v="late"><div class="seg"><button class="btn" data-a="lateClear" type="button">ลบ เลือกใหม่</button><button class="btn pri" data-a="lateSend" type="button" ${S.lateBusy?'disabled':''}>${S.lateBusy?'กำลังส่ง…':'ยืนยันส่งสลิป'}</button></div></div>`
+          :`${o.hasSlip?`<div class="slipok"><span style="font-size:26px">📎</span><div><b>✓ ส่งสลิปแล้ว</b><small>ร้านกำลังตรวจยอด · ถ้าแนบผิด แนบใหม่ได้</small></div></div>`:''}<label class="btn ${o.payStatus==='waiting'?'pri ':''}slipbtn" for="slipLate">${o.hasSlip?'แนบสลิปใหม่':'📎 โอนแล้ว แนบสลิป'}</label>`}`:''}
+      ${!cx&&o.payStatus==='paid'?`<button class="btn pri" data-a="rcpt" type="button">🧾 ดู / บันทึกใบเสร็จ</button>`:''}
       ${o.shopPhone?`<a class="btn" href="tel:${esc(String(o.shopPhone).replace(/[^\d+]/g,''))}">โทรหาร้าน ${esc(o.shopPhone)}</a>`:''}
       ${o.status==='new'?`<button class="btn danger" data-a="cancel" type="button" data-armtxt="แตะอีกครั้งเพื่อยกเลิก">ยกเลิกออร์เดอร์</button>`:''}
       <p class="tm" style="margin:0;text-align:center">อัปเดตสถานะอัตโนมัติ</p>`}
@@ -463,10 +468,21 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   else if(a==='cancel'){if(!b.dataset.armed){b.dataset.armed='1';const t=b.textContent;b.textContent=b.dataset.armtxt;clearTimeout(armT);armT=setTimeout(()=>{delete b.dataset.armed;b.textContent=t},3500);return}
     b.disabled=true;const {error}=await sb.rpc('po_order_cancel',{p_id:S.cur.id,p_token:S.cur.token});if(error)toast(rpcErr(error));else toast('ยกเลิกออร์เดอร์แล้ว');await loadOrder();render()}
 });
-document.addEventListener('change',async e=>{const i=e.target;if(i.type!=='file'||!i.files||!i.files[0])return;
-  let img;try{img=await shrink(i.files[0])}catch(x){return toast('เปิดรูปไม่ได้ ลองรูปอื่น')}
-  if(i.id==='slipIn'){S.slip=img;render()}
-  else if(i.id==='slipLate'){toast('กำลังส่งสลิป…');const {error}=await sb.rpc('po_order_slip',{p_id:S.cur.id,p_token:S.cur.token,p_img:img});toast(error?rpcErr(error):'ส่งสลิปแล้ว รอร้านตรวจสอบ');await loadOrder();render()}});
+const focusEl=sel=>setTimeout(()=>{const el=document.querySelector(sel);if(el)el.scrollIntoView({block:'center',behavior:'smooth'})},80);
+document.addEventListener('change',async e=>{const i=e.target;if(i.type!=='file'||!i.files||!i.files[0])return;const f=i.files[0];i.value='';
+  toast('กำลังเปิดรูป…');let img;try{img=await shrink(f)}catch(x){return toast('เปิดรูปไม่ได้ ลองรูปอื่น')}document.querySelector('.toast')?.remove();
+  if(i.id==='slipIn'){S.slip=img;render();focusEl('.slipok')}
+  else if(i.id==='slipLate'){S.lateDraft=img;render();focusEl('.slipbox')}});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
+  if(a==='rcpt'){b.disabled=true;try{const {data,error}=await sb.rpc('po_receipt_link',{p_id:S.cur.id,p_token:S.cur.token});if(error||!data){b.disabled=false;return toast('ยังเปิดใบเสร็จไม่ได้ รอร้านยืนยันการชำระเงิน')}
+    const u=new URL('receipt.html',location.href);location.href=u.origin+u.pathname+'?s=po&r='+encodeURIComponent(data.id)+'&t='+encodeURIComponent(data.tok)}catch(x){b.disabled=false;toast('เชื่อมต่อไม่ได้ ลองอีกครั้ง')}return}
+  if(a==='slipView')return viewImg(b.getAttribute('src'),'สลิป');
+  if(a==='slipClear'){S.slip=null;render();return}
+  if(a==='lateClear'){S.lateDraft=null;render();setTimeout(()=>$('#slipLate').click(),50);return}
+  if(a==='lateSend'&&S.lateDraft&&!S.lateBusy){S.lateBusy=true;render();
+    try{const {error}=await sb.rpc('po_order_slip',{p_id:S.cur.id,p_token:S.cur.token,p_img:S.lateDraft});S.lateBusy=false;
+      if(error){render();return toast(rpcErr(error))}S.lateDraft=null;toast('✓ ส่งสลิปสำเร็จ รอร้านตรวจสอบ');await loadOrder();render();focusEl('.slipok')}
+    catch(x){S.lateBusy=false;render();toast('ส่งสลิปไม่สำเร็จ ลองอีกครั้ง')}}});
 start();
 
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);

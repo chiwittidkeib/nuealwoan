@@ -2,11 +2,11 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1230">
+<meta name="app-version" content="2026.10.09-1250">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#5a2e14">
 <meta name="robots" content="noindex">
-<title>ใบเสร็จรับเงิน · เนื้อล้วนๆ</title>
+<title>ใบเสร็จรับเงิน</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Kanit:wght@500;600;700;800&display=swap">
@@ -75,6 +75,10 @@ tbody tr.pad td{height:26px}
 .ov button{min-height:46px;padding:0 22px;border-radius:12px;border:0;background:#fff;color:var(--brown);font:inherit;font-weight:600}
 @media (max-width:380px){.nm{font-size:38px}.en{font-size:20px}.title h1{font-size:24px}thead th{font-size:12px}table{font-size:12.5px}}
 @media print{body{background:#fff}.bar{display:none}.wrap{padding:0;max-width:none}.rc{box-shadow:none;border-radius:0}@page{margin:10mm}}
+body.theme-po{--brown:#9e1020;--brown2:#b5121b;--gold:#d9a441;--red:#c8102e;--line:#f0dcc4}
+body.theme-po .en{color:#b5121b}
+.logo.po{width:190px;max-width:58%}
+.meta b{min-width:48px}
 </style>
 </head>
 <body>
@@ -88,14 +92,16 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=n=>(Math.round((+n||0)*100)/100).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 const safeUrl=u=>/^https?:\/\//i.test(String(u||''))?String(u):'';
-const P=new URLSearchParams(location.search),RID=(P.get('r')||'').slice(0,80),TOK=(P.get('t')||'').replace(/[^0-9a-f]/gi,'').slice(0,32);
+const P=new URLSearchParams(location.search),SHOP=P.get('s')==='po'?'po':'nl',RID=(P.get('r')||'').slice(0,80),TOK=(P.get('t')||'').replace(/[^0-9a-f]/gi,'').slice(0,32);
 const IC={fb:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-1.6 19.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 12 2z"/></svg>',
   tel:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.3 13.6-.7.8c-.4.4-1 .6-1.6.4-3.1-1-5.6-3.5-6.6-6.6-.2-.6 0-1.2.4-1.6l.8-.7c.4-.4 1-.3 1.3.1l1 1.5c.2.4.2.9-.1 1.2l-.5.5c.6 1.3 1.6 2.3 2.9 2.9l.5-.5c.3-.3.8-.4 1.2-.1l1.5 1c.4.3.5.9.1 1.3z"/></svg>',
   pin:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>'};
-const METHOD={cash:'เงินสด',promptpay:'โอน / พร้อมเพย์',lineman:'LINE MAN',grab:'Grab',shopee:'ShopeeFood'};
+const METHOD={cod:'ชำระตอนรับของ',cash:'เงินสด',promptpay:'โอน / พร้อมเพย์',lineman:'LINE MAN',grab:'Grab',shopee:'ShopeeFood'};
 function render(d){const s=d.shop,b=d.bill,dt=new Date(+b.paidAt||Date.now());
   const date=dt.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Bangkok'}),time=dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
-  const where=b.table&&b.table!=='TA'?b.table:(b.label||'กลับบ้าน');
+  const po=s.theme==='po';document.body.classList.toggle('theme-po',po);
+  const where=po?(b.place||'-'):b.table&&b.table!=='TA'?b.table:(b.label||'กลับบ้าน');
+  const dd=po&&b.deliverDate?new Date(b.deliverDate+'T00:00:00+07:00').toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Bangkok'}):'';
   const items=b.items||[];const vat=+b.vat>0;const taxInv=vat&&s.taxId;
   const rows=items.map((l,i)=>{const opt=(l.opts||[]).map(o=>o.n).filter(Boolean).join(', ');return `<tr><td class="n">${i+1}</td><td class="i">${esc(l.name)}${opt?`<small>${esc(opt)}</small>`:''}${l.note?`<small>${esc(l.note)}</small>`:''}</td><td class="q">${+l.qty||0}</td><td class="p">${num(l.price)}</td><td class="t">${num((+l.price||0)*(+l.qty||0))}</td></tr>`}).join('');
   const pad=Array.from({length:Math.max(0,4-items.length)},()=>'<tr class="pad"><td></td><td></td><td></td><td></td><td></td></tr>').join('');
@@ -104,12 +110,12 @@ function render(d){const s=d.shop,b=d.bill,dt=new Date(+b.paidAt||Date.now());
   const telHtml=s.phone?`<a href="tel:${esc(String(s.phone).replace(/[^\d+]/g,''))}">${IC.tel}${esc(s.phone)}</a>`:'';
   const mapHtml=s.mapText||safeUrl(s.mapUrl)?(safeUrl(s.mapUrl)?`<a class="map" href="${esc(safeUrl(s.mapUrl))}" target="_blank" rel="noopener">${IC.pin}${esc(s.mapText||'ดูแผนที่ร้าน')}</a>`:`<span class="map">${IC.pin}${esc(s.mapText)}</span>`):'';
   $('#view').innerHTML=`<div class="rc" id="rc">
-   <img class="logo" src="images/logo-nl-t.png" alt="" crossorigin="anonymous">
+   <img class="logo${po?' po':''}" src="${esc(safeUrl(s.logo)||(po?'images/logo-po-t.png':'images/logo-nl-t.png'))}" alt="" crossorigin="anonymous">
    <h2 class="nm">${esc(s.name)}</h2>${s.nameEn?`<div class="en">${esc(s.nameEn)}</div>`:''}${s.tagline?`<div class="tag">${esc(s.tagline)}</div>`:''}
    ${fbHtml||telHtml||mapHtml?`<div class="contact">${fbHtml}${telHtml}${mapHtml}</div>`:''}
    <hr class="br">
    <div class="head"><div class="title"><h1 class="${taxInv?'long':''}">${taxInv?'ใบเสร็จรับเงิน/<br>ใบกำกับภาษีอย่างย่อ':'ใบเสร็จรับเงิน'}</h1><small>RECEIPT</small>${taxInv?`<small class="tax">เลขประจำตัวผู้เสียภาษี ${esc(s.taxId)}</small>`:''}</div>
-     <div class="meta"><div><b>วันที่ :</b><span>${esc(date)}</span></div><div><b>เวลา :</b><span>${esc(time)}</span></div><div><b>โต๊ะ :</b><span>${esc(where)}</span></div></div></div>
+     <div class="meta"><div><b>วันที่ :</b><span>${esc(date)}</span></div><div><b>เวลา :</b><span>${esc(time)}</span></div>${po?`${dd?`<div><b>รับ :</b><span>${esc(dd)}</span></div>`:''}<div><b>ที่ :</b><span>${esc(where)}</span></div>${b.customer?`<div><b>ลูกค้า :</b><span>${esc(b.customer)}</span></div>`:''}`:`<div><b>โต๊ะ :</b><span>${esc(where)}</span></div>`}</div></div>
    <table><thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>ราคา</th><th>รวมเงิน</th></tr></thead><tbody>${rows}${pad}</tbody></table>
    <div class="sum"><div class="no">Receipt No. :<b>${esc(b.billNo||'-')}</b></div><div class="tot">
      <div><span>รวมเงิน</span><span>${num(b.subtotal)}</span></div>
@@ -128,7 +134,7 @@ async function start(){const cfg=window.APP_CONFIG||{};
   if(!RID||!TOK)return $('#view').innerHTML='<div class="msg"><h2>ไม่พบใบเสร็จ</h2>ลิงก์ไม่ครบ ขอลิงก์ใหม่จากพนักงาน</div>';
   if(!window.supabase||!cfg.SUPABASE_URL)return $('#view').innerHTML='<div class="msg"><h2>ระบบยังไม่พร้อม</h2>ลองใหม่อีกครั้ง</div>';
   const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}});
-  const {data,error}=await sb.rpc('public_receipt',{p_id:RID,p_tok:TOK});
+  const {data,error}=await sb.rpc(SHOP==='po'?'public_po_receipt':'public_receipt',{p_id:RID,p_tok:TOK});
   if(error||!data)return $('#view').innerHTML='<div class="msg"><h2>ไม่พบใบเสร็จ</h2>ลิงก์อาจไม่ถูกต้อง หรือบิลถูกยกเลิก</div>';
   render(data)}
 const loadScript=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
