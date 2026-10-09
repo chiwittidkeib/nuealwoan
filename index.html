@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.08-1955">
+<meta name="app-version" content="2026.10.09-0905">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -479,13 +479,25 @@ html,body{max-width:100%;overflow-x:clip}
 .stamp i{display:block;font-style:normal;font-weight:800;font-size:.62em;letter-spacing:.6px;text-transform:uppercase;line-height:1;color:inherit;opacity:1}
 .stamp b,.stamp i{color:var(--jade)!important;opacity:1!important;font-family:var(--f-body)}
 .item .stamp b{font-size:17px}
+/* ปุ่มที่ต้องแตะซ้ำเพื่อยืนยัน: ตัวหนังสือทอง กรอบแดง */
+.btn[data-armed],button[data-armed]{color:#ffd58a!important;border:2px solid #e5383b!important;background:rgba(229,56,59,.12)!important;box-shadow:0 0 0 3px rgba(229,56,59,.22);font-weight:700;animation:armpulse 1s ease-in-out infinite}
+@keyframes armpulse{50%{box-shadow:0 0 0 5px rgba(229,56,59,.12)}}
+@media (prefers-reduced-motion:reduce){.btn[data-armed],button[data-armed]{animation:none}}
+.modesel[data-r]{--rc:#4da3ff;--rb:rgba(77,163,255,.14)}
+.modesel[data-r="waiter"]{--rc:#ffd58a;--rb:#3a2a0b}
+.modesel[data-r="chef"]{--rc:#2ec4b6;--rb:rgba(46,196,182,.14)}
+.modesel[data-r="partner"]{--rc:#ff5a5f;--rb:rgba(255,90,95,.14)}
+.modesel[data-r],.modesel.on[data-r]{border-color:var(--rc);background:var(--rb)}
+.modesel[data-r] select,.modesel.on[data-r] select{color:var(--rc)}
+.modesel select option{color:var(--fg);background:var(--surface)}
+.rolec-owner{color:#4da3ff}.rolec-waiter{color:#ffd58a}.rolec-chef{color:#2ec4b6}.rolec-partner{color:#ff5a5f}
 </style>
 </head>
 <body>
 
 <header class="top"><div class="top-in">
   <div class="brand"><h1 id="shopName">NueaLwoan</h1><small id="conn"><span class="dot"></span>กำลังเชื่อมต่อ…</small></div>
-  <label class="modesel" id="hdrModeWrap" hidden><span>โหมด</span><select id="hdrMode" aria-label="โหมดหน้าจอ"><option value="">แอดมิน</option><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">เชฟ</option><option value="partner">หุ้นส่วน</option></select></label>
+  <label class="modesel" id="hdrModeWrap" hidden><span>โหมด</span><select id="hdrMode" aria-label="โหมดหน้าจอ"><option value="">Admin</option><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">แม่ครัว</option><option value="partner">หุ้นส่วน</option></select></label>
   <button class="btn sm" data-act="settings" type="button">ตั้งค่าร้าน</button>
   <button class="btn sm" id="hdrLogout" data-act="logout" data-confirm="1" type="button">ออกจากระบบ</button>
 </div></header>
@@ -631,7 +643,7 @@ const DEFAULTS={vat:{on:false,rate:7,mode:'incl'},seats:{},defSeats:4,qrRequireO
 const QUICK_NOTES=[];
 
 const PERMS=[['tables','เปิดโต๊ะ / รับออร์เดอร์'],['kitchen','หน้าครัว / กดเสิร์ฟ'],['pay','เก็บเงิน / ออกใบเสร็จ'],['discount','ให้ส่วนลด'],['move','ย้ายโต๊ะ'],['void','ยกเลิกบิล'],['menu_edit','แก้เมนูและราคา'],['stock','สต็อก / ซื้อของเข้า'],['expenses','รายจ่ายร้าน'],['members','สมาชิกสะสมแต้ม'],['report','สรุปเงิน / รายงานกำไร']];
-const ROLES={owner:'แอดมิน',waiter:'พนักงานเสิร์ฟ',chef:'เชฟ',partner:'หุ้นส่วน'};
+const ROLES={owner:'Admin',waiter:'พนักงานเสิร์ฟ',chef:'แม่ครัว',partner:'หุ้นส่วน'};
 const DEFAULT_PERMS={waiter:{tables:true,move:true,kitchen:true,pay:true,members:true},chef:{kitchen:true,stock:true},partner:{report:true,expenses:true,stock:true,members:true}};
 const roleKey=r=>r==='staff'?'waiter':r;
 const roleName=r=>ROLES[roleKey(r)]||'พนักงาน';
@@ -839,7 +851,7 @@ function render(){
   c.innerHTML=S.state==='ready'?'<span class="dot on"></span>ออนไลน์ · '+esc(dlong(Date.now())):['noconfig','offline','nostaff'].includes(S.state)?'<span class="dot off"></span>ไม่ได้เชื่อมฐานข้อมูล':S.state==='login'?'<span class="dot"></span>ยังไม่ได้เข้าสู่ระบบ':'<span class="dot"></span>กำลังเชื่อมต่อ…';
   document.querySelector('[data-act="settings"]').hidden=S.state!=='ready';
   $('#hdrLogout').hidden=S.state!=='ready';if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!S.calls.length||!canCall();
-  const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){$('#hdrMode').value=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs)}
+  const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){$('#hdrMode').value=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs);mw.dataset.r=S.viewAs||'owner'}
   const va=$('#viewAs');va.hidden=!(S.state==='ready'&&S.viewAs);if(!va.hidden)va.innerHTML=`<span>โหมด <b>${roleName(S.viewAs)}</b> · ใช้งานจริงตามสิทธิ์ของตำแหน่งนี้</span><button class="btn sm" data-act="viewAsOff" type="button">กลับโหมดแอดมิน</button>`;
   $('#tabs').parentElement.hidden=S.state!=='ready';
   const isOwner=S.role==='owner';
@@ -1564,7 +1576,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <p class="help" style="margin:0">เฉพาะแอดมินที่สร้าง ตั้งรหัส ลบบัญชี และเปลี่ยนตำแหน่งได้</p><div id="staffList"><p class="help" style="margin:0">กำลังโหลด…</p></div></div>
   <div class="card"><div class="sec-h"><h3>สิทธิ์การใช้งาน</h3><button class="lnk" data-act="permReset" type="button">คืนค่าเริ่มต้น</button></div>
    <p class="help" style="margin:0">ติ๊กว่าแต่ละตำแหน่งใช้ส่วนไหนได้ แอดมินใช้ได้ทุกส่วนเสมอ ตั้งค่าร้านและจัดการบัญชีเป็นของแอดมินเท่านั้น</p>
-   <div class="perm-wrap"><table class="perm"><thead><tr><th>ฟังก์ชัน</th><th>แอดมิน</th><th>เสิร์ฟ</th><th>เชฟ</th><th>หุ้นส่วน</th></tr></thead><tbody id="permBody"></tbody></table></div>
+   <div class="perm-wrap"><table class="perm"><thead><tr><th>ฟังก์ชัน</th><th class="rolec-owner">Admin</th><th class="rolec-waiter">เสิร์ฟ</th><th class="rolec-chef">แม่ครัว</th><th class="rolec-partner">หุ้นส่วน</th></tr></thead><tbody id="permBody"></tbody></table></div>
    <button class="btn pri sm" data-act="permSave" type="button" style="align-self:flex-start">บันทึกสิทธิ์</button>
    <div class="field"><label>ลองดูหน้าจอของแต่ละตำแหน่ง</label><div class="newch">${['waiter','chef','partner'].map(r=>`<button class="btn sm" data-act="viewAs" data-r="${r}" type="button">ดูแบบ${ROLES[r]}</button>`).join('')}</div><span class="help">บันทึกสิทธิ์ก่อนแล้วค่อยกดดู จะเห็นหน้าจอตามสิทธิ์ล่าสุด</span></div></div>
   ${accountCard()}</form>
@@ -1578,7 +1590,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
   $('#cLogo').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
     try{S.sheet.logo=await logoDataUrl(f);renderLogo()}catch(err){toast('อ่านไฟล์รูปไม่ได้','bad')}});}
 function renderPerm(src){const b=$('#permBody');if(!b)return;const P=src||S.perms||DEFAULT_PERMS;
-  b.innerHTML=PERMS.map(([k,label])=>`<tr><td>${label}</td><td class="c"><input type="checkbox" checked disabled aria-label="แอดมิน ${label}"></td>${['waiter','chef','partner'].map(r=>`<td class="c"><input type="checkbox" data-perm="${r}:${k}" ${(k in (P[r]||{})?P[r][k]:(DEFAULT_PERMS[r]||{})[k])?'checked':''} aria-label="${ROLES[r]} ${label}"></td>`).join('')}</tr>`).join('');}
+  b.innerHTML=PERMS.map(([k,label])=>`<tr><td>${label}</td><td class="c"><input type="checkbox" checked disabled aria-label="Admin ${label}"></td>${['waiter','chef','partner'].map(r=>`<td class="c"><input type="checkbox" data-perm="${r}:${k}" ${(k in (P[r]||{})?P[r][k]:(DEFAULT_PERMS[r]||{})[k])?'checked':''} aria-label="${ROLES[r]} ${label}"></td>`).join('')}</tr>`).join('');}
 async function loadStaff(){const box=$('#staffList');if(!box)return;
   const {data,error}=await SB.from('staff').select('email,username,role,created_at').order('created_at');
   if(!$('#staffList'))return;
@@ -1591,7 +1603,7 @@ async function loadStaff(){const box=$('#staffList');if(!box)return;
 function sheetStaffNew(){$('#panel').innerHTML=head('เพิ่มพนักงาน')+`<form class="sh-body" id="fStaff">
    <div class="field"><label for="stUser">ชื่อผู้ใช้</label><input id="stUser" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="เช่น somchai"><span class="help">ภาษาอังกฤษตัวเล็ก ตัวเลข หรือ . _ - ยาว 3–30 ตัว</span></div>
    <div class="field"><label for="stPw">รหัสผ่าน</label><div class="pw"><input id="stPw" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"><button type="button" class="pw-eye" data-act="pwToggle" data-for="stPw">แสดง</button></div></div>
-   <div class="field"><label for="stRole">ตำแหน่ง</label><select id="stRole"><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">เชฟ</option><option value="partner">หุ้นส่วน</option><option value="owner">แอดมิน (เข้าได้ทุกส่วน)</option></select><span class="help">ตำแหน่งแต่ละแบบเข้าใช้อะไรได้บ้าง ดูและแก้ได้ที่ "สิทธิ์การใช้งาน"</span></div>
+   <div class="field"><label for="stRole">ตำแหน่ง</label><select id="stRole"><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">แม่ครัว</option><option value="partner">หุ้นส่วน</option><option value="owner">Admin (เข้าได้ทุกส่วน)</option></select><span class="help">ตำแหน่งแต่ละแบบเข้าใช้อะไรได้บ้าง ดูและแก้ได้ที่ "สิทธิ์การใช้งาน"</span></div>
    <p class="err" id="stErr" role="alert"></p></form>
    <div class="sh-foot"><button class="btn" data-act="settings" type="button">ย้อนกลับ</button><button class="btn pri wide" id="stBtn" data-act="staffCreate" type="button">สร้างบัญชี</button></div>`;
   $('#stUser').focus();}
