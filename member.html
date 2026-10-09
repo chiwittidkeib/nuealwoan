@@ -30,6 +30,50 @@ button:disabled{opacity:.5}
 .ok .big{font-size:52px;line-height:1}
 .ok b.ph{font-family:Kanit,sans-serif;font-size:24px;color:var(--brown);letter-spacing:1px}
 [hidden]{display:none!important}
+.mcard-ov{position:fixed;inset:0;z-index:140;background:rgba(8,5,3,.9);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;animation:mcIn .25s ease-out}
+@keyframes mcIn{from{opacity:0}to{opacity:1}}
+.mcard{position:relative;overflow:hidden;width:min(350px,92vw);aspect-ratio:1.586;border-radius:18px;padding:16px 18px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;
+  background:radial-gradient(circle at 88% 12%,rgba(255,213,138,.38),transparent 46%),radial-gradient(circle at 8% 100%,rgba(200,16,46,.35),transparent 50%),linear-gradient(135deg,#3a1a0c,#120a06 58%,#5a2e14);
+  border:1.5px solid #d9a441;box-shadow:0 18px 50px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.06);animation:mcPop .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes mcPop{from{transform:scale(.85) rotate(-3deg)}to{transform:none}}
+.mc-top{display:flex;align-items:center;justify-content:space-between}
+.mc-logos{display:flex;gap:6px}.mc-logos img{width:38px;height:38px;border-radius:9px;object-fit:cover;border:1px solid rgba(217,164,65,.7)}
+.mc-top span{font-family:Kanit,var(--f-display,system-ui);font-weight:600;letter-spacing:3px;font-size:12px;color:#f2c46d}
+.mc-mid b{display:block;font-family:Kanit,var(--f-display,system-ui);font-weight:600;font-size:20px;line-height:1.2}
+.mc-mid span{display:block;font-size:19px;letter-spacing:2.5px;color:#f6e6c8;font-variant-numeric:tabular-nums}
+.mc-bot{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.mc-bot small{display:block;font-size:12px;color:#e9d3ad}
+.mc-bot strong{font-family:Kanit,var(--f-display,system-ui);font-weight:800;font-size:38px;line-height:1;color:#ffd58a;text-shadow:0 2px 10px rgba(255,190,80,.35)}
+.mc-bot em{font-style:normal;font-size:11px;text-align:right;color:#e9d3ad;line-height:1.35}
+.mcard::before{content:"";position:absolute;inset:0;background:var(--mcbg) center/cover no-repeat;z-index:0;pointer-events:none}
+.mcard::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(100deg,rgba(18,9,4,.9) 0%,rgba(18,9,4,.72) 45%,rgba(18,9,4,.35) 100%)}
+.mcard.mc-po::after{background:linear-gradient(100deg,rgba(45,6,8,.94) 0%,rgba(70,10,14,.82) 45%,rgba(90,14,18,.55) 100%)}
+.mcard>*{position:relative;z-index:1}
+.mcard>.mc-shine{position:absolute;inset:-40% -60%;z-index:2;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.14) 50%,transparent 60%);animation:mcSh 3.2s ease-in-out infinite;pointer-events:none}
+@keyframes mcSh{0%{transform:translateX(-30%)}60%,100%{transform:translateX(30%)}}
+.mc-note{margin:0;color:#ffd58a;font-weight:600;text-align:center;max-width:340px}
+.mc-act{min-height:48px;padding:0 22px;border-radius:12px;border:0;background:#ffd58a;color:#3a2600;font:inherit;font-weight:700;cursor:pointer}
+.mc-x{min-height:44px;padding:0 26px;border-radius:12px;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;font:inherit;font-weight:600;cursor:pointer}
+/* บัตรสมาชิก 2 ธีม: เนื้อล้วนๆ = ดำ · ข้าวมันไก่ = ขาวนวล · ลายน้ำป้ายร้านเต็มป้าย อยู่กลางบัตร */
+.mcard::after{display:none}
+.mcard::before{background:var(--mcbg) center/auto 70% no-repeat;opacity:.2;}
+.mcard.mc-nl{background:radial-gradient(circle at 85% 10%,rgba(217,164,65,.22),transparent 45%),linear-gradient(135deg,#1a1512,#070605 60%,#14100d);border-color:#c99a4a;color:#fff}
+.mcard.mc-nl::before{opacity:.3}
+.mcard.mc-nl .mc-top span{color:#e6b866}
+.mcard.mc-nl .mc-mid b{color:#fff}
+.mcard.mc-nl .mc-mid span{color:#efe2cc}
+.mcard.mc-nl .mc-bot small,.mcard.mc-nl .mc-bot em{color:#cdb894}
+.mcard.mc-nl .mc-bot strong{color:#f2c46d;text-shadow:0 0 14px rgba(229,56,59,.45)}
+.mcard.mc-po{background:radial-gradient(circle at 85% 10%,rgba(217,164,65,.25),transparent 45%),linear-gradient(135deg,#fffcf4,#f7ecd6 70%,#f2e2c4);border-color:#d9a441;color:#5a2e14;box-shadow:0 18px 50px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.6)}
+.mcard.mc-po::before{opacity:.16}
+.mcard.mc-po .mc-top span{color:#b5121b}
+.mcard.mc-po .mc-mid b{color:#8f0b20}
+.mcard.mc-po .mc-mid span{color:#5a2e14}
+.mcard.mc-po .mc-bot small,.mcard.mc-po .mc-bot em{color:#8a6a4c}
+.mcard.mc-po .mc-bot strong{color:#c8102e;text-shadow:0 2px 0 #f2c46d}
+.mcard.mc-po .mc-logos img{border-color:#d9a441}
+.mcard.mc-po>.mc-shine{background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%)}
+#dcard{display:flex;justify-content:center;width:100%}#dcard .mcard{width:100%;text-align:left}
 </style>
 </head>
 <body>
@@ -44,9 +88,8 @@ button:disabled{opacity:.5}
   <p class="muted">ใช้เบอร์โทรเพื่อสะสมแต้มกับร้านเท่านั้น</p>
 </form>
 <div class="card ok" id="done" hidden>
-  <img class="logo" src="images/logo-nl-t.png" alt="">
-  <div class="big">🎉</div>
-  <h1 id="dt">สมัครสำเร็จ!</h1>
+  <h1 id="dt">🎉 สมัครสำเร็จ!</h1>
+  <div id="dcard"></div>
   <b class="ph" id="dph"></b>
   <p class="perk" id="dmsg">ครั้งหน้าบอกเบอร์นี้กับพนักงาน หรือใส่ในหน้าตรวจสอบยอด เพื่อสะสมแต้ม</p>
 </div>
@@ -54,6 +97,12 @@ button:disabled{opacity:.5}
 <script src="js/config.js"></script>
 <script>
 "use strict";
+function cardHtml(m){const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const bg=[...String(m.phone||m.name||'')].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7)%2?'po':'nl';
+  return `<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
+    <div class="mc-mid"><b>${m.name?'คุณ'+e(m.name):'สมาชิก'}</b><span>${e(m.phone||'')}</span></div>
+    <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${m.points==null?'—':(+m.points).toLocaleString('th-TH')}</strong></div><em>ใช้ได้ทั้ง 2 ร้าน<br>เนื้อล้วนๆ · ข้าวมันไก่</em></div><i class="mc-shine"></i></div>`}
+
 const $=s=>document.querySelector(s);
 const cfg=window.APP_CONFIG||{};let sb=null;{const per=+(new URLSearchParams(location.search).get('per')||0);if(per>0)$('#per').textContent=per;else $('#perk').innerHTML='สมัครฟรี · ซื้อครบตามยอดที่ร้านกำหนด ได้แต้มสะสม ใช้แทนเงินสดได้<br><small>แต้มเริ่มสะสมในการซื้อครั้งถัดไป (ไม่นับย้อนหลัง)</small>'}
 try{sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}})}catch(e){}
@@ -63,7 +112,7 @@ $('#f').addEventListener('submit',async e=>{e.preventDefault();const ph=$('#ph')
   err.textContent='';$('#go').disabled=true;$('#go').textContent='กำลังสมัคร…';
   try{const {data,error}=await sb.rpc('member_signup',{p_phone:ph,p_name:$('#nm').value.trim()});
     if(error){const m=String(error.message||'');err.textContent=/points_off/.test(m)?'ร้านปิดระบบสะสมแต้มอยู่':/busy/.test(m)?'มีคนสมัครพร้อมกันเยอะ ลองใหม่ในอีกสักครู่':/bad_phone/.test(m)?'เบอร์โทรไม่ถูกต้อง':'สมัครไม่สำเร็จ ลองอีกครั้ง';return}
-    $('#f').hidden=true;$('#done').hidden=false;$('#dph').textContent=data.phone;
+    $('#f').hidden=true;$('#done').hidden=false;$('#dph').textContent=data.phone;$('#dph').hidden=true;$('#dcard').innerHTML=cardHtml({phone:data.phone,name:$('#nm').value.trim(),points:data.exists?null:0});
     if(data.exists){$('#dt').textContent='เป็นสมาชิกอยู่แล้ว';$('#dmsg').textContent='เบอร์นี้สมัครไว้แล้ว ใช้สะสมแต้มได้เลย บอกเบอร์กับพนักงานตอนชำระเงิน'}
     else $('#dmsg').innerHTML='แต้มจะเริ่มสะสมใน<b>การซื้อครั้งถัดไป</b><br>ครั้งหน้าบอกเบอร์นี้กับพนักงาน หรือใส่ในหน้าตรวจสอบยอด';
   }catch(x){err.textContent='เชื่อมต่อไม่ได้ ลองอีกครั้ง'}finally{$('#go').disabled=false;$('#go').textContent='สมัครสมาชิก'}});
