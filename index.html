@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1250">
+<meta name="app-version" content="2026.10.09-1300">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1658,7 +1658,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <details class="rcx"><summary><b>ใบเสร็จออนไลน์ (ลูกค้าโหลดเอง)</b> <small class="muted">โลโก้ · ชื่อร้าน · Facebook · เบอร์ · หมุดพิกัด</small></summary>
     ${rcLogoField('rcLogo',s.rcLogo,'images/logo-nl-t.png')}
     <div class="grid2"><div class="field"><label for="rcName">ชื่อร้าน (ไทย)</label><input id="rcName" maxlength="40" value="${esc(s.rcName??'เนื้อล้วนๆ')}"></div><div class="field"><label for="rcNameEn">ชื่อร้าน (อังกฤษ)</label><input id="rcNameEn" maxlength="40" value="${esc(s.rcNameEn??'NUEA LWOON')}"></div></div>
-    <div class="field"><label for="rcTag">คำโปรยใต้ชื่อ</label><input id="rcTag" maxlength="80" value="${esc(s.rcTag??'BEEF NOODLES • BRAISED BEEF • KHAO SOI')}"></div>
+    <div class="field"><label for="rcTag">คำโปรยใต้ชื่อ</label><input id="rcTag" maxlength="80" value="${esc(s.rcTag===undefined||s.rcTag==='BEEF NOODLES • BRAISED BEEF • KHAO SOI'?'':s.rcTag)}" placeholder="เว้นว่าง = ไม่แสดง"></div>
     <div class="grid2"><div class="field"><label for="rcFb">ชื่อเพจ Facebook</label><input id="rcFb" maxlength="60" value="${esc(s.rcFb??'เนื้อล้วนๆ ก๋วยเตี๋ยวเนื้อ')}" placeholder="เว้นว่าง = ไม่แสดง"></div><div class="field"><label for="rcFbUrl">ลิงก์เพจ Facebook</label><input id="rcFbUrl" inputmode="url" value="${esc(s.rcFbUrl||'')}" placeholder="https://facebook.com/..."></div></div>
     <div class="grid2"><div class="field"><label for="rcMap">ข้อความหมุดพิกัด</label><input id="rcMap" maxlength="80" value="${esc(s.rcMap??'ก๋วยเตี๋ยวเนื้อ สด-ตุ๋น • ข้าวซอยเนื้อ')}" placeholder="เว้นว่าง = ไม่แสดง"></div><div class="field"><label for="rcMapUrl">ลิงก์ Google Maps</label><input id="rcMapUrl" inputmode="url" value="${esc(s.rcMapUrl||'')}" placeholder="https://maps.app.goo.gl/..."></div></div>
     <div class="field"><label for="rcThanks2">ข้อความท้ายบรรทัดที่ 2</label><input id="rcThanks2" maxlength="60" value="${esc(s.rcThanks2??'แล้วพบกันใหม่นะคะ')}"></div>

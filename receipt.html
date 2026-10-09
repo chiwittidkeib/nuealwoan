@@ -111,7 +111,7 @@ function render(d){const s=d.shop,b=d.bill,dt=new Date(+b.paidAt||Date.now());
   const mapHtml=s.mapText||safeUrl(s.mapUrl)?(safeUrl(s.mapUrl)?`<a class="map" href="${esc(safeUrl(s.mapUrl))}" target="_blank" rel="noopener">${IC.pin}${esc(s.mapText||'ดูแผนที่ร้าน')}</a>`:`<span class="map">${IC.pin}${esc(s.mapText)}</span>`):'';
   $('#view').innerHTML=`<div class="rc" id="rc">
    <img class="logo${po?' po':''}" src="${esc(safeUrl(s.logo)||(po?'images/logo-po-t.png':'images/logo-nl-t.png'))}" alt="" crossorigin="anonymous">
-   <h2 class="nm">${esc(s.name)}</h2>${s.nameEn?`<div class="en">${esc(s.nameEn)}</div>`:''}${s.tagline?`<div class="tag">${esc(s.tagline)}</div>`:''}
+   <h2 class="nm">${esc(s.name)}</h2>${s.nameEn?`<div class="en">${esc(s.nameEn)}</div>`:''}${s.tagline&&!(s.theme!=='po'&&s.tagline==='BEEF NOODLES • BRAISED BEEF • KHAO SOI')?`<div class="tag">${esc(s.tagline)}</div>`:''}
    ${fbHtml||telHtml||mapHtml?`<div class="contact">${fbHtml}${telHtml}${mapHtml}</div>`:''}
    <hr class="br">
    <div class="head"><div class="title"><h1 class="${taxInv?'long':''}">${taxInv?'ใบเสร็จรับเงิน/<br>ใบกำกับภาษีอย่างย่อ':'ใบเสร็จรับเงิน'}</h1><small>RECEIPT</small>${taxInv?`<small class="tax">เลขประจำตัวผู้เสียภาษี ${esc(s.taxId)}</small>`:''}</div>
