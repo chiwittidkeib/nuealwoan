@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1855">
+<meta name="app-version" content="2026.10.09-1900">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -279,6 +279,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 .ptswarn-i{color:#ffb347}
 .rwbox{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}.rwbox>.btn{align-self:flex-start}.rwsel{display:flex;flex-wrap:wrap;gap:6px}.rwsel .pill{display:inline-flex;align-items:center;gap:4px}
 .rwlist .row{gap:8px}
+.catbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 11px}.catbar .chip{cursor:default;font-size:13px;padding:4px 10px}.catbar .btn{margin-left:auto}
 .lbl-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}.lbl-row label{margin:0}
 .mlay{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-left:auto;flex:none}
 .mlay button{border:0;background:var(--surface);color:var(--fg);padding:6px 11px;font:inherit;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px}
@@ -964,7 +965,7 @@ async function startData(){
   const since=sod()-30*DAY;
   db.collection('consign_log').where('at','>=',sod()-90*DAY).onSnapshot(s=>{S.consignLog=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back')render()},onErr);
   db.collection('purchases').where('at','>=',since).onSnapshot(s=>{S.purch=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
-  db.collection('lists').onSnapshot(s=>{const L={};s.docs.forEach(d=>L[d.id]=d.data());S.lists=L;refreshSheet()},onErr);
+  db.collection('lists').onSnapshot(s=>{const L={};s.docs.forEach(d=>L[d.id]=d.data());S.lists=L;refreshSheet();if(S.tab==='back')render()},onErr);
   db.collection('incomes').where('at','>=',since).onSnapshot(s=>{S.inc=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back'||S.tab==='report')render()},onErr);
   db.collection('expenses').where('at','>=',since).onSnapshot(s=>{S.exp=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
 }
@@ -1200,7 +1201,7 @@ function viewBack(){
     if(!S.purch.length)return h+`<div class="empty"><b>ยังไม่มีการซื้อของ</b>บันทึกทุกครั้งที่ไปตลาด ระบบจะเติมจำนวนในสต็อกและอัปเดตต้นทุนให้</div>`;
     return h+'<div class="list">'+S.purch.map(p=>`<div class="row"><div class="grow"><div class="t">${esc(p.name)} <span class="muted">${p.buyQty?num(p.buyQty)+' '+esc(p.buyUnit||'')+' = ':''}${num(p.qty)} ${esc(p.unit||'')}</span></div><div class="s">${dshort(p.at)} ${hm(p.at)}${p.note?' · '+esc(p.note):''}</div></div><div class="r"><b>${baht(p.amount)}</b></div><button class="btn sm danger" data-act="delPurch" data-id="${p.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>';}
   const sum=S.exp.reduce((s,e)=>s+(+e.amount||0),0);
-  h+=`<div class="sec-h"><h2>รายจ่าย 30 วันล่าสุด</h2><button class="btn pri sm" data-act="expense" type="button">+ บันทึกรายจ่าย</button></div>
+  h+=`<div class="sec-h"><h2>รายจ่าย 30 วันล่าสุด</h2><button class="btn pri sm" data-act="expense" type="button">+ บันทึกรายจ่าย</button></div>${catBar('expCats')}
   <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="money">${baht(sum)}</b><span>รวมรายจ่าย</span></div><div class="stat"><b class="num">${S.exp.length}</b><span>รายการ</span></div></div>`;
   if(!S.exp.length)return h+`<div class="empty"><b>ยังไม่มีรายจ่าย</b>บันทึกค่าเช่า ค่าแรง ค่าไฟ ค่าแก๊ส เพื่อดูกำไรสุทธิที่แท้จริง</div>`;
   return h+'<div class="list">'+S.exp.map(e=>`<div class="row"><div class="grow"><div class="t">${esc(e.cat)}</div><div class="s">${dshort(e.at)}${e.note?' · '+esc(e.note):''}</div></div><div class="r"><b>${baht(e.amount)}</b></div><button class="btn sm danger" data-act="delExp" data-id="${e.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>';
@@ -1849,7 +1850,7 @@ async function savePurch(){let sid=val('pItem');const qty=nval('pQty'),amount=nv
 
 function sheetExpense(){const cats=expCats(),D=S.sheet.draft||{};
   $('#panel').innerHTML=head('บันทึกรายจ่ายร้าน')+
-  `<form class="sh-body"><div class="field"><div class="lbl-row"><label for="eCat">หมวด</label><button class="btn sm ghost" data-act="catList" data-k="expCats" type="button">⚙ จัดการหมวด</button></div><select id="eCat">${cats.map(c=>`<option ${D.cat===c?'selected':''}>${esc(c)}</option>`).join('')}<option value="__new">+ เพิ่มหมวดใหม่…</option></select></div>
+  `<form class="sh-body"><div class="field"><label for="eCat">หมวด</label><select id="eCat">${cats.map(c=>`<option ${D.cat===c?'selected':''}>${esc(c)}</option>`).join('')}<option value="__new">+ เพิ่มหมวดใหม่…</option></select></div>
   <div class="field" id="eNewWrap" hidden><label for="eNew">ชื่อหมวดใหม่</label><input id="eNew" maxlength="40" placeholder="เช่น ค่าน้ำแข็ง" autocomplete="off"></div>
   <div class="grid2"><div class="field"><label for="eAmt">จำนวนเงิน (บาท)</label><input id="eAmt" inputmode="decimal" value="${esc(D.amt||'')}"></div><div class="field"><label for="eDate">วันที่</label><input id="eDate" type="date" value="${esc(D.date||toDateInput(Date.now()))}"></div></div>
   <div class="field"><label for="eNote">รายละเอียด</label><input id="eNote" placeholder="เช่น ค่าแรงลูกจ้าง 2 คน" autocomplete="off" value="${esc(D.note||'')}"></div>
@@ -2587,20 +2588,21 @@ const INC_CATS=['ค่าเช่าที่ขายของ','ค่าเ
 const incCats=()=>{const l=S.lists&&S.lists.incCats&&S.lists.incCats.items;return Array.isArray(l)?l:[...new Set([...(S.settings.incCats||[]),...INC_CATS])]};
 const expCats=()=>{const l=S.lists&&S.lists.expCats&&S.lists.expCats.items;return Array.isArray(l)?l:(S.settings.expCats||DEFAULTS.expCats)};
 function viewIncome(){const L=S.inc||[];const sum=L.reduce((s,e)=>s+(+e.amount||0),0);
-  let h=`<div class="sec-h"><h2>รายรับอื่นๆ 30 วันล่าสุด</h2><button class="btn pri sm" data-act="income" type="button">+ บันทึกรายรับ</button></div>
+  let h=`<div class="sec-h"><h2>รายรับอื่นๆ 30 วันล่าสุด</h2><button class="btn pri sm" data-act="income" type="button">+ บันทึกรายรับ</button></div>${catBar('incCats')}
   <p class="help" style="margin:0">รายรับที่ไม่ได้มาจากการขายอาหาร เช่น ให้เช่าที่ขายของ เก็บเป็นครั้งๆ · นับรวมในกำไรสุทธิที่หน้า "สรุปเงิน"</p>
   <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="money">${baht(sum)}</b><span>รวมรายรับอื่นๆ</span></div><div class="stat"><b class="num">${L.length}</b><span>ครั้ง</span></div></div>`;
   if(!L.length)return h+`<div class="empty"><b>ยังไม่มีรายรับอื่นๆ</b>กด "+ บันทึกรายรับ" ทุกครั้งที่เก็บเงิน เช่น ค่าเช่าที่หน้าร้านวันละ 100 บาท</div>`;
   return h+'<div class="list">'+L.map(e=>`<div class="row"><div class="grow"><div class="t">${esc(e.cat||'รายรับอื่นๆ')}</div><div class="s">${dshort(e.at)} ${hm(e.at)}${e.note?' · '+esc(e.note):''}${e.by?' · บันทึกโดย '+esc(e.by):''}</div></div><div class="r"><b style="color:var(--jade)">+${baht(e.amount)}</b></div><button class="btn sm danger" data-act="delInc" data-id="${e.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>'}
 function sheetIncome(){const cats=incCats();
   $('#panel').innerHTML=head('บันทึกรายรับอื่นๆ')+`<form class="sh-body">
-   <div class="field"><div class="lbl-row"><label for="iCat">ประเภท</label><button class="btn sm ghost" data-act="catList" data-k="incCats" type="button">⚙ จัดการประเภท</button></div><select id="iCat">${cats.map(c=>`<option>${esc(c)}</option>`).join('')}<option value="__new">+ เพิ่มประเภทใหม่…</option></select></div>
+   <div class="field"><label for="iCat">ประเภท</label><select id="iCat">${cats.map(c=>`<option>${esc(c)}</option>`).join('')}<option value="__new">+ เพิ่มประเภทใหม่…</option></select></div>
    <div class="field" id="iNewWrap" hidden><label for="iNew">ชื่อประเภทใหม่</label><input id="iNew" maxlength="40" placeholder="เช่น ค่าจอดรถ" autocomplete="off"></div>
    <div class="grid2"><div class="field"><label for="iAmt">จำนวนเงิน (บาท)</label><input id="iAmt" inputmode="decimal" placeholder="0"></div><div class="field"><label for="iDate">วันที่</label><input id="iDate" type="date" value="${toDateInput(Date.now())}"></div></div>
    <div class="field"><label for="iNote">หมายเหตุ</label><input id="iNote" maxlength="120" placeholder="เช่น ให้เช่าที่ขายของหน้าร้าน ร้านลูกชิ้นป้าแดง" autocomplete="off"></div>
    <div class="field"><label for="iWho">รับเงินจาก (ถ้ามี)</label><input id="iWho" maxlength="60" placeholder="ชื่อผู้เช่า / ผู้จ่าย" autocomplete="off"></div></form>
    <div class="sh-foot"><button class="btn pri wide" data-act="saveInc" type="button">บันทึกรายรับ</button></div>`;
   $('#iCat').addEventListener('change',e=>{$('#iNewWrap').hidden=e.target.value!=='__new';if(!$('#iNewWrap').hidden)$('#iNew').focus()});setTimeout(()=>$('#iAmt')?.focus(),60)}
+const catBar=k=>`<div class="catbar"><span class="muted">${k==='incCats'?'ประเภท':'หมวด'}:</span>${listCur(k).map(c=>`<span class="chip">${esc(c)}</span>`).join('')}<button class="btn sm" data-act="catList" data-k="${k}" type="button">⚙ จัดการ${k==='incCats'?'ประเภท':'หมวด'}</button></div>`;
 const LIST_NAME={expCats:'หมวดรายจ่าย',incCats:'ประเภทรายรับอื่นๆ'};
 const listCur=k=>k==='incCats'?incCats():expCats();
 const setList=(k,items)=>{S.lists=S.lists||{};S.lists[k]={items}};
@@ -2614,8 +2616,8 @@ function sheetCatList(){const k=S.sheet.k;if(!S.sheet.items)S.sheet.items=listCu
   $('#clNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ACT.clAdd()}});}
 const clRead=()=>document.querySelectorAll('[data-cl]').forEach(e=>{const x=S.sheet.items[+e.dataset.cl];if(x)x.n=e.value.trim()});
 Object.assign(ACT,{
-  catList:d=>{if(!can('expenses'))return deny();const b={...S.sheet};
-    b.draft=b.type==='expense'?{cat:val('eCat'),amt:val('eAmt'),date:val('eDate'),note:val('eNote')}:null;openSheet({type:'catList',k:d.k,back:b})},
+  catList:d=>{if(!can('expenses'))return deny();const b=S.sheet?{...S.sheet}:null;
+    if(b)b.draft=b.type==='expense'?{cat:val('eCat'),amt:val('eAmt'),date:val('eDate'),note:val('eNote')}:null;openSheet({type:'catList',k:d.k,back:b})},
   clMove:d=>{clRead();const a=S.sheet.items,i=+d.i,j=i+(+d.d);if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];sheetCatList()},
   clDel:d=>{clRead();S.sheet.items.splice(+d.i,1);sheetCatList()},
   clAdd:()=>{clRead();const n=val('clNew');if(!n)return;if(S.sheet.items.some(x=>x.n===n))return toast('มีชื่อนี้แล้ว','bad');S.sheet.items.push({n,o:null});sheetCatList();setTimeout(()=>$('#clNew')?.focus(),30)},
@@ -2625,7 +2627,7 @@ Object.assign(ACT,{
     const ok=await write('lists/'+k,r=>r.set({items:names}));if(!ok)return;setList(k,names);
     const ren=it.filter(x=>x.o&&x.o!==x.n),col=k==='incCats'?'incomes':'expenses',rows=k==='incCats'?S.inc:S.exp;
     for(const x of ren)for(const e of (rows||[]).filter(e=>e.cat===x.o))write(col+'/'+e.id,r=>r.update({cat:x.n}));
-    toast('บันทึก'+LIST_NAME[k]+'แล้ว');const b=S.sheet.back;if(b)openSheet(b);else closeSheet()},
+    toast('บันทึก'+LIST_NAME[k]+'แล้ว');const b=S.sheet.back;if(b)openSheet(b);else{closeSheet();render()}},
   income:()=>{if(!can('expenses'))return deny();openSheet({type:'income'})},
   saveInc:async()=>{const amount=nval('iAmt');if(!(amount>0))return toast('ใส่จำนวนเงิน','bad');let cat=val('iCat');if(cat==='__new'){cat=val('iNew');if(!cat)return toast('ใส่ชื่อประเภท','bad');addListItem('incCats',cat)}
     const note=[val('iNote'),val('iWho')?'จาก '+val('iWho'):''].filter(Boolean).join(' · ');
