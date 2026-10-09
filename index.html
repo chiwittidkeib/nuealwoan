@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1400">
+<meta name="app-version" content="2026.10.09-1410">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -586,12 +586,36 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .mc-bot small{display:block;font-size:12px;color:#e9d3ad}
 .mc-bot strong{font-family:Kanit,var(--f-display,system-ui);font-weight:800;font-size:38px;line-height:1;color:#ffd58a;text-shadow:0 2px 10px rgba(255,190,80,.35)}
 .mc-bot em{font-style:normal;font-size:11px;text-align:right;color:#e9d3ad;line-height:1.35}
-.mc-shine{position:absolute;inset:-40% -60%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.14) 50%,transparent 60%);animation:mcSh 3.2s ease-in-out infinite;pointer-events:none}
+.mcard::before{content:"";position:absolute;inset:0;background:var(--mcbg) center/cover no-repeat;z-index:0;pointer-events:none}
+.mcard::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(100deg,rgba(18,9,4,.9) 0%,rgba(18,9,4,.72) 45%,rgba(18,9,4,.35) 100%)}
+.mcard.mc-po::after{background:linear-gradient(100deg,rgba(45,6,8,.94) 0%,rgba(70,10,14,.82) 45%,rgba(90,14,18,.55) 100%)}
+.mcard>*{position:relative;z-index:1}
+.mcard>.mc-shine{position:absolute;inset:-40% -60%;z-index:2;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.14) 50%,transparent 60%);animation:mcSh 3.2s ease-in-out infinite;pointer-events:none}
 @keyframes mcSh{0%{transform:translateX(-30%)}60%,100%{transform:translateX(30%)}}
 .mc-note{margin:0;color:#ffd58a;font-weight:600;text-align:center;max-width:340px}
 .mc-act{min-height:48px;padding:0 22px;border-radius:12px;border:0;background:#ffd58a;color:#3a2600;font:inherit;font-weight:700;cursor:pointer}
 .mc-x{min-height:44px;padding:0 26px;border-radius:12px;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;font:inherit;font-weight:600;cursor:pointer}
 .mcbtn{display:inline-flex;align-items:center;gap:6px}
+
+/* บัตรสมาชิก 2 ธีม: เนื้อล้วนๆ = ดำ · ข้าวมันไก่ = ขาวนวล · ลายน้ำป้ายร้านเต็มป้าย อยู่กลางบัตร */
+.mcard::after{display:none}
+.mcard::before{background:var(--mcbg) center/auto 94% no-repeat;opacity:.2;-webkit-mask-image:radial-gradient(ellipse 48% 50% at center,#000 60%,transparent 100%);mask-image:radial-gradient(ellipse 48% 50% at center,#000 60%,transparent 100%)}
+.mcard.mc-nl{background:radial-gradient(circle at 85% 10%,rgba(217,164,65,.22),transparent 45%),linear-gradient(135deg,#1a1512,#070605 60%,#14100d);border-color:#c99a4a;color:#fff}
+.mcard.mc-nl::before{opacity:.2}
+.mcard.mc-nl .mc-top span{color:#e6b866}
+.mcard.mc-nl .mc-mid b{color:#fff}
+.mcard.mc-nl .mc-mid span{color:#efe2cc}
+.mcard.mc-nl .mc-bot small,.mcard.mc-nl .mc-bot em{color:#cdb894}
+.mcard.mc-nl .mc-bot strong{color:#f2c46d;text-shadow:0 0 14px rgba(229,56,59,.45)}
+.mcard.mc-po{background:radial-gradient(circle at 85% 10%,rgba(217,164,65,.25),transparent 45%),linear-gradient(135deg,#fffcf4,#f7ecd6 70%,#f2e2c4);border-color:#d9a441;color:#5a2e14;box-shadow:0 18px 50px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.6)}
+.mcard.mc-po::before{opacity:.16}
+.mcard.mc-po .mc-top span{color:#b5121b}
+.mcard.mc-po .mc-mid b{color:#8f0b20}
+.mcard.mc-po .mc-mid span{color:#5a2e14}
+.mcard.mc-po .mc-bot small,.mcard.mc-po .mc-bot em{color:#8a6a4c}
+.mcard.mc-po .mc-bot strong{color:#c8102e;text-shadow:0 2px 0 #f2c46d}
+.mcard.mc-po .mc-logos img{border-color:#d9a441}
+.mcard.mc-po>.mc-shine{background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%)}
 </style>
 </head>
 <body>
@@ -637,7 +661,8 @@ function showMemberCard(m){const o=document.getElementById('mCardOv');if(o)o.rem
   const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const pts=(+m.points||0).toLocaleString('th-TH');
   const el=document.createElement('div');el.id='mCardOv';el.className='mcard-ov';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','บัตรสมาชิก');
-  el.innerHTML=`<div class="mcard"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
+  const bg=[...String(m.phone||m.name||'')].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7)%2?'po':'nl';
+  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.jpg)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
     <div class="mc-mid"><b>${m.name?'คุณ'+e(m.name):'สมาชิก'}</b><span>${e(m.phone||'')}</span></div>
     <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${pts}</strong></div><em>ใช้ได้ทั้ง 2 ร้าน<br>เนื้อล้วนๆ · ข้าวมันไก่</em></div><i class="mc-shine"></i></div>
     ${m.note?`<p class="mc-note">${e(m.note)}</p>`:''}
