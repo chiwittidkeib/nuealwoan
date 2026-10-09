@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1750">
+<meta name="app-version" content="2026.10.09-1800">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -210,6 +210,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 .field label{font-size:13px;color:var(--muted);font-weight:500}
 .field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:10px 12px;min-height:44px;width:100%}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--jade);outline:none}
+[data-cl],#clNew{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:9px;padding:8px 11px;min-height:40px;font:inherit}[data-cl]:focus,#clNew:focus{border-color:var(--jade);outline:none}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .check{display:flex;align-items:center;gap:8px;cursor:pointer}
 .check input{width:20px;height:20px;accent-color:var(--jade)}
@@ -274,6 +275,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:80;font-size:14px;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
 .toast.bad{background:var(--chili);color:#fff}
 @media (prefers-reduced-motion:no-preference){.panel{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+.lbl-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}.lbl-row label{margin:0}
 .mlay{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-left:auto;flex:none}
 .mlay button{border:0;background:var(--surface);color:var(--fg);padding:6px 11px;font:inherit;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px}
 .mlay button[aria-pressed="true"]{background:var(--jade);color:#06231c;font-weight:700}
@@ -956,6 +958,7 @@ async function startData(){
   const since=sod()-30*DAY;
   db.collection('consign_log').where('at','>=',sod()-90*DAY).onSnapshot(s=>{S.consignLog=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back')render()},onErr);
   db.collection('purchases').where('at','>=',since).onSnapshot(s=>{S.purch=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
+  db.collection('lists').onSnapshot(s=>{const L={};s.docs.forEach(d=>L[d.id]=d.data());S.lists=L;refreshSheet()},onErr);
   db.collection('incomes').where('at','>=',since).onSnapshot(s=>{S.inc=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back'||S.tab==='report')render()},onErr);
   db.collection('expenses').where('at','>=',since).onSnapshot(s=>{S.exp=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
 }
@@ -1286,7 +1289,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -1767,16 +1770,19 @@ async function savePurch(){let sid=val('pItem');const qty=nval('pQty'),amount=nv
   await write('purchases/'+ref.id,r=>r.set({stockId:sid,name:s.name,unit:s.unit,qty,amount,...(bq>0?{buyQty:bq,buyUnit:bu}:{}),note:val('pNote'),at:fromDateInput(val('pDate'))}));
   closeSheet();toast(`เติม ${s.name} +${num(qty)} ${s.unit} แล้ว`);}
 
-function sheetExpense(){const cats=S.settings.expCats||DEFAULTS.expCats;
+function sheetExpense(){const cats=expCats(),D=S.sheet.draft||{};
   $('#panel').innerHTML=head('บันทึกรายจ่ายร้าน')+
-  `<form class="sh-body"><div class="field"><label for="eCat">หมวด</label><select id="eCat">${cats.map(c=>`<option>${esc(c)}</option>`).join('')}</select></div>
-  <div class="grid2"><div class="field"><label for="eAmt">จำนวนเงิน (บาท)</label><input id="eAmt" inputmode="decimal"></div><div class="field"><label for="eDate">วันที่</label><input id="eDate" type="date" value="${toDateInput(Date.now())}"></div></div>
-  <div class="field"><label for="eNote">รายละเอียด</label><input id="eNote" placeholder="เช่น ค่าแรงลูกจ้าง 2 คน" autocomplete="off"></div>
+  `<form class="sh-body"><div class="field"><div class="lbl-row"><label for="eCat">หมวด</label><button class="btn sm ghost" data-act="catList" data-k="expCats" type="button">⚙ จัดการหมวด</button></div><select id="eCat">${cats.map(c=>`<option ${D.cat===c?'selected':''}>${esc(c)}</option>`).join('')}<option value="__new">+ เพิ่มหมวดใหม่…</option></select></div>
+  <div class="field" id="eNewWrap" hidden><label for="eNew">ชื่อหมวดใหม่</label><input id="eNew" maxlength="40" placeholder="เช่น ค่าน้ำแข็ง" autocomplete="off"></div>
+  <div class="grid2"><div class="field"><label for="eAmt">จำนวนเงิน (บาท)</label><input id="eAmt" inputmode="decimal" value="${esc(D.amt||'')}"></div><div class="field"><label for="eDate">วันที่</label><input id="eDate" type="date" value="${esc(D.date||toDateInput(Date.now()))}"></div></div>
+  <div class="field"><label for="eNote">รายละเอียด</label><input id="eNote" placeholder="เช่น ค่าแรงลูกจ้าง 2 คน" autocomplete="off" value="${esc(D.note||'')}"></div>
   <p class="help" style="margin:0">ค่าวัตถุดิบให้บันทึกที่ "ซื้อของเข้า" เพื่อให้สต็อกตรง</p></form>
-  <div class="sh-foot"><button class="btn pri wide" data-act="saveExp" type="button">บันทึกรายจ่าย</button></div>`;}
+  <div class="sh-foot"><button class="btn pri wide" data-act="saveExp" type="button">บันทึกรายจ่าย</button></div>`;
+  $('#eCat').addEventListener('change',e=>{$('#eNewWrap').hidden=e.target.value!=='__new';if(!$('#eNewWrap').hidden)$('#eNew').focus()});}
 async function saveExp(){const amount=nval('eAmt');if(!(amount>0))return toast('ใส่จำนวนเงิน','bad');
+  let cat=val('eCat');if(cat==='__new'){cat=val('eNew');if(!cat)return toast('ใส่ชื่อหมวด','bad');addListItem('expCats',cat)}
   const ref=S.db.collection('expenses').doc();
-  const ok=await write('expenses/'+ref.id,r=>r.set({cat:val('eCat'),amount,note:val('eNote'),at:fromDateInput(val('eDate'))}));if(ok){closeSheet();toast('บันทึกรายจ่ายแล้ว')}}
+  const ok=await write('expenses/'+ref.id,r=>r.set({cat,amount,note:val('eNote'),at:fromDateInput(val('eDate'))}));if(ok){closeSheet();toast('บันทึกรายจ่ายแล้ว')}}
 
 const BG_KEY='nl_bg';
 const getBg=()=>{try{const v=localStorage.getItem(BG_KEY);return v===null?50:Math.max(0,Math.min(100,+v))}catch(e){return 50}};
@@ -1827,7 +1833,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <div class="seatgrid" id="seatGrid">${Array.from({length:Math.max(1,Math.min(60,+s.tables||10))},(_,k)=>{const t=k+1,v=(s.seats||{})[t];return `<label class="seatcell"><span>โต๊ะ ${t}</span><input inputmode="numeric" id="seat_${t}" data-seat="${t}" value="${v||''}" placeholder="${s.defSeats||4}"></label>`}).join('')}</div>
    <p class="help" style="margin:0">เว้นว่าง = ใช้ค่าเริ่มต้น · เพิ่มจำนวนโต๊ะแล้วกดบันทึก ช่องของโต๊ะใหม่จะขึ้นเมื่อเปิดหน้านี้อีกครั้ง</p></div>
   <div class="field"><label for="cCats">หมวดเมนู (คั่นด้วย ,)</label><input id="cCats" value="${esc((s.cats||[]).join(', '))}"></div>
-  <div class="field"><label for="cExp">หมวดรายจ่าย (คั่นด้วย ,)</label><input id="cExp" value="${esc((s.expCats||[]).join(', '))}"></div>
+  <p class="help" style="margin:0">หมวดรายจ่าย / ประเภทรายรับ: เพิ่ม ลบ แก้ชื่อได้ที่หน้า "บันทึกรายจ่าย" หรือ "บันทึกรายรับ" → ปุ่ม ⚙ จัดการ</p>
   <div class="card"><div class="sec-h"><h3>พนักงาน</h3><button class="lnk" data-act="staffNew" type="button">+ เพิ่มพนักงาน</button></div>
    <p class="help" style="margin:0">เฉพาะแอดมินที่สร้าง ตั้งรหัส ลบบัญชี และเปลี่ยนตำแหน่งได้</p><div id="staffList"><p class="help" style="margin:0">กำลังโหลด…</p></div></div>
   <div class="card"><div class="sec-h"><h3>สิทธิ์การใช้งาน</h3><button class="lnk" data-act="permReset" type="button">คืนค่าเริ่มต้น</button></div>
@@ -1976,7 +1982,7 @@ function sheetQr(){const s=S.settings,n=Math.max(1,Math.min(60,+s.tables||10));
    <div class="sh-foot"><button class="btn danger" data-act="qrRotate" data-confirm="1" type="button">เปลี่ยนรหัส QR</button><button class="btn pri wide" data-act="qrPrint" type="button">พิมพ์ QR ทั้งหมด</button></div>`;}
 async function saveSettings(){const pp=val('cPP').replace(/\D/g,'');if(pp&&!ppValid(pp))return toast('พร้อมเพย์ต้องเป็นเบอร์ 10 หลัก หรือเลข 13 หลัก','bad');
   const split=v=>v.split(/[,，]/).map(x=>x.trim()).filter(Boolean);
-  const data={...S.settings,shopName:val('cName')||'NueaLwoan',tables:Math.max(1,Math.min(60,Math.round(nval('cTables'))||10)),extraPrice:nval('cExtra'),promptpay:pp,cats:split(val('cCats')),expCats:split(val('cExp')),qrKey:S.settings.qrKey||newQrKey(),
+  const data={...S.settings,shopName:val('cName')||'NueaLwoan',tables:Math.max(1,Math.min(60,Math.round(nval('cTables'))||10)),extraPrice:nval('cExtra'),promptpay:pp,cats:split(val('cCats')),expCats:S.settings.expCats||DEFAULTS.expCats,qrKey:S.settings.qrKey||newQrKey(),
     logo:rcLogoVal('rcLogo',S.settings.rcLogo||S.settings.logo),address:val('cAddr'),phone:val('cPhone'),taxId:val('cTax'),receiptFooter:val('cFoot'),rcName:val('rcName'),rcNameEn:val('rcNameEn'),rcTag:val('rcTag'),rcFb:val('rcFb'),rcFbUrl:val('rcFbUrl'),rcMap:val('rcMap'),rcMapUrl:val('rcMapUrl'),rcThanks2:val('rcThanks2'),rcLogo:rcLogoVal('rcLogo',S.settings.rcLogo||S.settings.logo),paper:+val('cPaper')||80,
     defSeats:Math.max(1,Math.min(30,Math.round(nval('cDefSeats'))||4)),seats:Object.fromEntries([...document.querySelectorAll('[data-seat]')].map(e=>[e.dataset.seat,Math.round(parseFloat(e.value))]).filter(([,v])=>v>0&&v<=30)),
     vat:{on:$('#cVatOn').checked,rate:Math.min(30,Math.max(0,nval('cVatRate'))),mode:val('cVatMode')==='excl'?'excl':'incl'},
@@ -2484,7 +2490,8 @@ Object.assign(ACT,{
 
 /* ---------- รายรับอื่นๆ (เช่น ค่าเช่าที่ขายของ เก็บเป็นครั้งๆ) ---------- */
 const INC_CATS=['ค่าเช่าที่ขายของ','ค่าเช่าอุปกรณ์/พื้นที่','ค่าคอมมิชชั่น / ค่าฝากขาย','ขายของเหลือใช้','เงินสนับสนุน / สปอนเซอร์','อื่นๆ'];
-const incCats=()=>{const set=new Set([...(S.settings.incCats||[]),...INC_CATS,...(S.inc||[]).map(e=>e.cat).filter(Boolean)]);return [...set]};
+const incCats=()=>{const l=S.lists&&S.lists.incCats&&S.lists.incCats.items;return Array.isArray(l)?l:[...new Set([...(S.settings.incCats||[]),...INC_CATS])]};
+const expCats=()=>{const l=S.lists&&S.lists.expCats&&S.lists.expCats.items;return Array.isArray(l)?l:(S.settings.expCats||DEFAULTS.expCats)};
 function viewIncome(){const L=S.inc||[];const sum=L.reduce((s,e)=>s+(+e.amount||0),0);
   let h=`<div class="sec-h"><h2>รายรับอื่นๆ 30 วันล่าสุด</h2><button class="btn pri sm" data-act="income" type="button">+ บันทึกรายรับ</button></div>
   <p class="help" style="margin:0">รายรับที่ไม่ได้มาจากการขายอาหาร เช่น ให้เช่าที่ขายของ เก็บเป็นครั้งๆ · นับรวมในกำไรสุทธิที่หน้า "สรุปเงิน"</p>
@@ -2493,16 +2500,40 @@ function viewIncome(){const L=S.inc||[];const sum=L.reduce((s,e)=>s+(+e.amount||
   return h+'<div class="list">'+L.map(e=>`<div class="row"><div class="grow"><div class="t">${esc(e.cat||'รายรับอื่นๆ')}</div><div class="s">${dshort(e.at)} ${hm(e.at)}${e.note?' · '+esc(e.note):''}${e.by?' · บันทึกโดย '+esc(e.by):''}</div></div><div class="r"><b style="color:var(--jade)">+${baht(e.amount)}</b></div><button class="btn sm danger" data-act="delInc" data-id="${e.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>'}
 function sheetIncome(){const cats=incCats();
   $('#panel').innerHTML=head('บันทึกรายรับอื่นๆ')+`<form class="sh-body">
-   <div class="field"><label for="iCat">ประเภท</label><select id="iCat">${cats.map(c=>`<option>${esc(c)}</option>`).join('')}<option value="__new">+ พิมพ์ประเภทใหม่…</option></select></div>
+   <div class="field"><div class="lbl-row"><label for="iCat">ประเภท</label><button class="btn sm ghost" data-act="catList" data-k="incCats" type="button">⚙ จัดการประเภท</button></div><select id="iCat">${cats.map(c=>`<option>${esc(c)}</option>`).join('')}<option value="__new">+ เพิ่มประเภทใหม่…</option></select></div>
    <div class="field" id="iNewWrap" hidden><label for="iNew">ชื่อประเภทใหม่</label><input id="iNew" maxlength="40" placeholder="เช่น ค่าจอดรถ" autocomplete="off"></div>
    <div class="grid2"><div class="field"><label for="iAmt">จำนวนเงิน (บาท)</label><input id="iAmt" inputmode="decimal" placeholder="0"></div><div class="field"><label for="iDate">วันที่</label><input id="iDate" type="date" value="${toDateInput(Date.now())}"></div></div>
    <div class="field"><label for="iNote">หมายเหตุ</label><input id="iNote" maxlength="120" placeholder="เช่น ให้เช่าที่ขายของหน้าร้าน ร้านลูกชิ้นป้าแดง" autocomplete="off"></div>
    <div class="field"><label for="iWho">รับเงินจาก (ถ้ามี)</label><input id="iWho" maxlength="60" placeholder="ชื่อผู้เช่า / ผู้จ่าย" autocomplete="off"></div></form>
    <div class="sh-foot"><button class="btn pri wide" data-act="saveInc" type="button">บันทึกรายรับ</button></div>`;
   $('#iCat').addEventListener('change',e=>{$('#iNewWrap').hidden=e.target.value!=='__new';if(!$('#iNewWrap').hidden)$('#iNew').focus()});setTimeout(()=>$('#iAmt')?.focus(),60)}
+const LIST_NAME={expCats:'หมวดรายจ่าย',incCats:'ประเภทรายรับอื่นๆ'};
+const listCur=k=>k==='incCats'?incCats():expCats();
+const setList=(k,items)=>{S.lists=S.lists||{};S.lists[k]={items}};
+function addListItem(k,name){const cur=listCur(k);if(cur.includes(name))return;const items=[...cur,name];setList(k,items);write('lists/'+k,r=>r.set({items}))}
+function sheetCatList(){const k=S.sheet.k;if(!S.sheet.items)S.sheet.items=listCur(k).map(n=>({n,o:n}));const it=S.sheet.items;
+  $('#panel').innerHTML=head('จัดการ'+LIST_NAME[k],'แก้ชื่อในช่องได้เลย · เลื่อนลำดับด้วยปุ่ม ↑ ↓')+`<div class="sh-body">
+   <div class="list">${it.map((x,i)=>`<div class="row" style="gap:6px"><input data-cl="${i}" value="${esc(x.n)}" maxlength="40" style="flex:1;min-width:0" aria-label="ชื่อ"><button class="btn sm ghost" data-act="clMove" data-i="${i}" data-d="-1" type="button" ${i?'':'disabled'} aria-label="เลื่อนขึ้น">↑</button><button class="btn sm ghost" data-act="clMove" data-i="${i}" data-d="1" type="button" ${i<it.length-1?'':'disabled'} aria-label="เลื่อนลง">↓</button><button class="btn sm danger" data-act="clDel" data-i="${i}" type="button">ลบ</button></div>`).join('')||'<div class="empty">ยังไม่มีรายการ</div>'}</div>
+   <div style="display:flex;gap:8px"><input id="clNew" maxlength="40" placeholder="ชื่อใหม่ เช่น ค่าน้ำแข็ง" style="flex:1" autocomplete="off"><button class="btn" data-act="clAdd" type="button">+ เพิ่ม</button></div>
+   <p class="help" style="margin:0">ลบหรือแก้ชื่อแล้ว รายการที่บันทึกไว้ 30 วันล่าสุดจะเปลี่ยนชื่อตามให้ · รายการที่ถูกลบหมวด ยังอยู่ครบ ไม่หาย</p></div>
+   <div class="sh-foot"><button class="btn" data-act="clBack" type="button">ยกเลิก</button><button class="btn pri wide" data-act="clSave" type="button">บันทึก</button></div>`;
+  $('#clNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ACT.clAdd()}});}
+const clRead=()=>document.querySelectorAll('[data-cl]').forEach(e=>{const x=S.sheet.items[+e.dataset.cl];if(x)x.n=e.value.trim()});
 Object.assign(ACT,{
+  catList:d=>{if(!can('expenses'))return deny();const b={...S.sheet};
+    b.draft=b.type==='expense'?{cat:val('eCat'),amt:val('eAmt'),date:val('eDate'),note:val('eNote')}:null;openSheet({type:'catList',k:d.k,back:b})},
+  clMove:d=>{clRead();const a=S.sheet.items,i=+d.i,j=i+(+d.d);if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];sheetCatList()},
+  clDel:d=>{clRead();S.sheet.items.splice(+d.i,1);sheetCatList()},
+  clAdd:()=>{clRead();const n=val('clNew');if(!n)return;if(S.sheet.items.some(x=>x.n===n))return toast('มีชื่อนี้แล้ว','bad');S.sheet.items.push({n,o:null});sheetCatList();setTimeout(()=>$('#clNew')?.focus(),30)},
+  clBack:()=>{const b=S.sheet.back;if(b)openSheet(b);else closeSheet()},
+  clSave:async()=>{clRead();const k=S.sheet.k,it=S.sheet.items.filter(x=>x.n);const names=it.map(x=>x.n);
+    if(new Set(names).size!==names.length)return toast('มีชื่อซ้ำกัน','bad');
+    const ok=await write('lists/'+k,r=>r.set({items:names}));if(!ok)return;setList(k,names);
+    const ren=it.filter(x=>x.o&&x.o!==x.n),col=k==='incCats'?'incomes':'expenses',rows=k==='incCats'?S.inc:S.exp;
+    for(const x of ren)for(const e of (rows||[]).filter(e=>e.cat===x.o))write(col+'/'+e.id,r=>r.update({cat:x.n}));
+    toast('บันทึก'+LIST_NAME[k]+'แล้ว');const b=S.sheet.back;if(b)openSheet(b);else closeSheet()},
   income:()=>{if(!can('expenses'))return deny();openSheet({type:'income'})},
-  saveInc:async()=>{const amount=nval('iAmt');if(!(amount>0))return toast('ใส่จำนวนเงิน','bad');let cat=val('iCat');if(cat==='__new'){cat=val('iNew');if(!cat)return toast('ใส่ชื่อประเภท','bad')}
+  saveInc:async()=>{const amount=nval('iAmt');if(!(amount>0))return toast('ใส่จำนวนเงิน','bad');let cat=val('iCat');if(cat==='__new'){cat=val('iNew');if(!cat)return toast('ใส่ชื่อประเภท','bad');addListItem('incCats',cat)}
     const note=[val('iNote'),val('iWho')?'จาก '+val('iWho'):''].filter(Boolean).join(' · ');
     const ok=await write('incomes/'+uid(),r=>r.set({cat:cat.slice(0,40),amount:r2(amount),note,at:fromDateInput(val('iDate')),by:S.me||''}));
     if(ok){closeSheet();toast('บันทึกรายรับ '+baht(amount)+' แล้ว');S.report.data=null}},
