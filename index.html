@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1615">
+<meta name="app-version" content="2026.10.09-1700">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -881,8 +881,8 @@ async function init(){
   render();
   const cfg=window.APP_CONFIG||{};
   if(!window.supabase||!cfg.SUPABASE_URL||/x{6}/.test(cfg.SUPABASE_URL)||!cfg.SUPABASE_KEY||/ใส่/.test(cfg.SUPABASE_KEY)){S.state='noconfig';render();return}
-  SB=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
-  let data={};try{data=(await Promise.race([SB.auth.getSession(),new Promise((_,no)=>setTimeout(()=>no(new Error('t')),15000))])).data||{}}catch(e){S.state='loading';S.loadErr='เชื่อมต่อระบบเข้าสู่ระบบไม่ได้';render();setTimeout(()=>location.reload(),8000);return}
+  SB=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,lock:async(n,t,fn)=>await fn()}});
+  let data={};try{data=(await Promise.race([SB.auth.getSession(),new Promise((_,no)=>setTimeout(()=>no(new Error('t')),15000))])).data||{}}catch(e){if(bumpFail()>=2){clearAuth();S.state='login';render();return}S.state='loading';S.loadErr='เชื่อมต่อระบบเข้าสู่ระบบไม่ได้';render();setTimeout(()=>location.reload(),5000);return}
   if(!data.session){S.state='login';render();return}
   startData();
 }
@@ -901,15 +901,17 @@ async function login(){
   try{localStorage.setItem('nl_user',user)}catch(e){}
   startData();
 }
-async function logout(){await SB.auth.signOut();location.reload()}
+function clearAuth(){try{Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}try{sessionStorage.removeItem('nl_fail')}catch(e){}}
+function bumpFail(){let n=0;try{n=(+sessionStorage.getItem('nl_fail')||0)+1;sessionStorage.setItem('nl_fail',n)}catch(e){}return n}
+async function logout(){try{await Promise.race([SB.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,3000))])}catch(e){}clearAuth();location.reload()}
 async function startData(){
   S.state='loading';S.loadStep='ตรวจสิทธิ์ผู้ใช้';S.loadErr='';render();
   const tmo=(p,ms)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),ms))]);
-  let st;try{st=await tmo(SB.rpc('my_role'),15000)}catch(e){S.loadErr='เชื่อมต่อฐานข้อมูลช้าเกินไป (ขั้นตอน: '+S.loadStep+')';render();setTimeout(()=>{if(S.state==='loading')startData()},5000);return}
+  let st;try{st=await tmo(SB.rpc('my_role'),12000)}catch(e){if(bumpFail()>=2){clearAuth();S.state='login';render();toast('เชื่อมต่อค้าง กรุณาเข้าสู่ระบบใหม่','bad');return}S.loadErr='เชื่อมต่อฐานข้อมูลช้าเกินไป (ขั้นตอน: '+S.loadStep+')';render();setTimeout(()=>{if(S.state==='loading')startData()},5000);return}
   if(st.error){const m=String(st.error.message||st.error.code||'');
-    if(/jwt|token|401|refresh|session/i.test(m+' '+(st.error.code||''))){try{await SB.auth.signOut()}catch(e){}S.state='login';render();toast('หมดเวลาเข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่','bad');return}
+    if(/jwt|token|401|403|refresh|session|expired/i.test(m+' '+(st.error.code||''))){clearAuth();S.state='login';render();toast('หมดเวลาเข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่','bad');return}
     S.state='offline';S.loadErr=m;render();return}
-  S.loadStep='โหลดบัญชี';
+  S.loadStep='โหลดบัญชี';try{sessionStorage.removeItem('nl_fail')}catch(e){}
   if(!['owner','staff','waiter','chef','partner'].includes(st.data)){S.state='nostaff';render();return}
   S.role=st.data;
   if(S.role==='owner'){try{const m=localStorage.getItem('nl_mode');if(m&&ROLES[m]&&m!=='owner')S.viewAs=m}catch(e){}}
@@ -1070,7 +1072,7 @@ function render(){
     <button class="btn pri" id="lgBtn" type="submit">เข้าสู่ระบบ</button>
     <p class="help" style="margin:0">ลืมรหัสผ่าน ติดต่อเจ้าของร้านให้ตั้งรหัสใหม่</p></form>`;
     $('#lgForm').addEventListener('submit',e=>{e.preventDefault();login()});(last?$('#lgPw'):$('#lgUser')).focus();return}
-  if(S.state==='loading'){v.innerHTML=S.loadErr?`<div class="empty"><b>ยังเชื่อมต่อไม่ได้</b>${esc(S.loadErr)} · กำลังลองใหม่อัตโนมัติ…<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn pri" type="button" onclick="location.reload()">โหลดหน้าใหม่</button><button class="btn" type="button" data-act="logout">ออกจากระบบ</button></div></div>`:`<div class="empty"><b>กำลังโหลดข้อมูลร้าน…</b>โต๊ะ เมนู และยอดขายวันนี้จะขึ้นในไม่กี่วินาที<br><small class="muted">${esc(S.loadStep||'')}</small></div>`;return}
+  if(S.state==='loading'){v.innerHTML=S.loadErr?`<div class="empty"><b>ยังเชื่อมต่อไม่ได้</b>${esc(S.loadErr)} · กำลังลองใหม่อัตโนมัติ…<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn pri" type="button" onclick="location.reload()">โหลดหน้าใหม่</button><button class="btn" type="button" data-act="logout">ออกจากระบบ</button></div></div>`:`<div class="empty"><b>กำลังโหลดข้อมูลร้าน…</b>โต๊ะ เมนู และยอดขายวันนี้จะขึ้นในไม่กี่วินาที<br><small class="muted">${esc(S.loadStep||'')}</small><div style="margin-top:14px"><button class="btn sm ghost" type="button" data-act="logout">ค้างนาน? เข้าสู่ระบบใหม่</button></div></div>`;return}
   v.innerHTML=({tables:viewTables,kitchen:viewKitchen,menu:viewMenu,back:viewBack,report:viewReport,po:viewPo,poprep:viewPoPrep,poreport:viewPoReport}[S.tab])();
 }
 const isLow=s=>(+s.qty||0)<=(+s.min||0);
