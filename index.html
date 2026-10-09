@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1130">
+<meta name="app-version" content="2026.10.09-0945">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1918,15 +1918,11 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet(
 setInterval(()=>{if(S.state==='ready'&&(!S.sheet||S.sheet.type!=='pay'))render()},60000);
 /* ---------- แจ้งเตือนเวอร์ชันใหม่ (กันมือถือจำหน้าเก่าไว้) ---------- */
 const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||'';
-async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="2026.10.09-1130"]+)"/);
+async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
   if(m&&APP_VER&&m[1]!==APP_VER&&!document.getElementById('updBar')){const b=document.createElement('div');b.id='updBar';b.className='updbar';b.innerHTML='มีเวอร์ชันใหม่ของเว็บ <button type="button">อัปเดตเลย</button>';
     b.querySelector('button').onclick=()=>{const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)};document.body.appendChild(b)}}catch(e){}}
 setTimeout(checkUpdate,3000);setInterval(checkUpdate,5*60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
-init();
-</script>
-<script>
-"use strict";
 /* ======================= ร้านพรีออเดอร์ (ข้าวมันไก่) ======================= */
 const PO_DEF={open:false,shopName:'ข้าวมันไก่',openFrom:'',cutoff:'20:00',leadDays:1,window:'',notice:'',phone:'',promptpay:'',pickup:true,pickupText:'',payBefore:true,payAfter:true,points:[],cats:[]};
 const poCfg=()=>({...PO_DEF,...(S.po||{})});
@@ -2071,7 +2067,7 @@ Object.assign(ACT,{
   poSlip:async d=>{const o=S.poOrders.find(x=>x.id===d.id);try{const s=await S.db.doc('po_slips/'+d.id).get();const x=s.exists?s.data():null;if(!x||!x.img)return toast('ไม่พบรูปสลิป','bad');viewImg(x.img,'สลิป '+poShort(o||{id:d.id})+' · '+baht(+(o&&o.total)||0))}catch(e){toast('โหลดสลิปไม่ได้','bad')}}
 });
 setInterval(()=>{if(S.state==='ready'&&isPo()&&S.tab==='po'&&!S.sheet)render()},60000);
+init();
 </script>
-
 </body>
 </html>
