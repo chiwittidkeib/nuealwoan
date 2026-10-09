@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1420">
+<meta name="app-version" content="2026.10.09-1540">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -18,7 +18,7 @@
 <meta name="application-name" content="NueaLwoan">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Mitr:wght@400;500&family=Kanit:wght@600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Mitr:wght@400;500&family=Kanit:wght@600;700;800&display=swap">
 <style>
 /* Layout: sticky shop header, single working column (max 1080px), bottom tab bar on every width; work happens in a slide-up sheet. */
 :root{
@@ -381,7 +381,7 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .modesel select{border:0;background:transparent;color:var(--fg);font-weight:600;padding:5px 4px;font-size:13.5px;cursor:pointer}
 .modesel.on{border-color:#c48d3d;background:#3a2a0b}.modesel.on select{color:#ffd58a}
 .viewas{padding:6px 16px;font-size:13px}
-@media (max-width:520px){.top-in{flex-wrap:wrap;row-gap:6px}.top-in .brand{flex-basis:100%}.modesel span{display:none}.modesel{padding:2px;margin-right:auto}.modesel select{max-width:130px}.viewas{top:calc(env(safe-area-inset-top,0px) + 100px)}}
+@media (max-width:860px){.top-in{flex-wrap:wrap;row-gap:6px}.top-in .brand{flex-basis:100%}.modesel span{display:none}.modesel{padding:2px;margin-right:auto}.modesel select{max-width:130px}.viewas{top:calc(env(safe-area-inset-top,0px) + 100px)}}
 .floorbar{padding:4px}
 .floorseg{display:inline-flex;background:var(--sunk);border-radius:10px;padding:3px;gap:3px}
 .floorseg button{border:0;background:transparent;color:var(--muted);font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14.5px;display:flex;gap:6px;align-items:center}
@@ -449,10 +449,11 @@ html,body{max-width:100%;overflow-x:clip}
 /* ลูกค้าเรียกพนักงาน */
 .callbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;flex-direction:column;gap:8px;width:min(560px,calc(100% - 24px))}
 .callcard{display:flex;align-items:center;gap:10px;background:#ffd58a;color:#2b1c00;border-radius:14px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.45);animation:callin .3s ease}
-.callcard .grow{flex:1;min-width:0}.callcard b{font-size:16px}.callcard small{display:block;font-size:12.5px;opacity:.8}
+.callcard .grow{flex:1;min-width:0}.callcard .grow>b{display:block;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.callcard b{font-size:16px}.callcard small{display:block;font-size:12.5px;opacity:.8}
 .callcard .btn{background:#2b1c00;color:#ffd58a;border-color:#2b1c00}
 .callcard .btn.ghost{background:transparent;color:#2b1c00;border-color:rgba(43,28,0,.35)}
 .callcard.paid{background:#7fe0b4}
+@media (max-width:600px){.callcard{flex-wrap:wrap;row-gap:8px}.callcard .grow{flex-basis:calc(100% - 42px)}.callcard>.btn{flex:1;min-height:40px}}
 @keyframes callin{from{transform:translateY(16px);opacity:0}}
 .bell{display:inline-block;background:#ffd58a;color:#2b1c00;border-radius:999px;font-size:12px;font-weight:700;padding:1px 8px;animation:ring 1s ease-in-out infinite}
 @keyframes ring{50%{transform:scale(1.08)}}
@@ -496,7 +497,7 @@ html,body{max-width:100%;overflow-x:clip}
 .rolec-owner{color:#4da3ff}.rolec-waiter{color:#ffd58a}.rolec-chef{color:#2ec4b6}.rolec-partner{color:#ff5a5f}
 
 /* ---- ร้านพรีออเดอร์ ---- */
-.shopsw{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.shopsw{flex:none;display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
 .shopsw button{border:0;background:none;padding:6px 10px;font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
 .shopsw button[aria-pressed="true"]{background:#ffd58a;color:#3a2600}
 body.shop-po .top{box-shadow:inset 0 -3px 0 #f0a54a}
@@ -616,6 +617,35 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .mcard.mc-po .mc-bot strong{color:#c8102e;text-shadow:0 2px 0 #f2c46d}
 .mcard.mc-po .mc-logos img{border-color:#d9a441}
 .mcard.mc-po>.mc-shine{background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%)}
+
+/* ใบแจ้งยอด/ใบเสร็จ (พนักงาน) แบบมีแบรนด์ร้าน */
+.rc.rc-brand{--rb:#5a2e14;--rr:#c8102e;--rg:#c98a3c;border-top:5px solid var(--rb);border-radius:6px;padding:18px 16px 14px;font-size:13px;background:#fffdf9}
+.rc.rc-brand.rc-po{--rb:#9e1020;--rg:#d9a441}
+.rc-brand .rc-logo{max-width:130px;max-height:96px;margin:0 auto 2px}
+.rc-brand .rc-shop{font-family:'Kanit',var(--f-display);font-weight:800;font-size:30px;line-height:1.05;color:var(--rr);-webkit-text-stroke:.5px #7d0b1c;text-shadow:0 1.5px 0 #e9c27a}
+.rc-brand .rc-en{text-align:center;font-family:'Kanit',var(--f-display);font-weight:800;font-size:14px;letter-spacing:1.5px;color:var(--rb);margin-bottom:4px}
+.rc-brand .rc-sub{color:#5a4535}
+.rc-brand .rc-title{display:flex;flex-direction:column;align-items:center;margin:10px -16px 10px;padding:6px 0;background:var(--rb);color:#fff;font-family:'Kanit',var(--f-display);font-weight:600;font-size:17px;letter-spacing:0;line-height:1.2}
+.rc-brand .rc-title small{font-size:10px;letter-spacing:4px;font-weight:500;opacity:.85}
+.rc-brand hr{border-top:1px dashed #c9b7a3}
+.rc-brand .rl span:first-child{color:#5a4535}
+.rc-brand .rc-item .rl span:first-child{color:#111;font-weight:500}
+.rc-brand .rc-note{color:#8a6f5a}
+.rc-totbox{margin:8px 0 4px;border:2px solid var(--rb);border-radius:10px;padding:6px 10px;background:#fff6ea}
+.rc-brand .rc-total{margin:0;align-items:baseline}
+.rc-brand .rc-total span:first-child{font-family:'Kanit',var(--f-display);font-weight:700;color:var(--rb)!important;font-size:16px}
+.rc-brand .rc-total span:last-child{font-family:'Kanit',var(--f-display);font-weight:800;font-size:24px;color:var(--rr)}
+.rc-mem{margin-top:8px;background:#fbf1e2;border:1.5px dashed var(--rg);border-radius:10px;padding:7px 10px}
+.rc-memh{display:flex;justify-content:space-between;gap:8px;font-weight:600;color:var(--rb);margin-bottom:2px}
+.rc-memh span{font-variant-numeric:tabular-nums}
+.rc-brand .rc-b span:last-child{color:var(--rr)}
+.rc-brand .rc-qr{margin-top:10px;border:1px solid #dfe6ef;border-radius:10px;padding:8px}
+.rc-brand .rc-qr b{font-family:'Kanit',var(--f-display);font-size:20px;color:#0b3b6f}
+.rc-brand .rc-foot{margin-top:12px;border-top:2px solid var(--rb);padding-top:8px;color:var(--rb)}
+.rc-ty{font-family:'Kanit',var(--f-display);font-weight:600;font-style:italic;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px}
+.rc-ty::before,.rc-ty::after{content:"";width:24px;height:1.5px;background:currentColor}
+.rc-brand .rc-foot small{display:block;font-size:11.5px}
+.rc-hrt{color:var(--rg)}
 </style>
 </head>
 <body>
@@ -896,7 +926,7 @@ async function startData(){
 }
 const CALL_DEF=[{id:'staff',label:'เรียกพนักงาน'},{id:'pay',label:'ขอชำระเงิน / เช็คบิล',pay:true},{id:'water',label:'ขอน้ำ / น้ำแข็ง'}];
 const callOpts=()=>{const L=S.settings.callOptions;return Array.isArray(L)&&L.length?L.filter(o=>o&&o.id&&o.label):CALL_DEF};
-const callLabel=k=>k==='paid'?'แจ้งโอนเงินแล้ว รอตรวจยอด':((callOpts().find(o=>o.id===k)||CALL_DEF.find(o=>o.id===k)||{}).label||'เรียกพนักงาน');
+const callLabel=k=>k==='paid'?'โอนแล้ว รอตรวจยอด':((callOpts().find(o=>o.id===k)||CALL_DEF.find(o=>o.id===k)||{}).label||'เรียกพนักงาน');
 const isPayKind=k=>k==='paid'||!!(callOpts().find(o=>o.id===k)||CALL_DEF.find(o=>o.id===k)||{}).pay;
 const callOf=o=>S.calls.find(c=>o.table==='TA'?c.order===o.id:c.table===o.table);
 const canCall=()=>can('tables')||can('pay')||can('kitchen');
@@ -986,7 +1016,7 @@ let bellLast=0;setInterval(()=>{const c=bellCfg();if(!(+c.rep>0)||Date.now()-bel
   const live=S.state==='ready'&&canCall()?S.calls.filter(x=>Date.now()-x.at<180000&&Date.now()-x.at>5000):[];if(live.length){bellLast=Date.now();const lc=live[live.length-1];Bell.ring(lc.kind,null,callSpeech(lc),lc)}},1000);
 function renderCalls(){const el=$('#callbar');if(!el)return;const list=S.state==='ready'&&canCall()?S.calls.filter(c=>Date.now()-c.at<6*3600e3):[];el.hidden=!list.length;
   el.innerHTML=(list.length&&!Bell.ok?`<div class="callcard" style="background:#fff"><span style="font-size:20px">🔇</span><div class="grow"><b>แตะเพื่อเปิดเสียงแจ้งเตือน</b><small>มือถือจะไม่ส่งเสียงจนกว่าจะแตะหน้าจอแอป 1 ครั้ง</small></div><button class="btn sm" data-act="bellTest" type="button">เปิดเสียง</button></div>`:'')+list.map(c=>{const o=c.table==='TA'?S.open[c.order]:Object.values(S.open).find(x=>x.table===c.table);const where=c.table==='TA'?(o?tableLabel(o):'ลูกค้าสั่งเอง'):'โต๊ะ '+c.table;
-    return `<div class="callcard${c.kind==='paid'?' paid':''}" role="alert"><span style="font-size:22px">🔔</span><div class="grow"><b>${esc(where)} · ${esc(callLabel(c.kind))}</b><small>${c.slip?'<b style="color:#2e7d32">📎 แนบสลิปแล้ว</b> · ':''}${c.name?'คุณ'+esc(c.name)+' · ':''}${ago(c.at).replace('เพิ่งเปิด','เมื่อสักครู่')}${/นาที|ชม/.test(ago(c.at))?'ที่แล้ว':''}</small></div>${o&&(c.slip||o.slipAt)?`<button class="btn sm" data-act="viewSlip" data-id="${o.id}" type="button">ดูสลิป</button>`:''}${o&&isPayKind(c.kind)&&can('pay')?`<button class="btn sm" data-act="callBill" data-id="${o.id}" data-c="${esc(c.id)}" type="button">เก็บเงิน</button>`:o?`<button class="btn sm ghost" data-act="openOrder" data-id="${o.id}" type="button">ดูบิล</button>`:''}<button class="btn sm${o&&isPayKind(c.kind)?' ghost':''}" data-act="callAck" data-c="${esc(c.id)}" type="button">รับทราบ</button></div>`}).join('');}
+    return `<div class="callcard${c.kind==='paid'?' paid':''}" role="alert"><span style="font-size:22px">🔔</span><div class="grow"><b>${esc(where)} · ${esc(callLabel(c.kind))}</b><small>${c.slip?'<b style="color:#1b5e20;font-size:inherit">📎 แนบสลิปแล้ว</b> · ':''}${c.name&&!where.includes(c.name)?'คุณ'+esc(c.name)+' · ':''}${ago(c.at).replace('เพิ่งเปิด','เมื่อสักครู่')}${/นาที|ชม/.test(ago(c.at))?'ที่แล้ว':''}</small></div>${o&&(c.slip||o.slipAt)?`<button class="btn sm" data-act="viewSlip" data-id="${o.id}" type="button">ดูสลิป</button>`:''}${o&&isPayKind(c.kind)&&can('pay')?`<button class="btn sm" data-act="callBill" data-id="${o.id}" data-c="${esc(c.id)}" type="button">เก็บเงิน</button>`:o?`<button class="btn sm ghost" data-act="openOrder" data-id="${o.id}" type="button">ดูบิล</button>`:''}<button class="btn sm${o&&isPayKind(c.kind)?' ghost':''}" data-act="callAck" data-c="${esc(c.id)}" type="button">รับทราบ</button></div>`}).join('');}
 setInterval(()=>{if(S.calls.length)renderCalls()},30000);
 document.addEventListener('pointerdown',()=>{Bell.unlock();Bell.speechUnlock()},true);document.addEventListener('keydown',()=>{Bell.unlock();Bell.speechUnlock()},true);
 function sortMenu(both){if(both){const k=S.shop;S.shop=k==='po'?'noodle':'po';sortMenu();S.shop=k}const cats=curCats();S.menu.sort((a,b)=>{const ca=cats.indexOf(a.cat),cb=cats.indexOf(b.cat);return (ca<0?99:ca)-(cb<0?99:cb)||String(a.name).localeCompare(String(b.name),'th')})}
@@ -1416,11 +1446,13 @@ function receiptHTML(o,mode){const st=S.settings,isBill=mode==='bill',items=o.it
   const t=isBill?Date.now():o.paidAt,dt=new Date(t);
   const d=dt.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+hm(t);
   const ln=(a,b,c='')=>`<div class="rl ${c}"><span>${a}</span><span>${b}</span></div>`;
-  let h='<div class="rc">';
-  if(st.logo)h+=`<img class="rc-logo" src="${esc(st.logo)}" alt="">`;
-  h+=`<div class="rc-shop">${esc(st.shopName)}</div>`;
-  [st.address,st.phone?'โทร '+st.phone:'',st.taxId?'เลขประจำตัวผู้เสียภาษี '+st.taxId:''].filter(Boolean).forEach(x=>h+=`<div class="rc-sub">${esc(x)}</div>`);
-  h+=`<div class="rc-title">${isBill?'ใบแจ้งยอด':(vatCfg().on&&st.taxId?'ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ':'ใบเสร็จรับเงิน')}</div>${!isBill&&vatCfg().on&&st.taxId?'<div class="rc-sub">VAT included</div>':''}<hr>`;
+  const po=o.shop==='po',pc=po?poCfg():null;
+  const B=po?{logo:pc.rcLogo||'images/logo-po-t.png',name:pc.rcName||pc.shopName||'ข้าวมันไก่',en:pc.rcNameEn??'KHAO MAN GAI',phone:pc.phone,fb:pc.rcFb}
+    :{logo:st.rcLogo||'images/logo-nl-t.png',name:st.rcName||'เนื้อล้วนๆ',en:st.rcNameEn??'NUEA LWOON',phone:st.phone,fb:st.rcFb??'เนื้อล้วนๆ ก๋วยเตี๋ยวเนื้อ'};
+  let h=`<div class="rc rc-brand${po?' rc-po':''}">`;
+  h+=`<img class="rc-logo" src="${esc(B.logo)}" alt=""><div class="rc-shop">${esc(B.name)}</div>${B.en?`<div class="rc-en">${esc(B.en)}</div>`:''}`;
+  [B.fb?'Facebook: '+B.fb:'',B.phone?'โทร '+B.phone:'',st.address,st.taxId&&!po?'เลขประจำตัวผู้เสียภาษี '+st.taxId:''].filter(Boolean).forEach(x=>h+=`<div class="rc-sub">${esc(x)}</div>`);
+  h+=`<div class="rc-title"><span>${isBill?'ใบแจ้งยอด':(vatCfg().on&&st.taxId?'ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ':'ใบเสร็จรับเงิน')}</span><small>${isBill?'BILL':'RECEIPT'}</small></div>${!isBill&&vatCfg().on&&st.taxId?'<div class="rc-sub">VAT included</div>':''}`;
   if(o.orderNo||(!isBill&&o.billNo))h+=ln('เลขที่',esc(o.orderNo||o.billNo));
   h+=ln('วันที่',d)+(o.table==='TA'?ln('ช่องทาง',(o.selfOrder?'สั่งเองผ่าน QR':CH[chOf(o)].n)+(o.ref?' #'+esc(o.ref):'')):ln('โต๊ะ',esc(o.table)));
   const cn=custNames(o);if(cn.length)h+=ln('ลูกค้า',esc(cn.map(n=>'คุณ'+n).join(', ')));
@@ -1432,15 +1464,15 @@ function receiptHTML(o,mode){const st=S.settings,isBill=mode==='bill',items=o.it
   if(o.redeem)h+=ln(`ใช้แต้ม ${o.ptsUsed} แต้ม`,'-'+num(o.redeem));
   if(o.vat&&o.vatMode==='excl')h+=ln('ก่อนภาษี',num(o.beforeVat))+ln(`ภาษีมูลค่าเพิ่ม ${o.vatRate}%`,num(o.vat));
   if(o.roundOff)h+=ln('ส่วนลดปัดเศษ','-'+num(o.roundOff));
-  h+=ln('ยอดสุทธิ','฿'+num(o.total),'rc-total');
+  h+=`<div class="rc-totbox">${ln(isBill?'ยอดที่ต้องชำระ':'ยอดสุทธิ','฿'+num(o.total),'rc-total')}</div>`;
   if(o.vat&&o.vatMode!=='excl')h+=`<div class="rc-note" style="padding-left:0">ราคารวมภาษีมูลค่าเพิ่ม ${o.vatRate}% แล้ว · มูลค่าก่อนภาษี ${num(o.beforeVat)} · VAT ${num(o.vat)}</div>`;
   if(!isBill){h+=ln('ชำระโดย',methodName(o.method));if(o.method==='cash')h+=ln('รับเงิน',num(o.received))+ln('เงินทอน',num(o.change))}
-  if(o.memberPhone){h+=`<hr><div class="rl"><span>สมาชิก ${esc(o.memberName||'')}</span><span>${maskPhone(o.memberPhone)}</span></div>`;
-    if(isBill)h+=ln('แต้มสะสมตอนนี้',num(o.ptsHave||0))+ln('บิลนี้จะได้รับ','+'+(o.ptsEarned||0)+' แต้ม');
-    else h+=(o.ptsUsed?ln('แลกแต้ม','-'+o.ptsUsed):'')+ln('ได้รับแต้ม','+'+(o.ptsEarned||0))+ln('แต้มคงเหลือ',num(o.ptsBalance||0),'rc-b')}
+  if(o.memberPhone){h+=`<div class="rc-mem"><div class="rc-memh">⭐ สมาชิก${o.memberName?' คุณ'+esc(o.memberName):''}<span>${maskPhone(o.memberPhone)}</span></div>`;
+    if(isBill)h+=ln('แต้มสะสมตอนนี้',num(o.ptsHave||0))+ln('บิลนี้จะได้รับ','+'+(o.ptsEarned||0)+' แต้ม','rc-b');
+    else h+=(o.ptsUsed?ln('แลกแต้ม','-'+o.ptsUsed):'')+ln('ได้รับแต้ม','+'+(o.ptsEarned||0))+ln('แต้มคงเหลือ',num(o.ptsBalance||0),'rc-b');h+='</div>'}
   else if(st.pointsOn&&!isBill)h+=`<hr><div class="rc-sub">สมัครสมาชิกด้วยเบอร์โทร รับ 1 แต้มทุก ${num(+st.pointsPer||50)} บาท</div>`;
   if(isBill&&ppValid(st.promptpay)&&o.total>0)h+=`<hr><div class="rc-qr"><span class="rc-pp">PROMPTPAY</span><img src="${qrDataUrl(ppPayload(st.promptpay,o.total))}" alt="QR พร้อมเพย์"><div>สแกนจ่ายด้วยแอปธนาคาร</div><b>฿${num(o.total)}</b></div>`;
-  if(st.receiptFooter)h+=`<hr><div class="rc-foot">${esc(st.receiptFooter)}</div>`;
+  h+=`<div class="rc-foot"><div class="rc-ty">${esc((po?pc.rcThanks:st.receiptFooter)||'ขอบคุณที่อุดหนุน')}</div>${(po?pc.rcThanks2:st.rcThanks2??'แล้วพบกันใหม่นะคะ')?`<small>${esc(po?pc.rcThanks2:st.rcThanks2??'แล้วพบกันใหม่นะคะ')}</small>`:''}<div class="rc-hrt">♡</div></div>`;
   return h+'</div>';}
 function billPreviewOrder(){const o=S.open[S.sheet.id],c=payCalc(),sh=S.sheet;
   return {...o,subtotal:r2(c.sub),discount:r2(c.disc),redeem:c.redeem,ptsUsed:c.use,total:c.total,vat:c.vat,vatRate:c.vatRate,vatMode:c.vatMode,beforeVat:c.beforeVat,roundOff:c.round||0,
