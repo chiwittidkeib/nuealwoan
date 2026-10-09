@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1300">
+<meta name="app-version" content="2026.10.09-1320">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -570,6 +570,7 @@ body:not(.shop-po) .top-in .brandlogo:not([hidden])+.brand{flex-basis:auto}
 .mp-f{display:flex;gap:8px}.mp-f .btn{min-height:50px}
 body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .rcx{border:1px dashed var(--line);border-radius:10px;padding:8px 10px}.rcx summary{cursor:pointer;padding:4px 0}.rcx[open]{display:flex;flex-direction:column;gap:10px}
+.rcframe{width:100%;min-height:600px;border:0;display:block;background:transparent}
 </style>
 </head>
 <body>
@@ -1271,7 +1272,8 @@ function sheetPay(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const s
   if($('#payPhone')){$('#payPhone').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();findMember()}});renderMem()}
   $('#payRecv').addEventListener('input',e=>{S.sheet.received=e.target.value;payUpdate()});
   payUpdate();}
-const payOpen=id=>{const o=S.open[id];return {type:'pay',id,method:o&&isDel(o)?chOf(o):'cash',discount:'',received:''}};
+const payOpen=id=>{const o=S.open[id];const p={type:'pay',id,method:o&&isDel(o)?chOf(o):'cash',discount:'',received:''};
+  if(o&&o.memberPhone&&S.settings.pointsOn&&!isDel(o)){p.phone=o.memberPhone;p.member=S.members.find(m=>m.id===o.memberPhone)||null;p.memberNew=!p.member;p.custMem=true}return p};
 function payCalc(){const o=S.open[S.sheet.id],s=S.sheet,st=S.settings;const sub=linesTotal(o.items);const disc=Math.min(sub,Math.max(0,parseFloat(s.discount)||0));
   let use=0,redeem=0;const pv=Math.max(0.01,+st.pointValue||1);
   if(st.pointsOn&&s.member){use=Math.max(0,Math.min(Math.floor(parseFloat(s.usePts)||0),Math.floor(+s.member.points||0),Math.floor((sub-disc)/pv)));redeem=r2(use*pv)}
@@ -1284,7 +1286,7 @@ const maskPhone=p=>{const d=String(p||'');return d.length>=9?d.slice(0,3)+'-xxx-
 function findMember(){const ph=normPhone(val('payPhone'));const s=S.sheet;
   if(ph.length<9||ph.length>10){toast('ใส่เบอร์โทร 9–10 หลัก','bad');return}
   s.phone=ph;s.member=S.members.find(m=>m.id===ph)||null;s.memberNew=!s.member;s.usePts='';renderMem();payUpdate();}
-function renderMem(){const box=$('#payMem');if(!box)return;const s=S.sheet,st=S.settings,m=s.member;
+function renderMem(){const box=$('#payMem');if(!box)return;const s=S.sheet,st=S.settings,m=s.member;if(s.custMem&&!s.custNote){s.custNote=1;setTimeout(()=>toast('ลูกค้าใส่เบอร์สมาชิกมาเอง: '+maskPhone(s.phone)),200)}
   if(m)box.innerHTML=`<div class="mem"><div><b>${esc(m.name||'สมาชิก')}</b><div class="help">${maskPhone(m.id)} · มา ${m.visits||0} ครั้ง</div></div><div style="text-align:right"><b class="num">${num(m.points||0)}</b><div class="help">แต้มสะสม</div></div></div>
     <div class="field"><label for="payUse">ใช้แต้มเป็นส่วนลด (1 แต้ม = ${baht(+st.pointValue||1)})</label><div class="inrow"><input id="payUse" inputmode="numeric" placeholder="0" value="${esc(s.usePts||'')}"><button class="btn sm" data-act="useMax" type="button">ใช้ทั้งหมด</button></div></div>
     <p class="help" style="margin:0" id="payEarn"></p><button class="lnk" data-act="clearMember" type="button" style="align-self:flex-start">ไม่ใช้สมาชิก</button>`;
@@ -1381,8 +1383,10 @@ function billPreviewOrder(){const o=S.open[S.sheet.id],c=payCalc(),sh=S.sheet;
     ...(S.settings.pointsOn&&(sh.member||sh.memberNew)?{memberPhone:sh.phone,memberName:sh.member?.name||val('payName')||'',ptsHave:+(sh.member?.points)||0,ptsEarned:c.earn}:{})};}
 function sheetReceipt(){const s=S.sheet,o=s.order,isBill=s.mode==='bill';
   $('#panel').innerHTML=head(isBill?'ใบแจ้งยอด':'ใบเสร็จ '+esc(o.billNo||''),esc(tableLabel(o)))+
-  `<div class="sh-body" id="rcView" style="background:var(--sunk)">${receiptHTML(o,s.mode)}</div>
-   <div class="sh-foot">${isBill?`<button class="btn" data-act="backPay" type="button">กลับไปรับเงิน</button>`:`<button class="btn" data-act="close" type="button">เสร็จ</button>`}${!isBill&&o.id?`<button class="btn" data-act="rcQr" type="button">🧾 QR ใบเสร็จ</button>`:''}<button class="btn" data-act="rcShare" id="rcShare" type="button">ส่งเป็นรูป</button><button class="btn pri wide" data-act="rcPrint" type="button">พิมพ์</button></div>`;}
+  (!isBill&&o.id&&o.rcptTok?`<div class="sh-body" style="background:var(--sunk);padding:10px"><iframe class="rcframe" id="rcFrame" title="ใบเสร็จ" src="${esc(rcptLink(o).replace(/\?/,'?embed=1&'))}"></iframe></div><div id="rcView" hidden>${receiptHTML(o,s.mode)}</div>`
+   :`<div class="sh-body" id="rcView" style="background:var(--sunk)">${receiptHTML(o,s.mode)}</div>`)+`
+   <div class="sh-foot">${isBill?`<button class="btn" data-act="backPay" type="button">กลับไปรับเงิน</button>`:`<button class="btn" data-act="close" type="button">เสร็จ</button>`}${!isBill&&o.id?`<button class="btn" data-act="rcQr" type="button">🧾 QR ใบเสร็จ</button>`:''}<button class="btn" data-act="rcShare" id="rcShare" type="button">${!isBill&&o.rcptTok?'บันทึกรูป':'ส่งเป็นรูป'}</button><button class="btn pri wide" data-act="rcPrint" type="button">${!isBill&&o.rcptTok?'พิมพ์ (เครื่องพิมพ์)':'พิมพ์'}</button></div>`;}
+window.addEventListener('message',e=>{const f=$('#rcFrame');if(f&&e.data&&e.data.rcH)f.style.height=(e.data.rcH+6)+'px'});
 function printReceipt(){const pa=$('#printArea');pa.className='rcpt';pa.innerHTML=$('#rcView').innerHTML;
   const w=+S.settings.paper===58?58:80;let ps=$('#pageStyle');if(!ps){ps=document.createElement('style');ps.id='pageStyle';document.head.appendChild(ps)}
   ps.textContent=`@media print{@page{size:${w}mm auto;margin:2mm}#printArea.rcpt{width:${w-6}mm}}`;
@@ -1962,7 +1966,7 @@ const ACT={
   billPreview:()=>{const sh=S.sheet;openSheet({type:'receipt',order:billPreviewOrder(),mode:'bill',back:{...sh}})},
   backPay:()=>{const b=S.sheet.back;if(b&&S.open[b.id])openSheet(b);else closeSheet()},
   rcPrint:printReceipt,
-  rcShare:shareReceipt,
+  rcShare:()=>{const f=$('#rcFrame');if(f&&f.contentWindow&&f.contentWindow.saveImg){try{return f.contentWindow.saveImg()}catch(e){}}return shareReceipt()},
   billReceipt:d=>{const o=(S.report.data?.orders||[]).find(x=>x.id===d.id);if(o)openSheet({type:'receipt',order:o,mode:'receipt'})},
   memEdit:d=>openSheet({type:'member',id:d.id}),
   memSave:async()=>{const id=S.sheet.id;const ok=await write('members/'+id,r=>r.update({name:val('mbName'),points:Math.max(0,Math.round(nval('mbPts')))}));if(ok){closeSheet();toast('บันทึกสมาชิกแล้ว')}},

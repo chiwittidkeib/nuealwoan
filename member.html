@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5a2e14">
+<title>สมัครสมาชิก · เนื้อล้วนๆ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Kanit:wght@600;800&display=swap">
+<style>
+:root{--brown:#5a2e14;--gold:#c98a3c;--red:#c8102e;--ink:#2b1a10;--muted:#8a6f5a;--line:#e3d4c3;--paper:#fffdf9}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:#0b0a09 url(images/bg-m.jpg) center top/cover no-repeat;color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px;display:flex;align-items:flex-end;justify-content:center;padding:16px 12px calc(20px + env(safe-area-inset-bottom,0px))}
+@media (min-width:700px){body{align-items:center;background-image:url(images/bg.jpg)}}
+.card{width:100%;max-width:420px;background:var(--paper);border-radius:18px;padding:22px 20px;box-shadow:0 20px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px}
+.logo{width:120px;align-self:center}
+h1{font-family:Kanit,sans-serif;font-weight:800;font-size:28px;color:var(--red);margin:0;text-align:center;line-height:1.15}
+p{margin:0}.muted{color:var(--muted);font-size:13.5px;text-align:center}
+.perk{background:#fbf1e2;border:1px dashed var(--gold);border-radius:12px;padding:10px 12px;font-size:13.5px;color:var(--brown)}
+.perk b{color:var(--red)}
+label{font-size:13px;font-weight:600;color:var(--brown);display:block;margin-bottom:4px}
+input{width:100%;font:inherit;font-size:18px;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;color:var(--ink)}
+input:focus{outline:2px solid var(--gold);border-color:var(--gold)}
+button{min-height:52px;border:0;border-radius:12px;background:var(--brown);color:#fff;font:inherit;font-size:16px;font-weight:600;cursor:pointer}
+button:disabled{opacity:.5}
+.err{color:var(--red);font-size:13.5px;min-height:18px;text-align:center}
+.ok{text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
+.ok .big{font-size:52px;line-height:1}
+.ok b.ph{font-family:Kanit,sans-serif;font-size:24px;color:var(--brown);letter-spacing:1px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<form class="card" id="f" novalidate>
+  <img class="logo" src="images/logo-nl-t.png" alt="">
+  <h1>สมัครสมาชิก<br>สะสมแต้ม</h1>
+  <div class="perk" id="perk">สมัครฟรี · ซื้อครบทุก <b id="per">50</b> บาท ได้ 1 แต้ม · ใช้แต้มแทนเงินสดได้<br><small>แต้มเริ่มสะสมในการซื้อครั้งถัดไป (ไม่นับย้อนหลัง)</small></div>
+  <div><label for="ph">เบอร์โทรศัพท์</label><input id="ph" type="tel" inputmode="tel" autocomplete="tel" maxlength="12" placeholder="08x-xxx-xxxx" required></div>
+  <div><label for="nm">ชื่อเล่น (ไม่บังคับ)</label><input id="nm" maxlength="40" autocomplete="nickname" placeholder="กรุณากรอกชื่อลูกค้า"></div>
+  <p class="err" id="err" role="alert"></p>
+  <button type="submit" id="go">สมัครสมาชิก</button>
+  <p class="muted">ใช้เบอร์โทรเพื่อสะสมแต้มกับร้านเท่านั้น</p>
+</form>
+<div class="card ok" id="done" hidden>
+  <img class="logo" src="images/logo-nl-t.png" alt="">
+  <div class="big">🎉</div>
+  <h1 id="dt">สมัครสำเร็จ!</h1>
+  <b class="ph" id="dph"></b>
+  <p class="perk" id="dmsg">ครั้งหน้าบอกเบอร์นี้กับพนักงาน หรือใส่ในหน้าตรวจสอบยอด เพื่อสะสมแต้ม</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const cfg=window.APP_CONFIG||{};let sb=null;{const per=+(new URLSearchParams(location.search).get('per')||0);if(per>0)$('#per').textContent=per;else $('#perk').innerHTML='สมัครฟรี · ซื้อครบตามยอดที่ร้านกำหนด ได้แต้มสะสม ใช้แทนเงินสดได้<br><small>แต้มเริ่มสะสมในการซื้อครั้งถัดไป (ไม่นับย้อนหลัง)</small>'}
+try{sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}})}catch(e){}
+$('#f').addEventListener('submit',async e=>{e.preventDefault();const ph=$('#ph').value.replace(/\D/g,''),err=$('#err');
+  if(!/^0\d{8,9}$/.test(ph))return err.textContent='เบอร์โทรไม่ถูกต้อง (ตัวเลข 9–10 หลัก ขึ้นต้นด้วย 0)';
+  if(!sb)return err.textContent='ระบบยังไม่พร้อม ลองใหม่อีกครั้ง';
+  err.textContent='';$('#go').disabled=true;$('#go').textContent='กำลังสมัคร…';
+  try{const {data,error}=await sb.rpc('member_signup',{p_phone:ph,p_name:$('#nm').value.trim()});
+    if(error){const m=String(error.message||'');err.textContent=/points_off/.test(m)?'ร้านปิดระบบสะสมแต้มอยู่':/busy/.test(m)?'มีคนสมัครพร้อมกันเยอะ ลองใหม่ในอีกสักครู่':/bad_phone/.test(m)?'เบอร์โทรไม่ถูกต้อง':'สมัครไม่สำเร็จ ลองอีกครั้ง';return}
+    $('#f').hidden=true;$('#done').hidden=false;$('#dph').textContent=data.phone;
+    if(data.exists){$('#dt').textContent='เป็นสมาชิกอยู่แล้ว';$('#dmsg').textContent='เบอร์นี้สมัครไว้แล้ว ใช้สะสมแต้มได้เลย บอกเบอร์กับพนักงานตอนชำระเงิน'}
+    else $('#dmsg').innerHTML='แต้มจะเริ่มสะสมใน<b>การซื้อครั้งถัดไป</b><br>ครั้งหน้าบอกเบอร์นี้กับพนักงาน หรือใส่ในหน้าตรวจสอบยอด';
+  }catch(x){err.textContent='เชื่อมต่อไม่ได้ ลองอีกครั้ง'}finally{$('#go').disabled=false;$('#go').textContent='สมัครสมาชิก'}});
+</script>
+</body>
+</html>

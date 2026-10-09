@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1240">
+<meta name="app-version" content="2026.10.09-1320">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -186,6 +186,13 @@ body.welcome .callb{display:none}
 .slipok{display:flex;gap:12px;align-items:center;background:var(--jade-soft);border:1px solid var(--jade);border-radius:12px;padding:10px}.slipok img{width:64px;height:84px;object-fit:cover;border-radius:8px;flex:none}.slipok b{color:var(--jade);display:block}.slipok small{color:var(--muted);font-size:12.5px}.grow{flex:1;min-width:0}
 label.btn{display:flex;align-items:center;justify-content:center;text-align:center}
 .btn[data-armed]{color:#ffd58a;border:2px solid #e5383b}
+.memc{background:var(--surface);border:1.5px solid #ffd58a;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.memc.ok{border-color:var(--jade);background:var(--jade-soft)}
+.memc .mh{font-size:15px}.memc .mh b{color:var(--fg)}
+.memc input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:10px;padding:10px 12px;min-height:46px;font:inherit}
+.memc .mp{display:grid;grid-template-columns:1fr 1fr;gap:8px}.memc .mp div{background:var(--surface);border-radius:10px;padding:8px 10px;text-align:center}
+.memc .mp small{display:block;color:var(--muted);font-size:12px}.memc .mp b{font-size:24px;color:var(--jade);font-family:var(--f-display)}
+.memc .lnk-g{align-self:center}
 </style>
 </head>
 <body>
@@ -364,7 +371,8 @@ async function loadStatus(force){const {data,error}=await sb.rpc('customer_statu
   if(WALK&&!data.open&&getWO())setWO(null);
   if(WALK&&data.walkinOn===false){fail('ร้านปิดรับออร์เดอร์แบบสั่งเอง','สั่งกับพนักงานที่เคาน์เตอร์ได้เลย');S.view='off';return}
   if(S.view==='closed'&&(data.open||!data.requireOpen)){S.view=S.after||'menu';render();return}
-  if(S.view==='status'||S.view==='done'||S.view==='bill')render();else if(changed&&(S.view==='menu'))render()}
+  const typing=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#view')&&/INPUT|TEXTAREA/.test(document.activeElement.tagName);
+  if(typing){}else if(S.view==='status'||S.view==='done'||S.view==='bill')render();else if(changed&&(S.view==='menu'))render()}
 setInterval(()=>{if(S.view==='closed'&&!document.hidden)loadStatus()},6000);
 /* อัปเดตสถานะเร็ว: หน้าดูรายการ/ยอด ทุก 4 วินาที หน้าอื่นทุก 12 วินาที */
 let tick=0;setInterval(()=>{if(!sb||document.hidden||['name','closed','off','paid'].includes(S.view))return;tick++;
@@ -442,6 +450,7 @@ function render(){
         ${bc.vat?`<div class="row"><div class="g muted">${bc.mode==='excl'?'รวมก่อนภาษี':'ยอดรวม'}</div><div class="r">${baht(bc.sub)}</div></div><div class="row"><div class="g muted">VAT ${bc.rate}%${bc.mode==='incl'?' (รวมในราคาแล้ว)':''}</div><div class="r">${baht(bc.vat)}</div></div>`:''}
         ${bc.round?`<div class="row"><div class="g muted">ส่วนลดปัดเศษ</div><div class="r" style="color:var(--chili)">−${baht(bc.round)}</div></div>`:''}<div class="row sum"><div class="g"><b>ยอดที่ต้องชำระ</b></div><div class="r"><b>${baht(bc.total)}</b></div></div></div>
         ${st.waiting?`<p class="muted" style="margin:0">ยังมี ${st.waiting} รายการที่กำลังทำ ยอดนี้รวมไว้แล้ว</p>`:''}
+        ${memBox(st,bc)}
         ${pp&&bc.total>0?`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,bc.total))}<b>${baht(bc.total)}</b><small>โอนแล้วกด "แนบสลิป" ตรวจรูปให้ถูก แล้วกดยืนยันส่ง</small></div>`:''}
         <div class="stack">${pp&&bc.total>0?slipBox(st):''}<button class="btn${pp?'':' pri'}" data-a="call" data-v="pay" type="button">ชำระเงินสด / เรียกพนักงานเก็บเงิน</button></div>
         <p class="muted" style="margin:0;font-size:13px">ส่วนลดหรือแต้มสะสม พนักงานจะหักให้ตอนชำระเงิน ยอดสุดท้ายตามใบเสร็จ</p>`:'<p class="muted">ยังไม่มีรายการ</p>');
@@ -503,7 +512,8 @@ function shrink(file){return new Promise((ok,no)=>{const fr=new FileReader();fr.
   let w=im.width,h=im.height,mx=1280;if(Math.max(w,h)>mx){const r=mx/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r)}
   const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);
   let q=.75,u=c.toDataURL('image/jpeg',q);while(u.length>450000&&q>.35){q-=.1;u=c.toDataURL('image/jpeg',q)}ok(u)};im.src=fr.result};fr.readAsDataURL(file)})}
-const slipErr=m=>/no_order/.test(m)?'ยังไม่มีบิลที่เปิดอยู่':/bad_slip/.test(m)?'ไฟล์รูปใช้ไม่ได้ ลองรูปอื่น':'ทำรายการไม่สำเร็จ ลองอีกครั้ง';
+const slipErr=m=>/no_order/.test(m)?'ยังไม่มีบิลที่เปิดอยู่ แจ้งพนักงาน':/bad_slip/.test(m)?'ไฟล์รูปใหญ่หรือใช้ไม่ได้ ลองถ่ายหน้าจอสลิปใหม่':/bad_key/.test(m)?'QR นี้หมดอายุแล้ว ขอ QR ใหม่จากพนักงาน':/moved/.test(m)?'พนักงานย้ายโต๊ะแล้ว รีเฟรชหน้านี้อีกครั้ง':
+  /customer_slip|function|PGRST20|schema cache/i.test(m)?'ร้านยังไม่ได้เปิดระบบแนบสลิป แจ้งพนักงานได้เลย':/Failed to fetch|NetworkError|timeout/i.test(m)?'อินเทอร์เน็ตหลุด ลองอีกครั้ง':'ทำรายการไม่สำเร็จ ('+String(m).slice(0,60)+')';
 const slipFocus=sel=>setTimeout(()=>{const el=document.querySelector(sel);if(el)el.scrollIntoView({block:'center',behavior:'smooth'})},80);
 document.addEventListener('change',async e=>{const i=e.target;if(i.id!=='slipIn'||!i.files||!i.files[0])return;const f=i.files[0];i.value='';
   toast('กำลังเปิดรูป…');try{S.slipDraft=await shrink(f)}catch(x){return toast('เปิดรูปไม่ได้ ลองรูปอื่น')}document.querySelector('.toast')?.remove();
@@ -515,7 +525,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a^="
     try{const {error}=await sb.rpc('customer_slip',{p_key:K,p_table:T,p_order:WALK?getWO():null,p_img:S.slipDraft,p_name:S.name||''});S.slipBusy=false;
       if(error){render();return toast(slipErr(String(error.message||'')))}
       slipSave({o:(S.status&&S.status.orderNo)||'',img:S.slipDraft,at:Date.now()});S.slipDraft=null;toast('✓ ส่งสลิปสำเร็จ พนักงานกำลังตรวจยอด');await loadStatus(true);render();slipFocus('.slipok')}
-    catch(x){S.slipBusy=false;render();toast('ส่งสลิปไม่สำเร็จ ลองอีกครั้ง')}return}
+    catch(x){S.slipBusy=false;render();toast(slipErr(String(x&&x.message||x)))}return}
   if(a==='slipRemove'&&!S.slipBusy){if(!b.dataset.armed){b.dataset.armed='1';b.textContent='แตะอีกครั้งเพื่อลบ';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent='ลบสลิปนี้'}},3500);return}
     S.slipBusy=true;render();
     try{const {error}=await sb.rpc('customer_slip_del',{p_key:K,p_table:T,p_order:WALK?getWO():null});S.slipBusy=false;
@@ -535,9 +545,36 @@ const rcptUrl=r=>{const u=new URL('receipt.html',location.href);return u.origin+
 function viewPaid(){const r=S.rcpt;document.body.classList.add('welcome');setCall&&setCall();const cb=$('#callBtn');if(cb)cb.hidden=true;
   $('#view').innerHTML=`<div class="namebox" style="text-align:center"><div style="font-size:46px;line-height:1">🙏</div><h2>ชำระเงินเรียบร้อย</h2>
     <p class="muted" style="margin:0">ยอดชำระ <b style="color:var(--fg)">${baht(r.total)}</b>${r.billNo?' · เลขที่ '+esc(r.billNo):''}<br>ขอบคุณที่อุดหนุนครับ</p>
+    ${r.member?`<div class="memc ok" style="text-align:left"><div class="mh">⭐ <b>สมาชิก ${esc(r.member)}</b></div><div class="mp"><div><small>บิลนี้ได้</small><b>+${+r.ptsEarned||0}</b></div><div><small>แต้มสะสมล่าสุด</small><b>${r.ptsBalance!=null?(+r.ptsBalance).toLocaleString('th-TH'):'-'}</b></div></div></div>`:''}
     <a class="btn pri" href="${esc(rcptUrl(r))}" style="display:flex;align-items:center;justify-content:center;text-decoration:none">🧾 ดู / บันทึกใบเสร็จ</a>
     <p class="muted" style="margin:0;font-size:12.5px">เปิดใบเสร็จแล้วกด "บันทึกเป็นรูป" เก็บไว้ในมือถือได้</p></div>`;
   $('#footIn').innerHTML='';$('#foot').hidden=true}
+
+/* ---------- สมาชิกสะสมแต้ม: ลูกค้าใส่เบอร์เองในหน้าตรวจสอบยอด ---------- */
+const memKey=()=>'nl_mem_'+((S.status&&S.status.orderNo)||'');
+function memGet(){try{return JSON.parse(sessionStorage.getItem(memKey())||'null')}catch(e){return null}}
+function memSet(v){try{v?sessionStorage.setItem(memKey(),JSON.stringify(v)):sessionStorage.removeItem(memKey())}catch(e){}}
+function memBox(st,bc){if(S.memOff||!st.items||!st.items.length)return '';const m=memGet();
+  if(m&&m.found){const earn=Math.floor((+bc.total||0)/Math.max(1,+m.pointsPer||50));
+    return `<div class="memc ok"><div class="mh">⭐ <b>สมาชิก ${esc(m.phone)}</b>${m.name?' · คุณ'+esc(m.name):''}</div>
+      <div class="mp"><div><small>แต้มสะสมล่าสุด</small><b>${(+m.points||0).toLocaleString('th-TH')}</b></div><div><small>บิลนี้จะได้</small><b>+${earn}</b></div></div>
+      <small class="muted">แต้มจะเข้าเมื่อพนักงานยืนยันการชำระเงิน</small><button class="lnk-g" data-a="memClear" type="button">เปลี่ยนเบอร์ / ไม่สะสม</button></div>`}
+  if(m&&m.found===false)return `<div class="memc"><div class="mh">⭐ เบอร์ <b>${esc(m.phone)}</b> ยังไม่เป็นสมาชิก</div>
+      <input id="memNm" maxlength="40" placeholder="กรุณากรอกชื่อลูกค้า (ไม่บังคับ)" autocomplete="off" value="${esc(S.name||'')}">
+      <div class="sliprow"><button class="btn" data-a="memClear" type="button">เปลี่ยนเบอร์</button><button class="btn pri wide" data-a="memJoin" type="button" ${S.memBusy?'disabled':''}>สมัครและสะสมแต้มบิลนี้</button></div></div>`;
+  return `<div class="memc"><div class="mh">⭐ <b>สะสมแต้มสมาชิก</b> <small class="muted">ใส่เบอร์โทร แล้วกดยืนยัน</small></div>
+    <div class="sliprow"><input id="memPh" type="tel" inputmode="tel" maxlength="12" placeholder="เบอร์โทรสมาชิก" autocomplete="tel"><button class="btn pri" data-a="memGo" type="button" ${S.memBusy?'disabled':''}>ยืนยัน</button></div></div>`}
+const memErr=m=>/points_off/.test(m)?'ร้านปิดระบบสะสมแต้มอยู่':/bad_phone/.test(m)?'เบอร์โทรไม่ถูกต้อง (9–10 หลัก)':/no_order/.test(m)?'ยังไม่มีบิลที่เปิดอยู่':/busy/.test(m)?'ลองใหม่ในอีกสักครู่':/customer_member|function|PGRST20|schema cache/i.test(m)?'ร้านยังไม่ได้เปิดระบบนี้ แจ้งพนักงานได้เลย':'ทำรายการไม่สำเร็จ ลองอีกครั้ง';
+async function memCall(phone,create,name){S.memBusy=true;render();
+  try{const {data,error}=await sb.rpc('customer_member',{p_key:K,p_table:T,p_order:WALK?getWO():null,p_phone:phone,p_name:name||'',p_create:!!create});S.memBusy=false;
+    if(error){const m=String(error.message||'');if(/points_off/.test(m))S.memOff=true;render();return toast(memErr(m))}
+    if(data.cleared)memSet(null);else{memSet({...data,raw:phone});if(data.found)toast('✓ ผูกเบอร์สมาชิกกับบิลนี้แล้ว')}render()}
+  catch(x){S.memBusy=false;render();toast('เชื่อมต่อไม่ได้ ลองอีกครั้ง')}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a^="mem"]');if(!b||S.memBusy)return;const a=b.dataset.a;
+  if(a==='memGo'){const ph=($('#memPh')?.value||'').replace(/\D/g,'');if(!/^0\d{8,9}$/.test(ph))return toast('เบอร์โทรไม่ถูกต้อง (9–10 หลัก)');document.activeElement&&document.activeElement.blur();memCall(ph,false)}
+  else if(a==='memJoin'){const m=memGet();if(m&&m.raw){const nm=($('#memNm')?.value||'').trim();document.activeElement&&document.activeElement.blur();memCall(m.raw,true,nm)}}
+  else if(a==='memClear'){const m=memGet();memSet(null);render();if(m&&m.found)memCall('',false)}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='memPh'){e.preventDefault();$('[data-a="memGo"]')?.click()}});
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
   if(m&&APP_VER&&m[1]!==APP_VER&&!document.getElementById('updBar')){const b=document.createElement('div');b.id='updBar';b.className='updbar';b.innerHTML='มีเวอร์ชันใหม่ของเว็บ <button type="button">อัปเดตเลย</button>';
     b.querySelector('button').onclick=()=>{const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)};document.body.appendChild(b)}}catch(e){}}
