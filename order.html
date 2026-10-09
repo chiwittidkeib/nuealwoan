@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1410">
+<meta name="app-version" content="2026.10.09-1430">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -221,9 +221,9 @@ label.btn{display:flex;align-items:center;justify-content:center;text-align:cent
 
 /* บัตรสมาชิก 2 ธีม: เนื้อล้วนๆ = ดำ · ข้าวมันไก่ = ขาวนวล · ลายน้ำป้ายร้านเต็มป้าย อยู่กลางบัตร */
 .mcard::after{display:none}
-.mcard::before{background:var(--mcbg) center/auto 94% no-repeat;opacity:.2;-webkit-mask-image:radial-gradient(ellipse 48% 50% at center,#000 60%,transparent 100%);mask-image:radial-gradient(ellipse 48% 50% at center,#000 60%,transparent 100%)}
+.mcard::before{background:var(--mcbg) center/auto 70% no-repeat;opacity:.2;}
 .mcard.mc-nl{background:radial-gradient(circle at 85% 10%,rgba(217,164,65,.22),transparent 45%),linear-gradient(135deg,#1a1512,#070605 60%,#14100d);border-color:#c99a4a;color:#fff}
-.mcard.mc-nl::before{opacity:.2}
+.mcard.mc-nl::before{opacity:.3}
 .mcard.mc-nl .mc-top span{color:#e6b866}
 .mcard.mc-nl .mc-mid b{color:#fff}
 .mcard.mc-nl .mc-mid span{color:#efe2cc}
@@ -258,7 +258,7 @@ function showMemberCard(m){const o=document.getElementById('mCardOv');if(o)o.rem
   const pts=(+m.points||0).toLocaleString('th-TH');
   const el=document.createElement('div');el.id='mCardOv';el.className='mcard-ov';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','บัตรสมาชิก');
   const bg=[...String(m.phone||m.name||'')].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7)%2?'po':'nl';
-  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.jpg)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
+  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
     <div class="mc-mid"><b>${m.name?'คุณ'+e(m.name):'สมาชิก'}</b><span>${e(m.phone||'')}</span></div>
     <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${pts}</strong></div><em>ใช้ได้ทั้ง 2 ร้าน<br>เนื้อล้วนๆ · ข้าวมันไก่</em></div><i class="mc-shine"></i></div>
     ${m.note?`<p class="mc-note">${e(m.note)}</p>`:''}
@@ -385,7 +385,7 @@ function followMove(t,key){if(WALK)setWO(null);else setTO(null);
 const where=()=>WALK?'ของคุณ':'ของโต๊ะ '+esc(T);
 const loadName=()=>{try{return localStorage.getItem(NAME_KEY)||''}catch(e){return ''}};
 const saveName=n=>{try{localStorage.setItem(NAME_KEY,n)}catch(e){}};
-function setSub(){$('#sub').innerHTML=S.name?`สวัสดี คุณ${esc(S.name)} · <button class="lnk-w" data-a="editName" type="button">แก้ชื่อ</button>`:'สั่งอาหารได้จากมือถือ'}
+function setSub(){const mb=(typeof memGet==='function'&&S.status&&(memGet()||{}).found)?' · ⭐ สมาชิก':'';$('#sub').innerHTML=S.name?`สวัสดี คุณ${esc(S.name)}${mb} · <button class="lnk-w" data-a="editName" type="button">แก้ชื่อ</button>`:'สั่งอาหารได้จากมือถือ'}
 let sb=null;
 
 function fail(title,text){$('#view').innerHTML=`<div class="msg"><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p></div>`;$('#foot').hidden=true}
@@ -427,7 +427,7 @@ setInterval(()=>{if(sb&&!document.hidden&&(S.view==='menu'||S.view==='cart'))loa
 async function loadStatus(force){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T,p_order:myOrder()});if(error){if(lastOid())tryReceipt();return}
   if(data.open&&(data.items||[]).length){const oid=WALK?getWO():(data.orderId||S.myOrder);if(oid)setLast(oid)}else if(!data.open&&!data.moved&&lastOid()){tryReceipt();}
   if(data.moved&&(data.moved!==T||data.movedKey)){S.view='off';followMove(data.moved,data.movedKey);return}
-  S.status=data;if(!WALK&&data.open&&data.orderId&&data.orderId!==S.myOrder){S.myOrder=data.orderId;setTO(data.orderId)}if(data.now)S.skew=data.now-Date.now();
+  S.status=data;if(data.open&&memPend())setTimeout(attachPending,50);if(!WALK&&data.open&&data.orderId&&data.orderId!==S.myOrder){S.myOrder=data.orderId;setTO(data.orderId)}if(data.now)S.skew=data.now-Date.now();
   const sig=JSON.stringify([data.items,data.call,data.ahead,data.open]);const changed=sig!==lastSig;lastSig=sig;setCall();
   if(WALK&&!data.open&&getWO())setWO(null);
   if(WALK&&data.walkinOn===false){fail('ร้านปิดรับออร์เดอร์แบบสั่งเอง','สั่งกับพนักงานที่เคาน์เตอร์ได้เลย');S.view='off';return}
@@ -483,13 +483,16 @@ function render(){
   if(S.view==='name'){
     h=`<form class="namebox" id="nameForm"><h2>ยินดีต้อนรับ</h2><p class="muted" style="margin:0">${WALK?'สั่งอาหารเองได้เลย · ใส่ชื่อไว้ให้พนักงานเรียกตอนอาหารพร้อม':'โต๊ะ '+esc(T)+' · ใส่ชื่อของคุณ ร้านจะได้เสิร์ฟถูกคน'}</p>
       <div class="field"><label for="nm">ชื่อของคุณ</label><input id="nm" maxlength="40" autocomplete="given-name" placeholder="กรุณากรอกชื่อลูกค้า" value="${esc(S.name)}"></div>
+      <div class="field"><label for="nmMem">⭐ เบอร์สมาชิก (ถ้ามี) <small style="font-weight:400">สะสมแต้มตั้งแต่เริ่มสั่ง</small></label><input id="nmMem" type="tel" inputmode="tel" maxlength="12" autocomplete="tel" placeholder="เบอร์โทรที่สมัครสมาชิกไว้" value="${esc((memPend()||{}).phone||'')}"></div>
       <p class="err" id="nmErr" role="alert"></p>
       <button class="btn pri" type="submit">เริ่มสั่งอาหาร</button>
       ${S.name||WALK?'':'<button class="lnk-g" data-a="skipName" type="button">ข้าม ไม่ใส่ชื่อ</button>'}</form>`;
     v.innerHTML=h;f.innerHTML='';$('#foot').hidden=true;
-    $('#nameForm').addEventListener('submit',e=>{e.preventDefault();const n=$('#nm').value.trim().replace(/\s+/g,' ');
-      if(!n){$('#nmErr').textContent=WALK?'ใส่ชื่อก่อน พนักงานจะเรียกชื่อนี้ตอนอาหารพร้อม':'ใส่ชื่อก่อน หรือกด "ข้าม"';return}
-      S.name=n.slice(0,40);saveName(S.name);setSub();S.view=S.status&&S.status.open&&(S.status.items||[]).length?'status':'menu';render()});
+    $('#nameForm').addEventListener('submit',e=>{e.preventDefault();const n=$('#nm').value.trim().replace(/\s+/g,' ');const mp=($('#nmMem')?.value||'').replace(/\D/g,'');
+      if(mp&&!/^0\d{8,9}$/.test(mp)){$('#nmErr').textContent='เบอร์สมาชิกไม่ถูกต้อง (9–10 หลัก) หรือเว้นว่างไว้';return}
+      if(!n&&!mp){$('#nmErr').textContent=WALK?'ใส่ชื่อ หรือเบอร์สมาชิก ก่อนเริ่มสั่ง':'ใส่ชื่อก่อน หรือกด "ข้าม"';return}
+      if(mp)memPendSet({phone:mp});
+      S.name=(n||'').slice(0,40);if(S.name)saveName(S.name);setSub();if(mp)attachPending();S.view=S.status&&S.status.open&&(S.status.items||[]).length?'status':'menu';render()});
     setTimeout(()=>$('#nm')?.focus(),50);return;
   }
   if(S.view==='menu'){
@@ -643,6 +646,21 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a^="mem"]'
   else if(a==='memClear'){const m=memGet();memSet(null);render();if(m&&m.found)memCall('',false)}});
 document.addEventListener('click',e=>{if(e.target.closest('[data-a="paidCard"]'))paidCard()});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='memPh'){e.preventDefault();$('[data-a="memGo"]')?.click()}});
+
+/* ---------- ใส่เบอร์สมาชิกตั้งแต่หน้าแรก: ผูกกับบิลทันทีที่มีบิลเปิดอยู่ ---------- */
+const MP_KEY='nl_mem_pending';
+function memPend(){try{const v=JSON.parse(localStorage.getItem(MP_KEY)||'null');return v&&Date.now()-v.ts<12*3600e3?v:null}catch(e){return null}}
+function memPendSet(v){try{v?localStorage.setItem(MP_KEY,JSON.stringify({...v,ts:Date.now()})):localStorage.removeItem(MP_KEY)}catch(e){}}
+let mpBusy=false;
+async function attachPending(){const p=memPend();if(!p||mpBusy||!sb)return;const st=S.status||{};if(!st.open)return;
+  const cur=memGet();if(cur&&cur.found&&cur.raw===p.phone){memPendSet(null);return}
+  mpBusy=true;try{const {data,error}=await sb.rpc('customer_member',{p_key:K,p_table:T,p_order:WALK?getWO():null,p_phone:p.phone,p_name:S.name||'',p_create:false});
+    if(error){const m=String(error.message||'');if(/no_order/.test(m))return;memPendSet(null);if(/points_off/.test(m))S.memOff=true;return toast(memErr(m))}
+    memPendSet(null);memSet({...data,raw:p.phone});
+    if(data.found){if(!S.name&&data.name){S.name=data.name.slice(0,40);saveName(S.name)}setSub();
+      showMemberCard({phone:data.phone,name:data.name||S.name,points:data.points,note:'เชื่อมสมาชิกกับบิลนี้แล้ว · แต้มเข้าเมื่อชำระเงิน'})}
+    else toast('เบอร์นี้ยังไม่เป็นสมาชิก กดสมัครได้ในหน้า "ตรวจสอบยอด"');
+    render()}catch(e){}finally{mpBusy=false}}
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
   if(m&&APP_VER&&m[1]!==APP_VER&&!document.getElementById('updBar')){const b=document.createElement('div');b.id='updBar';b.className='updbar';b.innerHTML='มีเวอร์ชันใหม่ของเว็บ <button type="button">อัปเดตเลย</button>';
     b.querySelector('button').onclick=()=>{const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)};document.body.appendChild(b)}}catch(e){}}
