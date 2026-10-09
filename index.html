@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1620">
+<meta name="app-version" content="2026.10.09-1615">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -827,9 +827,9 @@ const methodName=m=>m==='cash'?'เงินสด':m==='promptpay'?'พร้�
 const DEFAULTS={vat:{on:false,rate:7,mode:'incl'},seats:{},defSeats:4,qrRequireOpen:true,qrWalkin:true,channels:{lineman:{on:true,markup:0,gp:0},grab:{on:true,markup:0,gp:0},shopee:{on:true,markup:0,gp:0}},shopName:'NueaLwoan',address:'',phone:'',taxId:'',receiptFooter:'ขอบคุณที่อุดหนุนครับ',paper:80,logo:'',pointsOn:true,pointsPer:50,pointValue:1,tables:10,promptpay:'',cats:['ก๋วยเตี๋ยว','ข้าว','ของทานเล่น','เครื่องดื่ม'],expCats:['ค่าเช่า','ค่าแรง','ค่าไฟ/น้ำ','ค่าแก๊ส','อุปกรณ์','อื่นๆ'],extraPrice:10};
 const QUICK_NOTES=[];
 
-const PERMS=[['tables','เปิดโต๊ะ / รับออร์เดอร์'],['kitchen','หน้าครัว / กดเสิร์ฟ'],['pay','เก็บเงิน / ออกใบเสร็จ'],['discount','ให้ส่วนลด'],['move','ย้ายโต๊ะ'],['void','ยกเลิกบิล'],['menu_edit','แก้เมนูและราคา'],['stock','สต็อก / ซื้อของเข้า'],['expenses','รายจ่ายร้าน'],['members','สมาชิกสะสมแต้ม'],['report','สรุปเงิน / รายงานกำไร']];
+const PERMS=[['tables','เปิดโต๊ะ / รับออร์เดอร์'],['kitchen','หน้าครัว / กดเสิร์ฟ'],['pay','เก็บเงิน / ออกใบเสร็จ'],['discount','ให้ส่วนลด'],['move','ย้ายโต๊ะ'],['void','ยกเลิกบิล'],['menu_edit','แก้เมนูและราคา'],['menu_toggle','เปิด / ปิดเมนู (ของหมด)'],['stock','สต็อก / ซื้อของเข้า'],['expenses','รายจ่ายร้าน'],['members','สมาชิกสะสมแต้ม'],['report','สรุปเงิน / รายงานกำไร']];
 const ROLES={owner:'Admin',waiter:'พนักงานเสิร์ฟ',chef:'แม่ครัว',partner:'หุ้นส่วน'};
-const DEFAULT_PERMS={waiter:{tables:true,move:true,kitchen:true,pay:true,members:true},chef:{kitchen:true,stock:true},partner:{report:true,expenses:true,stock:true,members:true}};
+const DEFAULT_PERMS={waiter:{tables:true,move:true,kitchen:true,pay:true,members:true,menu_toggle:true},chef:{kitchen:true,stock:true,menu_toggle:true},partner:{report:true,expenses:true,stock:true,members:true}};
 const roleKey=r=>r==='staff'?'waiter':r;
 const roleName=r=>ROLES[roleKey(r)]||'พนักงาน';
 const effRole=()=>S.role==='owner'&&S.viewAs?S.viewAs:S.role;
@@ -1134,7 +1134,7 @@ function viewMenu(){
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุนต่อจาน</div>`;
   h+='<div class="list">';
   list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?' <span class="pill mute">ซ่อน</span>':''}${m.consign?` <span class="pill info">📦 ฝากขาย · เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?` <span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div>${can('menu_edit')?`<button class="btn sm${m.active===false?' pri':''}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิด (หมด)'}</button>`:''}<div class="r"><b>${baht(p)}</b></div></div>`});
+    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?' <span class="pill mute">ซ่อน</span>':''}${m.consign?` <span class="pill info">📦 ฝากขาย · เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?` <span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div>${(can('menu_edit')||can('menu_toggle'))?`<button class="btn sm${m.active===false?' pri':''}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิด (หมด)'}</button>`:''}<div class="r"><b>${baht(p)}</b></div></div>`});
   return h+'</div>';
 }
 
@@ -1792,13 +1792,14 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <div class="grid2"><div class="field"><label for="cVatRate">อัตรา (%)</label><input id="cVatRate" inputmode="decimal" value="${vatCfg().rate}"></div>
    <div class="field"><label for="cVatMode">ราคาเมนู</label><select id="cVatMode"><option value="incl" ${vatCfg().mode!=='excl'?'selected':''}>รวม VAT แล้ว</option><option value="excl" ${vatCfg().mode==='excl'?'selected':''}>ยังไม่รวม (บวกตอนเก็บเงิน)</option></select></div></div>
    <p class="help" style="margin:0" id="cVatEx"></p></div>
-  <div class="card"><h3>หัวใบเสร็จ</h3>
-   <div class="logo-edit"><div class="logo-box" id="cLogoBox"></div><div class="photo-act"><label class="btn sm" for="cLogo">เลือกโลโก้ร้าน</label><input id="cLogo" type="file" accept="image/*" hidden><button class="btn sm ghost" data-act="logoRemove" type="button" id="cLogoDel">ลบโลโก้</button></div></div>
+  <div class="card"><h3>โลโก้ร้าน & หัวใบเสร็จ</h3>
+   <div class="field" style="margin-bottom:4px"><label>โลโก้ร้าน</label></div>
+   ${rcLogoField('rcLogo',s.rcLogo||s.logo,'images/logo-nl-t.png')}
+   <p class="help" style="margin:2px 0 10px">โลโก้เดียวใช้ทุกที่: ใบแจ้งยอด/ใบเสร็จที่พิมพ์ · ใบเสร็จออนไลน์ · หน้าสั่งอาหารของลูกค้า · ป้าย QR</p>
    <div class="field"><label for="cAddr">ที่อยู่ร้าน</label><input id="cAddr" value="${esc(s.address||'')}" placeholder="เช่น 12 ถ.สุขุมวิท บางนา กทม." autocomplete="off"></div>
    <div class="grid2"><div class="field"><label for="cPhone">เบอร์โทรร้าน</label><input id="cPhone" inputmode="tel" value="${esc(s.phone||'')}"></div><div class="field"><label for="cTax">เลขผู้เสียภาษี (ถ้ามี)</label><input id="cTax" inputmode="numeric" value="${esc(s.taxId||'')}"></div></div>
    <div class="field"><label for="cFoot">ข้อความท้ายใบเสร็จ</label><input id="cFoot" value="${esc(s.receiptFooter||'')}" placeholder="ขอบคุณที่อุดหนุนครับ"></div>
-   <details class="rcx" open><summary><b>📱 ใบเสร็จออนไลน์ (ลูกค้าโหลดเอง)</b> <small class="muted">โลโก้ · ชื่อร้าน · Facebook · เบอร์ · หมุดพิกัด</small></summary>
-    ${rcLogoField('rcLogo',s.rcLogo,'images/logo-nl-t.png')}
+   <details class="rcx" open><summary><b>📱 ข้อมูลเพิ่มเติมบนใบเสร็จออนไลน์</b> <small class="muted">ชื่อร้าน · Facebook · หมุดพิกัด</small></summary>
     <div class="grid2"><div class="field"><label for="rcName">ชื่อร้าน (ไทย)</label><input id="rcName" maxlength="40" value="${esc(s.rcName??'เนื้อล้วนๆ')}"></div><div class="field"><label for="rcNameEn">ชื่อร้าน (อังกฤษ)</label><input id="rcNameEn" maxlength="40" value="${esc(s.rcNameEn??'NUEA LWOON')}"></div></div>
     <div class="field"><label for="rcTag">คำโปรยใต้ชื่อ</label><input id="rcTag" maxlength="80" value="${esc(s.rcTag===undefined||s.rcTag==='BEEF NOODLES • BRAISED BEEF • KHAO SOI'?'':s.rcTag)}" placeholder="เว้นว่าง = ไม่แสดง"></div>
     <div class="grid2"><div class="field"><label for="rcFb">ชื่อเพจ Facebook</label><input id="rcFb" maxlength="60" value="${esc(s.rcFb??'เนื้อล้วนๆ ก๋วยเตี๋ยวเนื้อ')}" placeholder="เว้นว่าง = ไม่แสดง"></div><div class="field"><label for="rcFbUrl">ลิงก์เพจ Facebook</label><input id="rcFbUrl" inputmode="url" value="${esc(s.rcFbUrl||'')}" placeholder="https://facebook.com/..."></div></div>
@@ -1831,11 +1832,9 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
   loadStaff();bindBg();bellBind();renderPerm();if(!S.sheet.co)S.sheet.co=callOpts().map(o=>({...o}));renderCo();
   const vx=()=>{const on=$('#cVatOn').checked,r=parseFloat(val('cVatRate'))||0,ex=val('cVatMode')==='excl';$('#cVatEx').textContent=!on?'ปิดอยู่ ใบเสร็จจะไม่แสดงภาษี':ex?`ตัวอย่าง: อาหาร 100 บาท + VAT ${r}% = ${baht(r2(100+100*r/100))}`:`ตัวอย่าง: อาหาร 100 บาท (รวม VAT แล้ว) = ก่อนภาษี ${baht(r2(100-100*r/(100+r)))} + VAT ${baht(r2(100*r/(100+r)))}`};
   ['cVatOn','cVatRate','cVatMode'].forEach(i=>$('#'+i).addEventListener('input',vx));$('#cVatMode').addEventListener('change',vx);vx();
-  if(S.sheet.logo===undefined)S.sheet.logo=s.logo||'';renderLogo();
   const ph=()=>{const per=parseFloat(val('cPtsPer'))||50,pv=parseFloat(val('cPtsVal'))||1;$('#cPtsHelp').textContent=`ลูกค้าจ่าย 500 บาท ได้ ${Math.floor(500/per)} แต้ม = ส่วนลด ${baht(Math.floor(500/per)*pv)} (คืน ${r2(pv/per*100)}%)`};
   ['cPtsPer','cPtsVal'].forEach(i=>$('#'+i).addEventListener('input',ph));ph();
-  $('#cLogo').addEventListener('change',async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
-    try{S.sheet.logo=await logoDataUrl(f);renderLogo()}catch(err){toast('อ่านไฟล์รูปไม่ได้','bad')}});}
+}
 function renderPerm(src){const b=$('#permBody');if(!b)return;const P=src||S.perms||DEFAULT_PERMS;
   b.innerHTML=PERMS.map(([k,label])=>`<tr><td>${label}</td><td class="c"><input type="checkbox" checked disabled aria-label="Admin ${label}"></td>${['waiter','chef','partner'].map(r=>`<td class="c"><input type="checkbox" data-perm="${r}:${k}" ${(k in (P[r]||{})?P[r][k]:(DEFAULT_PERMS[r]||{})[k])?'checked':''} aria-label="${ROLES[r]} ${label}"></td>`).join('')}</tr>`).join('');}
 async function loadStaff(){const box=$('#staffList');if(!box)return;
@@ -1924,7 +1923,7 @@ function sheetQr(){const s=S.settings,n=Math.max(1,Math.min(60,+s.tables||10));
 async function saveSettings(){const pp=val('cPP').replace(/\D/g,'');if(pp&&!ppValid(pp))return toast('พร้อมเพย์ต้องเป็นเบอร์ 10 หลัก หรือเลข 13 หลัก','bad');
   const split=v=>v.split(/[,，]/).map(x=>x.trim()).filter(Boolean);
   const data={...S.settings,shopName:val('cName')||'NueaLwoan',tables:Math.max(1,Math.min(60,Math.round(nval('cTables'))||10)),extraPrice:nval('cExtra'),promptpay:pp,cats:split(val('cCats')),expCats:split(val('cExp')),qrKey:S.settings.qrKey||newQrKey(),
-    logo:S.sheet.logo??S.settings.logo??'',address:val('cAddr'),phone:val('cPhone'),taxId:val('cTax'),receiptFooter:val('cFoot'),rcName:val('rcName'),rcNameEn:val('rcNameEn'),rcTag:val('rcTag'),rcFb:val('rcFb'),rcFbUrl:val('rcFbUrl'),rcMap:val('rcMap'),rcMapUrl:val('rcMapUrl'),rcThanks2:val('rcThanks2'),rcLogo:rcLogoVal('rcLogo',S.settings.rcLogo),paper:+val('cPaper')||80,
+    logo:rcLogoVal('rcLogo',S.settings.rcLogo||S.settings.logo),address:val('cAddr'),phone:val('cPhone'),taxId:val('cTax'),receiptFooter:val('cFoot'),rcName:val('rcName'),rcNameEn:val('rcNameEn'),rcTag:val('rcTag'),rcFb:val('rcFb'),rcFbUrl:val('rcFbUrl'),rcMap:val('rcMap'),rcMapUrl:val('rcMapUrl'),rcThanks2:val('rcThanks2'),rcLogo:rcLogoVal('rcLogo',S.settings.rcLogo||S.settings.logo),paper:+val('cPaper')||80,
     defSeats:Math.max(1,Math.min(30,Math.round(nval('cDefSeats'))||4)),seats:Object.fromEntries([...document.querySelectorAll('[data-seat]')].map(e=>[e.dataset.seat,Math.round(parseFloat(e.value))]).filter(([,v])=>v>0&&v<=30)),
     vat:{on:$('#cVatOn').checked,rate:Math.min(30,Math.max(0,nval('cVatRate'))),mode:val('cVatMode')==='excl'?'excl':'incl'},
     qrRequireOpen:$('#cQrOpen').checked,qrSecure:$('#cQrSecure').checked,callOptions:(readCo(),(S.sheet.co||callOpts()).filter(o=>o.label).slice(0,8).map(o=>({id:o.id,label:o.label.slice(0,40),...(o.pay?{pay:true}:{})}))),qrWalkin:$('#cQrWalk').checked,channels:Object.fromEntries(DELIV.map(c=>[c,{on:$('#chOn_'+c).checked,markup:Math.max(0,nval('chMk_'+c)),gp:Math.min(100,Math.max(0,nval('chGp_'+c)))}])),
@@ -2040,7 +2039,7 @@ const ACT={
   menuCat:d=>{S.menuCat=d.v;render()},
   optBulk:()=>can('menu_edit')?openSheet({type:'optBulk'}):deny(),
   obCat:d=>{const sh=S.sheet,ms=S.menu.filter(m=>(m.cat||'ไม่มีหมวด')===d.v),on=!ms.every(m=>sh.pick[m.id]);ms.forEach(m=>sh.pick[m.id]=on);sheetOptBulk()},
-  menuToggle:async(d,b,e)=>{if(e)e.stopPropagation();if(!can('menu_edit'))return deny();const m=S.menu.find(x=>x.id===d.id);if(!m)return;const on=m.active===false;
+  menuToggle:async(d,b,e)=>{if(e)e.stopPropagation();if(!can('menu_edit')&&!can('menu_toggle'))return deny();const m=S.menu.find(x=>x.id===d.id);if(!m)return;const on=m.active===false;
     if(await write('menu/'+m.id,r=>r.update({active:on}))){m.active=on;render();toast(on?'เปิดขาย "'+m.name+'" แล้ว':'"'+m.name+'" ขึ้นตรา หมดแล้ว')}},
   imgv:(d,b,e)=>{if(e)e.stopPropagation();viewImg(d.src,d.cap)},
   obSave:optBulkSave,
@@ -2245,9 +2244,9 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
     <label class="check"><input type="checkbox" id="pPB" ${c.payBefore?'checked':''}> โอนก่อน (แสดง QR พร้อมเพย์ + แนบสลิป)</label>
     <label class="check"><input type="checkbox" id="pPA" ${c.payAfter?'checked':''}> จ่ายตอนรับของ</label>
     <div class="field"><label for="pPP">พร้อมเพย์</label><input id="pPP" inputmode="numeric" value="${esc(c.promptpay||'')}" placeholder="${esc(S.settings.promptpay?'เว้นว่าง = ใช้ของร้านก๋วยเตี๋ยว ('+S.settings.promptpay+')':'เบอร์มือถือ หรือเลขบัตร 13 หลัก')}"></div></div>
-   <div class="grid2"><div class="field"><label for="pPhone">เบอร์ร้าน (ลูกค้ากดโทรได้)</label><input id="pPhone" inputmode="tel" maxlength="20" value="${esc(c.phone||'')}"></div><div class="field"><label for="pLogo">โลโก้ (ลิงก์รูป ถ้ามี)</label><input id="pLogo" value="${esc(c.logo||'')}" placeholder="เว้นว่างได้"></div></div>
-   <div class="card"><h3>หัวใบเสร็จออนไลน์ (ร้านข้าวมันไก่)</h3>
-    ${rcLogoField('poRcLogo',c.rcLogo,'images/logo-po-t.png')}
+   <div class="grid2"><div class="field"><label for="pPhone">เบอร์ร้าน (ลูกค้ากดโทรได้)</label><input id="pPhone" inputmode="tel" maxlength="20" value="${esc(c.phone||'')}"></div><div></div></div>
+   <div class="card"><h3>โลโก้ร้าน & หัวใบเสร็จ (ร้านข้าวมันไก่)</h3>
+    ${rcLogoField('poRcLogo',c.rcLogo||c.logo,'images/logo-po-t.png')}
     <div class="grid2"><div class="field"><label for="poRcName">ชื่อร้าน (ไทย)</label><input id="poRcName" maxlength="40" value="${esc(c.rcName??c.shopName??'ข้าวมันไก่')}"></div><div class="field"><label for="poRcNameEn">ชื่อร้าน (อังกฤษ)</label><input id="poRcNameEn" maxlength="40" value="${esc(c.rcNameEn??'KHAO MAN GAI')}"></div></div>
     <div class="field"><label for="poRcTag">คำโปรยใต้ชื่อ</label><input id="poRcTag" maxlength="80" value="${esc(c.rcTag??'CHICKEN RICE')}"></div>
     <div class="grid2"><div class="field"><label for="poRcFb">ชื่อเพจ Facebook</label><input id="poRcFb" maxlength="60" value="${esc(c.rcFb||'')}" placeholder="เว้นว่าง = ไม่แสดง"></div><div class="field"><label for="poRcFbUrl">ลิงก์เพจ Facebook</label><input id="poRcFbUrl" inputmode="url" value="${esc(c.rcFbUrl||'')}" placeholder="https://facebook.com/..."></div></div>
@@ -2263,7 +2262,7 @@ function poReadPts(){document.querySelectorAll('[data-pt]').forEach(e=>{const p=
 async function poSave(){if(S.role!=='owner')return deny();poReadPts();const d=S.sheet.d;
   const data={...(S.po||{}),open:$('#pOpen').checked,shopName:val('pShop')||'ข้าวมันไก่',openFrom:val('pFrom'),cutoff:val('pCut')||'20:00',leadDays:+val('pLead')||0,window:val('pWin'),
     pickup:$('#pPick').checked,pickupText:val('pPickT'),payBefore:$('#pPB').checked,payAfter:$('#pPA').checked,promptpay:val('pPP').replace(/\D/g,'')||String(S.settings.promptpay||'').replace(/\D/g,''),
-    phone:val('pPhone'),logo:val('pLogo'),notice:val('pNotice'),rcLogo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo),rcName:val('poRcName'),rcNameEn:val('poRcNameEn'),rcTag:val('poRcTag'),rcFb:val('poRcFb'),rcFbUrl:val('poRcFbUrl'),rcMap:val('poRcMap'),rcMapUrl:val('poRcMapUrl'),rcThanks:val('poRcThanks'),rcThanks2:val('poRcThanks2'),
+    phone:val('pPhone'),logo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),notice:val('pNotice'),rcLogo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),rcName:val('poRcName'),rcNameEn:val('poRcNameEn'),rcTag:val('poRcTag'),rcFb:val('poRcFb'),rcFbUrl:val('poRcFbUrl'),rcMap:val('poRcMap'),rcMapUrl:val('poRcMapUrl'),rcThanks:val('poRcThanks'),rcThanks2:val('poRcThanks2'),
     points:d.points.filter(p=>p.name).map(p=>({id:p.id||('p'+uid()),name:p.name.slice(0,50),note:(p.note||'').slice(0,60)})),cats:(S.po&&S.po.cats)||[]};
   if(!data.payBefore&&!data.payAfter)return toast('เลือกวิธีชำระเงินอย่างน้อย 1 แบบ','bad');
   if(!data.pickup&&!data.points.length)return toast('ต้องมีจุดส่ง หรือเปิดให้มารับที่ร้าน','bad');
