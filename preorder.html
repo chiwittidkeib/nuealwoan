@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1000">
+<meta name="app-version" content="2026.10.09-1020">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -350,7 +350,7 @@ async function loadShop(first){try{const {data,error}=await sb.rpc('po_public');
   S.cfg=data;S.menu=data.menu||[];S.cats=(data.cats||[]).filter(c=>S.menu.some(m=>m.cat===c));
   S.menu.filter(m=>m.cat&&!S.cats.includes(m.cat)).forEach(m=>S.cats.push(m.cat));
   document.title=(data.shopName||'สั่งล่วงหน้า')+' · พรีออเดอร์';
-  if(data.logo){$('#logo').src=data.logo;$('#logo').hidden=false}
+  $('#logo').src=data.logo||'images/logo-po.png';$('#logo').hidden=false;
   $('#shop').textContent=data.shopName||'สั่งล่วงหน้า';$('#sub').textContent=data.state&&data.state.open?'สั่งล่วงหน้า · รับ'+thDate(data.state.deliverDate):'สั่งล่วงหน้า รับวันถัดไป';
   return true}catch(e){if(first)fail('เชื่อมต่อไม่ได้','ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง');return false}}
 async function loadOrder(){if(!S.cur)return;try{const {data,error}=await sb.rpc('po_order_status',{p_id:S.cur.id,p_token:S.cur.token});
