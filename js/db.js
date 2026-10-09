@@ -19,22 +19,38 @@
 
   window.makeDb = function (sb) {
     const listeners = new Set();
-    let chan = null;
-    function kickAll(col) { listeners.forEach(l => { if (!col || l.col === col) l.kick(); }); }
+    let chan = null, live = false, tick = 0;
+    // ส่งเฉพาะ listener ที่เกี่ยว: แก้รายการในบิลที่ยังเปิดอยู่ (status=open) ไม่ต้องโหลดบิลที่จ่ายแล้วทั้งวันใหม่
+    function kickAll(col, row) {
+      listeners.forEach(l => {
+        if (col && l.col !== col) return;
+        if (row && row.status === "open" && l.status && l.status !== "open") return;
+        l.kick();
+      });
+    }
     function ensureChan() {
       if (chan) return;
       chan = sb.channel("docs-live")
         .on("postgres_changes", { event: "*", schema: "public", table: "docs" }, p => {
           const col = (p.new && p.new.collection) || (p.old && p.old.collection);
-          kickAll(col);
+          kickAll(col, p.eventType === "DELETE" ? null : p.new);
         })
-        .subscribe();
+        .subscribe(st => {
+          const was = live; live = st === "SUBSCRIBED";
+          if (live && !was) kickAll(); // ต่อกลับมาได้: โหลดให้ตรงครั้งเดียว
+        });
     }
     document.addEventListener("visibilitychange", () => { if (!document.hidden) kickAll(); });
     window.addEventListener("online", () => kickAll());
-    setInterval(() => { if (!document.hidden) kickAll(); }, 30000);
+    // สำรองกรณีสัญญาณสดหลุด: ถ้าสัญญาณสดปกติ โหลดซ้ำทุก 2 นาที (ไม่รวมเสียงเรียกที่ไฟล์ใหญ่) / ถ้าหลุด ทุก 30 วินาที
+    const HEAVY = { voice: 1 };
+    setInterval(() => {
+      tick++; if (document.hidden) return;
+      if (!live) kickAll();
+      else if (tick % 4 === 0) listeners.forEach(l => { if (!HEAVY[l.col]) l.kick(); });
+    }, 30000);
 
-    function listen(col, fetcher, next, err) {
+    function listen(col, fetcher, next, err, status) {
       let t = null, alive = true, running = false, again = false;
       const run = async () => {
         if (running) { again = true; return; }
@@ -44,7 +60,8 @@
         running = false;
         if (again && alive) { again = false; run(); }
       };
-      const l = { col, kick: () => { clearTimeout(t); t = setTimeout(run, 120); } };
+      // รวมการเปลี่ยนแปลงที่เข้ามาติดๆ กัน (เช่น ลูกค้าหลายโต๊ะสั่งพร้อมกัน) ให้เหลือโหลดครั้งเดียว
+      const l = { col, status, kick: () => { if (!t) t = setTimeout(() => { t = null; run(); }, 350); } };
       listeners.add(l); ensureChan(); run();
       return () => { alive = false; listeners.delete(l); };
     }
@@ -57,9 +74,9 @@
       };
       return {
         id, path: col + "/" + id, get,
-        set: data => sb.from("docs").upsert({ collection: col, id, data }).then(chk),
-        update: patch => sb.rpc("doc_merge", { p_col: col, p_id: id, p_patch: patch }).then(chk),
-        delete: () => sb.from("docs").delete().eq("collection", col).eq("id", id).then(chk),
+        set: data => sb.from("docs").upsert({ collection: col, id, data }).then(chk).then(r => { kickAll(col); return r; }),
+        update: patch => sb.rpc("doc_merge", { p_col: col, p_id: id, p_patch: patch }).then(chk).then(r => { kickAll(col); return r; }),
+        delete: () => sb.from("docs").delete().eq("collection", col).eq("id", id).then(chk).then(r => { kickAll(col); return r; }),
         // อ่านค่าล่าสุด -> คำนวณ -> เขียนเฉพาะเมื่อไม่มีใครแก้แทรก (ลองซ้ำได้ 4 ครั้ง)
         transform: async fn => {
           for (let i = 0; i < 4; i++) {
@@ -70,7 +87,7 @@
             if (!patch) return null;
             const r = await sb.rpc("doc_cas", { p_col: col, p_id: id, p_patch: patch, p_version: data.version });
             if (r.error) throw wrapErr(r.error);
-            if (r.data === true) return patch;
+            if (r.data === true) { kickAll(col); return patch; }
           }
           throw { code: "resource_exhausted", message: "conflict" };
         },
@@ -97,7 +114,7 @@
       return {
         where: (f, op, v) => query(col, filters.concat([[f, op, v]])),
         get,
-        onSnapshot: (next, err) => listen(col, get, next, err)
+        onSnapshot: (next, err) => { const f = filters.find(x => x[0] === "status" && x[1] === "=="); return listen(col, get, next, err, f ? f[2] : null); }
       };
     }
     function collection(col) {
