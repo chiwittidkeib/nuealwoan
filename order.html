@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1550">
+<meta name="app-version" content="2026.10.09-1735">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -157,6 +157,11 @@ body.welcome .callb{display:none}
 .callpop{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
 .callpop .cc{background:var(--bg);width:100%;max-width:480px;border-radius:18px 18px 0 0;padding:18px 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px}
 .callpop h2{font-size:20px}
+.srvpop{position:fixed;inset:0;z-index:96;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px;animation:srvIn .25s ease}
+.srvpop .sc{background:var(--bg);border-radius:20px;padding:26px 20px 18px;max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;gap:8px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.srvpop .em{font-size:56px;line-height:1;animation:srvBob 1s ease-in-out infinite alternate}
+.srvpop h2{font-size:22px}.srvpop p{margin:0;opacity:.8}
+@keyframes srvIn{from{opacity:0}to{opacity:1}}@keyframes srvBob{from{transform:translateY(0)}to{transform:translateY(-6px)}}
 @media (min-width:700px){.callpop{align-items:center}.callpop .cc{border-radius:18px}}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#ffd58a;color:#3a2600;padding:10px 16px;border-radius:12px;font-weight:600;z-index:99;box-shadow:0 6px 24px rgba(0,0,0,.4);max-width:90vw;text-align:center}
 .updbar{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:99;background:#ffd58a;color:#2b1c00;border-radius:12px;padding:8px 10px 8px 14px;display:flex;gap:10px;align-items:center;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.45);white-space:nowrap}
@@ -428,6 +433,7 @@ async function loadStatus(force){const {data,error}=await sb.rpc('customer_statu
   if(data.open&&(data.items||[]).length){const oid=WALK?getWO():(data.orderId||S.myOrder);if(oid)setLast(oid)}else if(!data.open&&!data.moved&&lastOid()){tryReceipt();}
   if(data.moved&&(data.moved!==T||data.movedKey)){S.view='off';followMove(data.moved,data.movedKey);return}
   S.status=data;if(data.open&&memPend())setTimeout(attachPending,50);if(!WALK&&data.open&&data.orderId&&data.orderId!==S.myOrder){S.myOrder=data.orderId;setTO(data.orderId)}if(data.now)S.skew=data.now-Date.now();
+  srvCheck(data);
   const sig=JSON.stringify([data.items,data.call,data.ahead,data.open]);const changed=sig!==lastSig;lastSig=sig;setCall();
   if(WALK&&!data.open&&getWO())setWO(null);
   if(WALK&&data.walkinOn===false){fail('ร้านปิดรับออร์เดอร์แบบสั่งเอง','สั่งกับพนักงานที่เคาน์เตอร์ได้เลย');S.view='off';return}
@@ -435,6 +441,21 @@ async function loadStatus(force){const {data,error}=await sb.rpc('customer_statu
   const typing=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#view')&&/INPUT|TEXTAREA/.test(document.activeElement.tagName);
   if(typing){}else if(S.view==='status'||S.view==='done'||S.view==='bill')render();else if(changed&&(S.view==='menu'))render()}
 setInterval(()=>{if(S.view==='closed'&&!document.hidden)loadStatus()},6000);
+/* แจ้งลูกค้าบนหน้าจอเมื่อพนักงานกด "เสิร์ฟครบ" (ถ้าล็อกจออยู่และเปิดแจ้งเตือนไว้ จะได้แจ้งเตือนบนหน้าจอล็อกด้วย) */
+let srvPrev=null,AC=null;
+document.addEventListener('pointerdown',()=>{try{if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(C)AC=new C()}if(AC&&AC.state==='suspended')AC.resume()}catch(e){}},{passive:true});
+function srvChime(){try{if(!AC)return;const t=AC.currentTime;[[880,0],[1175,.18],[1568,.36]].forEach(([f,d])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,t+d);g.gain.linearRampToValueAtTime(.25,t+d+.02);g.gain.exponentialRampToValueAtTime(.001,t+d+.5);o.connect(g).connect(AC.destination);o.start(t+d);o.stop(t+d+.55)})}catch(e){}}
+function srvCheck(d){const items=(d&&d.open&&d.items)||[];const key=d&&d.orderId?'nl_srv_'+d.orderId:null;
+  const now=items.length?(items.every(l=>l.served)?'done':'wait'):null;const n=items.length;
+  if(key&&now==='wait'&&(+d.ahead||0)===0&&srvPrev&&srvPrev.key===key&&srvPrev.st==='wait'&&srvPrev.ahead>0){let seen='';try{seen=sessionStorage.getItem(key+'_q')||''}catch(e){}
+    if(seen!==String(d.firstWait||'')){try{sessionStorage.setItem(key+'_q',String(d.firstWait||''))}catch(e){}srvPop('👨‍🍳','ถึงคิวของคุณแล้ว',`ครัวกำลังทำอาหารของคุณ ${+d.waiting||''} รายการ`)}}
+  if(key&&now==='done'&&srvPrev&&srvPrev.key===key&&(srvPrev.st==='wait'||srvPrev.n<n)){let seen='';try{seen=sessionStorage.getItem(key)||''}catch(e){}
+    if(seen!==String(n)){try{sessionStorage.setItem(key,String(n))}catch(e){}srvPop()}}
+  srvPrev=key?{key,st:now,n,ahead:+d.ahead||0}:null}
+function srvPop(em,title,msg){const o=document.getElementById('srvPop');if(o)o.remove();srvChime();try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}
+  const el=document.createElement('div');el.id='srvPop';el.className='srvpop';el.setAttribute('role','alertdialog');el.setAttribute('aria-modal','true');
+  el.innerHTML=`<div class="sc"><div class="em">${em||'🍜'}</div><h2>${title||'อาหารเสิร์ฟครบแล้ว'}</h2><p>${msg||'ทานให้อร่อยนะครับ ต้องการอะไรเพิ่ม สั่งต่อได้เลย'}</p><button class="btn pri" type="button" style="margin-top:8px">รับทราบ</button></div>`;
+  el.addEventListener('click',e=>{if(e.target===el||e.target.closest('button'))el.remove()});document.body.appendChild(el)}
 /* อัปเดตสถานะเร็ว: หน้าดูรายการ/ยอด ทุก 4 วินาที หน้าอื่นทุก 12 วินาที */
 let tick=0;setInterval(()=>{if(!sb||document.hidden||['name','closed','off','paid'].includes(S.view))return;tick++;
   if(['status','done','bill'].includes(S.view)||tick%3===0)loadStatus()},4000);

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1720">
+<meta name="app-version" content="2026.10.09-1730">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -378,7 +378,8 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 #ordMove .inrow{align-items:center}
 .btn.ok-flash{background:#2f9e6b!important;border-color:#2f9e6b!important;color:#fff!important}
 .modesel{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:9px;padding:2px 4px 2px 10px;background:var(--surface);font-size:13px;color:var(--muted)}
-.modesel select{border:0;background:transparent;color:var(--fg);font-weight:600;padding:5px 4px;font-size:13.5px;cursor:pointer}
+.modesel select:focus,.modesel select:focus-visible{outline:none;box-shadow:none}
+.modesel select{border:0;background:transparent;outline:none;color:var(--fg);font-weight:600;padding:5px 4px;font-size:13.5px;cursor:pointer}
 .modesel.on{border-color:#c48d3d;background:#3a2a0b}.modesel.on select{color:#ffd58a}
 .viewas{padding:6px 16px;font-size:13px}
 @media (max-width:860px){.top-in{flex-wrap:wrap;row-gap:6px}.top-in .brand{flex-basis:100%}.modesel span{display:none}.modesel{padding:2px;margin-right:auto}.modesel select{max-width:130px}.viewas{top:calc(env(safe-area-inset-top,0px) + 100px)}}
@@ -835,6 +836,7 @@ const roleName=r=>ROLES[roleKey(r)]||'พนักงาน';
 const effRole=()=>S.role==='owner'&&S.viewAs?S.viewAs:S.role;
 function can(k){const r=effRole();if(r==='owner')return true;const dp=DEFAULT_PERMS[roleKey(r)]||{},rp=(S.perms&&S.perms[roleKey(r)])||dp;return !!(k in rp?rp[k]:dp[k])}
 const isPo=()=>S.shop==='po';
+const homeTab=r=>r==='chef'?(isPo()?'poprep':'kitchen'):(isPo()?'po':'tables');
 const TAB_OK={tables:()=>!isPo()&&can('tables'),kitchen:()=>!isPo()&&can('kitchen'),po:()=>isPo(),poprep:()=>isPo(),menu:()=>true,back:()=>!isPo()&&(can('stock')||can('expenses')||can('members')),report:()=>!isPo()&&can('report'),poreport:()=>isPo()&&can('report')};
 const deny=()=>{toast('ตำแหน่งของคุณไม่มีสิทธิ์ใช้ส่วนนี้ ติดต่อแอดมิน','bad');return true};
 const S={shop:(()=>{try{return localStorage.getItem('nl_shop')==='po'?'po':'noodle'}catch(e){return 'noodle'}})(),nMenu:[],poMenu:[],po:null,poOrders:[],poDay:null,poF:'active',floor:(()=>{try{return localStorage.getItem('nl_floor')||'tables'}catch(e){return 'tables'}})(),tab:'tables',perms:null,backTab:'stock',menuCat:'all',settings:{...DEFAULTS},
@@ -915,6 +917,7 @@ async function startData(){
   if(!['owner','staff','waiter','chef','partner'].includes(st.data)){S.state='nostaff';render();return}
   S.role=st.data;
   if(S.role==='owner'){try{const m=localStorage.getItem('nl_mode');if(m&&ROLES[m]&&m!=='owner')S.viewAs=m}catch(e){}}
+  S.tab=homeTab(effRole());
   let u;try{u=await tmo(SB.auth.getUser(),15000)}catch(e){u={data:{user:null}}}S.me=emailToUser(u.data.user?.email||'');S.email=String(u.data.user?.email||'').toLowerCase();
 
   const db=makeDb(SB);
@@ -2091,7 +2094,7 @@ const ACT={
   qrDayPrint:()=>{sheetQr();setTimeout(()=>window.print(),50)},
   qrOnePrint:()=>{sheetQrOne();setTimeout(()=>window.print(),50)},
   staffNew:()=>openSheet({type:'staffNew'}),
-  viewAs:d=>{try{localStorage.setItem('nl_mode',d.r)}catch(e){}S.viewAs=d.r;S.tab='tables';S.backTab='stock';closeSheet();render();window.scrollTo(0,0);toast('สลับเป็นมุมมอง '+roleName(d.r))},
+  viewAs:d=>{try{localStorage.setItem('nl_mode',d.r)}catch(e){}S.viewAs=d.r;S.tab=homeTab(d.r);S.backTab='stock';closeSheet();render();window.scrollTo(0,0);toast('สลับเป็นมุมมอง '+roleName(d.r))},
   viewAsOff:()=>{try{localStorage.removeItem('nl_mode')}catch(e){}S.viewAs=null;render();toast('กลับเป็นมุมมองแอดมินแล้ว')},
   permReset:()=>{renderPerm(DEFAULT_PERMS);toast('คืนค่าเริ่มต้นแล้ว กด "บันทึกสิทธิ์" เพื่อใช้งาน')},
   permSave:async()=>{const roles={waiter:{},chef:{},partner:{}};document.querySelectorAll('[data-perm]').forEach(c=>{const [r,k]=c.dataset.perm.split(':');roles[r][k]=c.checked});
@@ -2275,7 +2278,7 @@ async function poSave(){if(S.role!=='owner')return deny();poReadPts();const d=S.
 async function poSet(id,patch,msg){const ok=await write('po_orders/'+id,r=>r.update(patch));if(ok){const o=S.poOrders.find(x=>x.id===id);if(o)Object.assign(o,patch);render();if(msg)toast(msg)}}
 Object.assign(ACT,{
   viewSlip:async d=>{const o=S.open[d.id];try{const s=await S.db.doc('slips/'+d.id).get();const x=s.exists?s.data():null;if(!x||!x.img)return toast('ลูกค้าลบสลิปแล้ว หรือยังไม่ได้แนบ','bad');viewImg(x.img,'สลิป · '+(o?tableLabel(o):(x.orderNo||''))+' · '+hm(x.at))}catch(e){toast('โหลดสลิปไม่ได้','bad')}},
-  shopSw:d=>{if(!canPo())return deny();S.shop=d.v==='po'?'po':'noodle';try{localStorage.setItem('nl_shop',S.shop)}catch(e){}S.menuCat='all';S.tab=isPo()?'po':'tables';closeSheet();render();window.scrollTo(0,0)},
+  shopSw:d=>{if(!canPo())return deny();S.shop=d.v==='po'?'po':'noodle';try{localStorage.setItem('nl_shop',S.shop)}catch(e){}S.menuCat='all';S.tab=homeTab(effRole());closeSheet();render();window.scrollTo(0,0)},
   poDay:d=>{S.poDay=d.v;render()},
   poF:d=>{S.poF=d.v;render()},
   poOpen:async()=>{if(S.role!=='owner')return deny();const on=!poCfg().open;const ok=await write('config/po',r=>r.set({...poCfg(),open:on}));if(ok){S.po={...poCfg(),open:on};render();toast(on?'เปิดรับออร์เดอร์แล้ว':'ปิดรับออร์เดอร์แล้ว')}},
