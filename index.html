@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1730">
+<meta name="app-version" content="2026.10.09-1750">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -274,6 +274,23 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:80;font-size:14px;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
 .toast.bad{background:var(--chili);color:#fff}
 @media (prefers-reduced-motion:no-preference){.panel{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+.mlay{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-left:auto;flex:none}
+.mlay button{border:0;background:var(--surface);color:var(--fg);padding:6px 11px;font:inherit;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.mlay button[aria-pressed="true"]{background:var(--jade);color:#06231c;font-weight:700}
+.chips-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.chips-row .chips{flex:1 1 280px;min-width:0}
+.mtgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.mtile{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;position:relative}
+.mtile.off{opacity:.62}
+.mtile .mg-img{aspect-ratio:4/3;width:100%;background:var(--sunk);position:relative;overflow:hidden;flex:none}
+.mtile .mg-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.mtile .mg-img.none{display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--muted);font-family:var(--f-display)}
+.mtile .mb{padding:9px 11px 11px;display:flex;flex-direction:column;gap:4px;flex:1}
+.mtile .mn{font-weight:600;line-height:1.3}
+.mtile .ms{font-size:12px;color:var(--muted)}
+.mtile .mf{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:6px}
+.mtile .mf b{font-size:17px;margin-right:auto}
+.mtile .tags{position:absolute;top:8px;left:8px;right:8px;display:flex;flex-wrap:wrap;gap:4px;pointer-events:none}
+@media (max-width:520px){.mtgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.mtile .mf{flex-wrap:wrap}.mtile .mf .btn{width:100%}}
 .thumb{width:52px;height:52px;border-radius:9px;overflow:hidden;flex:none;background:var(--sunk)}
 .thumb img,.cimg img,.photo-box img{width:100%;height:100%;object-fit:cover;display:block}
 .thumb.none,.cimg.none{display:flex;align-items:center;justify-content:center;font-family:var(--f-display);color:var(--muted);font-size:20px}
@@ -845,6 +862,7 @@ const S={shop:(()=>{try{return localStorage.getItem('nl_shop')==='po'?'po':'nood
   report:{range:'today',data:null,loading:false}};
 
 Object.defineProperty(S,'menu',{get(){return S.shop==='po'?S.poMenu:S.nMenu},set(v){S.nMenu=v}});
+try{S.menuLay=localStorage.getItem('nl_menulay')==='grid'?'grid':'list'}catch(e){S.menuLay='list'}
 const curCats=()=>S.shop==='po'?((S.po&&S.po.cats)||[]):(S.settings.cats||[]);
 /* ---------- db writes: one at a time per document ---------- */
 const queues={};
@@ -1134,9 +1152,15 @@ function viewKitchen(){
 function viewMenu(){
   const cats=curCats();
   let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
-  <div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div>`;
+  <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div><div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
   const list=S.menu.filter(m=>S.menuCat==='all'||m.cat===S.menuCat);
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุนต่อจาน</div>`;
+  const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':''}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิด (หมด)'}</button>`:'';
+  if(S.menuLay==='grid'){h+='<div class="mtgrid">';
+    list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
+      h+=`<div class="mtile${isSoldOut(m)?' off':''}" data-act="menuEdit" data-id="${m.id}">${thumb(m,'mg-img')}<div class="tags">${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?'<span class="pill mute">ซ่อน</span>':''}${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
+       <div class="mb"><div class="mn">${esc(m.name)}</div><div class="ms">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%</div><div class="mf"><b>${baht(p)}</b>${tog(m)}</div></div></div>`});
+    return h+'</div>';}
   h+='<div class="list">';
   list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
     h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?' <span class="pill mute">ซ่อน</span>':''}${m.consign?` <span class="pill info">📦 ฝากขาย · เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?` <span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div>${(can('menu_edit')||can('menu_toggle'))?`<button class="btn sm${m.active===false?' pri':''}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิด (หมด)'}</button>`:''}<div class="r"><b>${baht(p)}</b></div></div>`});
@@ -1158,18 +1182,18 @@ function viewBack(){
   if(t==='stock'){
     const low=S.stock.filter(isLow);
     h+=`<div class="sec-h"><h2>ของที่ต้องเติม</h2><span class="hint">คงเหลือต่ำกว่าหรือเท่าจุดสั่งซื้อ</span></div>`;
-    h+=low.length?'<div class="list">'+low.map(s=>`<div class="row"><div class="grow"><div class="t">${esc(s.name)}</div><div class="s">เหลือ ${num(s.qty)} ${esc(s.unit)} · จุดสั่งซื้อ ${num(s.min)} ${esc(s.unit)}</div></div><button class="btn sm pri" data-act="purchase" data-id="${s.id}" type="button">ซื้อเติม</button></div>`).join('')+'</div>':`<div class="empty"><b>ของยังพอใช้ทุกรายการ</b>รายการที่ใกล้หมดจะขึ้นที่นี่ให้ซื้อเติมได้ทันที</div>`;
+    h+=low.length?'<div class="list">'+low.map(s=>`<div class="row">${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)}</div><div class="s">เหลือ ${num(s.qty)} ${esc(s.unit)} · จุดสั่งซื้อ ${num(s.min)} ${esc(s.unit)}</div></div><button class="btn sm pri" data-act="purchase" data-id="${s.id}" type="button">ซื้อเติม</button></div>`).join('')+'</div>':`<div class="empty"><b>ของยังพอใช้ทุกรายการ</b>รายการที่ใกล้หมดจะขึ้นที่นี่ให้ซื้อเติมได้ทันที</div>`;
     h+=`<div class="sec-h"><h2>วัตถุดิบทั้งหมด</h2><button class="btn sm" data-act="stockEdit" type="button">+ เพิ่มวัตถุดิบ</button></div>`;
     if(!S.stock.length)return h+`<div class="empty"><b>ยังไม่มีวัตถุดิบ</b>เพิ่มเส้น ลูกชิ้น เนื้อสัตว์ ผัก เพื่อติดตามของคงเหลือและต้นทุน</div>`;
     h+='<div class="list">'+S.stock.map(s=>{const q=+s.qty||0,m=+s.min||0,pct=Math.min(100,m>0?q/(m*3)*100:100);
-      return `<div class="row click" data-act="stockEdit" data-id="${s.id}"><div class="grow"><div class="t">${esc(s.name)} ${isLow(s)?'<span class="pill bad">ต้องเติม</span>':''}</div><div class="s">ทุนล่าสุด ${baht(s.unitCost||0)}/${esc(s.unit)}</div><div class="meter ${isLow(s)?'low':''}"><i style="width:${Math.max(3,pct)}%"></i></div></div><div class="r"><b class="num">${num(q)}</b> <span class="muted">${esc(s.unit)}</span></div></div>`}).join('')+'</div>';
+      return `<div class="row click" data-act="stockEdit" data-id="${s.id}">${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)} ${isLow(s)?'<span class="pill bad">ต้องเติม</span>':''}</div><div class="s">ทุนล่าสุด ${baht(s.unitCost||0)}/${esc(s.unit)}${s.buyPer&&s.buyUnit?` · 1 ${esc(s.buyUnit)} ≈ ${num(s.buyPer)} ${esc(s.unit)}`:''}</div><div class="meter ${isLow(s)?'low':''}"><i style="width:${Math.max(3,pct)}%"></i></div></div><div class="r"><b class="num">${num(q)}</b> <span class="muted">${esc(s.unit)}</span></div></div>`}).join('')+'</div>';
     return h;}
   if(t==='purch'){
     const sum=S.purch.filter(p=>p.at>=sod()-29*DAY).reduce((s,p)=>s+(+p.amount||0),0);
     h+=`<div class="sec-h"><h2>ซื้อของ 30 วันล่าสุด</h2><button class="btn pri sm" data-act="purchase" type="button">+ บันทึกการซื้อ</button></div>
     <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="money">${baht(sum)}</b><span>รวมค่าซื้อของ</span></div><div class="stat"><b class="num">${S.purch.length}</b><span>รายการ</span></div></div>`;
     if(!S.purch.length)return h+`<div class="empty"><b>ยังไม่มีการซื้อของ</b>บันทึกทุกครั้งที่ไปตลาด ระบบจะเติมจำนวนในสต็อกและอัปเดตต้นทุนให้</div>`;
-    return h+'<div class="list">'+S.purch.map(p=>`<div class="row"><div class="grow"><div class="t">${esc(p.name)} <span class="muted">${num(p.qty)} ${esc(p.unit||'')}</span></div><div class="s">${dshort(p.at)} ${hm(p.at)}${p.note?' · '+esc(p.note):''}</div></div><div class="r"><b>${baht(p.amount)}</b></div><button class="btn sm danger" data-act="delPurch" data-id="${p.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>';}
+    return h+'<div class="list">'+S.purch.map(p=>`<div class="row"><div class="grow"><div class="t">${esc(p.name)} <span class="muted">${p.buyQty?num(p.buyQty)+' '+esc(p.buyUnit||'')+' = ':''}${num(p.qty)} ${esc(p.unit||'')}</span></div><div class="s">${dshort(p.at)} ${hm(p.at)}${p.note?' · '+esc(p.note):''}</div></div><div class="r"><b>${baht(p.amount)}</b></div><button class="btn sm danger" data-act="delPurch" data-id="${p.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>';}
   const sum=S.exp.reduce((s,e)=>s+(+e.amount||0),0);
   h+=`<div class="sec-h"><h2>รายจ่าย 30 วันล่าสุด</h2><button class="btn pri sm" data-act="expense" type="button">+ บันทึกรายจ่าย</button></div>
   <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="money">${baht(sum)}</b><span>รวมรายจ่าย</span></div><div class="stat"><b class="num">${S.exp.length}</b><span>รายการ</span></div></div>`;
@@ -1686,36 +1710,61 @@ function sheetMember(){const m=S.members.find(x=>x.id===S.sheet.id);if(!m)return
    <div class="sh-foot"><button class="btn danger" data-act="memDel" data-confirm="1" type="button">ลบสมาชิก</button><button class="btn pri wide" data-act="memSave" type="button">บันทึก</button></div>`;}
 
 /* stock */
+const stThumb=s=>s.img?`<span data-act="imgv" data-src="${esc(s.img)}" data-cap="${esc(s.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(s,'thumb')}</span>`:thumb(s,'thumb');
 function sheetStock(){const s=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit:'กก.',qty:'',min:'',unitCost:''};
+  if(!S.sheet.sphoto)S.sheet.sphoto={url:s.img||'',path:s.imgPath||'',file:null,removed:false};
   $('#panel').innerHTML=head(S.sheet.id?'แก้ไขวัตถุดิบ':'เพิ่มวัตถุดิบ')+
-  `<form class="sh-body"><div class="field"><label for="sName">ชื่อ</label><input id="sName" value="${esc(s.name)}" placeholder="เช่น เส้นเล็ก" autocomplete="off"></div>
+  `<form class="sh-body"><div class="photo-edit"><div class="photo-box" id="sPhotoBox"></div><div class="photo-act">
+     <label class="btn sm" for="sPhoto">${s.img?'เปลี่ยนรูป':'+ ใส่รูปวัตถุดิบ'}</label><input id="sPhoto" type="file" accept="image/*" hidden>
+     <button class="btn sm ghost" data-act="sPhotoRemove" type="button" id="sPhotoDel">ลบรูป</button>
+     <small class="muted">ถ่ายจากมือถือได้เลย ระบบย่อรูปให้อัตโนมัติ</small></div></div>
+  <div class="field"><label for="sName">ชื่อ</label><input id="sName" value="${esc(s.name)}" placeholder="เช่น เส้นเล็ก" autocomplete="off"></div>
   <div class="grid2"><div class="field"><label for="sUnit">หน่วย</label><input id="sUnit" value="${esc(s.unit)}" placeholder="กก. / ถุง / ก้อน"></div><div class="field"><label for="sQty">คงเหลือตอนนี้</label><input id="sQty" inputmode="decimal" value="${s.qty??''}"></div></div>
   <div class="grid2"><div class="field"><label for="sMin">จุดสั่งซื้อ (เหลือเท่านี้ให้เตือน)</label><input id="sMin" inputmode="decimal" value="${s.min??''}"></div><div class="field"><label for="sCost">ต้นทุนต่อหน่วย (บาท)</label><input id="sCost" inputmode="decimal" value="${s.unitCost??''}"></div></div>
   <p class="help" style="margin:0">นับของจริงแล้วแก้ "คงเหลือ" ได้ตลอด ต้นทุนต่อหน่วยจะอัปเดตเองทุกครั้งที่บันทึกการซื้อ</p></form>
-  <div class="sh-foot">${S.sheet.id?`<button class="btn danger" data-act="delStock" data-confirm="1" type="button">ลบ</button><button class="btn" data-act="purchase" data-id="${S.sheet.id}" type="button">ซื้อเติม</button>`:''}<button class="btn pri wide" data-act="saveStock" type="button">บันทึก</button></div>`;}
+  <div class="sh-foot">${S.sheet.id?`<button class="btn danger" data-act="delStock" data-confirm="1" type="button">ลบ</button><button class="btn" data-act="purchase" data-id="${S.sheet.id}" type="button">ซื้อเติม</button>`:''}<button class="btn pri wide" data-act="saveStock" type="button">บันทึก</button></div>`;
+  renderSPhoto();
+  $('#sPhoto').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
+    if(!/^image\//.test(f.type))return toast('เลือกไฟล์รูปภาพ','bad');
+    const ph=S.sheet.sphoto;if(ph.preview)URL.revokeObjectURL(ph.preview);ph.file=f;ph.preview=URL.createObjectURL(f);ph.removed=false;S.sheet.dirty=true;renderSPhoto();});}
+function renderSPhoto(){const ph=S.sheet.sphoto,box=$('#sPhotoBox');if(!box)return;const src=ph.preview||(!ph.removed&&ph.url)||'';
+  box.innerHTML=src?`<img src="${esc(src)}" alt="รูปวัตถุดิบ" class="zoomable" title="แตะเพื่อดูรูปเต็ม">`:'<span>ยังไม่มีรูป</span>';box.onclick=src?()=>viewImg(src,val('sName')):null;$('#sPhotoDel').hidden=!src;}
 async function saveStock(){const name=val('sName');if(!name)return toast('ใส่ชื่อวัตถุดิบก่อน','bad');
-  const data={name,unit:val('sUnit')||'หน่วย',qty:nval('sQty'),min:nval('sMin'),unitCost:nval('sCost')};
-  const id=S.sheet.id||S.db.collection('stock').doc().id;
-  const ok=await write('stock/'+id,r=>r.set(data));if(ok){closeSheet();toast('บันทึกแล้ว')}}
+  const id=S.sheet.id||S.sheet.newId||(S.sheet.newId=S.db.collection('stock').doc().id);
+  const old=S.stock.find(x=>x.id===id)||{};
+  const data={...old,name,unit:val('sUnit')||'หน่วย',qty:nval('sQty'),min:nval('sMin'),unitCost:nval('sCost')};delete data.id;
+  const ph=S.sheet.sphoto||{};let drop='';
+  if(ph.file){const b=$('[data-act=saveStock]');if(b){b.disabled=true;b.textContent='กำลังอัปโหลดรูป…'}
+    try{const up=await uploadMenuPhoto('stock/'+id,ph.file);data.img=up.url;data.imgPath=up.path;drop=old.imgPath||''}
+    catch(e){if(b){b.disabled=false;b.textContent='บันทึก'}return toast('อัปโหลดรูปไม่สำเร็จ ลองใหม่อีกครั้ง','bad')}}
+  else if(ph.removed){data.img='';data.imgPath='';drop=old.imgPath||''}
+  const ok=await write('stock/'+id,r=>r.set(data));if(ok){if(drop)removePhoto(drop);closeSheet();toast('บันทึกแล้ว')}
+  else{const b=$('[data-act=saveStock]');if(b){b.disabled=false;b.textContent='บันทึก'}}}
 
 function sheetPurchase(){const sid=S.sheet.id||'';
   $('#panel').innerHTML=head('บันทึกการซื้อของ','ระบบจะเติมจำนวนเข้าสต็อกให้')+
   `<form class="sh-body"><div class="field"><label for="pItem">ซื้ออะไร</label><select id="pItem">${S.stock.map(s=>`<option value="${s.id}" ${s.id===sid?'selected':''}>${esc(s.name)} (${esc(s.unit)})</option>`).join('')}<option value="__new" ${!S.stock.length?'selected':''}>+ ของใหม่ที่ยังไม่มีในสต็อก</option></select></div>
   <div class="grid2" id="pNew" hidden><div class="field"><label for="pName">ชื่อของใหม่</label><input id="pName" autocomplete="off"></div><div class="field"><label for="pUnit">หน่วย</label><input id="pUnit" value="กก."></div></div>
-  <div class="grid2"><div class="field"><label for="pQty">จำนวน</label><input id="pQty" inputmode="decimal"></div><div class="field"><label for="pAmt">ราคารวม (บาท)</label><input id="pAmt" inputmode="decimal"></div></div>
+  <div class="grid2"><div class="field"><label for="pQty">จำนวนที่นับเข้าสต็อก (<span id="pQU">หน่วย</span>)</label><input id="pQty" inputmode="decimal" placeholder="เช่น 190"></div><div class="field"><label for="pAmt">ราคารวม (บาท)</label><input id="pAmt" inputmode="decimal"></div></div>
+  <div class="field"><label for="pBuy">ซื้อมาเป็น (ไม่บังคับ)</label><div style="display:flex;gap:8px"><input id="pBuy" inputmode="decimal" placeholder="เช่น 3" style="flex:1"><input id="pBuyU" value="กก." placeholder="กก. / แพ็ค / ถุง" style="flex:1"></div></div>
   <p class="help" id="pUnitCost" style="margin:0"></p>
   <div class="grid2"><div class="field"><label for="pDate">วันที่ซื้อ</label><input id="pDate" type="date" value="${toDateInput(Date.now())}"></div><div class="field"><label for="pNote">ร้าน / หมายเหตุ</label><input id="pNote" placeholder="เช่น ตลาดสด" autocomplete="off"></div></div></form>
   <div class="sh-foot"><button class="btn pri wide" data-act="savePurch" type="button">บันทึกการซื้อ</button></div>`;
-  const upd=()=>{$('#pNew').hidden=$('#pItem').value!=='__new';const q=nval('pQty'),a=nval('pAmt');$('#pUnitCost').textContent=q&&a?'ตกหน่วยละ '+baht(a/q):''};
-  ['pItem','pQty','pAmt'].forEach(i=>$('#'+i).addEventListener('input',upd));upd();}
+  const upd=()=>{const isN=$('#pItem').value==='__new';$('#pNew').hidden=!isN;const st=S.stock.find(x=>x.id===$('#pItem').value);const u=isN?(val('pUnit')||'หน่วย'):(st?st.unit:'หน่วย');$('#pQU').textContent=u;
+    const q=nval('pQty'),a=nval('pAmt'),bq=nval('pBuy'),bu=val('pBuyU')||'หน่วยซื้อ';const t=[];
+    if(q&&a)t.push(`ตก${esc(u)}ละ <b>${baht(a/q)}</b>`);if(bq&&a)t.push(`${esc(bu)}ละ ${baht(a/bq)}`);if(bq&&q)t.push(`1 ${esc(bu)} ≈ ${num(r2(q/bq))} ${esc(u)}`);
+    if(st&&st.buyPer&&st.buyUnit&&bq&&q)t.push(`<span class="muted">(ครั้งก่อน 1 ${esc(st.buyUnit)} ≈ ${num(st.buyPer)} ${esc(u)})</span>`);
+    $('#pUnitCost').innerHTML=t.join(' · ')};
+  ['pItem','pQty','pAmt','pBuy','pBuyU','pUnit'].forEach(i=>$('#'+i).addEventListener('input',upd));$('#pItem').addEventListener('change',upd);upd();}
 async function savePurch(){let sid=val('pItem');const qty=nval('pQty'),amount=nval('pAmt');
   if(!(qty>0))return toast('ใส่จำนวนที่ซื้อ','bad');
   let s=S.stock.find(x=>x.id===sid);
   if(sid==='__new'){const name=val('pName');if(!name)return toast('ใส่ชื่อของใหม่','bad');sid=S.db.collection('stock').doc().id;s={name,unit:val('pUnit')||'หน่วย',qty:0,min:0,unitCost:0}}
   const uc=amount>0?r2(amount/qty):(+s.unitCost||0);const isNew=!S.stock.some(x=>x.id===sid);
-  const ok=await write('stock/'+sid,r=>isNew?r.set({name:s.name,unit:s.unit,qty,min:0,unitCost:uc}):r.transform(d=>({qty:r2((+d.qty||0)+qty),unitCost:uc})));if(!ok)return;
+  const bq=nval('pBuy'),bu=bq>0?(val('pBuyU')||''):'';const bx=bq>0&&bu?{buyUnit:bu,buyPer:r2(qty/bq)}:{};
+  const ok=await write('stock/'+sid,r=>isNew?r.set({name:s.name,unit:s.unit,qty,min:0,unitCost:uc,...bx}):r.transform(d=>({qty:r2((+d.qty||0)+qty),unitCost:uc,...bx})));if(!ok)return;
   const ref=S.db.collection('purchases').doc();
-  await write('purchases/'+ref.id,r=>r.set({stockId:sid,name:s.name,unit:s.unit,qty,amount,note:val('pNote'),at:fromDateInput(val('pDate'))}));
+  await write('purchases/'+ref.id,r=>r.set({stockId:sid,name:s.name,unit:s.unit,qty,amount,...(bq>0?{buyQty:bq,buyUnit:bu}:{}),note:val('pNote'),at:fromDateInput(val('pDate'))}));
   closeSheet();toast(`เติม ${s.name} +${num(qty)} ${s.unit} แล้ว`);}
 
 function sheetExpense(){const cats=S.settings.expCats||DEFAULTS.expCats;
@@ -2042,6 +2091,7 @@ const ACT={
   serve:d=>mutateItems(d.id,items=>{const l=items.find(x=>x.id===d.l);if(l)l.served=true;return items}),
   serveAll:d=>mutateItems(d.id,items=>items.map(l=>({...l,served:true}))),
   menuCat:d=>{S.menuCat=d.v;render()},
+  menuLay:d=>{S.menuLay=d.v==='grid'?'grid':'list';try{localStorage.setItem('nl_menulay',S.menuLay)}catch(e){}render()},
   optBulk:()=>can('menu_edit')?openSheet({type:'optBulk'}):deny(),
   obCat:d=>{const sh=S.sheet,ms=S.menu.filter(m=>(m.cat||'ไม่มีหมวด')===d.v),on=!ms.every(m=>sh.pick[m.id]);ms.forEach(m=>sh.pick[m.id]=on);sheetOptBulk()},
   menuToggle:async(d,b,e)=>{if(e)e.stopPropagation();if(!can('menu_edit')&&!can('menu_toggle'))return deny();const m=S.menu.find(x=>x.id===d.id);if(!m)return;const on=m.active===false;
@@ -2076,11 +2126,12 @@ const ACT={
   calcCost:()=>{readIng();const c=S.sheet.recipe.reduce((s,g)=>{const st=S.stock.find(x=>x.id===g.stockId);return s+(st?(+st.unitCost||0)*(+g.qty||0):0)},0);$('#mCost').value=r2(c);toast('ต้นทุนวัตถุดิบ '+baht(c)+' ปรับเพิ่มค่าน้ำซุป/เครื่องปรุงได้')},
   saveMenu,
   delMenu:async()=>{const p=S.sheet.photo&&S.sheet.photo.path;const ok=await write('menu/'+S.sheet.id,r=>r.delete());if(ok){removePhoto(p);closeSheet();toast('ลบเมนูแล้ว')}},
+  sPhotoRemove:()=>{const ph=S.sheet.sphoto;if(ph.preview)URL.revokeObjectURL(ph.preview);ph.preview='';ph.file=null;ph.removed=true;S.sheet.dirty=true;$('#sPhoto').value='';renderSPhoto()},
   photoRemove:()=>{const ph=S.sheet.photo;if(ph.preview)URL.revokeObjectURL(ph.preview);ph.preview='';ph.file=null;ph.removed=true;$('#mPhoto').value='';renderPhoto()},
   backTab:d=>{S.backTab=d.v;render()},
   stockEdit:d=>openSheet({type:'stockEdit',id:d.id||null}),
   saveStock,
-  delStock:async()=>{const ok=await write('stock/'+S.sheet.id,r=>r.delete());if(ok){closeSheet();toast('ลบแล้ว')}},
+  delStock:async()=>{const old=S.stock.find(x=>x.id===S.sheet.id)||{};const ok=await write('stock/'+S.sheet.id,r=>r.delete());if(ok){if(old.imgPath)removePhoto(old.imgPath);closeSheet();toast('ลบแล้ว')}},
   purchase:d=>!can('stock')?deny():openSheet({type:'purchase',id:d.id||null}),
   savePurch,
   delPurch:d=>write('purchases/'+d.id,r=>r.delete()).then(ok=>ok&&toast('ลบรายการซื้อแล้ว (สต็อกไม่เปลี่ยน)')),
