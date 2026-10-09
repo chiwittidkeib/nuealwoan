@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1800">
+<meta name="app-version" content="2026.10.09-1855">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -275,6 +275,10 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:80;font-size:14px;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
 .toast.bad{background:var(--chili);color:#fff}
 @media (prefers-reduced-motion:no-preference){.panel{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+.ptswarn{background:rgba(255,180,60,.13);border:1px solid rgba(255,180,60,.45);color:#ffd58a;border-radius:9px;padding:7px 10px;font-size:13px}
+.ptswarn-i{color:#ffb347}
+.rwbox{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}.rwbox>.btn{align-self:flex-start}.rwsel{display:flex;flex-wrap:wrap;gap:6px}.rwsel .pill{display:inline-flex;align-items:center;gap:4px}
+.rwlist .row{gap:8px}
 .lbl-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}.lbl-row label{margin:0}
 .mlay{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-left:auto;flex:none}
 .mlay button{border:0;background:var(--surface);color:var(--fg);padding:6px 11px;font:inherit;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px}
@@ -954,6 +958,8 @@ async function startData(){
   db.collection('voice').onSnapshot(s=>{const v={};s.docs.forEach(d=>{const x=d.data();if(x&&x.wav)v[d.id]=x.wav});S.voice=v;if(S.sheet&&S.sheet.type==='voiceRec')sheetVoiceRec()},onErr);
   db.collection('calls').onSnapshot(s=>{const prev=new Set(S.calls.map(c=>c.id+':'+c.at));S.calls=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.at-b.at);
     if(S.calls.some(c=>!prev.has(c.id+':'+c.at)&&Date.now()-c.at<120000))callAlert();renderCalls();render()},onErr);
+  db.collection('rewards').onSnapshot(s=>{S.rewards=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(+a.pts||0)-(+b.pts||0));if(S.tab==='back')render();if(S.sheet&&S.sheet.type==='pay')renderMem()},onErr);
+  setTimeout(expireRun,6000);
   db.collection('members').onSnapshot(s=>{S.members=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.lastAt||0)-(a.lastAt||0));if(S.tab==='back')render()},onErr);
   const since=sod()-30*DAY;
   db.collection('consign_log').where('at','>=',sod()-90*DAY).onSnapshot(s=>{S.consignLog=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back')render()},onErr);
@@ -1177,11 +1183,7 @@ function viewBack(){
   let h=`<div class="subtabs" role="group">${BT.stock?`<button aria-pressed="${t==='stock'}" data-act="backTab" data-v="stock" type="button">สต็อกวัตถุดิบ</button><button aria-pressed="${t==='purch'}" data-act="backTab" data-v="purch" type="button">ซื้อของเข้า</button>`:''}${BT.exp?`<button aria-pressed="${t==='exp'}" data-act="backTab" data-v="exp" type="button">รายจ่ายร้าน</button>`:''}${BT.exp?`<button aria-pressed="${t==='inc'}" data-act="backTab" data-v="inc" type="button">รายรับอื่นๆ</button>`:''}${BT.stock?`<button aria-pressed="${t==='consign'}" data-act="backTab" data-v="consign" type="button">ฝากขาย</button>`:''}${BT.mem?`<button aria-pressed="${t==='mem'}" data-act="backTab" data-v="mem" type="button">สมาชิก</button>`:''}</div>`;
   if(t==='consign')return h+viewConsign();
   if(t==='inc')return h+viewIncome();
-  if(t==='mem'){const tot=S.members.reduce((a,m)=>a+(+m.points||0),0);
-    h+=`<div class="sec-h"><h2>สมาชิกสะสมแต้ม</h2><span class="hint">${S.settings.pointsOn?`ทุก ${baht(+S.settings.pointsPer||50)} = 1 แต้ม · 1 แต้ม = ${baht(+S.settings.pointValue||1)}`:'ปิดระบบแต้มอยู่ เปิดได้ที่ตั้งค่าร้าน'}</span></div>
-    <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="num">${S.members.length}</b><span>สมาชิกทั้งหมด</span></div><div class="stat"><b class="num">${num(tot)}</b><span>แต้มค้างในระบบ (≈ ${baht(tot*(+S.settings.pointValue||1))})</span></div></div>`;
-    if(!S.members.length)return h+`<div class="empty"><b>ยังไม่มีสมาชิก</b>ตอนรับเงิน ใส่เบอร์โทรลูกค้า ระบบจะสมัครสมาชิกและเริ่มสะสมแต้มให้</div>`;
-    return h+'<div class="list">'+S.members.slice(0,300).map(m=>`<div class="row click" data-act="memEdit" data-id="${esc(m.id)}"><div class="grow"><div class="t">${esc(m.name||'ไม่ระบุชื่อ')}</div><div class="s">${esc(m.id)} · มา ${m.visits||0} ครั้ง · ใช้จ่ายรวม ${baht(m.totalSpent||0)}</div></div><div class="r"><b>${num(m.points||0)}</b> <span class="muted">แต้ม</span></div></div>`).join('')+'</div>';}
+  if(t==='mem')return h+viewMembers();
   if(t==='stock'){
     const low=S.stock.filter(isLow);
     h+=`<div class="sec-h"><h2>ของที่ต้องเติม</h2><span class="hint">คงเหลือต่ำกว่าหรือเท่าจุดสั่งซื้อ</span></div>`;
@@ -1289,7 +1291,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -1418,31 +1420,76 @@ function sheetPay(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const s
 const payOpen=id=>{const o=S.open[id];const p={type:'pay',id,method:o&&isDel(o)?chOf(o):(o&&o.slipAt?'promptpay':'cash'),discount:'',received:''};
   if(o&&o.memberPhone&&S.settings.pointsOn&&!isDel(o)){p.phone=o.memberPhone;p.member=S.members.find(m=>m.id===o.memberPhone)||null;p.memberNew=!p.member;p.custMem=true}return p};
 function payCalc(){const o=S.open[S.sheet.id],s=S.sheet,st=S.settings;const sub=linesTotal(o.items);const disc=Math.min(sub,Math.max(0,parseFloat(s.discount)||0));
-  let use=0,redeem=0;const pv=Math.max(0.01,+st.pointValue||1);
-  if(st.pointsOn&&s.member){use=Math.max(0,Math.min(Math.floor(parseFloat(s.usePts)||0),Math.floor(+s.member.points||0),Math.floor((sub-disc)/pv)));redeem=r2(use*pv)}
+  let use=0,redeem=0,rwPts=0,rwDisc=0;const pv=Math.max(0.01,+st.pointValue||1);
+  if(st.pointsOn&&s.member){const rw=s.rw||[];rwPts=rw.reduce((a,x)=>a+(+x.pts||0),0);rwDisc=Math.min(sub-disc,r2(rw.reduce((a,x)=>a+(+x.value||0),0)));
+    use=Math.max(0,Math.min(Math.floor(parseFloat(s.usePts)||0),Math.floor(memPts(s.member)-rwPts),Math.floor((sub-disc-rwDisc)/pv)));redeem=r2(use*pv+rwDisc)}
   const vc=vatCalc(sub-disc-redeem);const total=vc.total;const recv=parseFloat(s.received)||0;
   const gpPct=DELIV.includes(s.method)?(+chCfg(s.method).gp||0):0;const gp=r2(total*gpPct/100);
   // แต้มคิดจากยอดไม่รวมเงิน VAT (หลังหักส่วนลด) ปัดลง: 50 บาท = 1 แต้ม → 110 ได้ 2, 150 ได้ 3
   const ptsBase=Math.max(0,r2(+vc.beforeVat||0));
   const earn=st.pointsOn&&(s.member||s.memberNew)?Math.floor(ptsBase/Math.max(1,+st.pointsPer||50)+1e-9):0;
-  return {sub,disc,use,redeem,total,recv,change:r2(recv-total),earn,gp,gpPct,net:r2(total-gp),vat:vc.vat,vatRate:vc.rate,vatMode:vc.mode,beforeVat:vc.beforeVat,round:vc.round,ptsBase}}
+  return {sub,disc,use,rwPts,rwDisc,redeem,total,recv,change:r2(recv-total),earn,gp,gpPct,net:r2(total-gp),vat:vc.vat,vatRate:vc.rate,vatMode:vc.mode,beforeVat:vc.beforeVat,round:vc.round,ptsBase}}
 const normPhone=v=>String(v||'').replace(/\D/g,'').replace(/^66(?=\d{9}$)/,'0');
 const maskPhone=p=>{const d=String(p||'');return d.length>=9?d.slice(0,3)+'-xxx-'+d.slice(-4):d};
 function findMember(){const ph=normPhone(val('payPhone'));const s=S.sheet;
   if(ph.length<9||ph.length>10){toast('ใส่เบอร์โทร 9–10 หลัก','bad');return}
-  s.phone=ph;s.member=S.members.find(m=>m.id===ph)||null;s.memberNew=!s.member;s.usePts='';renderMem();payUpdate();}
+  s.phone=ph;s.member=S.members.find(m=>m.id===ph)||null;s.memberNew=!s.member;s.usePts='';s.rw=[];renderMem();payUpdate();}
 function renderMem(){const box=$('#payMem');if(!box)return;const s=S.sheet,st=S.settings,m=s.member;if(s.custMem&&!s.custNote){s.custNote=1;setTimeout(()=>toast('ลูกค้าใส่เบอร์สมาชิกมาเอง: '+maskPhone(s.phone)),200)}
-  if(m)box.innerHTML=`<div class="mem"><div><b>${esc(m.name||'สมาชิก')}</b><div class="help">${maskPhone(m.id)} · มา ${m.visits||0} ครั้ง</div></div><div style="text-align:right"><b class="num">${num(m.points||0)}</b><div class="help">แต้มสะสม</div></div></div>
+  if(m){const ex=memExpSoon(m);box.innerHTML=`<div class="mem"><div><b>${esc(m.name||'สมาชิก')}</b><div class="help">${maskPhone(m.id)} · มา ${m.visits||0} ครั้ง</div></div><div style="text-align:right"><b class="num">${num(memPts(m))}</b><div class="help">แต้มสะสม</div></div></div>
+    ${ex?`<div class="ptswarn">⚠️ ${expTxt(ex)} · แนะนำให้ลูกค้าใช้แต้ม</div>`:''}
+    <div id="payRw"></div>
     <div class="field"><label for="payUse">ใช้แต้มเป็นส่วนลด (1 แต้ม = ${baht(+st.pointValue||1)})</label><div class="inrow"><input id="payUse" inputmode="numeric" placeholder="0" value="${esc(s.usePts||'')}"><button class="btn sm" data-act="useMax" type="button">ใช้ทั้งหมด</button></div></div>
-    <p class="help" style="margin:0" id="payEarn"></p><button class="lnk" data-act="clearMember" type="button" style="align-self:flex-start">ไม่ใช้สมาชิก</button>`;
+    <p class="help" style="margin:0" id="payEarn"></p><button class="lnk" data-act="clearMember" type="button" style="align-self:flex-start">ไม่ใช้สมาชิก</button>`;}
   else if(s.memberNew)box.innerHTML=`<div class="mem"><div><b>สมาชิกใหม่</b><div class="help">${maskPhone(s.phone)} · สมัครให้อัตโนมัติเมื่อรับเงิน</div></div></div>
     <div class="field"><label for="payName">ชื่อลูกค้า (ไม่บังคับ)</label><input id="payName" value="${esc(s.newName||'')}" autocomplete="off"></div><p class="help" style="margin:0" id="payEarn"></p><button class="lnk" data-act="clearMember" type="button" style="align-self:flex-start">ไม่ใช้สมาชิก</button>`;
   else box.innerHTML=`<p class="help" style="margin:0">ทุก ${baht(+st.pointsPer||50)} ได้ 1 แต้ม</p>`;
   $('#payUse')?.addEventListener('input',e=>{s.usePts=e.target.value;payUpdate()});
   $('#payName')?.addEventListener('input',e=>{s.newName=e.target.value});}
+const rwActive=()=>(S.rewards||[]).filter(r=>r.active!==false&&(r.type!=='gift'||typeof r.stock!=='number'||r.stock>0));
+const rwTypeTxt={menu:'🍜 เมนูฟรี',gift:'🎁 ของที่ระลึก'};
+function rwMenuQty(o,menuId){return (o.items||[]).filter(l=>l.menuId===menuId).reduce((a,l)=>a+(+l.qty||0),0)}
+function renderRw(){const box=$('#payRw');const s=S.sheet;if(!box||!s||!s.member)return;const o=S.open[s.id];if(!o)return;const list=rwActive();
+  if(!list.length){box.innerHTML='';return}
+  const c=payCalc(),left=memPts(s.member)-c.rwPts-c.use;const sel=s.rw||[];
+  box.innerHTML=`<div class="rwbox"><button class="btn sm${s.rwOpen?' pri':''}" data-act="rwToggle" type="button">🎁 แลกแต้ม${sel.length?` (${sel.length})`:''}</button>
+   ${sel.length?`<div class="rwsel">${sel.map((x,i)=>`<span class="pill info">${esc(x.name)} −${num(x.pts)} แต้ม${x.value?' · ลด '+baht(x.value):''} <button class="lnk" data-act="rwDel" data-i="${i}" type="button" aria-label="เอาออก">✕</button></span>`).join('')}</div>`:''}
+   ${s.rwOpen?`<div class="list rwlist">${list.map(r=>{const used=sel.filter(x=>x.id===r.id).length;let why='';
+      if(r.type==='menu'){const q=rwMenuQty(o,r.menuId);if(!q)why='ต้องมีเมนูนี้ในบิลก่อน';else if(used>=q)why='แลกครบตามจำนวนในบิลแล้ว'}
+      if(!why&&+r.pts>left)why='แต้มไม่พอ';
+      return `<div class="row"><div class="grow"><div class="t">${esc(r.name)}</div><div class="s">${rwTypeTxt[r.type]||''}${r.type==='gift'&&typeof r.stock==='number'?' · เหลือ '+r.stock:''}${why?' · <span style="color:var(--chili)">'+why+'</span>':''}</div></div><b class="num">${num(r.pts)}</b><button class="btn sm pri" data-act="rwAdd" data-id="${r.id}" type="button" ${why?'disabled':''}>แลก</button></div>`}).join('')}</div>`:''}</div>`}
+function viewMembers(){const st=S.settings,own=S.role==='owner';const ms=S.members.map(m=>({...m,_p:memPts(m),_x:memExpSoon(m)}));
+  const tot=ms.reduce((a,m)=>a+m._p,0),soon=ms.filter(m=>m._x);
+  let h=`<div class="sec-h"><h2>🎁 ของรางวัลแลกแต้ม</h2>${own?'<button class="btn sm pri" data-act="rwEdit" type="button">+ เพิ่มของรางวัล</button>':''}</div>`;
+  const rw=S.rewards||[];
+  h+=rw.length?'<div class="list">'+rw.map(r=>`<div class="row${own?' click':''}" ${own?`data-act="rwEdit" data-id="${r.id}"`:''}><div class="grow"><div class="t">${esc(r.name)} ${r.active===false?'<span class="pill mute">ปิดอยู่</span>':''}</div><div class="s">${rwTypeTxt[r.type]||''}${r.type==='gift'?(typeof r.stock==='number'?` · คงเหลือ ${r.stock} ชิ้น`:' · ไม่จำกัดจำนวน'):''} · แลกไปแล้ว ${r.redeemed||0} ครั้ง${r.desc?' · '+esc(r.desc):''}</div></div><div class="r"><b class="num">${num(r.pts)}</b> <span class="muted">แต้ม</span></div></div>`).join('')+'</div>'
+    :`<div class="empty"><b>ยังไม่มีของรางวัล</b>${own?'ตั้งของรางวัลให้ลูกค้าแลกแต้ม เช่น ก๋วยเตี๋ยวฟรี หรือของที่ระลึก<div style="margin-top:10px"><button class="btn sm" data-act="rwSample" type="button">เพิ่มตัวอย่าง: ก๋วยเตี๋ยวเนื้อฟรี 70 แต้ม</button></div>':'ให้แอดมินเพิ่มของรางวัลได้ที่หน้านี้'}</div>`;
+  h+=`<div class="sec-h"><h2>สมาชิกสะสมแต้ม</h2><span class="hint">${st.pointsOn?`ทุก ${baht(+st.pointsPer||50)} = 1 แต้ม · 1 แต้ม = ${baht(+st.pointValue||1)} · แต้มหมดอายุ 1 ปี`:'ปิดระบบแต้มอยู่ เปิดได้ที่ตั้งค่าร้าน'}</span></div>
+    <div class="strip" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="stat"><b class="num">${ms.length}</b><span>สมาชิกทั้งหมด</span></div><div class="stat"><b class="num">${num(tot)}</b><span>แต้มค้างในระบบ (≈ ${baht(tot*(+st.pointValue||1))})</span></div><div class="stat"><b class="num">${soon.length}</b><span>คนที่แต้มใกล้หมดอายุ (30 วัน)</span></div></div>`;
+  if(!ms.length)return h+`<div class="empty"><b>ยังไม่มีสมาชิก</b>ตอนรับเงิน ใส่เบอร์โทรลูกค้า ระบบจะสมัครสมาชิกและเริ่มสะสมแต้มให้</div>`;
+  if(soon.length)ms.sort((a,b)=>(b._x?1:0)-(a._x?1:0));
+  return h+'<div class="list">'+ms.slice(0,300).map(m=>`<div class="row click" data-act="memEdit" data-id="${esc(m.id)}"><div class="grow"><div class="t">${esc(m.name||'ไม่ระบุชื่อ')}</div><div class="s">${esc(m.id)} · มา ${m.visits||0} ครั้ง · ใช้จ่ายรวม ${baht(m.totalSpent||0)}${m._x?` · <span class="ptswarn-i">⚠️ ${expTxt(m._x)}</span>`:''}</div></div><div class="r"><b>${num(m._p)}</b> <span class="muted">แต้ม</span></div></div>`).join('')+'</div>';}
+function sheetReward(){const r=(S.rewards||[]).find(x=>x.id===S.sheet.id)||{name:'',type:'menu',pts:70,active:true};const menus=[...S.nMenu.map(m=>({...m,_s:'เนื้อล้วนๆ'})),...S.poMenu.map(m=>({...m,_s:'ข้าวมันไก่'}))];
+  $('#panel').innerHTML=head(S.sheet.id?'แก้ของรางวัล':'เพิ่มของรางวัล','ลูกค้าใช้แต้มแลกได้ทั้ง 2 ร้าน')+`<form class="sh-body">
+   <div class="field"><label for="rwType">ประเภท</label><select id="rwType"><option value="menu" ${r.type!=='gift'?'selected':''}>🍜 เมนูฟรี (ลดราคาเมนูนั้นในบิล)</option><option value="gift" ${r.type==='gift'?'selected':''}>🎁 ของที่ระลึก (แก้ว เสื้อ พวงกุญแจ ฯลฯ)</option></select></div>
+   <div class="field" id="rwMenuF"><label for="rwMenu">เมนูที่แลกฟรี</label><select id="rwMenu">${menus.map(m=>`<option value="${m.id}" ${r.menuId===m.id?'selected':''}>${esc(m.name)} · ${baht(m.price)} (${m._s})</option>`).join('')}</select></div>
+   <div class="field"><label for="rwName">ชื่อที่แสดง</label><input id="rwName" maxlength="50" value="${esc(r.name)}" placeholder="เช่น ก๋วยเตี๋ยวเนื้อฟรี 1 ชาม" autocomplete="off"></div>
+   <div class="grid2"><div class="field"><label for="rwPts">ใช้กี่แต้ม</label><input id="rwPts" inputmode="numeric" value="${esc(r.pts??'')}"></div>
+    <div class="field" id="rwStockF"><label for="rwStock">จำนวนของคงเหลือ</label><input id="rwStock" inputmode="numeric" value="${typeof r.stock==='number'?r.stock:''}" placeholder="เว้นว่าง = ไม่จำกัด"></div></div>
+   <div class="field"><label for="rwDesc">รายละเอียด (ไม่บังคับ)</label><input id="rwDesc" maxlength="80" value="${esc(r.desc||'')}" placeholder="เช่น แก้วเก็บความเย็นลายร้าน" autocomplete="off"></div>
+   <label class="check"><input type="checkbox" id="rwActive" ${r.active!==false?'checked':''}> เปิดให้แลก</label>
+   <p class="help" style="margin:0" id="rwHelp"></p></form>
+   <div class="sh-foot">${S.sheet.id?'<button class="btn danger" data-act="rwDelete" data-confirm="1" type="button">ลบ</button>':''}<button class="btn pri wide" data-act="rwSave" type="button">บันทึก</button></div>`;
+  const upd=()=>{const g=$('#rwType').value==='gift';$('#rwMenuF').hidden=g;$('#rwStockF').hidden=!g;const pts=+val('rwPts')||0,per=+S.settings.pointsPer||50;
+    const m=menus.find(x=>x.id===$('#rwMenu').value);if(!g&&m&&!val('rwName'))$('#rwName').placeholder=m.name+'ฟรี 1 ที่';
+    $('#rwHelp').textContent=pts?`ลูกค้าต้องซื้อครบประมาณ ${baht(pts*per)} ถึงจะแลกได้${!g&&m?` · คืนให้ลูกค้า ≈ ${r2((+m.price||0)/(pts*per)*100)}%`:''}`:''};
+  ['rwType','rwMenu','rwPts'].forEach(i=>$('#'+i).addEventListener('input',upd));$('#rwType').addEventListener('change',upd);upd();}
+function sheetMemberRw(m){const gifts=rwActive().filter(r=>r.type==='gift');if(!gifts.length)return '';const p=memPts(m);
+  return `<div class="card"><h3>🎁 แลกของที่ระลึก</h3><div class="list">${gifts.map(r=>`<div class="row"><div class="grow"><div class="t">${esc(r.name)}</div><div class="s">${num(r.pts)} แต้ม${typeof r.stock==='number'?' · เหลือ '+r.stock:''}</div></div><button class="btn sm pri" data-act="rwGift" data-id="${r.id}" data-confirm="1" type="button" ${p<+r.pts?'disabled':''}>${p<+r.pts?'แต้มไม่พอ':'แลก'}</button></div>`).join('')}</div></div>`}
+const HK={earn:['ได้รับ','#2ec4b6'],use:['ใช้แต้ม','#e5383b'],redeem:['แลกของรางวัล','#e5383b'],expire:['หมดอายุ','#a0a0a0'],adjust:['ปรับโดยร้าน','#ffd58a']};
 function payUpdate(){const o=S.open[S.sheet?.id];if(!o||!$('#payTotal'))return;const c=payCalc(),s=S.sheet;
-  $('#payTotal').textContent=baht(c.total);$('#paySub').textContent=[c.disc||c.redeem?`ราคาเต็ม ${baht(c.sub)}${c.disc?' · ส่วนลด '+baht(c.disc):''}${c.redeem?' · ใช้ '+c.use+' แต้ม '+baht(c.redeem):''}`:'',c.vat?(c.vatMode==='excl'?`บวก VAT ${c.vatRate}% ${baht(c.vat)}`:`รวม VAT ${c.vatRate}% แล้ว (${baht(c.vat)})`):'',c.round?`ส่วนลดปัดเศษ ${baht(c.round)}`:''].filter(Boolean).join(' · ');
-  const pe=$('#payEarn');if(pe)pe.textContent=`บิลนี้ได้ +${c.earn} แต้ม`+(s.member?` · คงเหลือหลังจ่าย ${num(Math.max(0,(+s.member.points||0)-c.use)+c.earn)} แต้ม`:'');
+  $('#payTotal').textContent=baht(c.total);$('#paySub').textContent=[c.disc||c.redeem?`ราคาเต็ม ${baht(c.sub)}${c.disc?' · ส่วนลด '+baht(c.disc):''}${c.redeem?' · ใช้ '+(c.use+c.rwPts)+' แต้ม '+baht(c.redeem):''}`:'',c.vat?(c.vatMode==='excl'?`บวก VAT ${c.vatRate}% ${baht(c.vat)}`:`รวม VAT ${c.vatRate}% แล้ว (${baht(c.vat)})`):'',c.round?`ส่วนลดปัดเศษ ${baht(c.round)}`:''].filter(Boolean).join(' · ');
+  const pe=$('#payEarn');if(pe)pe.textContent=`บิลนี้ได้ +${c.earn} แต้ม`+(s.member?` · คงเหลือหลังจ่าย ${num(Math.max(0,memPts(s.member)-c.use-c.rwPts)+c.earn)} แต้ม`:'');
+  renderRw();
   $('#payCash').hidden=s.method!=='cash';$('#payPP').hidden=s.method!=='promptpay';
   const notes=[20,50,100,500,1000];const sug=[c.total];notes.forEach(n=>{const v=Math.ceil(c.total/n)*n;if(v>c.total&&!sug.includes(v))sug.push(v)});
   $('#payQuick').innerHTML=sug.slice(0,5).map((v,i)=>`<button class="btn sm" data-act="recv" data-v="${v}" type="button">${i===0?'พอดี ':''}${baht(v)}</button>`).join('');
@@ -1460,7 +1507,8 @@ async function confirmPay(){const id=S.sheet.id,o=S.open[id];if(!o)return;const 
   let paidItems=null,changed=false,fail=false,patch=null;
   const mem=S.settings.pointsOn&&(sh.member||sh.memberNew)?{phone:sh.phone,name:sh.member?(sh.member.name||''):(val('payName')||'')}:null;
   const billNo=o.orderNo||await nextBillNo();
-  const memFields=mem?{memberPhone:mem.phone,memberName:mem.name,ptsUsed:c.use,ptsEarned:c.earn,redeem:c.redeem,ptsBalance:Math.max(0,(+(sh.member?.points)||0)-c.use)+c.earn}:{};
+  const rws=(sh.rw||[]).map(x=>({id:x.id,name:x.name,pts:x.pts,type:x.type}));
+  const memFields=mem?{memberPhone:mem.phone,memberName:mem.name,ptsUsed:c.use+c.rwPts,ptsEarned:c.earn,redeem:c.redeem,rewards:rws,ptsBalance:Math.max(0,(sh.member?memPts(sh.member):0)-c.use-c.rwPts)+c.earn}:{};
   try{await S.db.doc('orders/'+id).transform(d=>{
       if(d.status!=='open')return null;
       const tot=vatCalc(linesTotal(d.items)-c.disc-c.redeem).total;
@@ -1475,7 +1523,8 @@ async function confirmPay(){const id=S.sheet.id,o=S.open[id];if(!o)return;const 
   deductStock(paidItems);consignSell(paidItems);
   {const cl=callOf(o);if(cl){S.calls=S.calls.filter(c=>c.id!==cl.id);renderCalls();write('calls/'+cl.id,r=>r.delete())}}
   const paid={id,table:o.table,label:o.label,openedAt:o.openedAt,...patch};
-  if(mem){try{const bal=await applyPoints(mem.phone,mem.name,c.use,c.earn,c.total);if(bal!==paid.ptsBalance){paid.ptsBalance=bal;write('orders/'+id,r=>r.update({ptsBalance:bal}))}}catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
+  if(mem){try{const note='บิล '+billNo+(rws.length?' · แลก '+rws.map(x=>x.name).join(', '):'');const bal=await applyPoints(mem.phone,mem.name,c.use+c.rwPts,c.earn,c.total,note);rws.forEach(x=>rwUsed(x.id));
+      const ex=LAST_LOTS?memExpSoon(LAST_LOTS):null;const up={};if(bal!==paid.ptsBalance){paid.ptsBalance=bal;up.ptsBalance=bal}if(ex){paid.ptsExp=ex;up.ptsExp=ex}if(Object.keys(up).length)write('orders/'+id,r=>r.update(up))}catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
   openSheet({type:'receipt',order:paid,mode:'receipt'});
   if(paid.memberPhone)setTimeout(()=>{if(S.sheet&&S.sheet.type==='receipt')ACT.memCard()},500);
   toast(m==='cash'?`รับเงิน ${baht(c.total)} · ทอน ${baht(c.change)}`:m==='promptpay'?`รับพร้อมเพย์ ${baht(c.total)} แล้ว`:`ปิดออร์เดอร์ ${CH[m].n} แล้ว`);}
@@ -1484,10 +1533,35 @@ async function nextBillNo(){const d=new Date(),day=String(d.getFullYear()%100).p
   try{const p=await ref.transform(x=>({day,n:x.day===day?(+x.n||0)+1:1}));return day+'-'+String(p.n).padStart(3,'0')}
   catch(e){if(e.code==='not_found'){try{await ref.set({day,n:1});return day+'-001'}catch(e2){}}}
   return day+'-'+String(Date.now()).slice(-5);}
-async function applyPoints(phone,name,used,earned,spent){const ref=S.db.doc('members/'+phone);
-  try{const p=await ref.transform(d=>({points:Math.max(0,(+d.points||0)-used)+earned,totalSpent:r2((+d.totalSpent||0)+spent),visits:(+d.visits||0)+1,lastAt:Date.now(),...(name&&!d.name?{name}:{})}));return p.points}
-  catch(e){if(e.code!=='not_found')throw e;
-    await ref.set({phone,name:name||'',points:earned,totalSpent:r2(spent),visits:1,createdAt:Date.now(),lastAt:Date.now()});return earned}}
+/* ---------- แต้ม: เก็บแยกตามเดือนที่ได้ (lots) หมดอายุสิ้นเดือนเดียวกันของปีถัดไป ใช้แต้มใหม่ก่อน ---------- */
+const lotKey=(t=Date.now())=>{const d=new Date(t+7*3600e3);return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')};
+const lotExp=k=>{const m=/^(\d{4})-(\d{2})$/.exec(k);return m?Date.UTC(+m[1]+1,+m[2],1)-7*3600e3:Infinity};
+const lotSum=L=>Object.values(L).reduce((a,b)=>a+(+b||0),0);
+// ใช้แต้มใหม่ก่อน (แต้มเก่าไม่ถูกใช้อัตโนมัติ — ลูกค้าได้รับแจ้งเตือนก่อนหมดอายุ 30 วัน)
+function lotTake(L,n){for(const k of Object.keys(L).sort().reverse()){if(n<=0)break;const t=Math.min(L[k],n);L[k]-=t;n-=t;if(L[k]<=0)delete L[k]}return L}
+function memLots(d,now=Date.now()){const L={};Object.entries((d&&d.lots)||{}).forEach(([k,v])=>{v=+v||0;if(v>0)L[k]=v});
+  const diff=Math.max(0,+(d&&d.points)||0)-lotSum(L);if(diff>0)L[lotKey(now)]=(L[lotKey(now)]||0)+diff;else if(diff<0)lotTake(L,-diff);
+  let expired=0;Object.keys(L).forEach(k=>{if(lotExp(k)<=now){expired+=L[k];delete L[k]}});return {L,expired,points:lotSum(L)}}
+const memPts=m=>memLots(m).points;
+function memExpSoon(m,days=30){const now=Date.now(),{L}=memLots(m,now);let pts=0,at=0;Object.entries(L).forEach(([k,v])=>{const e=lotExp(k);if(e>now&&e-now<=days*DAY){pts+=v;if(!at||e<at)at=e-1}});return pts?{pts,at}:null}
+const dExp=t=>new Date(t).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',timeZone:'Asia/Bangkok'});
+const expTxt=x=>x?`${num(x.pts)} แต้มจะหมดอายุ ${dExp(x.at)}`:'';
+const histPush=(h,e)=>[{...e,at:Date.now()},...(Array.isArray(h)?h:[])].slice(0,30);
+let LAST_LOTS=null;
+async function applyPoints(phone,name,used,earned,spent,note){const ref=S.db.doc('members/'+phone);
+  try{const p=await ref.transform(d=>{const r=memLots(d);const L=lotTake(r.L,used);if(earned>0){const k=lotKey();L[k]=(L[k]||0)+earned}
+      let h=d.hist;if(r.expired)h=histPush(h,{k:'expire',p:-r.expired});if(used)h=histPush(h,{k:'use',p:-used,n:note||''});if(earned)h=histPush(h,{k:'earn',p:earned,n:note||''});
+      return {points:lotSum(L),lots:L,hist:h||[],totalSpent:r2((+d.totalSpent||0)+spent),visits:(+d.visits||0)+1,lastAt:Date.now(),...(name&&!d.name?{name}:{})}});
+    LAST_LOTS={points:p.points,lots:p.lots};return p.points}
+  catch(e){if(e.code!=='not_found')throw e;const lots=earned>0?{[lotKey()]:earned}:{};
+    await ref.set({phone,name:name||'',points:earned,lots,hist:earned?[{k:'earn',p:earned,n:note||'',at:Date.now()}]:[],totalSpent:r2(spent),visits:1,createdAt:Date.now(),lastAt:Date.now()});LAST_LOTS={points:earned,lots};return earned}}
+async function expireRun(){if(!SB||!S.db)return;let k='';try{k=String(sod());if(localStorage.getItem('nl_exprun')===k)return}catch(e){}
+  try{const {error}=await SB.rpc('member_expire_run');if(!error)try{localStorage.setItem('nl_exprun',k)}catch(e){}}catch(e){}}
+/* แลกของที่ระลึกนอกบิล / ปรับแต้มเอง */
+async function memRedeem(phone,pts,note){let short=false;
+  const p=await S.db.doc('members/'+phone).transform(d=>{const r=memLots(d);if(r.points<pts){short=true;return null}const L=lotTake(r.L,pts);let h=d.hist;if(r.expired)h=histPush(h,{k:'expire',p:-r.expired});h=histPush(h,{k:'redeem',p:-pts,n:note});return {points:lotSum(L),lots:L,hist:h,lastAt:Date.now()}});
+  if(short||!p)throw {code:'invalid_argument',message:'แต้มไม่พอ'};return p.points}
+function rwUsed(id){write('rewards/'+id,r=>r.transform(d=>({redeemed:(+d.redeemed||0)+1,...(typeof d.stock==='number'?{stock:Math.max(0,d.stock-1)}:{})})))}
 function deductStock(items){const need={};
   (items||[]).forEach(l=>{const m=S.menu.find(x=>x.id===l.menuId);(m?.recipe||[]).forEach(g=>{if(g.stockId)need[g.stockId]=(need[g.stockId]||0)+(+g.qty||0)*l.qty})});
   Object.entries(need).forEach(([sid,q])=>{const s=S.stock.find(x=>x.id===sid);if(!s)return;s.qty=r2((+s.qty||0)-q);write('stock/'+sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))});}
@@ -1708,7 +1782,10 @@ async function saveMenu(){readIng();const name=val('mName');if(!name)return toas
 /* member edit */
 function sheetMember(){const m=S.members.find(x=>x.id===S.sheet.id);if(!m)return closeSheet();
   $('#panel').innerHTML=head('สมาชิก',esc(m.id))+`<form class="sh-body"><div class="field"><label for="mbName">ชื่อ</label><input id="mbName" value="${esc(m.name||'')}" autocomplete="off"></div>
-   <div class="field"><label for="mbPts">แต้มคงเหลือ</label><input id="mbPts" inputmode="numeric" value="${m.points||0}"><span class="help">แก้แต้มเองได้ เช่น ชดเชยหรือแจกโปรโมชัน</span></div>
+   <div class="field"><label for="mbPts">แต้มคงเหลือ</label><input id="mbPts" inputmode="numeric" value="${memPts(m)}"><span class="help">แก้แต้มเองได้ เช่น ชดเชยหรือแจกโปรโมชัน (เพิ่ม = นับเป็นแต้มเดือนนี้ · ลด = ตัดแต้มใหม่ก่อน)</span></div>
+   ${(()=>{const {L}=memLots(m);const ks=Object.keys(L).sort();const x=memExpSoon(m);return ks.length?`<div class="card"><h3>แต้มแยกตามวันหมดอายุ</h3>${x?`<div class="ptswarn">⚠️ ${expTxt(x)}</div>`:''}${ks.map(k=>`<div class="kv"><span>หมดอายุ ${dExp(lotExp(k)-1)}</span><span>${num(L[k])} แต้ม</span></div>`).join('')}</div>`:''})()}
+   ${sheetMemberRw(m)}
+   ${(m.hist||[]).length?`<div class="card"><h3>ประวัติแต้มล่าสุด</h3>${m.hist.slice(0,15).map(e=>`<div class="kv"><span>${dshort(e.at)} ${hm(e.at)} · ${(HK[e.k]||[e.k])[0]}${e.n?' <small class="muted">'+esc(e.n)+'</small>':''}</span><span style="color:${(HK[e.k]||[])[1]||'inherit'}">${e.p>0?'+':''}${num(e.p)}</span></div>`).join('')}</div>`:''}
    <div class="card"><div class="kv"><span>มาใช้บริการ</span><span>${m.visits||0} ครั้ง</span></div><div class="kv"><span>ใช้จ่ายรวม</span><span>${baht(m.totalSpent||0)}</span></div><div class="kv"><span>สมัครเมื่อ</span><span>${m.createdAt?dshort(m.createdAt):'-'}</span></div><div class="kv"><span>มาล่าสุด</span><span>${m.lastAt?dshort(m.lastAt)+' '+hm(m.lastAt):'-'}</span></div></div></form>
    <div class="sh-foot"><button class="btn danger" data-act="memDel" data-confirm="1" type="button">ลบสมาชิก</button><button class="btn pri wide" data-act="memSave" type="button">บันทึก</button></div>`;}
 
@@ -2167,7 +2244,7 @@ const ACT={
   pwToggle:(d,b)=>{const i=document.getElementById(d.for);if(!i)return;const show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'ซ่อน':'แสดง'},
   logoRemove:()=>{S.sheet.logo='';$('#cLogo').value='';renderLogo()},
   findMember,
-  clearMember:()=>{Object.assign(S.sheet,{member:null,memberNew:false,phone:'',usePts:'',newName:''});const p=$('#payPhone');if(p)p.value='';renderMem();payUpdate()},
+  clearMember:()=>{Object.assign(S.sheet,{member:null,memberNew:false,phone:'',usePts:'',newName:'',rw:[]});const p=$('#payPhone');if(p)p.value='';renderMem();payUpdate()},
   useMax:()=>{const c=S.sheet;c.usePts=String(Math.floor(+c.member.points||0));c.usePts=String(payCalc().use);const e=$('#payUse');if(e)e.value=c.usePts;payUpdate()},
   billPreview:()=>{const sh=S.sheet;openSheet({type:'receipt',order:billPreviewOrder(),mode:'bill',back:{...sh}})},
   backPay:()=>{const b=S.sheet.back;if(b&&S.open[b.id])openSheet(b);else closeSheet()},
@@ -2175,7 +2252,24 @@ const ACT={
   rcShare:()=>{const f=$('#rcFrame');if(f&&f.contentWindow&&f.contentWindow.saveImg){try{return f.contentWindow.saveImg()}catch(e){}}return shareReceipt()},
   billReceipt:d=>{const o=(S.report.data?.orders||[]).find(x=>x.id===d.id);if(o)openSheet({type:'receipt',order:o,mode:'receipt'})},
   memEdit:d=>openSheet({type:'member',id:d.id}),
-  memSave:async()=>{const id=S.sheet.id;const ok=await write('members/'+id,r=>r.update({name:val('mbName'),points:Math.max(0,Math.round(nval('mbPts')))}));if(ok){closeSheet();toast('บันทึกสมาชิกแล้ว')}},
+  rwToggle:()=>{S.sheet.rwOpen=!S.sheet.rwOpen;renderRw()},
+  rwAdd:d=>{const s=S.sheet,o=S.open[s.id],r=(S.rewards||[]).find(x=>x.id===d.id);if(!r||!o)return;let value=0;
+    if(r.type==='menu'){const l=(o.items||[]).find(l=>l.menuId===r.menuId);value=l?(+l.price||0):0}
+    s.rw=[...(s.rw||[]),{id:r.id,name:r.name,pts:+r.pts||0,type:r.type,value}];s.usePts='';const e=$('#payUse');if(e)e.value='';payUpdate();toast('แลก '+r.name+' · −'+num(r.pts)+' แต้ม')},
+  rwDel:d=>{S.sheet.rw.splice(+d.i,1);payUpdate()},
+  rwEdit:d=>{if(S.role!=='owner')return deny();openSheet({type:'reward',id:d.id||null})},
+  rwSample:async()=>{if(S.role!=='owner')return deny();const m=S.nMenu.find(x=>/ก๋วยเตี๋ยวเนื้อ/.test(x.name))||S.nMenu[0];if(!m)return toast('เพิ่มเมนูก่อน','bad');
+    const id=S.db.collection('rewards').doc().id;if(await write('rewards/'+id,r=>r.set({name:m.name+'ฟรี 1 ชาม',type:'menu',menuId:m.id,pts:70,active:true,redeemed:0})))toast('เพิ่มของรางวัลแล้ว แก้แต้มได้โดยแตะที่รายการ')},
+  rwSave:async()=>{const type=val('rwType'),pts=Math.round(nval('rwPts'));const menuId=type==='menu'?val('rwMenu'):'';
+    const m=[...S.nMenu,...S.poMenu].find(x=>x.id===menuId);const name=val('rwName')||(m?m.name+'ฟรี 1 ที่':'');
+    if(!name)return toast('ใส่ชื่อของรางวัล','bad');if(!(pts>0))return toast('ใส่จำนวนแต้มที่ใช้แลก','bad');
+    const sv=val('rwStock').replace(/[^0-9]/g,'');const id=S.sheet.id||S.db.collection('rewards').doc().id;const old=(S.rewards||[]).find(x=>x.id===id)||{};
+    const data={name,type,menuId,pts,desc:val('rwDesc'),active:$('#rwActive').checked,stock:type==='gift'&&sv!==''?+sv:null,redeemed:+old.redeemed||0};
+    if(await write('rewards/'+id,r=>r.set(data))){closeSheet();toast('บันทึกของรางวัลแล้ว')}},
+  rwDelete:async()=>{if(await write('rewards/'+S.sheet.id,r=>r.delete())){closeSheet();toast('ลบแล้ว')}},
+  rwGift:async d=>{const m=S.members.find(x=>x.id===S.sheet.id),r=(S.rewards||[]).find(x=>x.id===d.id);if(!m||!r)return;
+    try{await memRedeem(m.id,+r.pts||0,r.name);rwUsed(r.id);toast(`แลก ${r.name} แล้ว · −${num(r.pts)} แต้ม`);setTimeout(()=>{if(S.sheet&&S.sheet.type==='member')sheetMember()},900);}catch(e){toast(e.message==='แต้มไม่พอ'?'แต้มไม่พอ':errMsg(e),'bad')}},
+  memSave:async()=>{const id=S.sheet.id,np=Math.max(0,Math.round(nval('mbPts'))),nm=val('mbName');const ok=await write('members/'+id,r=>r.transform(d=>{const x=memLots(d);const L=x.L;const diff=np-x.points;if(diff>0){const k=lotKey();L[k]=(L[k]||0)+diff}else if(diff<0)lotTake(L,-diff);let h=d.hist;if(x.expired)h=histPush(h,{k:'expire',p:-x.expired});if(diff)h=histPush(h,{k:'adjust',p:diff,n:'โดย '+(S.me||'ร้าน')});return {name:nm,points:lotSum(L),lots:L,hist:h||[]}}));if(ok){closeSheet();toast('บันทึกสมาชิกแล้ว')}},
   memDel:async()=>{const ok=await write('members/'+S.sheet.id,r=>r.delete());if(ok){closeSheet();toast('ลบสมาชิกแล้ว')}},
   qrPrint:()=>{sheetQr();setTimeout(()=>window.print(),50)},
   qrRotate:async()=>{const k=newQrKey();const ok=await write('config/settings',r=>r.update({qrKey:k}));if(ok){S.settings={...S.settings,qrKey:k};sheetQr();toast('สร้างรหัส QR ใหม่แล้ว พิมพ์ชุดใหม่ไปติดโต๊ะ')}},
@@ -2353,7 +2447,7 @@ Object.assign(ACT,{
     const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='paid'?null:{payStatus:'paid',payAt:Date.now(),payBy:S.me||''}));if(!ok)return;
     Object.assign(o,{payStatus:'paid',payAt:Date.now()});let msg='บันทึกรับเงิน '+poShort(o)+' แล้ว';
     if(o.memberPhone&&S.settings.pointsOn&&!o.ptsDone){const earn=Math.floor((+o.total||0)/Math.max(1,+S.settings.pointsPer||50));
-      try{const bal=await applyPoints(o.memberPhone,o.name||'',0,earn,+o.total||0);await write('po_orders/'+o.id,r=>r.update({ptsEarned:earn,ptsBalance:bal,ptsDone:true}));Object.assign(o,{ptsEarned:earn,ptsBalance:bal,ptsDone:true});msg+=' · สมาชิก +'+earn+' แต้ม (รวม '+bal+')'}
+      try{const bal=await applyPoints(o.memberPhone,o.name||'',0,earn,+o.total||0);const pex=LAST_LOTS?memExpSoon(LAST_LOTS):null;await write('po_orders/'+o.id,r=>r.update({ptsEarned:earn,ptsBalance:bal,ptsDone:true,...(pex?{ptsExp:pex}:{})}));Object.assign(o,{ptsEarned:earn,ptsBalance:bal,ptsDone:true});msg+=' · สมาชิก +'+earn+' แต้ม (รวม '+bal+')'}
       catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
     render();toast(msg)},
   poSlip:async d=>{const o=S.poOrders.find(x=>x.id===d.id);try{const s=await S.db.doc('po_slips/'+d.id).get();const x=s.exists?s.data():null;if(!x||!x.img)return toast('ไม่พบรูปสลิป','bad');viewImg(x.img,'สลิป '+poShort(o||{id:d.id})+' · '+baht(+(o&&o.total)||0))}catch(e){toast('โหลดสลิปไม่ได้','bad')}}

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1735">
+<meta name="app-version" content="2026.10.09-1830">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -219,6 +219,8 @@ label.btn{display:flex;align-items:center;justify-content:center;text-align:cent
 .mcard>*{position:relative;z-index:1}
 .mcard>.mc-shine{position:absolute;inset:-40% -60%;z-index:2;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.14) 50%,transparent 60%);animation:mcSh 3.2s ease-in-out infinite;pointer-events:none}
 @keyframes mcSh{0%{transform:translateX(-30%)}60%,100%{transform:translateX(30%)}}
+.ptsw{background:rgba(255,180,60,.14);border:1px solid rgba(255,180,60,.45);color:#b26a00;border-radius:9px;padding:7px 10px;font-size:13px}
+.mc-warn{margin:0;background:rgba(255,180,60,.16);border:1px solid rgba(255,180,60,.5);color:#ffd58a;border-radius:10px;padding:7px 12px;font-size:13.5px;text-align:center;max-width:340px}
 .mc-note{margin:0;color:#ffd58a;font-weight:600;text-align:center;max-width:340px}
 .mc-act{min-height:48px;padding:0 22px;border-radius:12px;border:0;background:#ffd58a;color:#3a2600;font:inherit;font-weight:700;cursor:pointer}
 .mc-x{min-height:44px;padding:0 26px;border-radius:12px;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;font:inherit;font-weight:600;cursor:pointer}
@@ -267,6 +269,7 @@ function showMemberCard(m){const o=document.getElementById('mCardOv');if(o)o.rem
     <div class="mc-mid"><b>${m.name?'คุณ'+e(m.name):'สมาชิก'}</b><span>${e(m.phone||'')}</span></div>
     <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${pts}</strong></div><em>ใช้ได้ทั้ง 2 ร้าน<br>เนื้อล้วนๆ · ข้าวมันไก่</em></div><i class="mc-shine"></i></div>
     ${m.note?`<p class="mc-note">${e(m.note)}</p>`:''}
+    ${m.exp&&+m.exp.pts?`<p class="mc-warn">⚠️ ${(+m.exp.pts).toLocaleString('th-TH')} แต้มจะหมดอายุ ${new Date(+m.exp.at).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',timeZone:'Asia/Bangkok'})} · ใช้ก่อนหมดอายุนะ</p>`:''}
     ${m.action?`<button type="button" class="mc-act" data-mc="act">${e(m.action)}</button>`:''}
     <button type="button" class="mc-x" data-mc="x">ปิด</button>`;
   const close=()=>{el.remove();window.removeEventListener('keydown',k,true)};const k=ev=>{if(ev.key==='Escape'){ev.stopPropagation();close()}};window.addEventListener('keydown',k,true);
@@ -645,7 +648,8 @@ function memBox(st,bc){if(S.memOff||!st.items||!st.items.length)return '';const 
   if(m&&m.found){const earn=Math.floor(ptsBase(bc)/Math.max(1,+m.pointsPer||50)+1e-9);
     return `<div class="memc ok"><div class="mh">⭐ <b>สมาชิก ${esc(m.phone)}</b>${m.name?' · คุณ'+esc(m.name):''}</div>
       <div class="mp"><div><small>แต้มสะสมล่าสุด</small><b>${(+m.points||0).toLocaleString('th-TH')}</b></div><div><small>บิลนี้จะได้</small><b>+${earn}</b></div></div>
-      <small class="muted">แต้มจะเข้าเมื่อพนักงานยืนยันการชำระเงิน · ใช้ได้ทั้งร้านเนื้อล้วนๆ และข้าวมันไก่</small><button class="btn" data-a="memCard" type="button">💳 ดูบัตรสมาชิก</button><button class="lnk-g" data-a="memClear" type="button">เปลี่ยนเบอร์ / ไม่สะสม</button></div>`}
+      ${m.exp&&+m.exp.pts?`<div class="ptsw">⚠️ ${(+m.exp.pts).toLocaleString('th-TH')} แต้มจะหมดอายุ ${new Date(+m.exp.at).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',timeZone:'Asia/Bangkok'})} · บอกพนักงานเพื่อใช้แต้มหรือแลกของรางวัลได้</div>`:''}
+      <small class="muted">แต้มจะเข้าเมื่อพนักงานยืนยันการชำระเงิน · ใช้ได้ทั้งร้านเนื้อล้วนๆ และข้าวมันไก่ · แต้มมีอายุ 1 ปี</small><button class="btn" data-a="memCard" type="button">💳 ดูบัตรสมาชิก</button><button class="lnk-g" data-a="memClear" type="button">เปลี่ยนเบอร์ / ไม่สะสม</button></div>`}
   if(m&&m.found===false)return `<div class="memc"><div class="mh">⭐ เบอร์ <b>${esc(m.phone)}</b> ยังไม่เป็นสมาชิก</div>
       <input id="memNm" maxlength="40" placeholder="กรุณากรอกชื่อลูกค้า (ไม่บังคับ)" autocomplete="off" value="${esc(S.name||'')}">
       <div class="sliprow"><button class="btn" data-a="memClear" type="button">เปลี่ยนเบอร์</button><button class="btn pri wide" data-a="memJoin" type="button" ${S.memBusy?'disabled':''}>สมัครและสะสมแต้มบิลนี้</button></div></div>`;
@@ -653,7 +657,7 @@ function memBox(st,bc){if(S.memOff||!st.items||!st.items.length)return '';const 
     <div class="sliprow"><input id="memPh" type="tel" inputmode="tel" maxlength="12" placeholder="เบอร์โทรสมาชิก" autocomplete="tel"><button class="btn pri" data-a="memGo" type="button" ${S.memBusy?'disabled':''}>ยืนยัน</button></div></div>`}
 const ptsBase=bc=>Math.max(0,bc.mode==='incl'?(+bc.sub||0)-(+bc.vat||0):(+bc.sub||0)); // ยอดไม่รวมเงิน VAT
 function memCardNow(){const m=memGet();if(!m||!m.found)return;const st=S.status||{},bc=billCalc(st);const earn=Math.floor(ptsBase(bc)/Math.max(1,+m.pointsPer||50)+1e-9);
-  showMemberCard({phone:m.phone,name:m.name,points:m.points,note:`บิลนี้จะได้ +${earn} แต้ม · แต้มเข้าเมื่อพนักงานยืนยันการชำระเงิน`})}
+  showMemberCard({phone:m.phone,name:m.name,points:m.points,exp:m.exp,note:`บิลนี้จะได้ +${earn} แต้ม · แต้มเข้าเมื่อพนักงานยืนยันการชำระเงิน`})}
 const memErr=m=>/points_off/.test(m)?'ร้านปิดระบบสะสมแต้มอยู่':/bad_phone/.test(m)?'เบอร์โทรไม่ถูกต้อง (9–10 หลัก)':/no_order/.test(m)?'ยังไม่มีบิลที่เปิดอยู่':/busy/.test(m)?'ลองใหม่ในอีกสักครู่':/customer_member|function|PGRST20|schema cache/i.test(m)?'ร้านยังไม่ได้เปิดระบบนี้ แจ้งพนักงานได้เลย':'ทำรายการไม่สำเร็จ ลองอีกครั้ง';
 async function memCall(phone,create,name){S.memBusy=true;render();
   try{const {data,error}=await sb.rpc('customer_member',{p_key:K,p_table:T,p_order:WALK?getWO():null,p_phone:phone,p_name:name||'',p_create:!!create});S.memBusy=false;
@@ -679,7 +683,7 @@ async function attachPending(){const p=memPend();if(!p||mpBusy||!sb)return;const
     if(error){const m=String(error.message||'');if(/no_order/.test(m))return;memPendSet(null);if(/points_off/.test(m))S.memOff=true;return toast(memErr(m))}
     memPendSet(null);memSet({...data,raw:p.phone});
     if(data.found){if(!S.name&&data.name){S.name=data.name.slice(0,40);saveName(S.name)}setSub();
-      showMemberCard({phone:data.phone,name:data.name||S.name,points:data.points,note:'เชื่อมสมาชิกกับบิลนี้แล้ว · แต้มเข้าเมื่อชำระเงิน'})}
+      showMemberCard({phone:data.phone,name:data.name||S.name,points:data.points,exp:data.exp,note:'เชื่อมสมาชิกกับบิลนี้แล้ว · แต้มเข้าเมื่อชำระเงิน'})}
     else toast('เบอร์นี้ยังไม่เป็นสมาชิก กดสมัครได้ในหน้า "ตรวจสอบยอด"');
     render()}catch(e){}finally{mpBusy=false}}
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
