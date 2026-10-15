@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1625">
+<meta name="app-version" content="2026.10.15-1630">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -2805,14 +2805,16 @@ document.addEventListener('change',e=>{const s=e.target.closest('[data-rdpick]')
 setInterval(()=>{if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet&&(S.dlv||[]).some(d=>d.status==='offer'))render()},5000);
 
 /* ---------- จัดการไรเดอร์ ---------- */
+const nextRR=()=>{const n=(S.riders||[]).map(r=>/^rr(\d+)$/i.exec(r.username||'')).filter(Boolean).map(m=>+m[1]);return 'RR'+String((n.length?Math.max(...n):0)+1).padStart(3,'0')};
+const upU=u=>/^rr\d+$/i.test(u||'')?String(u).toUpperCase():u;
 function sheetRiders(){const own=S.role==='owner',rs=S.riders||[],pend=rs.filter(r=>r.status==='pending'),act=rs.filter(r=>r.status!=='pending');
   const base=new URL('rider.html',location.href).href.split('?')[0];const dl=S.dlv||[];
   const trips=id=>dl.filter(d=>d.status==='done'&&d.riderId===id&&(d.doneAt||0)>=sod());
   const card=r=>`<div class="rdr"><div class="rdr-top">${r.photo?`<img src="${esc(r.photo)}" alt="" class="zoomable" data-act="imgv" data-src="${esc(r.photo)}" data-cap="${esc(r.name)}">`:'<span class="rdr-av">🛵</span>'}<div class="grow"><b>${esc(r.name)}</b><div class="help">📞 <a href="tel:${esc(r.phone)}">${esc(r.phone)}</a> · ${esc(r.brand||'')} <span class="plate">${esc(r.plate||'')}</span></div>
-     <div class="help">${r.status==='pending'?'สมัครเมื่อ '+(r.appliedAt?dshort(r.appliedAt)+' '+hm(r.appliedAt):''):r.status==='blocked'?'<span style="color:var(--chili)">ระงับการใช้งาน</span>':(r.job?'🛵 กำลังส่งงาน':r.ready?'🟢 Ready':'⚪ ออฟไลน์')+(r.username?' · ชื่อผู้ใช้ '+esc(r.username):'')+` · วันนี้ ${trips(r.id).length} เที่ยว ${baht(trips(r.id).reduce((a,d)=>a+(+d.fee||0),0))}`}</div></div></div>
+     <div class="help">${r.status==='pending'?'สมัครเมื่อ '+(r.appliedAt?dshort(r.appliedAt)+' '+hm(r.appliedAt):''):r.status==='blocked'?'<span style="color:var(--chili)">ระงับการใช้งาน</span>':(r.job?'🛵 กำลังส่งงาน':r.ready?'🟢 Ready':'⚪ ออฟไลน์')+(r.username?' · ชื่อผู้ใช้ '+esc(upU(r.username)):'')+` · วันนี้ ${trips(r.id).length} เที่ยว ${baht(trips(r.id).reduce((a,d)=>a+(+d.fee||0),0))}`}</div></div></div>
      ${own?`<div class="rdr-act">${r.status==='pending'?`<button class="btn sm pri" data-act="rdApprove" data-id="${esc(r.id)}" type="button">อนุมัติ + สร้างบัญชี</button><button class="btn sm danger" data-act="rdDel" data-id="${esc(r.id)}" data-confirm="1" type="button">ปฏิเสธ</button>`
        :`<button class="btn sm" data-act="rdPw" data-id="${esc(r.id)}" type="button">ตั้งรหัสใหม่</button><button class="btn sm" data-act="rdBlock" data-id="${esc(r.id)}" type="button">${r.status==='blocked'?'เปิดใช้งาน':'ระงับ'}</button><button class="btn sm danger" data-act="rdDel" data-id="${esc(r.id)}" data-confirm="1" type="button">ลบ</button>`}</div>`:''}
-     ${S.sheet.ap===r.id?`<div class="card" style="gap:8px"><div class="grid2"><div class="field"><label for="apU">ชื่อผู้ใช้</label><input id="apU" value="${esc(S.sheet.apU||'r'+r.id.slice(-4))}" autocapitalize="none"></div><div class="field"><label for="apP">รหัสผ่าน</label><input id="apP" value="${esc(S.sheet.apP||String(Math.floor(100000+Math.random()*900000)))}"></div></div><p class="err" id="apE"></p><button class="btn pri" data-act="rdApproveGo" data-id="${esc(r.id)}" type="button">${S.sheet.apMode==='pw'?'ตั้งรหัสผ่านใหม่':'ยืนยันอนุมัติ'}</button></div>`:''}
+     ${S.sheet.ap===r.id?`<div class="card" style="gap:8px"><div class="grid2"><div class="field"><label for="apU">ชื่อผู้ใช้</label><input id="apU" value="${esc(S.sheet.apU||nextRR())}" autocapitalize="characters"></div><div class="field"><label for="apP">รหัสผ่าน</label><input id="apP" value="${esc(S.sheet.apP||String(Math.floor(100000+Math.random()*900000)))}"></div></div><p class="err" id="apE"></p><button class="btn pri" data-act="rdApproveGo" data-id="${esc(r.id)}" type="button">${S.sheet.apMode==='pw'?'ตั้งรหัสผ่านใหม่':'ยืนยันอนุมัติ'}</button></div>`:''}
      ${S.sheet.cred&&S.sheet.cred.id===r.id?`<div class="card rdcred"><b>ส่งข้อมูลนี้ให้ไรเดอร์</b><div>ลิงก์: ${esc(base)}</div><div>ชื่อผู้ใช้: <b>${esc(S.sheet.cred.u)}</b> · รหัสผ่าน: <b>${esc(S.sheet.cred.p)}</b></div><button class="btn sm" data-act="rdCopy" type="button">คัดลอกข้อความ</button></div>`:''}</div>`;
   $('#panel').innerHTML=head('ไรเดอร์ Raptor Rider',`${act.filter(r=>r.status==='active').length} คน · รออนุมัติ ${pend.length}`)+`<div class="sh-body">
    <div class="card"><h3>รับสมัครไรเดอร์</h3><span class="help">ส่งลิงก์หรือให้สแกน QR นี้ ไรเดอร์กรอกชื่อ เบอร์ ทะเบียน ยี่ห้อรถ และรูป แล้วรออนุมัติ</span>
@@ -2841,10 +2843,10 @@ Object.assign(ACT,{
   rdCancel:async d=>{const job=(S.dlv||[]).find(x=>x.id===d.id);if(!job)return;
     if(await write('deliveries/'+d.id,r=>r.update({status:'cancel',offerTo:null,cancelAt:Date.now()}))){if(job.riderId)write('riders/'+job.riderId,r=>r.transform(x=>x.job===d.id?{job:'',readyAt:Date.now()}:null));job.status='cancel';render();toast('ยกเลิกงานส่งแล้ว')}},
   rdApprove:d=>{S.sheet.ap=d.id;S.sheet.apMode='new';S.sheet.apU='';S.sheet.apP='';sheetRiders()},
-  rdPw:d=>{S.sheet.ap=d.id;S.sheet.apMode='pw';const r=(S.riders||[]).find(x=>x.id===d.id);S.sheet.apU=r&&r.username||'';S.sheet.apP='';sheetRiders();const u=$('#apU');if(u)u.disabled=true},
+  rdPw:d=>{S.sheet.ap=d.id;S.sheet.apMode='pw';const r=(S.riders||[]).find(x=>x.id===d.id);S.sheet.apU=upU(r&&r.username||'');S.sheet.apP='';sheetRiders();const u=$('#apU');if(u)u.disabled=true},
   rdApproveGo:async d=>{const u=cleanUser(val('apU')),p=val('apP');const e=$('#apE');
     const {error}=S.sheet.apMode==='pw'?await SB.rpc('admin_rider_pw',{p_id:d.id,p_password:p}):await SB.rpc('admin_create_rider',{p_id:d.id,p_username:u,p_password:p});
-    if(error){if(e)e.textContent=rdErr(error);return}S.sheet.ap=null;S.sheet.cred={id:d.id,u,p};toast(S.sheet.apMode==='pw'?'ตั้งรหัสผ่านใหม่แล้ว':'อนุมัติไรเดอร์แล้ว');sheetRiders()},
+    if(error){if(e)e.textContent=rdErr(error);return}S.sheet.ap=null;S.sheet.cred={id:d.id,u:upU(u),p};toast(S.sheet.apMode==='pw'?'ตั้งรหัสผ่านใหม่แล้ว':'อนุมัติไรเดอร์แล้ว');sheetRiders()},
   rdCopy:()=>{const c=S.sheet.cred;if(!c)return;const t=`Raptor Rider · ${new URL('rider.html',location.href).href.split('?')[0]}\nชื่อผู้ใช้: ${c.u}\nรหัสผ่าน: ${c.p}`;navigator.clipboard?.writeText(t).then(()=>toast('คัดลอกแล้ว ส่งให้ไรเดอร์ได้เลย'),()=>toast('คัดลอกไม่ได้ จดไว้แทน','bad'))},
   rdCopyLink:d=>navigator.clipboard?.writeText(d.v).then(()=>toast('คัดลอกลิงก์แล้ว'),()=>{}),
   rdBlock:async d=>{const r=(S.riders||[]).find(x=>x.id===d.id);if(!r)return;const st=r.status==='blocked'?'active':'blocked';if(await write('riders/'+d.id,x=>x.update({status:st,...(st==='blocked'?{ready:false}:{})}))){r.status=st;sheetRiders()}},

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1700">
+<meta name="app-version" content="2026.10.15-1640">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -77,6 +77,11 @@ h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600}
 @keyframes fin{from{opacity:0}to{opacity:1}}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#f6efe4;color:#1a1310;padding:10px 16px;border-radius:12px;font-weight:600;z-index:80;max-width:90vw;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .ok{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:24px 10px}.ok .big{font-size:56px}
+.approved{border-color:rgba(43,212,125,.5);background:radial-gradient(90% 70% at 50% 0%,rgba(43,212,125,.25),transparent 70%),var(--surface)}
+.okbadge{width:150px;height:150px;border-radius:50%;margin:6px auto 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,#1fbf6c,#0b6b39);border:3px solid #7dffb7;animation:pulse 1.8s infinite;color:#eafff3}
+.okbadge span{font-size:52px;line-height:1;font-weight:700}.okbadge b{font-family:var(--f-d);letter-spacing:.14em;font-size:17px;margin-top:4px}
+.cred{background:var(--sunk);border-radius:12px;padding:10px 14px;font-size:15px}.cred b{color:#7dffb7;font-size:18px;letter-spacing:.04em}
+.big.wait{animation:spin 3s ease-in-out infinite}@keyframes spin{50%{transform:rotate(180deg)}}
 .pushc{font-size:14px;background:rgba(255,179,71,.12);border:1px solid rgba(255,179,71,.4);border-radius:12px;padding:10px 12px}
 [hidden]{display:none!important}
 </style>
@@ -98,6 +103,7 @@ const dshort=t=>new Date(t).toLocaleDateString('th-TH',{day:'numeric',month:'sho
 function toast(m){const o=$('.toast');if(o)o.remove();const t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
 const CFG=window.APP_CONFIG||{};const DOMAIN=String(CFG.LOGIN_DOMAIN||'nuealwoan.com').replace(/^@/,'');
 const P=new URLSearchParams(location.search);
+let APPH='',ST=null,stT=null;
 let SB=null,ME=null,mode=P.has('join')?'join':'boot',poll=null,busy=false,photoData='',lastOffer='',wake=null;
 
 /* ---------- เสียงแจ้งงานใหม่ ---------- */
@@ -141,10 +147,10 @@ async function start(){
   SB=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'nl-rider-auth',lock:async(n,t,fn)=>await fn()}});
   if(mode==='join')return render();
   let ses=null;try{ses=(await SB.auth.getSession()).data.session}catch(e){}
-  if(!ses){mode='login';return render()}
+  if(!ses){let ap='';try{ap=localStorage.getItem('nl_rider_apply')||''}catch(e){}if(ap){APPH=ap;mode='status';return checkStatus()}mode='login';return render()}
   await refresh(true);
 }
-async function refresh(first){if(!SB||mode==='join'||mode==='login'||mode==='applied')return;
+async function refresh(first){if(!SB||['join','login','applied','status'].includes(mode))return;
   const {data,error}=await SB.rpc('rider_me');
   if(error){const m=String(error.message||'');if(/not_rider/.test(m)){mode='notrider';render();return}
     if(/jwt|token|session|401/i.test(m)){await SB.auth.signOut().catch(()=>{});mode='login';render();return}
@@ -158,9 +164,25 @@ async function refresh(first){if(!SB||mode==='join'||mode==='login'||mode==='app
   clearTimeout(poll);poll=setTimeout(refresh,document.hidden?15000:4000);
 }
 
+/* ---------- สถานะการสมัคร ---------- */
+async function checkStatus(){clearTimeout(stT);const {data,error}=await SB.rpc('rider_status',{p_phone:APPH});
+  if(error){ST={status:'err',msg:/rider_status|function|PGRST20/i.test(error.message)?'ร้านยังไม่ได้เปิดระบบตรวจสถานะ':'เชื่อมต่อไม่ได้ ลองใหม่'};render();stT=setTimeout(checkStatus,30000);return}
+  const was=ST&&ST.status;ST=data;
+  if(data.status==='none'){try{localStorage.removeItem('nl_rider_apply')}catch(e){}mode='login';toast('ไม่พบใบสมัครของเบอร์นี้');return render()}
+  if(data.status==='active'&&was&&was!=='active'){ring();try{if(Notification.permission==='granted'){const r=await navigator.serviceWorker?.getRegistration();r&&r.showNotification('✅ อนุมัติแล้ว · Raptor Rider',{body:'เข้าสู่ระบบด้วยชื่อผู้ใช้ '+(data.username||'')+' ได้เลย',icon:'images/icon-192.png'})}}catch(e){}}
+  render();if(data.status==='pending')stT=setTimeout(checkStatus,document.hidden?60000:20000)}
+function renderStatus(v){const st=ST||{status:'loading'};
+  if(st.status==='active')return v.innerHTML=`<div class="card ok approved"><div class="okbadge"><span>✓</span><b>APPROVED</b></div><h2>ยินดีด้วย คุณ${esc(st.name||'')}!</h2><p class="muted" style="margin:0">ร้านอนุมัติให้คุณเป็น <b style="color:#7dffb7">Raptor Rider</b> แล้ว</p>
+     <div class="cred">ชื่อผู้ใช้ <b>${esc(st.username||'')}</b> หรือใช้ <b>เบอร์มือถือ</b> ที่สมัครไว้</div><p class="help">รหัสผ่าน ร้านจะส่งให้ทาง LINE / โทรศัพท์</p>
+     <button class="btn green wide" data-a="toLoginU" data-u="${esc(st.username||'')}" type="button">เข้าสู่ระบบ</button></div>`;
+  if(st.status==='blocked')return v.innerHTML=`<div class="card"><h2>บัญชีนี้ถูกระงับ</h2><p class="muted" style="margin:0">ติดต่อร้านได้เลย</p><button class="btn" data-a="toLogin" type="button">กลับ</button></div>`;
+  if(st.status==='err')return v.innerHTML=`<div class="card"><h2>ตรวจสถานะไม่ได้</h2><p class="muted" style="margin:0">${esc(st.msg)}</p><button class="btn" data-a="recheck" type="button">ลองอีกครั้ง</button><button class="lnk" data-a="toLogin" type="button">ไปหน้าเข้าสู่ระบบ</button></div>`;
+  v.innerHTML=`<div class="card ok"><div class="big wait">⏳</div><h2>รอร้านอนุมัติ</h2><p class="muted" style="margin:0">ใบสมัครเบอร์ ${esc(APPH.replace(/^(\d{3})\d+(\d{4})$/,'$1-xxx-$2'))} ส่งถึงร้านแล้ว<br>เปิดหน้านี้ทิ้งไว้ได้ เมื่ออนุมัติจะขึ้นแจ้งทันที</p>
+    <button class="btn wide" data-a="recheck" type="button">ตรวจสอบอีกครั้ง</button><button class="lnk" data-a="toLogin" type="button">มีบัญชีแล้ว เข้าสู่ระบบ</button></div>`}
 /* ---------- หน้าจอ ---------- */
 function render(){const v=$('#view');$('#outBtn').hidden=!(mode==='app'||mode==='notrider');
   if(mode==='join')return renderJoin(v);
+  if(mode==='status')return renderStatus(v);
   if(mode==='applied')return v.innerHTML=`<div class="card ok"><div class="big">✅</div><h2>ส่งใบสมัครแล้ว</h2><p class="muted" style="margin:0">ร้านจะตรวจข้อมูลแล้วแจ้ง <b>ชื่อผู้ใช้</b> และ <b>รหัสผ่าน</b> ให้ทางโทรศัพท์/LINE<br>ได้แล้วกลับมาเข้าสู่ระบบที่หน้านี้</p><button class="btn pri wide" data-a="toLogin" type="button">ไปหน้าเข้าสู่ระบบ</button></div>`;
   if(mode==='login')return renderLogin(v);
   if(mode==='notrider')return v.innerHTML=`<div class="card"><h2>บัญชีนี้ยังใช้ Raptor Rider ไม่ได้</h2><p class="muted" style="margin:0">รอร้านอนุมัติ หรือบัญชีถูกปิดใช้งาน ติดต่อร้านได้เลย</p><button class="btn" data-a="logout" type="button">ออกจากระบบ</button></div>`;
@@ -209,12 +231,16 @@ function showOffer(j){let el=$('#offer');if(!j){if(el)el.remove();clearInterval(
     if(left%10===0&&left>0)ring();if(!left){clearInterval(offTimer)}};tick();offTimer=setInterval(tick,1000)}
 function renderLogin(v){let u='';try{u=localStorage.getItem('nl_rider_user')||''}catch(e){}
   v.innerHTML=`<form class="card" id="lgF"><h2>เข้าสู่ระบบไรเดอร์</h2>
-   <div class="field"><label for="lgU">ชื่อผู้ใช้</label><input id="lgU" autocomplete="username" autocapitalize="none" value="${esc(u)}"></div>
+   <div class="field"><label for="lgU">เบอร์มือถือ หรือ ชื่อผู้ใช้</label><input id="lgU" autocomplete="username" autocapitalize="characters" placeholder="เช่น 0812345678 หรือ RR001" value="${esc(u)}"></div>
    <div class="field"><label for="lgP">รหัสผ่าน</label><input id="lgP" type="password" autocomplete="current-password"></div>
    <p class="err" id="lgE" role="alert"></p><button class="btn pri wide" type="submit" id="lgB">เข้าสู่ระบบ</button></form>
+   <button class="lnk" data-a="askStatus" type="button" style="align-self:center">สมัครไว้แล้ว? ตรวจสอบสถานะการอนุมัติ</button>
    <div class="card"><h3>ยังไม่ได้เป็นไรเดอร์ของร้าน?</h3><p class="help">สมัครแล้วรอร้านอนุมัติ ร้านจะส่งชื่อผู้ใช้และรหัสผ่านให้</p><button class="btn wide" data-a="toJoin" type="button">🛵 สมัครเป็น Raptor Rider</button></div>`;
-  $('#lgF').addEventListener('submit',async e=>{e.preventDefault();const user=$('#lgU').value.trim().toLowerCase(),pw=$('#lgP').value;if(!user||!pw)return $('#lgE').textContent='ใส่ชื่อผู้ใช้และรหัสผ่าน';
+  $('#lgF').addEventListener('submit',async e=>{e.preventDefault();let user=$('#lgU').value.trim().toLowerCase(),pw=$('#lgP').value;if(!user||!pw)return $('#lgE').textContent='ใส่ชื่อผู้ใช้และรหัสผ่าน';
     const b=$('#lgB');b.disabled=true;b.textContent='กำลังเข้าสู่ระบบ…';
+    const ph=user.replace(/[\s-]/g,'');if(/^(0\d{8,9}|\+?66\d{9})$/.test(ph)){const {data,error}=await SB.rpc('rider_status',{p_phone:ph.replace(/^\+?66/,'0')});
+      if(error||!data||data.status!=='active'||!data.username){b.disabled=false;b.textContent='เข้าสู่ระบบ';return $('#lgE').textContent=error?'เข้าด้วยเบอร์ไม่ได้ตอนนี้ ใช้ชื่อผู้ใช้แทน':data.status==='pending'?'เบอร์นี้ยังรอร้านอนุมัติ':data.status==='blocked'?'บัญชีนี้ถูกระงับ ติดต่อร้าน':'ไม่พบไรเดอร์เบอร์นี้'}
+      user=data.username.toLowerCase()}
     const {error}=await SB.auth.signInWithPassword({email:user.includes('@')?user:user+'@'+DOMAIN,password:pw});b.disabled=false;b.textContent='เข้าสู่ระบบ';
     if(error)return $('#lgE').textContent=/invalid/i.test(error.message)?'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง':'เข้าสู่ระบบไม่สำเร็จ';
     try{localStorage.setItem('nl_rider_user',user)}catch(e){}mode='app';refresh(true)})}
@@ -234,14 +260,18 @@ function renderJoin(v){
     if(!d.photo)return E.textContent='ใส่รูปตัวเองด้วย';if(!$('#jOk').checked)return E.textContent='กดยินยอมการเก็บข้อมูลก่อน';
     const b=$('#jB');b.disabled=true;b.textContent='กำลังส่ง…';const {error}=await SB.rpc('rider_apply',{p:d});b.disabled=false;b.textContent='ส่งใบสมัคร';
     if(error){const m=String(error.message||'');return E.textContent=/exists/.test(m)?'เบอร์นี้เป็นไรเดอร์ของร้านอยู่แล้ว เข้าสู่ระบบได้เลย':/busy/.test(m)?'มีคนสมัครพร้อมกันเยอะ ลองใหม่อีกสักครู่':/bad_photo/.test(m)?'รูปใหญ่เกินไป ลองรูปอื่น':/rider_apply|function|PGRST20/i.test(m)?'ร้านยังไม่ได้เปิดรับสมัครไรเดอร์':'ส่งไม่สำเร็จ ลองอีกครั้ง'}
-    mode='applied';render()})}
+    APPH=d.phone;try{localStorage.setItem('nl_rider_apply',d.phone)}catch(e){}try{if('Notification' in window&&Notification.permission==='default'){PUSH.init();Notification.requestPermission()}}catch(e){}
+    ST={status:'pending'};mode='status';render();stT=setTimeout(checkStatus,20000)})}
 async function shrink(file,max,q){const bmp=await createImageBitmap(file).catch(()=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(file)}));
   const s=Math.min(1,max/Math.max(bmp.width,bmp.height));const c=document.createElement('canvas');c.width=Math.round(bmp.width*s);c.height=Math.round(bmp.height*s);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)}
 
 /* ---------- ปุ่ม ---------- */
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b||!b.dataset.a||busy)return;const a=b.dataset.a,id=b.dataset.id;
   if(a==='toJoin'){mode='join';render();return}
-  if(a==='toLogin'){mode='login';render();return}
+  if(a==='toLogin'){clearTimeout(stT);mode='login';render();return}
+  if(a==='toLoginU'){clearTimeout(stT);try{localStorage.removeItem('nl_rider_apply');localStorage.setItem('nl_rider_user',b.dataset.u||'')}catch(e){}mode='login';render();setTimeout(()=>$('#lgP')?.focus(),50);return}
+  if(a==='recheck'){checkStatus();return}
+  if(a==='askStatus'){const p=(prompt('ใส่เบอร์มือถือที่ใช้สมัคร')||'').replace(/\D/g,'');if(!/^0\d{8,9}$/.test(p))return p&&toast('เบอร์ไม่ถูกต้อง');APPH=p;try{localStorage.setItem('nl_rider_apply',p)}catch(e){}ST=null;mode='status';render();checkStatus();return}
   if(a==='logout'){await SB.auth.signOut().catch(()=>{});location.replace(location.pathname);return}
   if(a==='push'){pushEnable();return}
   if(a==='toggle'){acUnlock();const on=!ME.ready;
