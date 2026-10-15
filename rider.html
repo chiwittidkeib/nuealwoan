@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1700b">
+<meta name="app-version" content="2026.10.15-1710">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -48,6 +48,9 @@ h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600}
 .ready .badge img{width:62px;height:62px;border-radius:14px;filter:grayscale(1) brightness(.75)}
 .ready .badge span{font-family:var(--f-d);font-size:24px;letter-spacing:.14em;color:var(--muted);font-weight:700;padding-left:.14em}
 .ready h2{font-size:26px}.ready p{margin:6px 0 0;color:var(--muted)}
+.ready:not(.on):not(.busy){border-color:rgba(224,38,43,.45);background:radial-gradient(90% 80% at 50% 20%,rgba(224,38,43,.22),transparent 70%),linear-gradient(160deg,#261212,#140c0c)}
+.ready:not(.on):not(.busy) .badge{background:radial-gradient(circle,#e0262b,#7d0f14);border-color:#ff8a8f;box-shadow:0 0 22px rgba(224,38,43,.45)}
+.ready:not(.on):not(.busy) .badge span{color:#fff}.ready:not(.on):not(.busy) h2{color:#ff6b70}
 .ready.on{background:radial-gradient(90% 80% at 50% 20%,rgba(43,212,125,.28),transparent 70%),linear-gradient(160deg,#10261a,#0b1510);border-color:rgba(43,212,125,.45)}
 .ready.on .badge{background:radial-gradient(circle,#1fbf6c,#0b6b39);border-color:#7dffb7;box-shadow:0 0 0 0 rgba(43,212,125,.6);animation:pulse 1.8s infinite}
 .ready.on .badge img{filter:none}.ready.on .badge span{color:#eafff3}
@@ -186,16 +189,22 @@ function renderStatus(v){const st=ST||{status:'loading'};
     <button class="btn wide" data-a="recheck" type="button">ตรวจสอบอีกครั้ง</button><button class="lnk" data-a="toLogin" type="button">มีบัญชีแล้ว เข้าสู่ระบบ</button></div>`}
 /* ---------- ลืมรหัสผ่าน ---------- */
 let PW=null,pwT=null;
-function renderForgot(v){v.innerHTML=`<form class="card" id="fgF"><h2>ลืมรหัสผ่าน</h2><p class="help">ยืนยันว่าเป็นเจ้าของบัญชี แล้วร้านจะ<b>โทรกลับที่เบอร์ที่ลงทะเบียนไว้</b>เพื่อยืนยันอีกครั้ง ก่อนตั้งรหัสใหม่ให้</p>
-   <div class="field"><label for="fgU">ชื่อผู้ใช้ หรือ เบอร์มือถือ</label><input id="fgU" autocapitalize="characters" placeholder="เช่น RR001" value="${esc(PW&&PW.u||'')}"></div>
-   <div class="field"><label for="fgP">เบอร์มือถือที่ลงทะเบียนไว้</label><input id="fgP" type="tel" inputmode="tel" maxlength="12" placeholder="0812345678"></div>
+function renderForgot(v){v.innerHTML=`<form class="card" id="fgF"><h2>ลืมรหัสผ่าน</h2><p class="help">ยืนยันตัวตนด้วยเบอร์มือถือและทะเบียนรถที่ลงทะเบียนไว้ แล้วตั้งรหัสผ่านใหม่ได้ทันที · ระบบจะแจ้งร้านทุกครั้งที่มีการรีเซต</p>
+   <div class="field"><label for="fgP">เบอร์มือถือที่ลงทะเบียนไว้</label><input id="fgP" type="tel" inputmode="tel" maxlength="12" placeholder="0812345678" value="${esc(PW&&/^0\d{8,9}$/.test(PW.u||'')?PW.u:'')}"></div>
    <div class="field"><label for="fgL">ทะเบียนรถที่ลงทะเบียนไว้</label><input id="fgL" maxlength="30" placeholder="เช่น 1กข 1234"></div>
-   <p class="err" id="fgE" role="alert"></p><button class="btn pri wide" id="fgB" type="submit">ส่งคำขอรีเซตรหัสผ่าน</button><button class="lnk" data-a="toLogin" type="button">กลับไปหน้าเข้าสู่ระบบ</button></form>`;
-  $('#fgF').addEventListener('submit',async e=>{e.preventDefault();const u=$('#fgU').value.trim(),ph=$('#fgP').value.replace(/\D/g,''),pl=$('#fgL').value.trim(),E=$('#fgE');E.textContent='';
-    if(!u)return E.textContent='ใส่ชื่อผู้ใช้หรือเบอร์';if(!/^0\d{8,9}$/.test(ph))return E.textContent='เบอร์มือถือไม่ถูกต้อง';if(pl.replace(/\s/g,'').length<4)return E.textContent='ใส่ทะเบียนรถให้ครบ';
-    const b=$('#fgB');b.disabled=true;const {data,error}=await SB.rpc('rider_pw_request',{p_user:u,p_phone:ph,p_plate:pl});b.disabled=false;
-    if(error){const m=String(error.message||'');return E.textContent=/mismatch/.test(m)?'ข้อมูลไม่ตรงกับที่ลงทะเบียนไว้ ตรวจเบอร์และทะเบียนรถอีกครั้ง หรือโทรหาร้าน':/busy/.test(m)?'มีคำขอเยอะ ลองใหม่อีกสักครู่':/function|PGRST20/i.test(m)?'ร้านยังไม่ได้เปิดระบบนี้ โทรหาร้านได้เลย':'ส่งคำขอไม่สำเร็จ'}
-    PW={u,phone:ph,at:data.at};try{localStorage.setItem('nl_rider_pw',JSON.stringify(PW))}catch(x){}mode='pwwait';render();pwCheck()})}
+   <div class="field"><label for="fgN">รหัสผ่านใหม่</label><input id="fgN" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัว"></div>
+   <div class="field"><label for="fgN2">ยืนยันรหัสผ่านใหม่</label><input id="fgN2" type="password" autocomplete="new-password"></div>
+   <p class="err" id="fgE" role="alert"></p><button class="btn pri wide" id="fgB" type="submit">ตั้งรหัสผ่านใหม่</button><button class="lnk" data-a="toLogin" type="button">กลับไปหน้าเข้าสู่ระบบ</button></form>`;
+  $('#fgF').addEventListener('submit',async e=>{e.preventDefault();const ph=$('#fgP').value.replace(/\D/g,''),pl=$('#fgL').value.trim(),n1=$('#fgN').value,n2=$('#fgN2').value,E=$('#fgE');E.textContent='';
+    if(!/^0\d{8,9}$/.test(ph))return E.textContent='เบอร์มือถือไม่ถูกต้อง';if(pl.replace(/\s/g,'').length<4)return E.textContent='ใส่ทะเบียนรถให้ครบ';
+    if(n1.length<6)return E.textContent='รหัสผ่านใหม่อย่างน้อย 6 ตัว';if(n1!==n2)return E.textContent='ยืนยันรหัสผ่านไม่ตรงกัน';
+    const b=$('#fgB');b.disabled=true;b.textContent='กำลังตั้งรหัสใหม่…';
+    const {data,error}=await SB.rpc('rider_pw_reset',{p_phone:ph,p_plate:pl,p_password:n1,p_ua:navigator.userAgent.slice(0,120)});
+    if(error||!data||!data.ok){b.disabled=false;b.textContent='ตั้งรหัสผ่านใหม่';const m=error?String(error.message||''):data&&data.error||'';
+      return E.textContent=/mismatch/.test(m)?'เบอร์หรือทะเบียนรถไม่ตรงกับที่ลงทะเบียนไว้':/locked/.test(m)?'ใส่ผิดหลายครั้ง ระบบล็อกไว้ 1 ชั่วโมง หรือโทรหาร้าน':/busy/.test(m)?'มีคนรีเซตพร้อมกันเยอะ ลองใหม่อีกสักครู่':/weak/.test(m)?'รหัสผ่านอย่างน้อย 6 ตัว':/function|PGRST20/i.test(m)?'ร้านยังไม่ได้เปิดระบบนี้ โทรหาร้านได้เลย':'ตั้งรหัสใหม่ไม่สำเร็จ'}
+    b.textContent='กำลังเข้าสู่ระบบ…';const {error:le}=await SB.auth.signInWithPassword({email:data.username+'@'+DOMAIN,password:n1});
+    try{localStorage.removeItem('nl_rider_pw');localStorage.removeItem('nl_rider_apply');localStorage.setItem('nl_rider_user',data.username.toUpperCase());localStorage.setItem('nl_rider_day',bkDay())}catch(x){}
+    toast('🔑 ตั้งรหัสผ่านใหม่แล้ว');if(le){mode='login';render();return}mode='app';refresh(true)})}
 async function pwCheck(){clearTimeout(pwT);if(!PW)return;const {data}=await SB.rpc('rider_status',{p_phone:PW.phone});
   if(data&&+data.pwSetAt>+PW.at){PW.done=true;PW.user=data.username;try{localStorage.removeItem('nl_rider_pw')}catch(e){}ring();render();return}
   pwT=setTimeout(pwCheck,document.hidden?60000:20000)}

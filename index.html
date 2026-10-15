@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1700b">
+<meta name="app-version" content="2026.10.15-1710">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -421,6 +421,7 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .rdr-top img,.rdr-av{width:54px;height:54px;border-radius:50%;object-fit:cover;flex:none;display:flex;align-items:center;justify-content:center;background:var(--sunk);font-size:24px}
 .rdr-act{display:flex;gap:6px;flex-wrap:wrap}.plate{display:inline-block;background:#f6efe4;color:#111;border-radius:5px;padding:0 6px;font-weight:700;font-size:12px}
 .pwreq{background:rgba(255,179,71,.14);border:1px solid rgba(255,179,71,.5);border-radius:9px;padding:6px 9px;font-size:13px;margin:4px 0}
+.noticebar{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}.nb{display:flex;gap:10px;align-items:center;background:linear-gradient(rgba(255,179,71,.16),rgba(255,179,71,.16)),var(--surface,#1a1716);border:1px solid rgba(255,179,71,.6);color:var(--fg);border-radius:12px;padding:10px 12px}
 .rdcred{gap:4px;border-color:rgba(43,212,125,.5)}
 .fsearch{margin:-4px 0 10px}.fsearch input{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:10px 12px;font:inherit;min-height:44px}.fsearch input:focus{border-color:var(--jade);outline:none}
 #fqRes:not(:empty){margin-bottom:12px}
@@ -989,6 +990,8 @@ async function startData(){
   setTimeout(expireRun,6000);
   db.collection('members').onSnapshot(s=>{S.members=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.lastAt||0)-(a.lastAt||0));if(S.tab==='back')render()},onErr);
   const since=sod()-30*DAY;
+  if(S.role==='owner')db.collection('notices').where('at','>=',sod()-7*DAY).onSnapshot(s=>{const prev=new Set((S.notices||[]).map(n=>n.id));const first=!S.notices;S.notices=s.docs.map(d=>({id:d.id,...d.data()}));
+    if(!first)S.notices.filter(n=>!prev.has(n.id)&&!n.seen).forEach(n=>toast('🔑 ไรเดอร์ '+(n.name||'')+' รีเซตรหัสผ่านเอง','bad'));if(S.tab==='tables')render()},onErr);
   db.collection('riders').onSnapshot(s=>{S.riders=s.docs.map(d=>({id:d.id,...d.data()}));if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet)render();if(S.sheet&&S.sheet.type==='riders')sheetRiders()},onErr);
   db.collection('deliveries').where('at','>=',sod()-DAY).onSnapshot(s=>{S.dlv=s.docs.map(d=>({id:d.id,...d.data()}));if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet)render();rdTick()},onErr);
   db.collection('consign_log').where('at','>=',sod()-90*DAY).onSnapshot(s=>{S.consignLog=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back')render()},onErr);
@@ -1145,7 +1148,7 @@ function viewTables(){
   const sales=S.today.reduce((s,o)=>s+(+o.total||0),0);
   const pend=Object.values(S.open).reduce((s,o)=>s+linesTotal(o.items),0);
   const busy=Object.keys(byTable).length;
-  let h=`<div class="strip">
+  let h=noticeBar()+`<div class="strip">
     <div class="stat"><b class="money">${baht(sales)}</b><span>ยอดขายวันนี้</span></div>
     <div class="stat"><b class="num">${S.today.length}</b><span>บิลที่ชำระแล้ว</span></div>
     <div class="stat"><b class="num">${busy}/${n}</b><span>โต๊ะที่มีลูกค้า</span></div>
@@ -2810,13 +2813,15 @@ document.addEventListener('change',e=>{const s=e.target.closest('[data-rdpick]')
 setInterval(()=>{if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet&&(S.dlv||[]).some(d=>d.status==='offer'))render()},5000);
 
 /* ---------- จัดการไรเดอร์ ---------- */
+function noticeBar(){if(S.role!=='owner')return '';const L=(S.notices||[]).filter(n=>!n.seen).sort((a,b)=>b.at-a.at);if(!L.length)return '';
+  return '<div class="noticebar">'+L.slice(0,5).map(n=>`<div class="nb"><div class="grow"><b>🔑 ไรเดอร์รีเซตรหัสผ่านเอง</b><div class="help" style="margin:0">${esc(n.name||'')} (${esc(n.username||'')} · ${esc(n.rider||'')}) เปลี่ยนรหัสผ่าน: <b>รหัสเดิม → รหัสใหม่ที่ไรเดอร์ตั้งเอง</b> · ยืนยันด้วยเบอร์ + ทะเบียน ${esc(n.plate||'')} · ${dshort(n.at)} ${hm(n.at)} น.</div><div class="help" style="margin:0">ถ้าไม่ใช่ไรเดอร์ทำเอง: เปิด "ไรเดอร์" → ระงับ หรือตั้งรหัสใหม่ทันที</div></div><button class="btn sm" data-act="noticeSeen" data-id="${esc(n.id)}" type="button">รับทราบ</button></div>`).join('')+'</div>'}
 const nextRR=()=>{const n=(S.riders||[]).map(r=>/^rr(\d+)$/i.exec(r.username||'')).filter(Boolean).map(m=>+m[1]);return 'RR'+String((n.length?Math.max(...n):0)+1).padStart(3,'0')};
 const upU=u=>/^rr\d+$/i.test(u||'')?String(u).toUpperCase():u;
 function sheetRiders(){const own=S.role==='owner',rs=S.riders||[],pend=rs.filter(r=>r.status==='pending'),act=rs.filter(r=>r.status!=='pending').sort((a,b)=>(b.pwReq?1:0)-(a.pwReq?1:0));
   const base=new URL('rider.html',location.href).href.split('?')[0];const dl=S.dlv||[];
   const trips=id=>dl.filter(d=>d.status==='done'&&d.riderId===id&&(d.doneAt||0)>=sod());
   const card=r=>`<div class="rdr"><div class="rdr-top">${r.photo?`<img src="${esc(r.photo)}" alt="" class="zoomable" data-act="imgv" data-src="${esc(r.photo)}" data-cap="${esc(r.name)}">`:'<span class="rdr-av">🛵</span>'}<div class="grow"><b>${esc(r.name)}</b><div class="help">📞 <a href="tel:${esc(r.phone)}">${esc(r.phone)}</a> · ${esc(r.brand||'')} <span class="plate">${esc(r.plate||'')}</span></div>
-     ${r.pwReq&&r.status==='active'?`<div class="pwreq">🔑 <b>ขอรีเซตรหัสผ่าน</b> ${dshort(r.pwReq)} ${hm(r.pwReq)} · โทรยืนยันที่ <a href="tel:${esc(r.phone)}">${esc(r.phone)}</a> ก่อน แล้วกด "ตั้งรหัสใหม่"</div>`:''}<div class="help">${r.status==='pending'?'สมัครเมื่อ '+(r.appliedAt?dshort(r.appliedAt)+' '+hm(r.appliedAt):''):r.status==='blocked'?'<span style="color:var(--chili)">ระงับการใช้งาน</span>':(r.job?'🛵 กำลังส่งงาน':r.ready?'🟢 Ready':'⚪ ออฟไลน์')+(r.username?' · ชื่อผู้ใช้ '+esc(upU(r.username)):'')+` · วันนี้ ${trips(r.id).length} เที่ยว ${baht(trips(r.id).reduce((a,d)=>a+(+d.fee||0),0))}`}</div></div></div>
+     ${r.pwSelfAt?`<div class="help" style="margin:0">🔑 รีเซตรหัสผ่านเองล่าสุด ${dshort(r.pwSelfAt)} ${hm(r.pwSelfAt)} น.</div>`:''}${r.pwReq&&r.status==='active'?`<div class="pwreq">🔑 <b>ขอรีเซตรหัสผ่าน</b> ${dshort(r.pwReq)} ${hm(r.pwReq)} · โทรยืนยันที่ <a href="tel:${esc(r.phone)}">${esc(r.phone)}</a> ก่อน แล้วกด "ตั้งรหัสใหม่"</div>`:''}<div class="help">${r.status==='pending'?'สมัครเมื่อ '+(r.appliedAt?dshort(r.appliedAt)+' '+hm(r.appliedAt):''):r.status==='blocked'?'<span style="color:var(--chili)">ระงับการใช้งาน</span>':(r.job?'🛵 กำลังส่งงาน':r.ready?'🟢 Ready':'⚪ ออฟไลน์')+(r.username?' · ชื่อผู้ใช้ '+esc(upU(r.username)):'')+` · วันนี้ ${trips(r.id).length} เที่ยว ${baht(trips(r.id).reduce((a,d)=>a+(+d.fee||0),0))}`}</div></div></div>
      ${own?`<div class="rdr-act">${r.status==='pending'?`<button class="btn sm pri" data-act="rdApprove" data-id="${esc(r.id)}" type="button">อนุมัติ + สร้างบัญชี</button><button class="btn sm danger" data-act="rdDel" data-id="${esc(r.id)}" data-confirm="1" type="button">ปฏิเสธ</button>`
        :`<button class="btn sm" data-act="rdPw" data-id="${esc(r.id)}" type="button">ตั้งรหัสใหม่</button><button class="btn sm" data-act="rdBlock" data-id="${esc(r.id)}" type="button">${r.status==='blocked'?'เปิดใช้งาน':'ระงับ'}</button><button class="btn sm danger" data-act="rdDel" data-id="${esc(r.id)}" data-confirm="1" type="button">ลบ</button>`}</div>`:''}
      ${S.sheet.ap===r.id?`<div class="card" style="gap:8px"><div class="grid2"><div class="field"><label for="apU">ชื่อผู้ใช้</label><input id="apU" value="${esc(S.sheet.apU||nextRR())}" autocapitalize="characters"></div><div class="field"><label for="apP">รหัสผ่าน</label><input id="apP" value="${esc(S.sheet.apP||String(Math.floor(100000+Math.random()*900000)))}"></div></div><p class="err" id="apE"></p><button class="btn pri" data-act="rdApproveGo" data-id="${esc(r.id)}" type="button">${S.sheet.apMode==='pw'?'ตั้งรหัสผ่านใหม่':'ยืนยันอนุมัติ'}</button></div>`:''}
@@ -2841,6 +2846,7 @@ Object.assign(ACT,{
   rdSave,
   rdRain:async()=>{const on=!rdRain();S.lists=S.lists||{};S.lists.riderState={...(S.lists.riderState||{}),rain:on};render();await write('lists/riderState',r=>r.set({...(S.lists.riderState||{}),rain:on}));toast(on?'เปิดค่าส่งช่วงฝนตกแล้ว':'ปิดค่าส่งช่วงฝนตกแล้ว')},
   rdRiders:()=>openSheet({type:'riders'}),
+  noticeSeen:async d=>{const n=(S.notices||[]).find(x=>x.id===d.id);if(n)n.seen=true;render();await write('notices/'+d.id,r=>r.update({seen:true,seenAt:Date.now(),seenBy:S.me||''}))},
   rdSetup:()=>{if(S.role!=='owner')return deny();openSheet({type:'settings',sg:5});setTimeout(()=>{$('#rdOn')?.scrollIntoView({block:'center'});toast('ติ๊ก "เปิดใช้ Raptor Rider" ปักหมุดร้าน แล้วกดบันทึก')},300)},
   rdTrack:async d=>{const j=(S.dlv||[]).find(x=>x.id===d.id);if(!j)return;const u=trackUrl(j);const t=`ติดตามไรเดอร์ ${S.settings.rcName||'เนื้อล้วนๆ'} (บิล ${j.billNo}): ${u}`;
     if(navigator.share){try{await navigator.share({title:'ติดตามไรเดอร์',text:t,url:u});return}catch(e){if(e&&e.name==='AbortError')return}}
