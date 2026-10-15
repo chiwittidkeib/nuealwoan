@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1700">
+<meta name="app-version" content="2026.10.15-1625">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -410,7 +410,7 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .floorbar{padding:4px}
 .rdmap{height:260px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--sunk)}.rdpin{background:none;border:0}
 .rdfee{gap:6px}.rdcard{gap:6px;border-color:rgba(255,122,0,.5);background:linear-gradient(180deg,rgba(255,122,0,.10),transparent)}
-.rd-btn{font-weight:700}
+.rd-btn{font-weight:700}.rd-off{opacity:.75;border-style:dashed}.rd-off small{font-weight:400}
 .rdpanel{gap:10px;border-color:rgba(255,122,0,.45);margin-bottom:12px}.rdph{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.rdph>b{font-family:var(--f-display);font-size:18px}
 .rdlive{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}.rdlive i{width:9px;height:9px;border-radius:50%;background:#2bd47d;box-shadow:0 0 0 0 rgba(43,212,125,.6);animation:rdp 1.6s infinite}
 @keyframes rdp{0%{box-shadow:0 0 0 0 rgba(43,212,125,.6)}70%{box-shadow:0 0 0 9px rgba(43,212,125,0)}100%{box-shadow:0 0 0 0 rgba(43,212,125,0)}}
@@ -1163,7 +1163,7 @@ function viewTables(){
   h+=`</div>`;return h}
   const list=fl==='other'?walk:dl;
   if(fl==='deliv'){const chans=['takeaway',...DELIV.filter(c=>chCfg(c).on)];
-    h+=`<div class="newch">${rdOn()?`<button class="btn ch-btn rd-btn" style="--chc:${CH.rider.c}" data-act="rdNew" type="button">🛵 Raptor Rider</button>`:''}${chans.map(c=>`<button class="btn ch-btn" style="--chc:${CH[c].c}" data-act="newDel" data-ch="${c}" type="button">${CH[c].n}</button>`).join('')}</div>`+viewRdPanel()}
+    h+=`<div class="newch">${rdOn()?`<button class="btn ch-btn rd-btn" style="--chc:${CH.rider.c}" data-act="rdNew" type="button">🛵 Raptor Rider</button>`:S.role==='owner'?`<button class="btn ch-btn rd-btn rd-off" style="--chc:${CH.rider.c}" data-act="rdSetup" type="button">🛵 Raptor Rider <small>(ยังไม่เปิด · แตะเพื่อตั้งค่า)</small></button>`:''}${chans.map(c=>`<button class="btn ch-btn" style="--chc:${CH[c].c}" data-act="newDel" data-ch="${c}" type="button">${CH[c].n}</button>`).join('')}</div>`+viewRdPanel()}
   h+=`<div class="tgrid">`;
   list.sort((a,b)=>a.openedAt-b.openedAt).forEach(o=>{const un=(o.items||[]).filter(l=>!l.served).reduce((a,l)=>a+l.qty,0);
     h+=`<button class="tcard busy del" style="--chc:${CH[chOf(o)].c}" data-act="openOrder" data-id="${o.id}" type="button"><div>${chChip(o)}</div><div class="no" style="font-size:18px">${esc(orderTitle(o))}</div>${ordNoTag(o)}${o.customerName&&(o.ref)?`<div class="tname">คุณ${esc(o.customerName)}</div>`:''}
@@ -2834,6 +2834,7 @@ Object.assign(ACT,{
   rdSave,
   rdRain:async()=>{const on=!rdRain();S.lists=S.lists||{};S.lists.riderState={...(S.lists.riderState||{}),rain:on};render();await write('lists/riderState',r=>r.set({...(S.lists.riderState||{}),rain:on}));toast(on?'เปิดค่าส่งช่วงฝนตกแล้ว':'ปิดค่าส่งช่วงฝนตกแล้ว')},
   rdRiders:()=>openSheet({type:'riders'}),
+  rdSetup:()=>{if(S.role!=='owner')return deny();openSheet({type:'settings',sg:5});setTimeout(()=>{$('#rdOn')?.scrollIntoView({block:'center'});toast('ติ๊ก "เปิดใช้ Raptor Rider" ปักหมุดร้าน แล้วกดบันทึก')},300)},
   rdTrack:async d=>{const j=(S.dlv||[]).find(x=>x.id===d.id);if(!j)return;const u=trackUrl(j);const t=`ติดตามไรเดอร์ ${S.settings.rcName||'เนื้อล้วนๆ'} (บิล ${j.billNo}): ${u}`;
     if(navigator.share){try{await navigator.share({title:'ติดตามไรเดอร์',text:t,url:u});return}catch(e){if(e&&e.name==='AbortError')return}}
     navigator.clipboard?.writeText(t).then(()=>toast('คัดลอกลิงก์ติดตามแล้ว ส่งให้ลูกค้าทาง LINE/SMS ได้เลย'),()=>prompt('คัดลอกลิงก์นี้ส่งให้ลูกค้า',u))},
