@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1710">
+<meta name="app-version" content="2026.10.15-1720">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -325,6 +325,12 @@ $('#outBtn').addEventListener('click',async()=>{if(!confirm('ออกจาก�
 // ข้ามวัน: ออกจากระบบอัตโนมัติ (ถ้ากำลังส่งงานอยู่ รอส่งเสร็จก่อน)
 setInterval(()=>{if(mode!=='app'||!ME)return;let d='';try{d=localStorage.getItem('nl_rider_day')||''}catch(e){}if(!d||d===bkDay())return;
   if((ME.jobs||[]).some(j=>j.status==='accepted'||j.status==='picked'))return;dayOut()},60000);
+const BUSYFN=()=>mode==='app'&&ME&&(ME.jobs||[]).length>0||['join','forgot'].includes(mode);
+/* ---------- อัปเดตเวอร์ชันอัตโนมัติ (กันเบราว์เซอร์จำไฟล์เก่า) ---------- */
+const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||'';
+async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
+  if(!m||!APP_VER||m[1]===APP_VER)return;if(BUSYFN())return;const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)}catch(e){}}
+setTimeout(checkUpdate,3000);setInterval(checkUpdate,5*60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 start();
 </script>
 </body>

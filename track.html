@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1700">
+<meta name="app-version" content="2026.10.15-1720">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#14110f">
 <title>ติดตามไรเดอร์ · เนื้อล้วนๆ</title>
@@ -106,6 +106,12 @@ async function drawMap(shop,cust,loc,st){const el=$('#map');if(!el||el.hidden||!
   L.polyline(R.coords,{color:'#14a35a',weight:6,opacity:.85,dashArray:R.road?null:'8 10'}).addTo(LG);
   const m=$('#etaMin'),k=$('#etaKm');if(m&&loc)m.innerHTML=`${R.min}<small>นาที</small>`;
   if(k&&loc)k.textContent=`ระยะทางอีก ${R.km.toFixed(1)} กม.${R.road?'':' (ประมาณ)'} · ถึงราว ${hm(Date.now()+R.min*60000)} น.`}
+const BUSYFN=()=>false;
+/* ---------- อัปเดตเวอร์ชันอัตโนมัติ (กันเบราว์เซอร์จำไฟล์เก่า) ---------- */
+const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||'';
+async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
+  if(!m||!APP_VER||m[1]===APP_VER)return;if(BUSYFN())return;const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)}catch(e){}}
+setTimeout(checkUpdate,3000);setInterval(checkUpdate,5*60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 start();
 </script>
 </body>
