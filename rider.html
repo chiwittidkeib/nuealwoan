@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1615">
+<meta name="app-version" content="2026.10.15-1620">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -46,7 +46,7 @@ h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600}
 .ready{position:relative;border-radius:24px;padding:22px 18px;text-align:center;cursor:pointer;border:1px solid var(--line);background:linear-gradient(160deg,#211d1b,#141110);overflow:hidden;user-select:none}
 .ready .badge{width:138px;height:138px;margin:4px auto 12px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#2a2523;border:3px solid #3a3330;position:relative;transition:.3s}
 .ready .badge img{width:62px;height:62px;border-radius:14px;filter:grayscale(1) brightness(.75)}
-.ready .badge span{font-size:12px;letter-spacing:.2em;color:var(--muted);margin-top:6px;font-weight:700}
+.ready .badge span{font-family:var(--f-d);font-size:24px;letter-spacing:.14em;color:var(--muted);font-weight:700;padding-left:.14em}
 .ready h2{font-size:26px}.ready p{margin:6px 0 0;color:var(--muted)}
 .ready.on{background:radial-gradient(90% 80% at 50% 20%,rgba(43,212,125,.28),transparent 70%),linear-gradient(160deg,#10261a,#0b1510);border-color:rgba(43,212,125,.45)}
 .ready.on .badge{background:radial-gradient(circle,#1fbf6c,#0b6b39);border-color:#7dffb7;box-shadow:0 0 0 0 rgba(43,212,125,.6);animation:pulse 1.8s infinite}
@@ -161,7 +161,7 @@ function render(){const v=$('#view');$('#outBtn').hidden=!(mode==='app'||mode===
   const st=act?'busy':ME.ready?'on':'';
   let h=`<div class="card"><div class="me">${ME.photo?`<img class="av" src="${esc(ME.photo)}" alt="">`:'<div class="av">🛵</div>'}<div><b>${esc(ME.name)}</b><span class="muted" style="font-size:13px">${esc(ME.brand||'')}</span> <span class="plate">${esc(ME.plate||'')}</span></div></div></div>`;
   h+=`<div class="ready ${st}" data-a="${act?'':'toggle'}" role="button" tabindex="0" aria-pressed="${!!ME.ready}">
-    <div class="badge"><img src="images/logo-nl.png" alt=""><span>${act?'ON JOB':ME.ready?'READY':'OFFLINE'}</span></div>
+    <div class="badge"><span>${act?'ON JOB':ME.ready?'READY':'OFFLINE'}</span></div>
     <h2>${act?'กำลังส่งงาน':ME.ready?'🟢 Raptor Rider':'ออฟไลน์'}</h2>
     <p>${act?'ส่งเสร็จแล้วจะกลับเข้าคิวต่อท้ายอัตโนมัติ':ME.ready?'พร้อมรับงาน · แตะเพื่อปิดเมื่อจะพัก':'แตะเพื่อเปิด Raptor Rider รับงานส่ง'}</p>
     ${!act&&ME.ready&&ME.queue?`<div class="q">คิวที่ <b>${ME.queue}</b> <span class="muted">จาก ${ME.queueOf} คน</span></div>`:''}</div>`;
