@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1735">
+<meta name="app-version" content="2026.10.15-1900">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -72,6 +72,7 @@ h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600}
 .stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat div{background:var(--sunk);border-radius:14px;padding:12px}.stat b{font-family:var(--f-d);font-size:24px;display:block}.stat span{font-size:13px;color:var(--muted)}
 .list .it{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line);font-size:14px}.list .it:first-child{border-top:0}
 /* ป๊อปอัปงานใหม่ */
+.pfbox{display:flex;flex-direction:column;gap:8px}.pfbox img{width:100%;max-height:340px;object-fit:contain;border-radius:12px;background:#000}
 .offer{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center;animation:fin .2s}
 .offer .sc{width:100%;max-width:520px;background:linear-gradient(180deg,#1e1a17,#120f0e);border-radius:24px 24px 0 0;border-top:3px solid var(--gold);padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
 .offer .ring{display:flex;align-items:center;gap:12px}.offer .ring .t{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--f-d);font-size:22px;background:conic-gradient(var(--gold) var(--p),#3a3330 0);position:relative}
@@ -278,7 +279,25 @@ function jobCard(j){const c=j.cust||{},picked=j.status==='picked';
    ${(j.items||[]).length?`<div class="items">${j.items.map(l=>`${l.qty}× ${esc(l.name)}`).join(' · ')}</div>`:''}
    <div class="acts"><a class="btn" href="${navUrl(j)}" target="_blank" rel="noopener">🧭 นำทาง</a>${c.phone?`<a class="btn" href="tel:${esc(c.phone)}">📞 โทรหาลูกค้า</a>`:'<span></span>'}</div>
    ${!picked&&shopNav()?`<a class="btn" href="${shopNav()}" target="_blank" rel="noopener">🏪 นำทางไปร้าน</a>`:''}
-   ${picked?`<button class="btn green wide" data-a="done" data-id="${esc(j.id)}" type="button">✅ ส่งสำเร็จ</button>`:`<button class="btn pri wide" data-a="picked" data-id="${esc(j.id)}" type="button">🍜 รับอาหารแล้ว ออกเดินทาง</button>`}</div>`}
+   ${picked?proofBox(j):`<button class="btn pri wide" data-a="picked" data-id="${esc(j.id)}" type="button">🍜 รับอาหารแล้ว ออกเดินทาง</button>`}</div>`}
+/* ---------- รูปยืนยันตอนส่งอาหาร (บังคับก่อนกดส่งสำเร็จ) ใส่วันเวลา + เลขออร์เดอร์ลงในรูป ---------- */
+const PF={id:null,img:null,busy:false};
+const jobNo=j=>{const m=String(j.orderNo||j.billNo||'').match(/(\d{3,})$/);return '#'+(m?m[1]:String(j.billNo||j.id||'').slice(-4))};
+function proofBox(j){const mine=PF.id===j.id&&PF.img;
+  if(mine)return `<div class="pfbox"><img src="${PF.img}" alt="รูปตอนส่ง"><div class="acts"><button class="btn" data-a="proof" data-id="${esc(j.id)}" type="button" ${PF.busy?'disabled':''}>📷 ถ่ายใหม่</button><button class="btn green" data-a="done" data-id="${esc(j.id)}" type="button" ${PF.busy?'disabled':''}>${PF.busy?'กำลังส่ง…':'✅ ยืนยันส่งสำเร็จ'}</button></div></div>`;
+  if(j.proofAt)return `<div class="help">📷 ส่งรูปยืนยันแล้ว ${hm(j.proofAt)}</div><button class="btn green wide" data-a="done" data-id="${esc(j.id)}" type="button">✅ ส่งสำเร็จ</button>`;
+  return `<button class="btn green wide" data-a="proof" data-id="${esc(j.id)}" type="button">📷 ถ่ายรูปตอนส่งอาหาร</button><div class="help" style="text-align:center">ถ่ายให้เห็นอาหารที่หน้าบ้าน หรือตอนยื่นให้ลูกค้า · ระบบใส่วันเวลาลงในรูปให้ แล้วค่อยกดส่งสำเร็จ</div>`}
+function proofStamp(file,j){return new Promise((ok,no)=>{const fr=new FileReader();fr.onerror=no;fr.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{
+  let w=im.width,h=im.height,mx=1280;if(Math.max(w,h)>mx){const r=mx/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r)}
+  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(im,0,0,w,h);
+  const fs=Math.max(18,Math.round(w/26)),pad=Math.round(fs*.6),bh=fs*2+pad*3;x.fillStyle='rgba(0,0,0,.62)';x.fillRect(0,h-bh,w,bh);
+  const t=new Date().toLocaleString('th-TH',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Asia/Bangkok'});
+  x.fillStyle='#7CFFB2';x.font=`700 ${fs}px Kanit, sans-serif`;x.textBaseline='top';x.fillText('✅ ส่งสำเร็จ '+jobNo(j)+' · คุณ'+((j.cust||{}).name||''),pad,h-bh+pad,w-pad*2);
+  x.fillStyle='#fff';x.font=`500 ${Math.round(fs*.85)}px Kanit, sans-serif`;x.fillText('🕒 '+t+' น. · '+((ME&&ME.name)||'')+' · Raptor Rider',pad,h-bh+pad*2+fs,w-pad*2);
+  let q=.8,u=c.toDataURL('image/jpeg',q);while(u.length>500000&&q>.35){q-=.1;u=c.toDataURL('image/jpeg',q)}ok(u)};im.src=fr.result};fr.readAsDataURL(file)})}
+(function(){const i=document.createElement('input');i.type='file';i.accept='image/*';i.setAttribute('capture','environment');i.id='pfIn';i.hidden=true;document.body.appendChild(i);
+  i.addEventListener('change',async()=>{const f=i.files&&i.files[0];i.value='';const j=(ME&&ME.jobs||[]).find(x=>x.id===PF.want);if(!f||!j)return;
+    toast('กำลังใส่วันเวลาในรูป…');try{PF.img=await proofStamp(f,j);PF.id=j.id;render()}catch(e){toast('เปิดรูปไม่ได้ ลองถ่ายใหม่')}})})();
 let offTimer=null;
 function showOffer(j){let el=$('#offer');if(!j){if(el)el.remove();clearInterval(offTimer);return}
   const to=(ME.shop&&ME.shop.timeout)||60,end=(+j.offerAt||Date.now())+to*1000;
@@ -347,8 +366,16 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
     busy=true;const {error}=await SB.rpc('rider_ready',{p_on:on});busy=false;
     if(error)return toast(/has_job/.test(error.message)?'ส่งงานที่รับไว้ให้เสร็จก่อน':'ทำรายการไม่สำเร็จ');
     keepAwake(on);toast(on?'🟢 เปิด Raptor Rider แล้ว รอรับงานได้เลย':'ปิด Raptor Rider แล้ว');refresh();return}
-  if(['accept','decline','picked','done'].includes(a)){
-    if(a==='done'&&!confirm('ส่งอาหารถึงมือลูกค้าแล้วใช่ไหม?'))return;
+  if(a==='proof'){PF.want=id;$('#pfIn').click();return}
+  if(a==='done'){const j=(ME.jobs||[]).find(x=>x.id===id);if(!j)return;
+    if(!j.proofAt&&!(PF.id===id&&PF.img)){toast('ถ่ายรูปตอนส่งอาหารก่อน');PF.want=id;$('#pfIn').click();return}
+    if(!confirm('ส่งอาหารถึงมือลูกค้าแล้วใช่ไหม?'))return;
+    busy=true;PF.busy=true;render();
+    try{if(!j.proofAt){const {error:e1}=await SB.rpc('rider_proof',{p_id:id,p_img:PF.img});if(e1)throw new Error(/bad_photo/.test(e1.message)?'รูปใหญ่เกินไป ลองถ่ายใหม่':/gone/.test(e1.message)?'งานนี้ถูกยกเลิกหรือเปลี่ยนไปแล้ว':/function|PGRST20/i.test(e1.message)?'ร้านยังไม่ได้อัปเดตระบบ (SQL)':'ส่งรูปไม่สำเร็จ ลองอีกครั้ง');j.proofAt=Date.now()}
+      const {error}=await SB.rpc('rider_job',{p_id:id,p_act:'done'});if(error)throw new Error(/need_photo/.test(error.message)?'ต้องถ่ายรูปตอนส่งก่อน':/gone/.test(error.message)?'งานนี้ถูกยกเลิกหรือเปลี่ยนไปแล้ว':'ทำรายการไม่สำเร็จ ลองอีกครั้ง');
+      PF.id=null;PF.img=null;toast('🎉 ส่งสำเร็จ! แจ้งร้านและลูกค้าแล้ว · กลับเข้าคิวแล้ว')}
+    catch(e){toast(e.message)}finally{busy=false;PF.busy=false;refresh()}return}
+  if(['accept','decline','picked'].includes(a)){
     busy=true;b.disabled=true;const {error}=await SB.rpc('rider_job',{p_id:id,p_act:a});busy=false;b.disabled=false;
     if(error)toast(/gone/.test(error.message)?'งานนี้ถูกส่งให้คนอื่นแล้ว':'ทำรายการไม่สำเร็จ ลองอีกครั้ง');
     else toast(a==='accept'?'รับงานแล้ว ไปรับอาหารที่ร้านได้เลย':a==='decline'?'ข้ามงานนี้แล้ว (ไปต่อท้ายคิว)':a==='picked'?'ออกเดินทาง ขับขี่ปลอดภัยนะ':'🎉 ส่งสำเร็จ! กลับเข้าคิวแล้ว');
