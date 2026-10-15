@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1650">
+<meta name="app-version" content="2026.10.15-1700b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -760,6 +760,7 @@ const r2=n=>Math.round((+n||0)*100)/100;
 const num=n=>r2(n).toLocaleString('th-TH',{maximumFractionDigits:2});
 const baht=n=>(n<0?'−':'')+'฿'+num(Math.abs(n));
 const DAY=864e5;
+const bkDay=()=>new Date(Date.now()+7*3600e3).toISOString().slice(0,10);
 const sod=(t=Date.now())=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
 const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-5);
 
@@ -933,6 +934,9 @@ async function init(){
   SB=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,lock:async(n,t,fn)=>await fn()}});
   let data={};try{data=(await Promise.race([SB.auth.getSession(),new Promise((_,no)=>setTimeout(()=>no(new Error('t')),15000))])).data||{}}catch(e){if(bumpFail()>=2){clearAuth();S.state='login';render();return}S.state='loading';S.loadErr='เชื่อมต่อระบบเข้าสู่ระบบไม่ได้';render();setTimeout(()=>location.reload(),5000);return}
   if(!data.session){S.state='login';render();return}
+  // ออกจากระบบอัตโนมัติเมื่อข้ามวัน (เวลาไทย)
+  {let d='';try{d=localStorage.getItem('nl_login_day')||''}catch(e){}if(!d){try{localStorage.setItem('nl_login_day',bkDay())}catch(e){}}
+   else if(d!==bkDay()){try{await Promise.race([SB.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,3000))])}catch(e){}clearAuth();try{localStorage.removeItem('nl_login_day')}catch(e){}S.state='login';render();setTimeout(()=>toast('ข้ามวันแล้ว กรุณาเข้าสู่ระบบใหม่'),300);return}}
   startData();
 }
 const LOGIN_DOMAIN=()=>String((window.APP_CONFIG||{}).LOGIN_DOMAIN||'nuealwoan.com').replace(/^@/,'');
@@ -947,7 +951,7 @@ async function login(){
   const {error}=await SB.auth.signInWithPassword({email:userToEmail(user),password:pw});
   $('#lgBtn').disabled=false;$('#lgBtn').textContent='เข้าสู่ระบบ';
   if(error){er.textContent=/invalid/i.test(error.message)?'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง':'เข้าสู่ระบบไม่สำเร็จ: '+error.message;return}
-  try{localStorage.setItem('nl_user',user)}catch(e){}
+  try{localStorage.setItem('nl_user',user);localStorage.setItem('nl_login_day',bkDay())}catch(e){}
   startData();
 }
 function clearAuth(){try{Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}try{sessionStorage.removeItem('nl_fail')}catch(e){}}
@@ -970,7 +974,7 @@ async function startData(){
   const db=makeDb(SB);
   S.db=db;S.state='ready';render();
   pushBoot();loadQrDay();setInterval(()=>{const d=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);if(!S.qrDay||S.qrDay.day!==d)loadQrDay()},10*60000);
-  const day0=sod();setInterval(()=>{if(sod()!==day0&&!S.sheet&&!S.cust)location.reload()},60000);
+  const day0=bkDay();setInterval(()=>{if(bkDay()!==day0){try{localStorage.removeItem('nl_login_day')}catch(e){}logout()}},60000);
   db.doc('config/permissions').onSnapshot(s=>{S.perms=s.exists?(s.data().roles||null):null;render();refreshSheet()},onErr);
   db.doc('config/settings').onSnapshot(s=>{S.settings={...DEFAULTS,...(s.exists?s.data():{})};render();refreshSheet()},onErr);
   db.collection('menu').onSnapshot(s=>{const all=s.docs.map(d=>({id:d.id,...d.data()}));S.nMenu=all.filter(m=>m.shop!=='po');S.poMenu=all.filter(m=>m.shop==='po');sortMenu(true);render();refreshSheet('menu')},onErr);

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1650">
+<meta name="app-version" content="2026.10.15-1700b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -104,6 +104,8 @@ function toast(m){const o=$('.toast');if(o)o.remove();const t=document.createEle
 const CFG=window.APP_CONFIG||{};const DOMAIN=String(CFG.LOGIN_DOMAIN||'nuealwoan.com').replace(/^@/,'');
 const P=new URLSearchParams(location.search);
 let APPH='',ST=null,stT=null;
+const bkDay=()=>new Date(Date.now()+7*3600e3).toISOString().slice(0,10);
+async function dayOut(){try{await SB.rpc('rider_ready',{p_on:false})}catch(e){}try{await SB.auth.signOut()}catch(e){}try{localStorage.removeItem('nl_rider_day')}catch(e){}location.replace(location.pathname+'?out=day')}
 let SB=null,ME=null,mode=P.has('join')?'join':'boot',poll=null,busy=false,photoData='',lastOffer='',wake=null;
 
 /* ---------- เสียงแจ้งงานใหม่ ---------- */
@@ -147,6 +149,8 @@ async function start(){
   SB=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'nl-rider-auth',lock:async(n,t,fn)=>await fn()}});
   if(mode==='join')return render();
   let ses=null;try{ses=(await SB.auth.getSession()).data.session}catch(e){}
+  if(ses){let d='';try{d=localStorage.getItem('nl_rider_day')||''}catch(e){}if(!d){try{localStorage.setItem('nl_rider_day',bkDay())}catch(e){}}else if(d!==bkDay())return dayOut()}
+  if(P.get('out')==='day')setTimeout(()=>toast('ข้ามวันแล้ว กรุณาเข้าสู่ระบบใหม่'),300);
   if(!ses){try{const pw=JSON.parse(localStorage.getItem('nl_rider_pw')||'null');if(pw&&Date.now()-pw.at<3*86400e3){PW=pw;mode='pwwait';render();return pwCheck()}}catch(e){}
     let ap='';try{ap=localStorage.getItem('nl_rider_apply')||''}catch(e){}if(ap){APPH=ap;mode='status';return checkStatus()}mode='login';return render()}
   await refresh(true);
@@ -263,7 +267,7 @@ function renderLogin(v){let u='';try{u=localStorage.getItem('nl_rider_user')||''
       user=data.username.toLowerCase()}
     const {error}=await SB.auth.signInWithPassword({email:user.includes('@')?user:user+'@'+DOMAIN,password:pw});b.disabled=false;b.textContent='เข้าสู่ระบบ';
     if(error)return $('#lgE').textContent=/invalid/i.test(error.message)?'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง':'เข้าสู่ระบบไม่สำเร็จ';
-    try{localStorage.setItem('nl_rider_user',user)}catch(e){}mode='app';refresh(true)})}
+    try{localStorage.setItem('nl_rider_user',user);localStorage.setItem('nl_rider_day',bkDay())}catch(e){}mode='app';refresh(true)})}
 function renderJoin(v){
   v.innerHTML=`<form class="card" id="jF"><h2>สมัครเป็น Raptor Rider</h2><p class="help">กรอกข้อมูลให้ครบ ร้านจะตรวจแล้วติดต่อกลับ</p>
    <div class="photo"><div class="box" id="jPhBox">${photoData?`<img src="${photoData}" alt="">`:'🙂'}</div><div style="display:flex;flex-direction:column;gap:6px"><label class="btn" for="jPh">📷 ถ่าย/เลือกรูปตัวเอง</label><input id="jPh" type="file" accept="image/*" capture="user" hidden><span class="help">เห็นหน้าชัด ไม่ใส่หมวกกันน็อก</span></div></div>
@@ -309,6 +313,9 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
     refresh();return}});
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.ready[data-a="toggle"]')){e.preventDefault();e.target.click()}});
 $('#outBtn').addEventListener('click',async()=>{if(!confirm('ออกจากระบบ?'))return;try{await SB.rpc('rider_ready',{p_on:false})}catch(e){}await SB.auth.signOut().catch(()=>{});location.replace(location.pathname)});
+// ข้ามวัน: ออกจากระบบอัตโนมัติ (ถ้ากำลังส่งงานอยู่ รอส่งเสร็จก่อน)
+setInterval(()=>{if(mode!=='app'||!ME)return;let d='';try{d=localStorage.getItem('nl_rider_day')||''}catch(e){}if(!d||d===bkDay())return;
+  if((ME.jobs||[]).some(j=>j.status==='accepted'||j.status==='picked'))return;dayOut()},60000);
 start();
 </script>
 </body>
