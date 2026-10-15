@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1640">
+<meta name="app-version" content="2026.10.15-1650">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -147,10 +147,11 @@ async function start(){
   SB=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'nl-rider-auth',lock:async(n,t,fn)=>await fn()}});
   if(mode==='join')return render();
   let ses=null;try{ses=(await SB.auth.getSession()).data.session}catch(e){}
-  if(!ses){let ap='';try{ap=localStorage.getItem('nl_rider_apply')||''}catch(e){}if(ap){APPH=ap;mode='status';return checkStatus()}mode='login';return render()}
+  if(!ses){try{const pw=JSON.parse(localStorage.getItem('nl_rider_pw')||'null');if(pw&&Date.now()-pw.at<3*86400e3){PW=pw;mode='pwwait';render();return pwCheck()}}catch(e){}
+    let ap='';try{ap=localStorage.getItem('nl_rider_apply')||''}catch(e){}if(ap){APPH=ap;mode='status';return checkStatus()}mode='login';return render()}
   await refresh(true);
 }
-async function refresh(first){if(!SB||['join','login','applied','status'].includes(mode))return;
+async function refresh(first){if(!SB||['join','login','applied','status','forgot','pwwait'].includes(mode))return;
   const {data,error}=await SB.rpc('rider_me');
   if(error){const m=String(error.message||'');if(/not_rider/.test(m)){mode='notrider';render();return}
     if(/jwt|token|session|401/i.test(m)){await SB.auth.signOut().catch(()=>{});mode='login';render();return}
@@ -179,10 +180,29 @@ function renderStatus(v){const st=ST||{status:'loading'};
   if(st.status==='err')return v.innerHTML=`<div class="card"><h2>ตรวจสถานะไม่ได้</h2><p class="muted" style="margin:0">${esc(st.msg)}</p><button class="btn" data-a="recheck" type="button">ลองอีกครั้ง</button><button class="lnk" data-a="toLogin" type="button">ไปหน้าเข้าสู่ระบบ</button></div>`;
   v.innerHTML=`<div class="card ok"><div class="big wait">⏳</div><h2>รอร้านอนุมัติ</h2><p class="muted" style="margin:0">ใบสมัครเบอร์ ${esc(APPH.replace(/^(\d{3})\d+(\d{4})$/,'$1-xxx-$2'))} ส่งถึงร้านแล้ว<br>เปิดหน้านี้ทิ้งไว้ได้ เมื่ออนุมัติจะขึ้นแจ้งทันที</p>
     <button class="btn wide" data-a="recheck" type="button">ตรวจสอบอีกครั้ง</button><button class="lnk" data-a="toLogin" type="button">มีบัญชีแล้ว เข้าสู่ระบบ</button></div>`}
+/* ---------- ลืมรหัสผ่าน ---------- */
+let PW=null,pwT=null;
+function renderForgot(v){v.innerHTML=`<form class="card" id="fgF"><h2>ลืมรหัสผ่าน</h2><p class="help">ยืนยันว่าเป็นเจ้าของบัญชี แล้วร้านจะ<b>โทรกลับที่เบอร์ที่ลงทะเบียนไว้</b>เพื่อยืนยันอีกครั้ง ก่อนตั้งรหัสใหม่ให้</p>
+   <div class="field"><label for="fgU">ชื่อผู้ใช้ หรือ เบอร์มือถือ</label><input id="fgU" autocapitalize="characters" placeholder="เช่น RR001" value="${esc(PW&&PW.u||'')}"></div>
+   <div class="field"><label for="fgP">เบอร์มือถือที่ลงทะเบียนไว้</label><input id="fgP" type="tel" inputmode="tel" maxlength="12" placeholder="0812345678"></div>
+   <div class="field"><label for="fgL">ทะเบียนรถที่ลงทะเบียนไว้</label><input id="fgL" maxlength="30" placeholder="เช่น 1กข 1234"></div>
+   <p class="err" id="fgE" role="alert"></p><button class="btn pri wide" id="fgB" type="submit">ส่งคำขอรีเซตรหัสผ่าน</button><button class="lnk" data-a="toLogin" type="button">กลับไปหน้าเข้าสู่ระบบ</button></form>`;
+  $('#fgF').addEventListener('submit',async e=>{e.preventDefault();const u=$('#fgU').value.trim(),ph=$('#fgP').value.replace(/\D/g,''),pl=$('#fgL').value.trim(),E=$('#fgE');E.textContent='';
+    if(!u)return E.textContent='ใส่ชื่อผู้ใช้หรือเบอร์';if(!/^0\d{8,9}$/.test(ph))return E.textContent='เบอร์มือถือไม่ถูกต้อง';if(pl.replace(/\s/g,'').length<4)return E.textContent='ใส่ทะเบียนรถให้ครบ';
+    const b=$('#fgB');b.disabled=true;const {data,error}=await SB.rpc('rider_pw_request',{p_user:u,p_phone:ph,p_plate:pl});b.disabled=false;
+    if(error){const m=String(error.message||'');return E.textContent=/mismatch/.test(m)?'ข้อมูลไม่ตรงกับที่ลงทะเบียนไว้ ตรวจเบอร์และทะเบียนรถอีกครั้ง หรือโทรหาร้าน':/busy/.test(m)?'มีคำขอเยอะ ลองใหม่อีกสักครู่':/function|PGRST20/i.test(m)?'ร้านยังไม่ได้เปิดระบบนี้ โทรหาร้านได้เลย':'ส่งคำขอไม่สำเร็จ'}
+    PW={u,phone:ph,at:data.at};try{localStorage.setItem('nl_rider_pw',JSON.stringify(PW))}catch(x){}mode='pwwait';render();pwCheck()})}
+async function pwCheck(){clearTimeout(pwT);if(!PW)return;const {data}=await SB.rpc('rider_status',{p_phone:PW.phone});
+  if(data&&+data.pwSetAt>+PW.at){PW.done=true;PW.user=data.username;try{localStorage.removeItem('nl_rider_pw')}catch(e){}ring();render();return}
+  pwT=setTimeout(pwCheck,document.hidden?60000:20000)}
+function renderPwWait(v){if(PW&&PW.done)return v.innerHTML=`<div class="card ok approved"><div class="okbadge"><span>🔑</span><b>RESET</b></div><h2>ร้านตั้งรหัสผ่านใหม่แล้ว</h2><p class="muted" style="margin:0">รับรหัสใหม่จากร้าน (LINE / โทรศัพท์) แล้วเข้าสู่ระบบได้เลย</p><button class="btn green wide" data-a="toLoginU" data-u="${esc(PW.user||'')}" type="button">เข้าสู่ระบบ</button></div>`;
+  v.innerHTML=`<div class="card ok"><div class="big wait">🔑</div><h2>ส่งคำขอแล้ว</h2><p class="muted" style="margin:0">ร้านจะ<b>โทรหาเบอร์ ${esc((PW&&PW.phone||'').replace(/^(\d{3})\d+(\d{4})$/,'$1-xxx-$2'))}</b> เพื่อยืนยันตัวตน แล้วส่งรหัสผ่านใหม่ให้<br>เปิดหน้านี้ทิ้งไว้ได้ ตั้งรหัสใหม่แล้วจะขึ้นแจ้งทันที</p><button class="lnk" data-a="toLogin" type="button">กลับไปหน้าเข้าสู่ระบบ</button></div>`}
 /* ---------- หน้าจอ ---------- */
 function render(){const v=$('#view');$('#outBtn').hidden=!(mode==='app'||mode==='notrider');
   if(mode==='join')return renderJoin(v);
   if(mode==='status')return renderStatus(v);
+  if(mode==='forgot')return renderForgot(v);
+  if(mode==='pwwait')return renderPwWait(v);
   if(mode==='applied')return v.innerHTML=`<div class="card ok"><div class="big">✅</div><h2>ส่งใบสมัครแล้ว</h2><p class="muted" style="margin:0">ร้านจะตรวจข้อมูลแล้วแจ้ง <b>ชื่อผู้ใช้</b> และ <b>รหัสผ่าน</b> ให้ทางโทรศัพท์/LINE<br>ได้แล้วกลับมาเข้าสู่ระบบที่หน้านี้</p><button class="btn pri wide" data-a="toLogin" type="button">ไปหน้าเข้าสู่ระบบ</button></div>`;
   if(mode==='login')return renderLogin(v);
   if(mode==='notrider')return v.innerHTML=`<div class="card"><h2>บัญชีนี้ยังใช้ Raptor Rider ไม่ได้</h2><p class="muted" style="margin:0">รอร้านอนุมัติ หรือบัญชีถูกปิดใช้งาน ติดต่อร้านได้เลย</p><button class="btn" data-a="logout" type="button">ออกจากระบบ</button></div>`;
@@ -234,7 +254,7 @@ function renderLogin(v){let u='';try{u=localStorage.getItem('nl_rider_user')||''
    <div class="field"><label for="lgU">เบอร์มือถือ หรือ ชื่อผู้ใช้</label><input id="lgU" autocomplete="username" autocapitalize="characters" placeholder="เช่น 0812345678 หรือ RR001" value="${esc(u)}"></div>
    <div class="field"><label for="lgP">รหัสผ่าน</label><input id="lgP" type="password" autocomplete="current-password"></div>
    <p class="err" id="lgE" role="alert"></p><button class="btn pri wide" type="submit" id="lgB">เข้าสู่ระบบ</button></form>
-   <button class="lnk" data-a="askStatus" type="button" style="align-self:center">สมัครไว้แล้ว? ตรวจสอบสถานะการอนุมัติ</button>
+   <div style="display:flex;justify-content:space-between;flex-wrap:wrap"><button class="lnk" data-a="forgot" type="button">ลืมรหัสผ่าน?</button><button class="lnk" data-a="askStatus" type="button">ตรวจสถานะการสมัคร</button></div>
    <div class="card"><h3>ยังไม่ได้เป็นไรเดอร์ของร้าน?</h3><p class="help">สมัครแล้วรอร้านอนุมัติ ร้านจะส่งชื่อผู้ใช้และรหัสผ่านให้</p><button class="btn wide" data-a="toJoin" type="button">🛵 สมัครเป็น Raptor Rider</button></div>`;
   $('#lgF').addEventListener('submit',async e=>{e.preventDefault();let user=$('#lgU').value.trim().toLowerCase(),pw=$('#lgP').value;if(!user||!pw)return $('#lgE').textContent='ใส่ชื่อผู้ใช้และรหัสผ่าน';
     const b=$('#lgB');b.disabled=true;b.textContent='กำลังเข้าสู่ระบบ…';
@@ -268,9 +288,10 @@ async function shrink(file,max,q){const bmp=await createImageBitmap(file).catch(
 /* ---------- ปุ่ม ---------- */
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b||!b.dataset.a||busy)return;const a=b.dataset.a,id=b.dataset.id;
   if(a==='toJoin'){mode='join';render();return}
-  if(a==='toLogin'){clearTimeout(stT);mode='login';render();return}
+  if(a==='toLogin'){clearTimeout(stT);clearTimeout(pwT);mode='login';render();return}
   if(a==='toLoginU'){clearTimeout(stT);try{localStorage.removeItem('nl_rider_apply');localStorage.setItem('nl_rider_user',b.dataset.u||'')}catch(e){}mode='login';render();setTimeout(()=>$('#lgP')?.focus(),50);return}
   if(a==='recheck'){checkStatus();return}
+  if(a==='forgot'){mode='forgot';PW={u:($('#lgU')||{}).value||''};render();return}
   if(a==='askStatus'){const p=(prompt('ใส่เบอร์มือถือที่ใช้สมัคร')||'').replace(/\D/g,'');if(!/^0\d{8,9}$/.test(p))return p&&toast('เบอร์ไม่ถูกต้อง');APPH=p;try{localStorage.setItem('nl_rider_apply',p)}catch(e){}ST=null;mode='status';render();checkStatus();return}
   if(a==='logout'){await SB.auth.signOut().catch(()=>{});location.replace(location.pathname);return}
   if(a==='push'){pushEnable();return}

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1630">
+<meta name="app-version" content="2026.10.15-1650">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -420,6 +420,7 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .rdr{border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;margin-bottom:10px}.rdr-top{display:flex;gap:10px;align-items:center}
 .rdr-top img,.rdr-av{width:54px;height:54px;border-radius:50%;object-fit:cover;flex:none;display:flex;align-items:center;justify-content:center;background:var(--sunk);font-size:24px}
 .rdr-act{display:flex;gap:6px;flex-wrap:wrap}.plate{display:inline-block;background:#f6efe4;color:#111;border-radius:5px;padding:0 6px;font-weight:700;font-size:12px}
+.pwreq{background:rgba(255,179,71,.14);border:1px solid rgba(255,179,71,.5);border-radius:9px;padding:6px 9px;font-size:13px;margin:4px 0}
 .rdcred{gap:4px;border-color:rgba(43,212,125,.5)}
 .fsearch{margin:-4px 0 10px}.fsearch input{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:10px 12px;font:inherit;min-height:44px}.fsearch input:focus{border-color:var(--jade);outline:none}
 #fqRes:not(:empty){margin-bottom:12px}
@@ -2784,12 +2785,12 @@ function rdEta(d){const L=d.riderLoc,c=d.cust||{},cf=rdCfg();if(!L||!c.lat)retur
   const min=Math.max(1,Math.round(km/sp*60));const age=Math.round((Date.now()-(+L.at||0))/60000);return ` · ห่างลูกค้า ~${km.toFixed(1)} กม. ≈ ${min} นาที${age>=3?` (ตำแหน่ง ${age} นาทีที่แล้ว)`:''}`}
 const rdStatusTxt=d=>({wait:'⏳ รอไรเดอร์',offer:`📨 ส่งให้ ${esc(d.offerName||'')} · รอกดรับ`,accepted:`✅ ${esc(d.riderName||'')} รับงานแล้ว · กำลังมารับ`,picked:`🛵 ${esc(d.riderName||'')} กำลังไปส่ง`,done:`🎉 ส่งสำเร็จ ${d.doneAt?hm(d.doneAt):''}`,cancel:'ยกเลิก'})[d.status]||d.status;
 function viewRdPanel(){const c=rdCfg();if(!c.on||!can('rider'))return '';const q=rdReadyQueue(),riders=S.riders||[],dl=S.dlv||[];
-  const busy=riders.filter(r=>r.status==='active'&&r.job),pend=riders.filter(r=>r.status==='pending').length;
+  const busy=riders.filter(r=>r.status==='active'&&r.job),pend=riders.filter(r=>r.status==='pending'||(r.status==='active'&&r.pwReq)).length;
   const act=dl.filter(d=>['wait','offer','accepted','picked'].includes(d.status)).sort((a,b)=>a.at-b.at),done=dl.filter(d=>d.status==='done'&&(d.doneAt||0)>=sod());
   const left=d=>Math.max(0,Math.ceil(((+d.offerAt||0)+(+c.timeout||60)*1000-Date.now())/1000));
   let h=`<div class="card rdpanel"><div class="rdph"><b>🛵 Raptor Rider</b><span class="rdlive">${q.length?`<i></i> พร้อม ${q.length} คน`:'ยังไม่มีไรเดอร์เปิด Ready'}</span>
     <label class="check" style="margin-left:auto"><input type="checkbox" data-act="rdRain" ${rdRain()?'checked':''}> 🌧️ ฝนตก +${baht(c.rainFee)}</label>
-    <button class="btn sm" data-act="rdRiders" type="button">ไรเดอร์${pend?` <span class="pill warn">${pend} รออนุมัติ</span>`:''}</button></div>
+    <button class="btn sm" data-act="rdRiders" type="button">ไรเดอร์${pend?` <span class="pill warn">${pend} รอดำเนินการ</span>`:''}</button></div>
    <div class="rdq">${q.map((r,i)=>`<span class="rdqc${r.offered?' off':''}" title="${esc(r.name)}">${r.photo?`<img src="${esc(r.photo)}" alt="">`:'🛵'}<b>${i+1}</b>${esc(r.name.split(' ')[0])}${r.offered?' · รอกดรับ':''}</span>`).join('')}${busy.map(r=>`<span class="rdqc busy">${r.photo?`<img src="${esc(r.photo)}" alt="">`:'🛵'}${esc(r.name.split(' ')[0])} · กำลังส่ง</span>`).join('')}</div>`;
   h+=act.length?'<div class="list">'+act.map(d=>`<div class="row" style="flex-wrap:wrap;gap:8px"><div class="grow" style="min-width:200px"><div class="t">${esc(d.billNo)} · คุณ${esc(d.cust.name)} <span class="pill ${d.status==='wait'?'warn':d.status==='offer'?'info':'ok'}">${rdStatusTxt(d)}${d.status==='offer'?' '+left(d)+' วิ':''}</span></div><div class="s">📍 ${esc(d.cust.addr||'')}${d.km!=null?' · '+d.km+' กม.':''} · ค่าส่ง ${baht(d.fee)}${rdEta(d)}</div></div>
       ${d.tok?`<button class="btn sm" data-act="rdTrack" data-id="${d.id}" type="button">📤 ลิงก์ติดตาม</button>`:''}
@@ -2807,11 +2808,11 @@ setInterval(()=>{if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet&&(S.dlv||[]).s
 /* ---------- จัดการไรเดอร์ ---------- */
 const nextRR=()=>{const n=(S.riders||[]).map(r=>/^rr(\d+)$/i.exec(r.username||'')).filter(Boolean).map(m=>+m[1]);return 'RR'+String((n.length?Math.max(...n):0)+1).padStart(3,'0')};
 const upU=u=>/^rr\d+$/i.test(u||'')?String(u).toUpperCase():u;
-function sheetRiders(){const own=S.role==='owner',rs=S.riders||[],pend=rs.filter(r=>r.status==='pending'),act=rs.filter(r=>r.status!=='pending');
+function sheetRiders(){const own=S.role==='owner',rs=S.riders||[],pend=rs.filter(r=>r.status==='pending'),act=rs.filter(r=>r.status!=='pending').sort((a,b)=>(b.pwReq?1:0)-(a.pwReq?1:0));
   const base=new URL('rider.html',location.href).href.split('?')[0];const dl=S.dlv||[];
   const trips=id=>dl.filter(d=>d.status==='done'&&d.riderId===id&&(d.doneAt||0)>=sod());
   const card=r=>`<div class="rdr"><div class="rdr-top">${r.photo?`<img src="${esc(r.photo)}" alt="" class="zoomable" data-act="imgv" data-src="${esc(r.photo)}" data-cap="${esc(r.name)}">`:'<span class="rdr-av">🛵</span>'}<div class="grow"><b>${esc(r.name)}</b><div class="help">📞 <a href="tel:${esc(r.phone)}">${esc(r.phone)}</a> · ${esc(r.brand||'')} <span class="plate">${esc(r.plate||'')}</span></div>
-     <div class="help">${r.status==='pending'?'สมัครเมื่อ '+(r.appliedAt?dshort(r.appliedAt)+' '+hm(r.appliedAt):''):r.status==='blocked'?'<span style="color:var(--chili)">ระงับการใช้งาน</span>':(r.job?'🛵 กำลังส่งงาน':r.ready?'🟢 Ready':'⚪ ออฟไลน์')+(r.username?' · ชื่อผู้ใช้ '+esc(upU(r.username)):'')+` · วันนี้ ${trips(r.id).length} เที่ยว ${baht(trips(r.id).reduce((a,d)=>a+(+d.fee||0),0))}`}</div></div></div>
+     ${r.pwReq&&r.status==='active'?`<div class="pwreq">🔑 <b>ขอรีเซตรหัสผ่าน</b> ${dshort(r.pwReq)} ${hm(r.pwReq)} · โทรยืนยันที่ <a href="tel:${esc(r.phone)}">${esc(r.phone)}</a> ก่อน แล้วกด "ตั้งรหัสใหม่"</div>`:''}<div class="help">${r.status==='pending'?'สมัครเมื่อ '+(r.appliedAt?dshort(r.appliedAt)+' '+hm(r.appliedAt):''):r.status==='blocked'?'<span style="color:var(--chili)">ระงับการใช้งาน</span>':(r.job?'🛵 กำลังส่งงาน':r.ready?'🟢 Ready':'⚪ ออฟไลน์')+(r.username?' · ชื่อผู้ใช้ '+esc(upU(r.username)):'')+` · วันนี้ ${trips(r.id).length} เที่ยว ${baht(trips(r.id).reduce((a,d)=>a+(+d.fee||0),0))}`}</div></div></div>
      ${own?`<div class="rdr-act">${r.status==='pending'?`<button class="btn sm pri" data-act="rdApprove" data-id="${esc(r.id)}" type="button">อนุมัติ + สร้างบัญชี</button><button class="btn sm danger" data-act="rdDel" data-id="${esc(r.id)}" data-confirm="1" type="button">ปฏิเสธ</button>`
        :`<button class="btn sm" data-act="rdPw" data-id="${esc(r.id)}" type="button">ตั้งรหัสใหม่</button><button class="btn sm" data-act="rdBlock" data-id="${esc(r.id)}" type="button">${r.status==='blocked'?'เปิดใช้งาน':'ระงับ'}</button><button class="btn sm danger" data-act="rdDel" data-id="${esc(r.id)}" data-confirm="1" type="button">ลบ</button>`}</div>`:''}
      ${S.sheet.ap===r.id?`<div class="card" style="gap:8px"><div class="grid2"><div class="field"><label for="apU">ชื่อผู้ใช้</label><input id="apU" value="${esc(S.sheet.apU||nextRR())}" autocapitalize="characters"></div><div class="field"><label for="apP">รหัสผ่าน</label><input id="apP" value="${esc(S.sheet.apP||String(Math.floor(100000+Math.random()*900000)))}"></div></div><p class="err" id="apE"></p><button class="btn pri" data-act="rdApproveGo" data-id="${esc(r.id)}" type="button">${S.sheet.apMode==='pw'?'ตั้งรหัสผ่านใหม่':'ยืนยันอนุมัติ'}</button></div>`:''}
