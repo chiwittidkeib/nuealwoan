@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1620">
+<meta name="app-version" content="2026.10.15-1700">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -108,6 +108,13 @@ function ring(){try{if(!AC)return;const t=AC.currentTime;[[988,0],[1319,.16],[98
 async function keepAwake(on){try{if(on&&!wake&&'wakeLock' in navigator){wake=await navigator.wakeLock.request('screen');wake.addEventListener('release',()=>{wake=null})}else if(!on&&wake){await wake.release();wake=null}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(ME&&ME.ready)keepAwake(true);refresh()}});
 
+/* ---------- แชร์ตำแหน่งให้ลูกค้า (เฉพาะตอนมีงาน) ---------- */
+const kmBetween=(a,b)=>{const t=x=>x*Math.PI/180,dLa=t(b.lat-a.lat),dLo=t(b.lng-a.lng);const h=Math.sin(dLa/2)**2+Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dLo/2)**2;return 12742*Math.asin(Math.sqrt(h))};
+let geoW=null,lastSent=null,geoErr='';
+function geoSync(on){if(on&&geoW==null&&navigator.geolocation){geoW=navigator.geolocation.watchPosition(p=>{const c=p.coords,now=Date.now(),cur={lat:c.latitude,lng:c.longitude};if(geoErr){geoErr='';render()}
+    if(lastSent&&now-lastSent.t<15000&&kmBetween(lastSent,cur)<0.04)return;lastSent={t:now,...cur};SB.rpc('rider_loc',{p_lat:cur.lat,p_lng:cur.lng,p_acc:c.accuracy||0}).then(()=>{},()=>{})},
+    e=>{const was=geoErr;geoErr=e.code===1?'denied':'err';if(was!==geoErr)render()},{enableHighAccuracy:true,maximumAge:10000,timeout:30000})}
+  else if(!on&&geoW!=null){navigator.geolocation.clearWatch(geoW);geoW=null;lastSent=null;geoErr=''}}
 /* ---------- แจ้งเตือนบนหน้าจอล็อก ---------- */
 const PUSH={reg:null,key:null,
   ok:()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window,
@@ -146,6 +153,7 @@ async function refresh(first){if(!SB||mode==='join'||mode==='login'||mode==='app
   const off=(ME.jobs||[]).find(j=>j.status==='offer');lastOffer=off?off.id+':'+off.offerAt:'';
   if(off&&lastOffer!==prevOffer)ring();
   if(first){pushCheck();if(ME.ready)keepAwake(true)}
+  {const act=(ME.jobs||[]).some(j=>j.status==='accepted'||j.status==='picked');geoSync(act);if(act)keepAwake(true)}
   render();
   clearTimeout(poll);poll=setTimeout(refresh,document.hidden?15000:4000);
 }
@@ -177,6 +185,7 @@ const shopNav=()=>ME.shop&&ME.shop.lat?`https://www.google.com/maps/dir/?api=1&d
 function jobCard(j){const c=j.cust||{},picked=j.status==='picked';
   return `<div class="card job"><div class="hd"><div><small class="muted">${esc(j.billNo||'')}</small><h2>${picked?'กำลังไปส่งลูกค้า':'ไปรับอาหารที่ร้าน'}</h2></div><div class="fee">${baht(j.fee)}</div></div>
    <div class="steps"><i class="on"></i><i class="${picked?'on':''}"></i><i></i></div>
+   <div class="${geoErr?'pushc':'help'}">${geoErr==='denied'?'⚠️ ยังไม่ได้อนุญาตตำแหน่ง ลูกค้าจะไม่เห็นว่าคุณอยู่ไหน · เปิดที่ ตั้งค่า → ตำแหน่ง/Location ของเบราว์เซอร์':geoErr?'⚠️ หาตำแหน่ง GPS ไม่ได้ชั่วคราว':'📍 กำลังแชร์ตำแหน่งให้ลูกค้าติดตาม · เปิดหน้านี้ค้างไว้ระหว่างส่ง'}</div>
    <div class="kv"><span>ลูกค้า</span><b>คุณ${esc(c.name||'')}</b></div>
    <div class="addr">📍 ${esc(c.addr||'')}${c.note?`<br><span class="muted">📝 ${esc(c.note)}</span>`:''}</div>
    <div class="kv"><span>ระยะทาง</span><span>${j.km?j.km+' กม.':'-'}</span></div>

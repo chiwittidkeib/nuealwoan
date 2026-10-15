@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="app-version" content="2026.10.15-1700">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14110f">
+<title>ติดตามไรเดอร์ · เนื้อล้วนๆ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#f6f1ea;--surface:#fff;--sunk:#efe8de;--line:#e4d9ca;--fg:#1d1612;--muted:#7a6c5f;--red:#c8202a;--gold:#c48d3d;--green:#14a35a;
+  --f-d:"Kanit","IBM Plex Sans Thai",system-ui,sans-serif;--f-b:"IBM Plex Sans Thai",system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-b)}
+h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600}
+.top{background:#14110f;color:#f6efe4;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 14px;display:flex;align-items:center;gap:10px}
+.top img{width:40px;height:40px;border-radius:10px;object-fit:contain;background:#000}.top b{font-family:var(--f-d);font-size:19px;display:block}.top small{color:#d9a65a;font-size:12px;letter-spacing:.06em}
+.wrap{max-width:560px;margin:0 auto;padding:12px 14px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.eta{text-align:center;background:linear-gradient(160deg,#1c1714,#2a1d14);color:#fff;border:0}
+.eta .big{font-family:var(--f-d);font-size:44px;line-height:1;color:#ffd58a}.eta .big small{font-size:18px;color:#fff;margin-left:4px}
+.eta .sub{color:#e9dccb;font-size:15px}.eta h2{font-size:22px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;font-size:12px;color:var(--muted)}
+.steps div{display:flex;flex-direction:column;align-items:center;gap:5px}.steps i{width:100%;height:6px;border-radius:4px;background:var(--sunk)}
+.steps .on{color:var(--fg);font-weight:600}.steps .on i{background:var(--green)}.steps .cur i{background:linear-gradient(90deg,var(--green),#7be3a8);animation:sh 1.4s infinite alternate}
+@keyframes sh{from{opacity:.55}to{opacity:1}}
+#map{height:min(52vh,420px);border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#ddd}
+.rider{display:flex;gap:12px;align-items:center}.rider img,.rider .av{width:58px;height:58px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);flex:none;display:flex;align-items:center;justify-content:center;font-size:26px;background:var(--sunk)}
+.rider b{font-family:var(--f-d);font-size:18px;display:block}.plate{display:inline-block;background:#1d1612;color:#fff;border-radius:6px;padding:1px 8px;font-weight:700;font-size:13px}
+.btn{border:1px solid var(--line);background:var(--sunk);color:var(--fg);border-radius:12px;padding:11px 14px;min-height:46px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;font:inherit;font-weight:600}
+.btn.pri{background:var(--green);color:#fff;border:0}
+.muted{color:var(--muted)}.help{font-size:13px;color:var(--muted);margin:0}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.rpin{background:none;border:0}.moto{font-size:30px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.pulse{width:14px;height:14px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(20,163,90,.6);animation:p 1.6s infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+@keyframes p{0%{box-shadow:0 0 0 0 rgba(20,163,90,.55)}70%{box-shadow:0 0 0 12px rgba(20,163,90,0)}100%{box-shadow:0 0 0 0 rgba(20,163,90,0)}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header class="top"><img id="logo" src="images/logo-nl-t.png" alt=""><div><b id="shop">เนื้อล้วนๆ</b><small>ติดตามไรเดอร์ · RAPTOR RIDER</small></div></header>
+<div class="wrap" id="app"><div class="card"><p class="muted" style="margin:0">กำลังโหลด…</p></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/config.js"></script>
+<script>window.APP_CONFIG||document.write('<script src="config.js"><\/script>')</script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hm=t=>new Date(+t).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
+const P=new URLSearchParams(location.search),ID=P.get('d')||'',TOK=P.get('t')||'';
+const km=(a,b)=>{const t=x=>x*Math.PI/180,dLa=t(b.lat-a.lat),dLo=t(b.lng-a.lng);const h=Math.sin(dLa/2)**2+Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dLo/2)**2;return 12742*Math.asin(Math.sqrt(h))};
+let SB=null,D=null,map=null,mk={},route=null,RT={key:'',at:0,from:null,km:null,min:null,coords:null},timer=null;
+function fail(t,s){$('#app').innerHTML=`<div class="card" style="text-align:center"><h2>${esc(t)}</h2><p class="muted" style="margin:0">${esc(s||'')}</p></div>`}
+async function start(){const c=window.APP_CONFIG||{};if(!ID||!TOK)return fail('ลิงก์ไม่ครบ','ขอลิงก์ติดตามจากร้านอีกครั้ง');
+  if(!window.supabase||!c.SUPABASE_URL)return fail('ระบบยังไม่พร้อม','ลองใหม่อีกครั้ง');SB=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_KEY,{auth:{persistSession:false}});load()}
+async function load(){clearTimeout(timer);const {data,error}=await SB.rpc('public_track',{p_id:ID,p_tok:TOK});
+  if(error){if(!D)fail(/not_found/.test(error.message)?'ไม่พบออร์เดอร์นี้':'เชื่อมต่อไม่ได้',/not_found/.test(error.message)?'ลิงก์หมดอายุ หรือไม่ถูกต้อง':'ตรวจอินเทอร์เน็ตแล้วลองใหม่');timer=setTimeout(load,15000);return}
+  D=data;render();if(!['done','cancel'].includes(D.status))timer=setTimeout(load,document.hidden?20000:8000)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&D&&!['done','cancel'].includes(D.status))load()});
+const pt=o=>o&&o.lat!=null&&o.lng!=null?{lat:+o.lat,lng:+o.lng}:null;
+// เส้นทางถนนจริงจาก OSRM (ฟรี) ถ้าใช้ไม่ได้จะเป็นเส้นตรงโดยประมาณ
+async function getRoute(pts){const key=pts.map(p=>p.lat.toFixed(3)+','+p.lng.toFixed(3)).join('|');
+  if(RT.key===key&&Date.now()-RT.at<60000)return RT;RT.key=key;RT.at=Date.now();
+  try{const u='https://router.project-osrm.org/route/v1/driving/'+pts.map(p=>p.lng+','+p.lat).join(';')+'?overview=full&geometries=geojson';
+    const ctl=new AbortController();setTimeout(()=>ctl.abort(),6000);const r=await fetch(u,{signal:ctl.signal});const j=await r.json();const rt=j.routes&&j.routes[0];if(!rt)throw 0;
+    Object.assign(RT,{km:rt.distance/1000,min:Math.max(1,Math.round(rt.duration/60*0.85)),coords:rt.geometry.coordinates.map(c=>[c[1],c[0]]),road:true})}
+  catch(e){const f=+(D.shop.factor||1.3),sp=Math.max(5,+(D.shop.speed||25));let k=0;for(let i=1;i<pts.length;i++)k+=km(pts[i-1],pts[i]);k*=f;
+    Object.assign(RT,{km:k,min:Math.max(1,Math.round(k/sp*60)),coords:pts.map(p=>[p.lat,p.lng]),road:false})}
+  return RT}
+function render(){const d=D,st=d.status,shop=pt(d.shop),cust=pt(d.cust),loc=pt(d.loc);
+  $('#shop').textContent=d.shop.name||'เนื้อล้วนๆ';if(d.shop.logo)$('#logo').src=d.shop.logo;
+  const step={wait:1,offer:1,accepted:2,picked:3,done:4,cancel:0}[st]||1;
+  const stepHtml=['รับออร์เดอร์','ไรเดอร์รับงาน','กำลังไปส่ง','ส่งสำเร็จ'].map((t,i)=>`<div class="${i+1<step||st==='done'?'on':i+1===step?'on cur':''}"><i></i>${t}</div>`).join('');
+  let eta='';
+  if(st==='cancel')eta=`<h2>ออร์เดอร์นี้ถูกยกเลิก</h2><div class="sub">ติดต่อร้านได้ที่เบอร์ด้านล่าง</div>`;
+  else if(st==='done')eta=`<div class="big">🎉</div><h2>ส่งสำเร็จแล้ว</h2><div class="sub">เวลา ${hm(d.doneAt)} · ขอบคุณที่อุดหนุนครับ</div>`;
+  else if(st==='wait'||st==='offer')eta=`<h2><span class="pulse"></span>กำลังหาไรเดอร์</h2><div class="sub">ร้านกำลังเตรียมอาหาร · ไรเดอร์รับงานแล้วจะเห็นตำแหน่งและเวลาถึงที่นี่</div>`;
+  else eta=`<div class="sub">${st==='picked'?'🛵 ไรเดอร์กำลังไปส่ง · ถึงในอีกประมาณ':'ไรเดอร์กำลังไปรับอาหารที่ร้าน · ถึงคุณประมาณ'}</div><div class="big" id="etaMin">${loc&&RT.min?RT.min:'–'}<small>นาที</small></div><div class="sub" id="etaKm">${loc?(RT.min?`ระยะทางอีก ${RT.km.toFixed(1)} กม.`:'กำลังคำนวณเส้นทาง…'):'รอตำแหน่งจากไรเดอร์ (ไรเดอร์ต้องเปิดแอปไว้)…'}</div>`;
+  const r=d.rider;
+  if(!$('#etaBox'))$('#app').innerHTML='<div class="card eta" id="etaBox"></div><div class="card"><div class="steps" id="stepBox"></div></div><div id="map"></div><div id="info" style="display:flex;flex-direction:column;gap:12px"></div>';
+  $('#etaBox').innerHTML=eta;$('#stepBox').innerHTML=stepHtml;$('#map').hidden=!(cust||shop);
+  $('#info').innerHTML=`${r&&st!=='cancel'?`<div class="card"><div class="rider">${r.photo?`<img src="${esc(r.photo)}" alt="">`:'<span class="av">🛵</span>'}<div style="flex:1"><b>${esc(r.name||'')}</b><span class="muted" style="font-size:14px">${esc(r.brand||'')}</span> <span class="plate">${esc(r.plate||'')}</span>${loc&&d.loc.at?`<div class="help" id="locAge"></div>`:''}</div></div>
+     ${r.phone?`<a class="btn pri" href="tel:${esc(r.phone)}">📞 โทรหาไรเดอร์</a>`:''}</div>`:''}
+   <div class="card"><div class="kv"><span class="muted">บิล</span><b>${esc(d.billNo||'')}</b></div>${(d.items||[]).length?`<div class="help">${d.items.map(l=>`${l.qty}× ${esc(l.name)}`).join(' · ')}</div>`:''}
+     <div class="kv"><span class="muted">ส่งที่</span><span style="text-align:right">${esc(d.cust.addr||'')}</span></div>
+     ${d.shop.phone?`<a class="btn" href="tel:${esc(d.shop.phone)}">📞 โทรหาร้าน</a>`:''}</div>
+   <p class="help" style="text-align:center">หน้านี้อัปเดตเองทุกไม่กี่วินาที · เส้นทางและเวลาเป็นค่าประมาณ</p>`;
+  drawMap(shop,cust,loc,st);ageTick()}
+function ageTick(){const el=$('#locAge');if(!el||!D||!D.loc)return;const s=Math.round((Date.now()-(+D.loc.at||0))/1000);el.textContent='อัปเดตตำแหน่ง '+(s<60?s+' วินาที':Math.round(s/60)+' นาที')+'ที่แล้ว'}
+setInterval(ageTick,5000);
+let LG=null,lastFit='';
+async function drawMap(shop,cust,loc,st){const el=$('#map');if(!el||el.hidden||!window.L)return;
+  if(!map){map=L.map(el,{zoomControl:true,attributionControl:true});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);LG=L.layerGroup().addTo(map)}
+  LG.clearLayers();
+  const pin=(c,emo)=>L.divIcon({className:'rpin',html:`<svg xmlns="http://www.w3.org/2000/svg" width="34" height="46" viewBox="0 0 34 46"><path d="M17 45C17 45 33 27 33 17A16 16 0 1 0 1 17C1 27 17 45 17 45Z" fill="${c}" stroke="#fff" stroke-width="2"/><text x="17" y="22" font-size="15" text-anchor="middle">${emo}</text></svg>`,iconSize:[34,46],iconAnchor:[17,45]});
+  const pts=[];if(shop){L.marker([shop.lat,shop.lng],{icon:pin('#c48d3d','🍜')}).addTo(LG).bindTooltip('ร้าน');pts.push(shop)}
+  if(cust){L.marker([cust.lat,cust.lng],{icon:pin('#c8202a','🏠')}).addTo(LG).bindTooltip('ที่อยู่ของคุณ');pts.push(cust)}
+  if(loc&&['accepted','picked'].includes(st)){L.marker([loc.lat,loc.lng],{icon:L.divIcon({className:'rpin',html:'<div class="moto">🛵</div>',iconSize:[34,34],iconAnchor:[17,17]}),zIndexOffset:1000}).addTo(LG).bindTooltip('ไรเดอร์');pts.push(loc)}
+  const fk=st+':'+pts.length;if(fk!==lastFit){lastFit=fk;if(pts.length)map.fitBounds(L.latLngBounds(pts.map(p=>[p.lat,p.lng])).pad(.25),{maxZoom:16});else map.setView([13.7563,100.5018],12)}
+  if(!cust)return;
+  const path=loc&&['accepted','picked'].includes(st)?(st==='accepted'&&shop?[loc,shop,cust]:[loc,cust]):(shop&&st!=='done'?[shop,cust]:null);
+  if(!path)return;const R=await getRoute(path);if(!map)return;
+  L.polyline(R.coords,{color:'#14a35a',weight:6,opacity:.85,dashArray:R.road?null:'8 10'}).addTo(LG);
+  const m=$('#etaMin'),k=$('#etaKm');if(m&&loc)m.innerHTML=`${R.min}<small>นาที</small>`;
+  if(k&&loc)k.textContent=`ระยะทางอีก ${R.km.toFixed(1)} กม.${R.road?'':' (ประมาณ)'} · ถึงราว ${hm(Date.now()+R.min*60000)} น.`}
+start();
+</script>
+</body>
+</html>
