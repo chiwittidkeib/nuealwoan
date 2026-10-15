@@ -2,11 +2,11 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1600">
+<meta name="app-version" content="2026.10.15-1615">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Ready Rider · เนื้อล้วนๆ</title>
+<title>Raptor Rider · เนื้อล้วนๆ</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -83,7 +83,7 @@ h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600}
 </head>
 <body>
 <div class="wrap">
-  <header class="top"><img class="logo" src="images/logo-nl.png" alt=""><div class="ttl"><b>Ready Rider</b><small>NUEA LWOON DELIVERY</small></div><button class="lnk" id="outBtn" hidden type="button">ออกจากระบบ</button></header>
+  <header class="top"><img class="logo" src="images/logo-nl.png" alt=""><div class="ttl"><b>Raptor Rider</b><small>NUEA LWOON DELIVERY</small></div><button class="lnk" id="outBtn" hidden type="button">ออกจากระบบ</button></header>
   <main id="view"><div class="card"><p class="muted" style="margin:0">กำลังโหลด…</p></div></main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
@@ -155,15 +155,15 @@ function render(){const v=$('#view');$('#outBtn').hidden=!(mode==='app'||mode===
   if(mode==='join')return renderJoin(v);
   if(mode==='applied')return v.innerHTML=`<div class="card ok"><div class="big">✅</div><h2>ส่งใบสมัครแล้ว</h2><p class="muted" style="margin:0">ร้านจะตรวจข้อมูลแล้วแจ้ง <b>ชื่อผู้ใช้</b> และ <b>รหัสผ่าน</b> ให้ทางโทรศัพท์/LINE<br>ได้แล้วกลับมาเข้าสู่ระบบที่หน้านี้</p><button class="btn pri wide" data-a="toLogin" type="button">ไปหน้าเข้าสู่ระบบ</button></div>`;
   if(mode==='login')return renderLogin(v);
-  if(mode==='notrider')return v.innerHTML=`<div class="card"><h2>บัญชีนี้ยังใช้ Ready Rider ไม่ได้</h2><p class="muted" style="margin:0">รอร้านอนุมัติ หรือบัญชีถูกปิดใช้งาน ติดต่อร้านได้เลย</p><button class="btn" data-a="logout" type="button">ออกจากระบบ</button></div>`;
+  if(mode==='notrider')return v.innerHTML=`<div class="card"><h2>บัญชีนี้ยังใช้ Raptor Rider ไม่ได้</h2><p class="muted" style="margin:0">รอร้านอนุมัติ หรือบัญชีถูกปิดใช้งาน ติดต่อร้านได้เลย</p><button class="btn" data-a="logout" type="button">ออกจากระบบ</button></div>`;
   if(mode!=='app'||!ME)return;
   const jobs=ME.jobs||[],act=jobs.find(j=>j.status==='accepted'||j.status==='picked'),off=jobs.find(j=>j.status==='offer');
   const st=act?'busy':ME.ready?'on':'';
   let h=`<div class="card"><div class="me">${ME.photo?`<img class="av" src="${esc(ME.photo)}" alt="">`:'<div class="av">🛵</div>'}<div><b>${esc(ME.name)}</b><span class="muted" style="font-size:13px">${esc(ME.brand||'')}</span> <span class="plate">${esc(ME.plate||'')}</span></div></div></div>`;
   h+=`<div class="ready ${st}" data-a="${act?'':'toggle'}" role="button" tabindex="0" aria-pressed="${!!ME.ready}">
     <div class="badge"><img src="images/logo-nl.png" alt=""><span>${act?'ON JOB':ME.ready?'READY':'OFFLINE'}</span></div>
-    <h2>${act?'กำลังส่งงาน':ME.ready?'🟢 Ready Rider':'ออฟไลน์'}</h2>
-    <p>${act?'ส่งเสร็จแล้วจะกลับเข้าคิวต่อท้ายอัตโนมัติ':ME.ready?'พร้อมรับงาน · แตะเพื่อปิดเมื่อจะพัก':'แตะเพื่อเปิด Ready Rider รับงานส่ง'}</p>
+    <h2>${act?'กำลังส่งงาน':ME.ready?'🟢 Raptor Rider':'ออฟไลน์'}</h2>
+    <p>${act?'ส่งเสร็จแล้วจะกลับเข้าคิวต่อท้ายอัตโนมัติ':ME.ready?'พร้อมรับงาน · แตะเพื่อปิดเมื่อจะพัก':'แตะเพื่อเปิด Raptor Rider รับงานส่ง'}</p>
     ${!act&&ME.ready&&ME.queue?`<div class="q">คิวที่ <b>${ME.queue}</b> <span class="muted">จาก ${ME.queueOf} คน</span></div>`:''}</div>`;
   if(act)h+=jobCard(act);
   if(!pushOn)h+=`<div class="pushc">🔔 <b>เปิดแจ้งเตือนงานใหม่</b> — ล็อกจอแล้วยังได้ยินเมื่อมีงาน<div style="margin-top:8px"><button class="btn sm" data-a="push" type="button">เปิดแจ้งเตือน</button></div></div>`;
@@ -203,14 +203,14 @@ function renderLogin(v){let u='';try{u=localStorage.getItem('nl_rider_user')||''
    <div class="field"><label for="lgU">ชื่อผู้ใช้</label><input id="lgU" autocomplete="username" autocapitalize="none" value="${esc(u)}"></div>
    <div class="field"><label for="lgP">รหัสผ่าน</label><input id="lgP" type="password" autocomplete="current-password"></div>
    <p class="err" id="lgE" role="alert"></p><button class="btn pri wide" type="submit" id="lgB">เข้าสู่ระบบ</button></form>
-   <div class="card"><h3>ยังไม่ได้เป็นไรเดอร์ของร้าน?</h3><p class="help">สมัครแล้วรอร้านอนุมัติ ร้านจะส่งชื่อผู้ใช้และรหัสผ่านให้</p><button class="btn wide" data-a="toJoin" type="button">🛵 สมัครเป็น Ready Rider</button></div>`;
+   <div class="card"><h3>ยังไม่ได้เป็นไรเดอร์ของร้าน?</h3><p class="help">สมัครแล้วรอร้านอนุมัติ ร้านจะส่งชื่อผู้ใช้และรหัสผ่านให้</p><button class="btn wide" data-a="toJoin" type="button">🛵 สมัครเป็น Raptor Rider</button></div>`;
   $('#lgF').addEventListener('submit',async e=>{e.preventDefault();const user=$('#lgU').value.trim().toLowerCase(),pw=$('#lgP').value;if(!user||!pw)return $('#lgE').textContent='ใส่ชื่อผู้ใช้และรหัสผ่าน';
     const b=$('#lgB');b.disabled=true;b.textContent='กำลังเข้าสู่ระบบ…';
     const {error}=await SB.auth.signInWithPassword({email:user.includes('@')?user:user+'@'+DOMAIN,password:pw});b.disabled=false;b.textContent='เข้าสู่ระบบ';
     if(error)return $('#lgE').textContent=/invalid/i.test(error.message)?'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง':'เข้าสู่ระบบไม่สำเร็จ';
     try{localStorage.setItem('nl_rider_user',user)}catch(e){}mode='app';refresh(true)})}
 function renderJoin(v){
-  v.innerHTML=`<form class="card" id="jF"><h2>สมัครเป็น Ready Rider</h2><p class="help">กรอกข้อมูลให้ครบ ร้านจะตรวจแล้วติดต่อกลับ</p>
+  v.innerHTML=`<form class="card" id="jF"><h2>สมัครเป็น Raptor Rider</h2><p class="help">กรอกข้อมูลให้ครบ ร้านจะตรวจแล้วติดต่อกลับ</p>
    <div class="photo"><div class="box" id="jPhBox">${photoData?`<img src="${photoData}" alt="">`:'🙂'}</div><div style="display:flex;flex-direction:column;gap:6px"><label class="btn" for="jPh">📷 ถ่าย/เลือกรูปตัวเอง</label><input id="jPh" type="file" accept="image/*" capture="user" hidden><span class="help">เห็นหน้าชัด ไม่ใส่หมวกกันน็อก</span></div></div>
    <div class="field"><label for="jName">ชื่อ-นามสกุล</label><input id="jName" maxlength="60" autocomplete="name"></div>
    <div class="field"><label for="jPhone">เบอร์โทร</label><input id="jPhone" type="tel" inputmode="tel" maxlength="12" autocomplete="tel"></div>
@@ -236,10 +236,10 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   if(a==='logout'){await SB.auth.signOut().catch(()=>{});location.replace(location.pathname);return}
   if(a==='push'){pushEnable();return}
   if(a==='toggle'){acUnlock();const on=!ME.ready;
-    if(!confirm(on?'เปิด Ready Rider พร้อมรับงานส่งตอนนี้ใช่ไหม?':'ปิด Ready Rider (พัก / เลิกงาน) ใช่ไหม?\nคิวของคุณจะถูกยกเลิก'))return;
+    if(!confirm(on?'เปิด Raptor Rider พร้อมรับงานส่งตอนนี้ใช่ไหม?':'ปิด Raptor Rider (พัก / เลิกงาน) ใช่ไหม?\nคิวของคุณจะถูกยกเลิก'))return;
     busy=true;const {error}=await SB.rpc('rider_ready',{p_on:on});busy=false;
     if(error)return toast(/has_job/.test(error.message)?'ส่งงานที่รับไว้ให้เสร็จก่อน':'ทำรายการไม่สำเร็จ');
-    keepAwake(on);toast(on?'🟢 เปิด Ready Rider แล้ว รอรับงานได้เลย':'ปิด Ready Rider แล้ว');refresh();return}
+    keepAwake(on);toast(on?'🟢 เปิด Raptor Rider แล้ว รอรับงานได้เลย':'ปิด Raptor Rider แล้ว');refresh();return}
   if(['accept','decline','picked','done'].includes(a)){
     if(a==='done'&&!confirm('ส่งอาหารถึงมือลูกค้าแล้วใช่ไหม?'))return;
     busy=true;b.disabled=true;const {error}=await SB.rpc('rider_job',{p_id:id,p_act:a});busy=false;b.disabled=false;

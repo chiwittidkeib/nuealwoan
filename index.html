@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1700">
+<meta name="app-version" content="2026.10.15-1615">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -873,7 +873,7 @@ const methodName=m=>m==='cash'?'เงินสด':m==='promptpay'?'พร้�
 const DEFAULTS={vat:{on:false,rate:7,mode:'incl'},seats:{},defSeats:4,qrRequireOpen:true,qrWalkin:true,channels:{lineman:{on:true,markup:0,gp:0},grab:{on:true,markup:0,gp:0},shopee:{on:true,markup:0,gp:0}},shopName:'NueaLwoan',address:'',phone:'',taxId:'',receiptFooter:'ขอบคุณที่อุดหนุนครับ',paper:80,logo:'',pointsOn:true,pointsPer:50,pointValue:1,tables:10,promptpay:'',cats:['ก๋วยเตี๋ยว','ข้าว','ของทานเล่น','เครื่องดื่ม'],expCats:['ค่าเช่า','ค่าแรง','ค่าไฟ/น้ำ','ค่าแก๊ส','อุปกรณ์','อื่นๆ'],extraPrice:10};
 const QUICK_NOTES=[];
 
-const PERMS=[['tables','เปิดโต๊ะ / รับออร์เดอร์'],['kitchen','หน้าครัว / กดเสิร์ฟ'],['pay','เก็บเงิน / ออกใบเสร็จ'],['discount','ให้ส่วนลด'],['move','ย้ายโต๊ะ'],['void','ยกเลิกบิล'],['menu_edit','แก้เมนูและราคา'],['menu_toggle','เปิด / ปิดเมนู (ของหมด)'],['rider','🛵 Ready Rider (ส่งงาน / ดูไรเดอร์)'],['stock','สต็อก / ซื้อของเข้า'],['expenses','รายจ่ายร้าน'],['members','สมาชิกสะสมแต้ม'],['report','สรุปเงิน / รายงานกำไร']];
+const PERMS=[['tables','เปิดโต๊ะ / รับออร์เดอร์'],['kitchen','หน้าครัว / กดเสิร์ฟ'],['pay','เก็บเงิน / ออกใบเสร็จ'],['discount','ให้ส่วนลด'],['move','ย้ายโต๊ะ'],['void','ยกเลิกบิล'],['menu_edit','แก้เมนูและราคา'],['menu_toggle','เปิด / ปิดเมนู (ของหมด)'],['rider','🛵 Raptor Rider (ส่งงาน / ดูไรเดอร์)'],['stock','สต็อก / ซื้อของเข้า'],['expenses','รายจ่ายร้าน'],['members','สมาชิกสะสมแต้ม'],['report','สรุปเงิน / รายงานกำไร']];
 const ROLES={owner:'Admin',waiter:'พนักงานเสิร์ฟ',chef:'แม่ครัว',partner:'หุ้นส่วน'};
 const DEFAULT_PERMS={waiter:{tables:true,move:true,kitchen:true,pay:true,members:true,menu_toggle:true,rider:true},chef:{kitchen:true,stock:true,menu_toggle:true},partner:{report:true,expenses:true,stock:true,members:true}};
 const roleKey=r=>r==='staff'?'waiter':r;
@@ -1163,7 +1163,7 @@ function viewTables(){
   h+=`</div>`;return h}
   const list=fl==='other'?walk:dl;
   if(fl==='deliv'){const chans=['takeaway',...DELIV.filter(c=>chCfg(c).on)];
-    h+=`<div class="newch">${rdOn()?`<button class="btn ch-btn rd-btn" style="--chc:${CH.rider.c}" data-act="rdNew" type="button">🛵 Ready Rider</button>`:''}${chans.map(c=>`<button class="btn ch-btn" style="--chc:${CH[c].c}" data-act="newDel" data-ch="${c}" type="button">${CH[c].n}</button>`).join('')}</div>`+viewRdPanel()}
+    h+=`<div class="newch">${rdOn()?`<button class="btn ch-btn rd-btn" style="--chc:${CH.rider.c}" data-act="rdNew" type="button">🛵 Raptor Rider</button>`:''}${chans.map(c=>`<button class="btn ch-btn" style="--chc:${CH[c].c}" data-act="newDel" data-ch="${c}" type="button">${CH[c].n}</button>`).join('')}</div>`+viewRdPanel()}
   h+=`<div class="tgrid">`;
   list.sort((a,b)=>a.openedAt-b.openedAt).forEach(o=>{const un=(o.items||[]).filter(l=>!l.served).reduce((a,l)=>a+l.qty,0);
     h+=`<button class="tcard busy del" style="--chc:${CH[chOf(o)].c}" data-act="openOrder" data-id="${o.id}" type="button"><div>${chChip(o)}</div><div class="no" style="font-size:18px">${esc(orderTitle(o))}</div>${ordNoTag(o)}${o.customerName&&(o.ref)?`<div class="tname">คุณ${esc(o.customerName)}</div>`:''}
@@ -1551,7 +1551,7 @@ async function confirmPay(){const id=S.sheet.id,o=S.open[id];if(!o)return;const 
   deductStock(paidItems);consignSell(paidItems);
   {const cl=callOf(o);if(cl){S.calls=S.calls.filter(c=>c.id!==cl.id);renderCalls();write('calls/'+cl.id,r=>r.delete())}}
   const paid={id,table:o.table,label:o.label,openedAt:o.openedAt,...patch};
-  if(isRd(o)){rdCreateJob({...o,...paid}).then(()=>toast('ส่งงานเข้าคิว Ready Rider แล้ว'))}
+  if(isRd(o)){rdCreateJob({...o,...paid}).then(()=>toast('ส่งงานเข้าคิว Raptor Rider แล้ว'))}
   if(mem){try{const note='บิล '+billNo+(rws.length?' · แลก '+rws.map(x=>x.name).join(', '):'');const bal=await applyPoints(mem.phone,mem.name,c.use+c.rwPts,c.earn,c.total,note);rws.forEach(x=>rwUsed(x.id));
       const ex=LAST_LOTS?memExpSoon(LAST_LOTS):null;const up={};if(bal!==paid.ptsBalance){paid.ptsBalance=bal;up.ptsBalance=bal}if(ex){paid.ptsExp=ex;up.ptsExp=ex}if(Object.keys(up).length)write('orders/'+id,r=>r.update(up))}catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
   openSheet({type:'receipt',order:paid,mode:'receipt'});
@@ -2669,8 +2669,8 @@ Object.assign(ACT,{
   delInc:d=>write('incomes/'+d.id,r=>r.delete()).then(ok=>{if(ok){toast('ลบรายรับแล้ว');S.report.data=null}})
 });
 
-/* ===================== Ready Rider: ไรเดอร์ส่งเองของร้าน ===================== */
-CH.rider={n:'Ready Rider',c:'#ff7a00'};
+/* ===================== Raptor Rider: ไรเดอร์ส่งเองของร้าน ===================== */
+CH.rider={n:'Raptor Rider',c:'#ff7a00'};
 const RD_DEF={on:false,lat:null,lng:null,base:20,baseKm:3,perKm:7,maxKm:8,factor:1.3,minOrder:0,smallFee:0,freeOver:0,rainFee:10,minFee:0,maxFee:0,timeout:60,auto:true};
 const rdCfg=()=>Object.assign({},RD_DEF,S.settings.rider||{});
 const rdRain=()=>!!(S.lists&&S.lists.riderState&&S.lists.riderState.rain);
@@ -2688,7 +2688,7 @@ function rdFee(km,food,c=rdCfg(),rain=rdRain()){if(km==null)return null;if(+c.ma
   if(+c.freeOver&&food!=null&&food>=+c.freeOver){f=0;parts.push('ส่งฟรี (ยอดถึง '+baht(c.freeOver)+')')}
   return {fee:Math.round(f),why:parts.join(' · ')}}
 const rdFoodTotal=o=>linesTotal((o.items||[]).filter(l=>!l.fee));
-const rdFeeLine=(fee,km)=>({id:'fee',name:'ค่าส่ง Ready Rider'+(km?` (${km} กม.)`:''),price:fee,qty:1,served:true,fee:true,cost:fee,menuId:'',at:Date.now()});
+const rdFeeLine=(fee,km)=>({id:'fee',name:'ค่าส่ง Raptor Rider'+(km?` (${km} กม.)`:''),price:fee,qty:1,served:true,fee:true,cost:fee,menuId:'',at:Date.now()});
 /* แผนที่ฟรี OpenStreetMap (Leaflet) */
 let LL=null;
 function loadLeaflet(){if(window.L)return Promise.resolve(window.L);if(LL)return LL;LL=new Promise((ok,no)=>{const c=document.createElement('link');c.rel='stylesheet';c.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(c);
@@ -2715,11 +2715,11 @@ async function geoSearch(q){const u='https://nominatim.openstreetmap.org/search?
   const c=rdCfg();const r=await fetch(u+(c.lat?`&viewbox=${+c.lng-0.3},${+c.lat+0.3},${+c.lng+0.3},${+c.lat-0.3}`:''),{headers:{'Accept':'application/json'}});if(!r.ok)throw new Error('geo');return (await r.json()).map(x=>({name:x.display_name,lat:+x.lat,lng:+x.lon}))}
 const gNav=(lat,lng,addr)=>lat&&lng?`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`:`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr||'')}`;
 
-/* ---------- ออร์เดอร์ใหม่ / แก้ที่อยู่ Ready Rider ---------- */
+/* ---------- ออร์เดอร์ใหม่ / แก้ที่อยู่ Raptor Rider ---------- */
 function sheetRdNew(){const s=S.sheet,o=s.oid?S.open[s.oid]:null,d=(o&&o.deliv)||s.d||{};
   if(s.lat===undefined){s.lat=d.lat||null;s.lng=d.lng||null;s.feeEdit=d.manual?String(d.fee):''}
   const c=rdCfg();
-  $('#panel').innerHTML=head(o?'แก้ที่อยู่ / ค่าส่ง':'ออร์เดอร์ใหม่ · 🛵 Ready Rider',c.lat?'ลากหมุด แตะแผนที่ ค้นหา หรือวางลิงก์ Google Maps':'⚠️ ยังไม่ได้ปักหมุดร้านในตั้งค่า (คิดค่าส่งตามระยะไม่ได้)')+`<form class="sh-body" id="rdF">
+  $('#panel').innerHTML=head(o?'แก้ที่อยู่ / ค่าส่ง':'ออร์เดอร์ใหม่ · 🛵 Raptor Rider',c.lat?'ลากหมุด แตะแผนที่ ค้นหา หรือวางลิงก์ Google Maps':'⚠️ ยังไม่ได้ปักหมุดร้านในตั้งค่า (คิดค่าส่งตามระยะไม่ได้)')+`<form class="sh-body" id="rdF">
    <div class="grid2"><div class="field"><label for="rdName">ชื่อลูกค้า</label><input id="rdName" maxlength="40" value="${esc(d.name||'')}" autocomplete="off"></div><div class="field"><label for="rdPhone">เบอร์โทรลูกค้า</label><input id="rdPhone" type="tel" inputmode="tel" maxlength="12" value="${esc(d.phone||'')}" autocomplete="off"></div></div>
    <div class="field"><label for="rdAddr">ที่อยู่</label><input id="rdAddr" maxlength="160" value="${esc(d.addr||'')}" placeholder="บ้านเลขที่ ซอย ถนน หมู่บ้าน/คอนโด" autocomplete="off"></div>
    <div class="field"><label for="rdNote">จุดสังเกต / หมายเหตุถึงไรเดอร์</label><input id="rdNote" maxlength="120" value="${esc(d.note||'')}" placeholder="เช่น ตึก B ชั้น 3 · หน้าเซเว่น · โทรก่อนถึง" autocomplete="off"></div>
@@ -2744,16 +2744,16 @@ async function rdSave(){const s=S.sheet,name=val('rdName'),phone=normPhone(val('
   if(!name)return toast('ใส่ชื่อลูกค้า','bad');if(phone&&!/^0\d{8,9}$/.test(phone))return toast('เบอร์โทรไม่ถูกต้อง','bad');if(!addr&&!s.lat)return toast('ใส่ที่อยู่ หรือปักหมุด','bad');
   if(s.fee==null)return toast(s.lat&&rdDist(s.lat,s.lng)!=null?'เกินระยะส่ง ใส่ค่าส่งเองถ้าจะรับ':'ใส่ค่าส่งเอง หรือปักหมุดให้คิดอัตโนมัติ','bad');
   const deliv={name,phone,addr,note:val('rdNote'),lat:s.lat||null,lng:s.lng||null,km:s.km,fee:s.fee,manual:String(s.feeEdit||'').trim()!==''};
-  if(s.oid){const id=s.oid;const ok=await write('orders/'+id,r=>r.transform(d=>d.status!=='open'?null:{deliv,customerName:name,label:'Ready Rider · คุณ'+name,items:[...(d.items||[]).filter(l=>!l.fee),rdFeeLine(deliv.fee,deliv.km)]}));
+  if(s.oid){const id=s.oid;const ok=await write('orders/'+id,r=>r.transform(d=>d.status!=='open'?null:{deliv,customerName:name,label:'Raptor Rider · คุณ'+name,items:[...(d.items||[]).filter(l=>!l.fee),rdFeeLine(deliv.fee,deliv.km)]}));
     if(ok){const o=S.open[id];if(o)S.open[id]={...o,deliv,customerName:name,items:[...(o.items||[]).filter(l=>!l.fee),rdFeeLine(deliv.fee,deliv.km)]};toast('บันทึกที่อยู่แล้ว');openSheet({type:'order',id,cat:'all',q:'',edit:null})}return}
-  S.floor='deliv';createOrder({table:'TA',channel:'rider',customerName:name,label:'Ready Rider · คุณ'+name,deliv,items:[rdFeeLine(deliv.fee,deliv.km)]})}
+  S.floor='deliv';createOrder({table:'TA',channel:'rider',customerName:name,label:'Raptor Rider · คุณ'+name,deliv,items:[rdFeeLine(deliv.fee,deliv.km)]})}
 // ยอดอาหารเปลี่ยน → คิดค่าส่งใหม่ (เฉพาะที่ไม่ได้แก้เอง)
 const RDSYNC={};
 function rdSyncFee(o){if(!isRd(o)||!o.deliv||o.deliv.manual||o.deliv.km==null)return;const r=rdFee(o.deliv.km,rdFoodTotal(o));if(!r||r.over)return;
   const cur=(o.items||[]).find(l=>l.fee);if(cur&&+cur.price===r.fee)return;if(RDSYNC[o.id]===r.fee)return;RDSYNC[o.id]=r.fee;
   write('orders/'+o.id,x=>x.transform(d=>{if(d.status!=='open')return null;const it=(d.items||[]).filter(l=>!l.fee);return {items:[...it,rdFeeLine(r.fee,o.deliv.km)],deliv:{...(d.deliv||{}),fee:r.fee}}})).then(()=>{delete RDSYNC[o.id]})}
 function rdOrderCard(o){const d=o.deliv||{};
-  return `<div class="card rdcard"><div class="kv"><b>🛵 Ready Rider · คุณ${esc(d.name||o.customerName||'')}</b><button class="lnk" data-act="rdEdit" data-id="${o.id}" type="button">แก้ที่อยู่ / ค่าส่ง</button></div>
+  return `<div class="card rdcard"><div class="kv"><b>🛵 Raptor Rider · คุณ${esc(d.name||o.customerName||'')}</b><button class="lnk" data-act="rdEdit" data-id="${o.id}" type="button">แก้ที่อยู่ / ค่าส่ง</button></div>
    <div class="help" style="margin:0">${d.phone?`📞 <a href="tel:${esc(d.phone)}">${esc(d.phone)}</a> · `:''}📍 ${esc(d.addr||'(ปักหมุดไว้)')}${d.note?' · 📝 '+esc(d.note):''}</div>
    <div class="kv"><span>${d.km!=null?d.km+' กม. · ':''}ค่าส่ง${d.manual?' (แก้เอง)':''}</span><b>${baht(d.fee||0)}</b></div>
    <span class="help">ลูกค้าโอนก่อน · ยืนยันรับเงินแล้วระบบส่งงานให้ไรเดอร์คิวแรกอัตโนมัติ</span></div>`}
@@ -2783,7 +2783,7 @@ function viewRdPanel(){const c=rdCfg();if(!c.on||!can('rider'))return '';const q
   const busy=riders.filter(r=>r.status==='active'&&r.job),pend=riders.filter(r=>r.status==='pending').length;
   const act=dl.filter(d=>['wait','offer','accepted','picked'].includes(d.status)).sort((a,b)=>a.at-b.at),done=dl.filter(d=>d.status==='done'&&(d.doneAt||0)>=sod());
   const left=d=>Math.max(0,Math.ceil(((+d.offerAt||0)+(+c.timeout||60)*1000-Date.now())/1000));
-  let h=`<div class="card rdpanel"><div class="rdph"><b>🛵 Ready Rider</b><span class="rdlive">${q.length?`<i></i> พร้อม ${q.length} คน`:'ยังไม่มีไรเดอร์เปิด Ready'}</span>
+  let h=`<div class="card rdpanel"><div class="rdph"><b>🛵 Raptor Rider</b><span class="rdlive">${q.length?`<i></i> พร้อม ${q.length} คน`:'ยังไม่มีไรเดอร์เปิด Ready'}</span>
     <label class="check" style="margin-left:auto"><input type="checkbox" data-act="rdRain" ${rdRain()?'checked':''}> 🌧️ ฝนตก +${baht(c.rainFee)}</label>
     <button class="btn sm" data-act="rdRiders" type="button">ไรเดอร์${pend?` <span class="pill warn">${pend} รออนุมัติ</span>`:''}</button></div>
    <div class="rdq">${q.map((r,i)=>`<span class="rdqc${r.offered?' off':''}" title="${esc(r.name)}">${r.photo?`<img src="${esc(r.photo)}" alt="">`:'🛵'}<b>${i+1}</b>${esc(r.name.split(' ')[0])}${r.offered?' · รอกดรับ':''}</span>`).join('')}${busy.map(r=>`<span class="rdqc busy">${r.photo?`<img src="${esc(r.photo)}" alt="">`:'🛵'}${esc(r.name.split(' ')[0])} · กำลังส่ง</span>`).join('')}</div>`;
@@ -2791,7 +2791,7 @@ function viewRdPanel(){const c=rdCfg();if(!c.on||!can('rider'))return '';const q
       ${['wait','offer'].includes(d.status)?`<select data-rdpick="${d.id}" aria-label="เลือกไรเดอร์"><option value="">ส่งให้…</option>${q.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select>`:''}
       <a class="btn sm" href="${gNav(d.cust.lat,d.cust.lng,d.cust.addr)}" target="_blank" rel="noopener">แผนที่</a>${d.riderPhone?`<a class="btn sm" href="tel:${esc(d.riderPhone)}">📞 ไรเดอร์</a>`:''}
       <button class="btn sm danger" data-act="rdCancel" data-id="${d.id}" data-confirm="1" type="button">ยกเลิกงาน</button></div>`).join('')+'</div>'
-    :'<p class="help" style="margin:0">ยังไม่มีงานส่ง · ยืนยันรับโอนในบิล Ready Rider แล้วงานจะขึ้นที่นี่และส่งให้ไรเดอร์คิวแรกอัตโนมัติ</p>';
+    :'<p class="help" style="margin:0">ยังไม่มีงานส่ง · ยืนยันรับโอนในบิล Raptor Rider แล้วงานจะขึ้นที่นี่และส่งให้ไรเดอร์คิวแรกอัตโนมัติ</p>';
   if(done.length){const by={};done.forEach(d=>{const k=d.riderName||'?';by[k]=by[k]||{n:0,f:0};by[k].n++;by[k].f+=+d.fee||0});
     h+=`<div class="help" style="margin:0">วันนี้ส่งสำเร็จ ${done.length} เที่ยว · ค่าส่งรวม ${baht(done.reduce((a,d)=>a+(+d.fee||0),0))} · ${Object.entries(by).map(([k,v])=>`${esc(k)} ${v.n} เที่ยว ${baht(v.f)}`).join(' · ')}</div>`}
   return h+'</div>'}
@@ -2809,14 +2809,14 @@ function sheetRiders(){const own=S.role==='owner',rs=S.riders||[],pend=rs.filter
        :`<button class="btn sm" data-act="rdPw" data-id="${esc(r.id)}" type="button">ตั้งรหัสใหม่</button><button class="btn sm" data-act="rdBlock" data-id="${esc(r.id)}" type="button">${r.status==='blocked'?'เปิดใช้งาน':'ระงับ'}</button><button class="btn sm danger" data-act="rdDel" data-id="${esc(r.id)}" data-confirm="1" type="button">ลบ</button>`}</div>`:''}
      ${S.sheet.ap===r.id?`<div class="card" style="gap:8px"><div class="grid2"><div class="field"><label for="apU">ชื่อผู้ใช้</label><input id="apU" value="${esc(S.sheet.apU||'r'+r.id.slice(-4))}" autocapitalize="none"></div><div class="field"><label for="apP">รหัสผ่าน</label><input id="apP" value="${esc(S.sheet.apP||String(Math.floor(100000+Math.random()*900000)))}"></div></div><p class="err" id="apE"></p><button class="btn pri" data-act="rdApproveGo" data-id="${esc(r.id)}" type="button">${S.sheet.apMode==='pw'?'ตั้งรหัสผ่านใหม่':'ยืนยันอนุมัติ'}</button></div>`:''}
      ${S.sheet.cred&&S.sheet.cred.id===r.id?`<div class="card rdcred"><b>ส่งข้อมูลนี้ให้ไรเดอร์</b><div>ลิงก์: ${esc(base)}</div><div>ชื่อผู้ใช้: <b>${esc(S.sheet.cred.u)}</b> · รหัสผ่าน: <b>${esc(S.sheet.cred.p)}</b></div><button class="btn sm" data-act="rdCopy" type="button">คัดลอกข้อความ</button></div>`:''}</div>`;
-  $('#panel').innerHTML=head('ไรเดอร์ Ready Rider',`${act.filter(r=>r.status==='active').length} คน · รออนุมัติ ${pend.length}`)+`<div class="sh-body">
+  $('#panel').innerHTML=head('ไรเดอร์ Raptor Rider',`${act.filter(r=>r.status==='active').length} คน · รออนุมัติ ${pend.length}`)+`<div class="sh-body">
    <div class="card"><h3>รับสมัครไรเดอร์</h3><span class="help">ส่งลิงก์หรือให้สแกน QR นี้ ไรเดอร์กรอกชื่อ เบอร์ ทะเบียน ยี่ห้อรถ และรูป แล้วรออนุมัติ</span>
-    <div class="qrbig">${qrCard(base+'?join','สมัคร Ready Rider','สแกนเพื่อสมัครเป็นไรเดอร์ของร้าน')}</div><div class="inrow"><input readonly value="${esc(base+'?join')}" aria-label="ลิงก์สมัคร"><button class="btn sm" data-act="rdCopyLink" data-v="${esc(base+'?join')}" type="button">คัดลอก</button></div>
+    <div class="qrbig">${qrCard(base+'?join','สมัคร Raptor Rider','สแกนเพื่อสมัครเป็นไรเดอร์ของร้าน')}</div><div class="inrow"><input readonly value="${esc(base+'?join')}" aria-label="ลิงก์สมัคร"><button class="btn sm" data-act="rdCopyLink" data-v="${esc(base+'?join')}" type="button">คัดลอก</button></div>
     <span class="help">ไรเดอร์ที่อนุมัติแล้ว เข้าใช้งานที่ ${esc(base)} (เพิ่มไว้ที่หน้าจอโฮมได้)</span></div>
    ${pend.length?`<h3>รออนุมัติ (${pend.length})</h3>${pend.map(card).join('')}`:''}
    <h3>ไรเดอร์ของร้าน</h3>${act.length?act.map(card).join(''):'<div class="empty">ยังไม่มีไรเดอร์</div>'}
    ${own?'':'<p class="help">อนุมัติ / ตั้งรหัส / ระงับ ทำได้เฉพาะแอดมิน</p>'}</div>`}
-const rdErr=e=>{const m=String(e&&e.message||e);return /user_exists/.test(m)?'ชื่อผู้ใช้นี้มีคนใช้แล้ว':/bad_username/.test(m)?'ชื่อผู้ใช้ใช้ได้ a-z 0-9 . _ - ยาว 3–30 ตัว':/weak_password/.test(m)?'รหัสผ่านอย่างน้อย 6 ตัว':/not_owner/.test(m)?'เฉพาะแอดมิน':/function|PGRST20/i.test(m)?'ยังไม่ได้รัน SQL Ready Rider':'ทำรายการไม่สำเร็จ'};
+const rdErr=e=>{const m=String(e&&e.message||e);return /user_exists/.test(m)?'ชื่อผู้ใช้นี้มีคนใช้แล้ว':/bad_username/.test(m)?'ชื่อผู้ใช้ใช้ได้ a-z 0-9 . _ - ยาว 3–30 ตัว':/weak_password/.test(m)?'รหัสผ่านอย่างน้อย 6 ตัว':/not_owner/.test(m)?'เฉพาะแอดมิน':/function|PGRST20/i.test(m)?'ยังไม่ได้รัน SQL Raptor Rider':'ทำรายการไม่สำเร็จ'};
 Object.assign(ACT,{
   rdNew:()=>{if(!can('rider'))return deny();openSheet({type:'rdNew'})},
   rdEdit:d=>openSheet({type:'rdNew',oid:d.id}),
@@ -2836,7 +2836,7 @@ Object.assign(ACT,{
   rdApproveGo:async d=>{const u=cleanUser(val('apU')),p=val('apP');const e=$('#apE');
     const {error}=S.sheet.apMode==='pw'?await SB.rpc('admin_rider_pw',{p_id:d.id,p_password:p}):await SB.rpc('admin_create_rider',{p_id:d.id,p_username:u,p_password:p});
     if(error){if(e)e.textContent=rdErr(error);return}S.sheet.ap=null;S.sheet.cred={id:d.id,u,p};toast(S.sheet.apMode==='pw'?'ตั้งรหัสผ่านใหม่แล้ว':'อนุมัติไรเดอร์แล้ว');sheetRiders()},
-  rdCopy:()=>{const c=S.sheet.cred;if(!c)return;const t=`Ready Rider · ${new URL('rider.html',location.href).href.split('?')[0]}\nชื่อผู้ใช้: ${c.u}\nรหัสผ่าน: ${c.p}`;navigator.clipboard?.writeText(t).then(()=>toast('คัดลอกแล้ว ส่งให้ไรเดอร์ได้เลย'),()=>toast('คัดลอกไม่ได้ จดไว้แทน','bad'))},
+  rdCopy:()=>{const c=S.sheet.cred;if(!c)return;const t=`Raptor Rider · ${new URL('rider.html',location.href).href.split('?')[0]}\nชื่อผู้ใช้: ${c.u}\nรหัสผ่าน: ${c.p}`;navigator.clipboard?.writeText(t).then(()=>toast('คัดลอกแล้ว ส่งให้ไรเดอร์ได้เลย'),()=>toast('คัดลอกไม่ได้ จดไว้แทน','bad'))},
   rdCopyLink:d=>navigator.clipboard?.writeText(d.v).then(()=>toast('คัดลอกลิงก์แล้ว'),()=>{}),
   rdBlock:async d=>{const r=(S.riders||[]).find(x=>x.id===d.id);if(!r)return;const st=r.status==='blocked'?'active':'blocked';if(await write('riders/'+d.id,x=>x.update({status:st,...(st==='blocked'?{ready:false}:{})}))){r.status=st;sheetRiders()}},
   rdDel:async d=>{if(await write('riders/'+d.id,x=>x.delete())){S.riders=(S.riders||[]).filter(x=>x.id!==d.id);sheetRiders();toast('ลบแล้ว')}},
@@ -2844,17 +2844,17 @@ Object.assign(ACT,{
   rdShopLink:()=>{const p=parseGLink(val('rdSLink'));if(!p)return toast('ไม่พบพิกัดในลิงก์','bad');const m=S.sheet.rdMap;if(m&&m.__set)m.__set(p.lat,p.lng)}
 });
 
-/* ---------- ตั้งค่า Ready Rider (การ์ดเดลิเวอรี่) ---------- */
+/* ---------- ตั้งค่า Raptor Rider (การ์ดเดลิเวอรี่) ---------- */
 function rdSettingsCard(){const c=rdCfg();const n=(id,v,lab,help)=>`<div class="field"><label for="${id}">${lab}</label><input id="${id}" inputmode="decimal" value="${esc(v??'')}">${help?`<span class="help">${help}</span>`:''}</div>`;
-  return `<div class="card"><h3>🛵 Ready Rider (ไรเดอร์ส่งเองของร้าน)</h3>
-   <label class="check"><input type="checkbox" id="rdOn" ${c.on?'checked':''}> เปิดใช้ Ready Rider</label>
+  return `<div class="card"><h3>🛵 Raptor Rider (ไรเดอร์ส่งเองของร้าน)</h3>
+   <label class="check"><input type="checkbox" id="rdOn" ${c.on?'checked':''}> เปิดใช้ Raptor Rider</label>
    <div class="field"><label>ตำแหน่งร้าน (จุดเริ่มคิดระยะทาง)</label><div class="inrow"><button class="btn sm" data-act="rdShopGps" type="button">📍 ใช้ตำแหน่งปัจจุบัน (ยืนอยู่ที่ร้าน)</button></div>
     <div class="inrow" style="margin-top:6px"><input id="rdSLink" placeholder="หรือวางลิงก์ Google Maps ของร้าน" autocomplete="off"><button class="btn sm" data-act="rdShopLink" type="button">ใช้</button></div>
     <div class="rdmap" id="rdShopMap" style="height:220px"></div><span class="help" id="rdShopTxt"></span></div>
    <div class="grid2">${n('rdBase',c.base,'ค่าส่งเริ่มต้น (บาท)')}${n('rdBaseKm',c.baseKm,'ครอบคลุมกี่ กม.แรก')}</div>
    <div class="grid2">${n('rdPerKm',c.perKm,'เกินแล้ว กม.ละ (บาท)')}${n('rdMaxKm',c.maxKm,'ส่งไกลสุด (กม.)','0 = ไม่จำกัด')}</div>
    <div class="grid2">${n('rdMinOrder',c.minOrder,'ยอดอาหารขั้นต่ำ (บาท)','ต่ำกว่านี้บวกค่าบริการ')}${n('rdSmall',c.smallFee,'ค่าบริการยอดน้อย (บาท)')}</div>
-   <div class="grid2">${n('rdFree',c.freeOver,'ส่งฟรีเมื่อยอดถึง (บาท)','0 = ไม่มีส่งฟรี')}${n('rdRainFee',c.rainFee,'บวกช่วงฝนตก (บาท)','พนักงานกดเปิดในแผง Ready Rider')}</div>
+   <div class="grid2">${n('rdFree',c.freeOver,'ส่งฟรีเมื่อยอดถึง (บาท)','0 = ไม่มีส่งฟรี')}${n('rdRainFee',c.rainFee,'บวกช่วงฝนตก (บาท)','พนักงานกดเปิดในแผง Raptor Rider')}</div>
    <div class="grid2">${n('rdMinFee',c.minFee,'ค่าส่งต่ำสุด (บาท)','0 = ไม่กำหนด')}${n('rdMaxFee',c.maxFee,'ค่าส่งสูงสุด (บาท)','0 = ไม่กำหนด')}</div>
    <div class="grid2">${n('rdFactor',c.factor,'ตัวคูณระยะถนน','ระยะเส้นตรง × ตัวนี้ (ปกติ 1.3 · ถนนอ้อมเยอะใช้ 1.4)')}${n('rdTimeout',c.timeout,'เวลากดรับงาน (วินาที)','ไม่กดรับ ส่งต่อคิวถัดไป')}</div>
    <label class="check"><input type="checkbox" id="rdAuto" ${c.auto!==false?'checked':''}> ส่งงานให้ไรเดอร์คิวแรกอัตโนมัติ (ปิด = พนักงานเลือกไรเดอร์เอง)</label>
