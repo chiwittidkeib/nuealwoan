@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1900">
+<meta name="app-version" content="2026.10.15-1110">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -2132,7 +2132,7 @@ const ACT={
     const ok1=await write('orders/'+id,r=>r.transform(d=>{if(d.status!=='open')return null;moved=d;return {status:'merged',mergedInto:tgt.id,mergedTo:t,closedAt:Date.now()}}));
     if(!ok1||!moved)return toast('ย้ายไม่สำเร็จ ลองอีกครั้ง','bad');
     const add=(moved.items||[]).map(l=>({...l,movedFrom:from}));
-    const ok2=await write('orders/'+tgt.id,r=>r.transform(d=>d.status==='open'?{items:(d.items||[]).concat(add),...(!d.customerName&&moved.customerName?{customerName:moved.customerName}:{}),guests:(+d.guests||0)+(+moved.guests||0)||d.guests||null}:null));
+    const ok2=await write('orders/'+tgt.id,r=>r.transform(d=>d.status==='open'?{items:(d.items||[]).concat(add),...(!d.customerName&&moved.customerName?{customerName:moved.customerName}:{}),...(!d.memberPhone&&moved.memberPhone?{memberPhone:moved.memberPhone,memberName:moved.memberName||''}:{}),guests:(+d.guests||0)+(+moved.guests||0)||d.guests||null}:null));
     if(!ok2){await write('orders/'+id,r=>r.update({status:'open',mergedInto:null,mergedTo:null,closedAt:null}));return toast('โต๊ะ '+t+' ปิดไปแล้ว ย้ายไม่สำเร็จ','bad')}
     delete S.open[id];const T=S.open[tgt.id];if(T)S.open[tgt.id]={...T,items:(T.items||[]).concat(add)};
     S.floor='tables';closeSheet();render();toast('ย้าย '+from+' → รวมกับโต๊ะ '+t+' แล้ว');openSheet({type:'order',id:tgt.id,cat:'all',q:'',edit:null})},
