@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1720">
+<meta name="app-version" content="2026.10.15-1730">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -85,6 +85,8 @@ h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600}
 .okbadge span{font-size:52px;line-height:1;font-weight:700}.okbadge b{font-family:var(--f-d);letter-spacing:.14em;font-size:17px;margin-top:4px}
 .cred{background:var(--sunk);border-radius:12px;padding:10px 14px;font-size:15px}.cred b{color:#7dffb7;font-size:18px;letter-spacing:.04em}
 .big.wait{animation:spin 3s ease-in-out infinite}@keyframes spin{50%{transform:rotate(180deg)}}
+.btn.line{background:#06c755;color:#fff;border:0}.btn.line b{background:#fff;color:#06c755;border-radius:6px;padding:0 6px;font-size:12px;letter-spacing:.02em}
+.lineb{background:#06c755;color:#fff;border-radius:8px;padding:6px 8px;font-weight:800;font-size:12px}
 .pushc{font-size:14px;background:rgba(255,179,71,.12);border:1px solid rgba(255,179,71,.4);border-radius:12px;padding:10px 12px}
 [hidden]{display:none!important}
 </style>
@@ -151,6 +153,7 @@ async function start(){
   if(!window.supabase||!CFG.SUPABASE_URL||!CFG.SUPABASE_KEY){$('#view').innerHTML='<div class="card"><h2>ระบบยังไม่พร้อม</h2><p class="muted">แจ้งร้านได้เลย</p></div>';return}
   SB=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'nl-rider-auth',lock:async(n,t,fn)=>await fn()}});
   if(mode==='join')return render();
+  await lineReturn();
   let ses=null;try{ses=(await SB.auth.getSession()).data.session}catch(e){}
   if(ses){let d='';try{d=localStorage.getItem('nl_rider_day')||''}catch(e){}if(!d){try{localStorage.setItem('nl_rider_day',bkDay())}catch(e){}}else if(d!==bkDay())return dayOut()}
   if(P.get('out')==='day')setTimeout(()=>toast('ข้ามวันแล้ว กรุณาเข้าสู่ระบบใหม่'),300);
@@ -172,6 +175,27 @@ async function refresh(first){if(!SB||['join','login','applied','status','forgot
   clearTimeout(poll);poll=setTimeout(refresh,document.hidden?15000:4000);
 }
 
+/* ---------- เข้าสู่ระบบ / ผูกบัญชีด้วย LINE ---------- */
+const LINE_ID=String(CFG.LINE_CHANNEL_ID||'2012035513');
+const LINE_FN=()=>String(CFG.SUPABASE_URL||'').replace(/\/$/,'')+'/functions/v1/line-login';
+const selfUrl=()=>location.origin+location.pathname;
+function lineStart(op){const st=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
+  try{sessionStorage.setItem('nl_line',JSON.stringify({st,op}))}catch(e){}
+  location.href='https://access.line.me/oauth2/v2.1/authorize?'+new URLSearchParams({response_type:'code',client_id:LINE_ID,redirect_uri:selfUrl(),state:st,scope:'profile openid',bot_prompt:'normal'})}
+async function lineCall(body,tok){const r=await fetch(LINE_FN(),{method:'POST',headers:{'Content-Type':'application/json',apikey:CFG.SUPABASE_KEY||'',...(tok?{'x-user-token':tok}:{})},body:JSON.stringify({...body,redirect:selfUrl()})});
+  let j={};try{j=await r.json()}catch(e){}if(!r.ok&&!j.error)j.error='fn_'+r.status;return j}
+const lineErr=e=>({not_linked:'บัญชี LINE นี้ยังไม่ได้ผูกกับไรเดอร์ · เข้าสู่ระบบด้วยเบอร์/รหัสผ่านครั้งแรก แล้วกด "ผูกบัญชี LINE"',inactive:'บัญชีไรเดอร์นี้ยังไม่ได้อนุมัติ หรือถูกระงับ',line_used:'บัญชี LINE นี้ผูกกับไรเดอร์คนอื่นแล้ว',not_configured:'ร้านยังตั้งค่า LINE ไม่เสร็จ',need_login:'เข้าสู่ระบบก่อน แล้วค่อยผูก LINE',bad_redirect:'ลิงก์หน้าไรเดอร์ไม่ตรงกับที่ตั้งไว้'})[e]||(/fn_404|Failed to fetch/i.test(e)?'ร้านยังไม่ได้เปิดระบบ LINE':'ทำรายการกับ LINE ไม่สำเร็จ ลองอีกครั้ง');
+async function lineReturn(){const code=P.get('code'),state=P.get('state'),err=P.get('error');if(!code&&!err)return false;
+  history.replaceState(null,'',selfUrl());let saved=null;try{saved=JSON.parse(sessionStorage.getItem('nl_line')||'null');sessionStorage.removeItem('nl_line')}catch(e){}
+  if(err||!saved||saved.st!==state){toast(err?'ยกเลิกการเข้าสู่ระบบด้วย LINE':'ลิงก์ LINE ไม่ถูกต้อง ลองใหม่');return false}
+  if(saved.op==='link'){const ses=(await SB.auth.getSession()).data.session;if(!ses){toast(lineErr('need_login'));return false}
+    const j=await lineCall({op:'link',code},ses.access_token);toast(j.ok?'✅ ผูกบัญชี LINE แล้ว ครั้งหน้ากดเข้าสู่ระบบด้วย LINE ได้เลย':lineErr(j.error));return false}
+  $('#view').innerHTML='<div class="card"><p class="muted" style="margin:0">กำลังเข้าสู่ระบบด้วย LINE…</p></div>';
+  const j=await lineCall({op:'login',code});
+  if(!j.ok){LINEMSG=lineErr(j.error);return false}
+  const {error}=await SB.auth.verifyOtp({token_hash:j.token_hash,type:'magiclink'});if(error){LINEMSG='เข้าสู่ระบบด้วย LINE ไม่สำเร็จ ลองอีกครั้ง';return false}
+  try{localStorage.setItem('nl_rider_day',bkDay());localStorage.removeItem('nl_rider_apply')}catch(e){}return true}
+let LINEMSG='';
 /* ---------- สถานะการสมัคร ---------- */
 async function checkStatus(){clearTimeout(stT);const {data,error}=await SB.rpc('rider_status',{p_phone:APPH});
   if(error){ST={status:'err',msg:/rider_status|function|PGRST20/i.test(error.message)?'ร้านยังไม่ได้เปิดระบบตรวจสถานะ':'เชื่อมต่อไม่ได้ ลองใหม่'};render();stT=setTimeout(checkStatus,30000);return}
@@ -229,6 +253,8 @@ function render(){const v=$('#view');$('#outBtn').hidden=!(mode==='app'||mode===
     <p>${act?'ส่งเสร็จแล้วจะกลับเข้าคิวต่อท้ายอัตโนมัติ':ME.ready?'พร้อมรับงาน · แตะเพื่อปิดเมื่อจะพัก':'แตะเพื่อเปิด Raptor Rider รับงานส่ง'}</p>
     ${!act&&ME.ready&&ME.queue?`<div class="q">คิวที่ <b>${ME.queue}</b> <span class="muted">จาก ${ME.queueOf} คน</span></div>`:''}</div>`;
   if(act)h+=jobCard(act);
+  h+=ME.line?`<div class="card" style="flex-direction:row;align-items:center;gap:10px"><span class="lineb">LINE</span><div style="flex:1"><b>ผูกบัญชี LINE แล้ว</b><div class="help">${esc(ME.line)} · ใช้ปุ่ม "เข้าสู่ระบบด้วย LINE" ได้เลย</div></div><button class="lnk" data-a="lineUnlink" type="button">ยกเลิก</button></div>`
+    :`<div class="card" style="flex-direction:row;align-items:center;gap:10px"><span class="lineb">LINE</span><div style="flex:1"><b>ผูกบัญชี LINE</b><div class="help">ครั้งหน้าเข้าสู่ระบบด้วย LINE ปุ่มเดียว ไม่ต้องจำรหัส</div></div><button class="btn line" data-a="lineLink" type="button">ผูก</button></div>`;
   if(!pushOn)h+=`<div class="pushc">🔔 <b>เปิดแจ้งเตือนงานใหม่</b> — ล็อกจอแล้วยังได้ยินเมื่อมีงาน<div style="margin-top:8px"><button class="btn sm" data-a="push" type="button">เปิดแจ้งเตือน</button></div></div>`;
   const t=ME.today||{};h+=`<div class="card"><h3>วันนี้</h3><div class="stat"><div><b>${t.trips||0}</b><span>เที่ยวที่ส่งสำเร็จ</span></div><div><b>${baht(t.earn)}</b><span>รายได้ค่าส่ง</span></div></div>
     ${(ME.recent||[]).length?`<div class="list">${ME.recent.slice(0,10).map(r=>`<div class="it"><span>${dshort(r.doneAt)} ${hm(r.doneAt)} · ${esc(r.name||'')} ${r.km?'· '+r.km+' กม.':''}</span><b>${baht(r.fee)}</b></div>`).join('')}</div><p class="help">ย้อนหลัง 7 วัน</p>`:''}</div>`;
@@ -263,7 +289,8 @@ function showOffer(j){let el=$('#offer');if(!j){if(el)el.remove();clearInterval(
   clearInterval(offTimer);const tick=()=>{const left=Math.max(0,Math.ceil((end-Date.now())/1000));const t=$('#offT');if(t){t.style.setProperty('--p',Math.round(left/to*100)+'%');t.querySelector('b').textContent=left}
     if(left%10===0&&left>0)ring();if(!left){clearInterval(offTimer)}};tick();offTimer=setInterval(tick,1000)}
 function renderLogin(v){let u='';try{u=localStorage.getItem('nl_rider_user')||''}catch(e){}
-  v.innerHTML=`<form class="card" id="lgF"><h2>เข้าสู่ระบบไรเดอร์</h2>
+  v.innerHTML=`<div class="card"><button class="btn line wide" data-a="lineLogin" type="button"><b>LINE</b> เข้าสู่ระบบด้วย LINE</button>${LINEMSG?`<p class="err" style="margin:0">${esc(LINEMSG)}</p>`:''}<p class="help" style="text-align:center">ผูกบัญชี LINE ไว้แล้ว กดปุ่มเดียวเข้าได้ ไม่ต้องจำรหัส</p></div>
+   <form class="card" id="lgF"><h2>เข้าสู่ระบบไรเดอร์</h2>
    <div class="field"><label for="lgU">เบอร์มือถือ หรือ ชื่อผู้ใช้</label><input id="lgU" autocomplete="username" autocapitalize="characters" placeholder="เช่น 0812345678 หรือ RR001" value="${esc(u)}"></div>
    <div class="field"><label for="lgP">รหัสผ่าน</label><input id="lgP" type="password" autocomplete="current-password"></div>
    <p class="err" id="lgE" role="alert"></p><button class="btn pri wide" type="submit" id="lgB">เข้าสู่ระบบ</button></form>
@@ -308,6 +335,9 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   if(a==='askStatus'){const p=(prompt('ใส่เบอร์มือถือที่ใช้สมัคร')||'').replace(/\D/g,'');if(!/^0\d{8,9}$/.test(p))return p&&toast('เบอร์ไม่ถูกต้อง');APPH=p;try{localStorage.setItem('nl_rider_apply',p)}catch(e){}ST=null;mode='status';render();checkStatus();return}
   if(a==='logout'){await SB.auth.signOut().catch(()=>{});location.replace(location.pathname);return}
   if(a==='push'){pushEnable();return}
+  if(a==='lineLogin'){LINEMSG='';lineStart('login');return}
+  if(a==='lineLink'){lineStart('link');return}
+  if(a==='lineUnlink'){if(!confirm('ยกเลิกการผูกบัญชี LINE?'))return;const ses=(await SB.auth.getSession()).data.session;const j=await lineCall({op:'unlink'},ses&&ses.access_token);toast(j.ok?'ยกเลิกการผูก LINE แล้ว':lineErr(j.error));refresh();return}
   if(a==='toggle'){acUnlock();const on=!ME.ready;
     if(!confirm(on?'เปิด Raptor Rider พร้อมรับงานส่งตอนนี้ใช่ไหม?':'ปิด Raptor Rider (พัก / เลิกงาน) ใช่ไหม?\nคิวของคุณจะถูกยกเลิก'))return;
     busy=true;const {error}=await SB.rpc('rider_ready',{p_on:on});busy=false;
