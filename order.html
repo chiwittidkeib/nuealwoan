@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1830">
+<meta name="app-version" content="2026.10.15-1400">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -87,6 +87,9 @@ footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:cente
 .err{color:var(--chili)}
 .namebox{max-width:420px;width:100%;margin:24px auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px}
 .namebox h2{font-size:24px}
+.whoami{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}.chips2{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip2{border:1px solid var(--jade);background:transparent;color:var(--fg);border-radius:999px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+.hint2{margin:0;font-size:13.5px;color:var(--muted);background:rgba(255,255,255,.06);border-radius:10px;padding:9px 11px}
 .lnk-w{border:0;background:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit;opacity:.95}
 .lnk-g{border:0;background:none;color:var(--jade);cursor:pointer;padding:4px 0;font:inherit;font-weight:500}
 .who{font-size:12px;color:var(--muted)}
@@ -375,6 +378,7 @@ const T=(P.get('t')||'').replace(/\D/g,''),K=P.get('k')||'';
 const NOTES=[];
 const S={menu:[],cats:[],cat:'all',cart:{},view:'menu',status:null,sending:false,name:''};
 const NAME_KEY='nl_name';
+const QNAME=(new URLSearchParams(location.search).get('n')||'').trim().slice(0,40);
 const WALK=T==='0';
 const WO_KEY='nl_wo_'+K;
 const getWO=()=>{try{const v=JSON.parse(localStorage.getItem(WO_KEY)||'null');return v&&Date.now()-v.ts<12*3600e3?v.id:null}catch(e){return null}};
@@ -424,6 +428,11 @@ async function start(){
   await loadStatus();
   if(WALK&&OPARAM&&!(S.status&&S.status.open)){setWO(null)}
   if(S.status&&S.status.open&&(S.status.items||[]).length&&S.view==='menu')S.view='status';
+  // QR ที่พนักงานสร้างให้ลูกค้าคนนั้น (&n=ชื่อ): เข้าเป็นชื่อนั้นทันที ไม่ต้องกรอก/เลือกเอง
+  if(QNAME&&S.status&&S.status.open){S.name=QNAME;saveName(S.name);setSub();S.view=(S.status.items||[]).length?'status':'menu';setTimeout(()=>toast('ยินดีต้อนรับกลับ คุณ'+S.name),400);
+    try{const u=new URL(location.href);u.searchParams.delete('n');history.replaceState(null,'',u.href)}catch(e){}}
+  // สแกนใหม่ (ไม่มีชื่อในเครื่อง) แต่บิลยังเปิดอยู่: ให้ดูรายการ/ยอดได้ก่อน
+  else if(!S.name&&S.status&&S.status.open&&(S.status.items||[]).length)S.hasBill=true;
   if(WALK&&S.status&&S.status.open)keepOrderInUrl(getWO());
   if(S.status&&S.status.requireOpen&&!S.status.open){S.after=S.view;S.view='closed'}
   render();
@@ -506,6 +515,8 @@ function render(){
   }
   if(S.view==='name'){
     h=`<form class="namebox" id="nameForm"><h2>ยินดีต้อนรับ</h2><p class="muted" style="margin:0">${WALK?'สั่งอาหารเองได้เลย · ใส่ชื่อไว้ให้พนักงานเรียกตอนอาหารพร้อม':'โต๊ะ '+esc(T)+' · ใส่ชื่อของคุณ ร้านจะได้เสิร์ฟถูกคน'}</p>
+      ${S.hasBill?`<div class="whoami"><b>${WALK?'ออร์เดอร์นี้':'โต๊ะนี้'}มีรายการที่สั่งไว้แล้ว</b><button class="btn" data-a="seeBill" type="button">ดูรายการ / ยอดชำระ</button><p class="hint2">เคยสั่งไว้แล้วแต่หน้าเว็บหลุด? ให้พนักงานเปิด <b>QR ชื่อของคุณ</b> สแกนแล้วเข้าเป็นชื่อเดิมทันที</p></div>`:''}
+      ${WALK&&!getWO()?`<p class="hint2">เคยสั่งไว้แล้ว แต่หน้าเว็บปิดไป? แจ้งพนักงานให้เปิด <b>QR ของออร์เดอร์คุณ</b> สแกนแล้วจะเห็นรายการเดิมและยอดชำระ</p>`:''}
       <div class="field"><label for="nm">ชื่อของคุณ</label><input id="nm" maxlength="40" autocomplete="given-name" placeholder="กรุณากรอกชื่อลูกค้า" value="${esc(S.name)}"></div>
       <div class="field"><label for="nmMem">⭐ เบอร์สมาชิก (ถ้ามี) <small style="font-weight:400">สะสมแต้มตั้งแต่เริ่มสั่ง</small></label><input id="nmMem" type="tel" inputmode="tel" maxlength="12" autocomplete="tel" placeholder="เบอร์โทรที่สมัครสมาชิกไว้" value="${esc((memPend()||{}).phone||'')}"></div>
       <p class="err" id="nmErr" role="alert"></p>
@@ -580,7 +591,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   else if(d.a==='note'){const n=$('#note');n.value=n.value?n.value+', '+d.v:d.v}
   else if(d.a==='send')send();
   else if(d.a==='editName'){S.view='name';render();$('main').scrollTop=0}
-  else if(d.a==='skipName'){if(!WALK){S.view='menu';render()}}});
+  else if(d.a==='skipName'){if(!WALK){S.view='menu';render()}}
+  else if(d.a==='seeBill'){S.view='status';render()}});
 start();
 
 /* ---------- แจ้งเตือนเวอร์ชันใหม่ (กันมือถือจำหน้าเก่าไว้) ---------- */

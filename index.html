@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1110">
+<meta name="app-version" content="2026.10.15-1400">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -408,6 +408,8 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .viewas{padding:6px 16px;font-size:13px}
 @media (max-width:860px){.top-in{flex-wrap:wrap;row-gap:6px}.top-in .brand{flex-basis:100%}.modesel span{display:none}.modesel{padding:2px;margin-right:auto}.modesel select{max-width:130px}.viewas{top:calc(env(safe-area-inset-top,0px) + 100px)}}
 .floorbar{padding:4px}
+.fsearch{margin:-4px 0 10px}.fsearch input{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:10px 12px;font:inherit;min-height:44px}.fsearch input:focus{border-color:var(--jade);outline:none}
+#fqRes:not(:empty){margin-bottom:12px}
 .floorseg{display:inline-flex;background:var(--sunk);border-radius:10px;padding:3px;gap:3px}
 .floorseg button{border:0;background:transparent;color:var(--muted);font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14.5px;display:flex;gap:6px;align-items:center}
 .floorseg button[aria-selected="true"]{background:var(--jade);color:var(--on-jade)}
@@ -838,6 +840,12 @@ const stampHtml=(sm)=>`<span class="stamp${sm?' sm':''}"><b>หมดแล้�
 const leftTag=m=>{const l=menuLeft(m);return l===null||isSoldOut(m)?'':`<span class="leftq${l<=3?' low':''}">เหลือ ${l}</span>`};
 const optLine=l=>l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:'';
 const custTag=l=>l.by==='customer'?`<span class="pill mute">${l.cname?'คุณ'+esc(l.cname):'ลูกค้าสั่ง'}</span>`:'';
+function fqResults(){const q=(S.fq||'').trim().toLowerCase();if(!q)return '';
+  const hits=Object.values(S.open).filter(o=>[...custNames(o),o.orderNo,o.ref,o.label,o.table!=='TA'?'โต๊ะ '+o.table:''].filter(Boolean).some(x=>String(x).toLowerCase().includes(q))).sort((a,b)=>a.openedAt-b.openedAt);
+  if(!hits.length)return `<div class="empty" style="padding:14px">ไม่พบบิลที่ตรงกับ "${esc(S.fq)}"</div>`;
+  return '<div class="list">'+hits.map(o=>{const nm=custNames(o);const where=o.table==='TA'?CH[chOf(o)].n+' · '+esc(orderTitle(o)):'โต๊ะ '+esc(o.table);
+    return `<div class="row" style="flex-wrap:wrap;gap:8px"><div class="grow" style="min-width:180px"><div class="t">${where}${nm.length&&!nm.every(n=>where.includes(esc(n)))?' · คุณ'+esc(nm.join(', คุณ')):''}</div><div class="s">${esc(o.orderNo||'')}${o.ref?' · '+esc(o.ref):''} · ${(o.items||[]).length} รายการ · ${baht(linesTotal(o.items))}</div></div>
+      <button class="btn sm" data-act="openOrder" data-id="${o.id}" type="button">เปิดบิล</button>${o.table==='TA'&&chOf(o)!=='walkin'?'':(nm.length?nm:['']).map(n=>`<button class="btn sm pri" data-act="qrFor" data-id="${o.id}" data-n="${esc(n)}" type="button">📱 QR${n?' คุณ'+esc(n):''}</button>`).join('')}</div>`}).join('')+'</div>'}
 const custNames=o=>[...new Set([o.customerName,...(o.items||[]).map(l=>l.cname)].filter(Boolean))];
 const tableLabel=o=>o.table==='TA'?(o.label||'กลับบ้าน'):'โต๊ะ '+o.table;
 const CH={dinein:{n:'ทานที่ร้าน',c:'var(--muted)'},walkin:{n:'ไม่ระบุโต๊ะ',c:'#6c7be8'},takeaway:{n:'กลับบ้าน',c:'#c48d3d'},lineman:{n:'LINE MAN',c:'#06c755'},grab:{n:'Grab Food',c:'#00b14f'},shopee:{n:'ShopeeFood',c:'#ee4d2d'}};
@@ -1104,7 +1112,9 @@ function render(){
     <p class="help" style="margin:0">ลืมรหัสผ่าน ติดต่อเจ้าของร้านให้ตั้งรหัสใหม่</p></form>`;
     $('#lgForm').addEventListener('submit',e=>{e.preventDefault();login()});(last?$('#lgPw'):$('#lgUser')).focus();return}
   if(S.state==='loading'){v.innerHTML=S.loadErr?`<div class="empty"><b>ยังเชื่อมต่อไม่ได้</b>${esc(S.loadErr)} · กำลังลองใหม่อัตโนมัติ…<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn pri" type="button" onclick="location.reload()">โหลดหน้าใหม่</button><button class="btn" type="button" data-act="logout">ออกจากระบบ</button></div></div>`:`<div class="empty"><b>กำลังโหลดข้อมูลร้าน…</b>โต๊ะ เมนู และยอดขายวันนี้จะขึ้นในไม่กี่วินาที<br><small class="muted">${esc(S.loadStep||'')}</small><div style="margin-top:14px"><button class="btn sm ghost" type="button" data-act="logout">ค้างนาน? เข้าสู่ระบบใหม่</button></div></div>`;return}
+  const fqF=document.activeElement&&document.activeElement.id==='fq';
   v.innerHTML=({tables:viewTables,kitchen:viewKitchen,menu:viewMenu,back:viewBack,report:viewReport,po:viewPo,poprep:viewPoPrep,poreport:viewPoReport}[S.tab])();
+  if(fqF){const q=$('#fq');if(q){q.focus();const n=q.value.length;try{q.setSelectionRange(n,n)}catch(e){}}}
 }
 const isLow=s=>(+s.qty||0)<=(+s.min||0);
 
@@ -1125,6 +1135,8 @@ function viewTables(){
   const walk=ta.filter(o=>chOf(o)==='walkin'),dl=ta.filter(o=>chOf(o)!=='walkin');
   const tabBtn=(v,label,cnt)=>`<button role="tab" aria-selected="${fl===v}" data-act="floor" data-v="${v}" type="button">${label} <span class="cnt">${cnt}</span></button>`;
   h+=`<div class="sec-h floorbar"><div class="floorseg" role="tablist" aria-label="มุมมองผังโต๊ะ">${tabBtn('tables','เปิดโต๊ะ',busy+'/'+n)}${tabBtn('other','ไม่ระบุโต๊ะ',walk.length)}${tabBtn('deliv','<span class="nw">กลับบ้าน /</span> <span class="nw">เดลิเวอรี่</span>',dl.length)}</div><span class="hint">${fl==='tables'?'แตะโต๊ะเพื่อเปิดโต๊ะหรือสั่งเพิ่ม':fl==='other'?'ออร์เดอร์ที่ไม่ได้นั่งโต๊ะ และลูกค้าสั่งเองผ่าน QR':'เลือกช่องทางเพื่อเปิดออร์เดอร์ใหม่'}</span></div>`;
+  h+=`<div class="fsearch"><input id="fq" type="search" placeholder="🔍 ค้นชื่อลูกค้า / เลขออร์เดอร์ / เลขในแอป" value="${esc(S.fq||'')}" autocomplete="off" aria-label="ค้นหาบิล"></div><div id="fqRes">${fqResults()}</div>`;
+  if((S.fq||'').trim())return h;
   if(fl==='tables'){h+=`<div class="tgrid">`;
   for(let i=1;i<=n;i++){const o=byTable[String(i)];
     if(o){const un=(o.items||[]).filter(l=>!l.served).reduce((a,l)=>a+l.qty,0);
@@ -2034,10 +2046,12 @@ function qrCard(url,big,sub){const s=S.settings;return `<div class="pq">${s.logo
 function sheetQrOne(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const walk=o.table==='TA';
   if(qrSecure()&&((!walk&&!o.qrToken)||(walk&&!S.qrDay))){$('#panel').innerHTML=head('QR')+`<div class="sh-body"><p class="muted">กำลังสร้าง QR…</p></div>`;
     (walk?loadQrDay():ensureTok(o)).then(()=>{if(S.sheet&&S.sheet.type==='qrOne'&&(walk?S.qrDay:S.open[o.id]?.qrToken))sheetQrOne();else if(S.sheet&&S.sheet.type==='qrOne')$('#panel .sh-body').innerHTML='<div class="empty"><b>สร้าง QR ไม่ได้</b>ให้แอดมินรัน SQL ล่าสุดใน Supabase</div>'});return}
-  const url=orderUrl(o);
-  const card=qrCard(url,walk?esc(orderTitle(o)):'โต๊ะ '+esc(o.table),walk?'สแกนเพื่อดูรายการ / สั่งเพิ่ม · '+esc(o.orderNo||''):'สแกนสั่งอาหาร · ดูรายการ · เรียกพนักงาน');
+  const names=custNames(o),qn=S.sheet.qn&&names.includes(S.sheet.qn)?S.sheet.qn:'';
+  const url=orderUrl(o)+(qn?'&n='+encodeURIComponent(qn):'');
+  const card=qrCard(url,qn?'คุณ'+esc(qn)+(walk?'':' · โต๊ะ '+esc(o.table)):walk?esc(orderTitle(o)):'โต๊ะ '+esc(o.table),walk?'สแกนเพื่อดูรายการ / สั่งเพิ่ม · '+esc(o.orderNo||''):'สแกนสั่งอาหาร · ดูรายการ · เรียกพนักงาน');
   $('#printArea').className='qrs one';$('#printArea').innerHTML=card;
   $('#panel').innerHTML=head(walk?'QR ออร์เดอร์นี้':'QR โต๊ะ '+esc(o.table),walk?'ใช้ได้จนกว่าจะชำระเงิน':(qrSecure()?'ใช้ได้เฉพาะบิลนี้ จนกว่าจะชำระเงิน':'ใช้ได้ทุกครั้งที่โต๊ะเปิดอยู่'))+`<div class="sh-body">
+   ${names.length?`<div class="card"><h3>QR สำหรับลูกค้าคนไหน</h3><div class="chips">${['',...names].map(n=>`<button class="chip" aria-pressed="${qn===n}" data-act="qrName" data-n="${esc(n)}" type="button">${n?'คุณ'+esc(n):(walk?'ไม่ระบุชื่อ':'ทั้งโต๊ะ')}</button>`).join('')}</div><span class="help">เลือกชื่อแล้ว ลูกค้าสแกนเข้ามาจะเป็นชื่อนั้นทันที ไม่ต้องกรอกหรือเลือกชื่อเอง · ใช้ตอนลูกค้าหลุดจากเว็บแล้วกลับเข้ามาใหม่</span></div>`:''}
    <div class="qrbig">${card}</div>
    ${S.sheet.fresh?`<div class="card" style="text-align:center"><b>เปิดโต๊ะ ${esc(o.table)} แล้ว</b><span class="help">ให้ลูกค้าสแกน QR นี้เพื่อสั่งอาหาร หรือกด "พิมพ์ QR นี้" วางไว้ที่โต๊ะ</span></div>`:''}
    <p class="help" style="margin:0">ให้ลูกค้าสแกนจากหน้าจอนี้ ลูกค้าจะเห็นรายการที่สั่งไปแล้ว สถานะคิว ยอดเงิน และสั่งเพิ่มเข้าบิลเดิมได้${qrSecure()?(walk?' · QR นี้ผูกกับออร์เดอร์นี้ ใช้ได้จนกว่าจะชำระเงิน':' · <b>QR นี้ใช้ได้เฉพาะบิลนี้</b> ชำระเงินแล้วจะใช้ไม่ได้ เปิดโต๊ะใหม่จะได้ QR ใหม่'):(walk?' (QR นี้ผูกกับออร์เดอร์นี้เท่านั้น)':' · QR นี้เหมือนกับที่ติดบนโต๊ะ')}</p></div>
@@ -2225,6 +2239,8 @@ const ACT={
   saveSettings,
   logout,
   qrSheet:()=>openSheet({type:'qr'}),
+  qrName:d=>{S.sheet.qn=d.n||'';sheetQrOne()},
+  qrFor:d=>openSheet({type:'qrOne',id:d.id,qn:d.n||''}),
   qrOne:()=>{const id=S.sheet&&S.sheet.id;if(!id)return;openSheet({type:'qrOne',id})},
   qrDayPrint:()=>{sheetQr();setTimeout(()=>window.print(),50)},
   qrOnePrint:()=>{sheetQrOne();setTimeout(()=>window.print(),50)},
@@ -2284,6 +2300,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
   if(b.dataset.confirm&&!b.dataset.armed){b.dataset.armed='1';b.dataset.label=b.textContent;b.textContent='แตะอีกครั้งเพื่อยืนยัน';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent=b.dataset.label}},3500);return}
   const f=ACT[b.dataset.act];if(f)f({...b.dataset},b,e);});
 document.addEventListener('submit',e=>e.preventDefault());
+document.addEventListener('input',e=>{if(e.target.id!=='fq')return;const was=!!(S.fq||'').trim();S.fq=e.target.value;const now=!!S.fq.trim();if(was!==now)render();else{const r=$('#fqRes');if(r)r.innerHTML=fqResults()}});
 $('#hdrMode').addEventListener('change',e=>{const v=e.target.value;if(v)ACT.viewAs({r:v});else ACT.viewAsOff()});
 {let downOnBg=false;$('#sheet').addEventListener('pointerdown',e=>{downOnBg=e.target.id==='sheet'});$('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet'&&downOnBg)closeSheet();downOnBg=false})}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet()});
