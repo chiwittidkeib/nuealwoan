@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1400">
+<meta name="app-version" content="2026.10.16-1420">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -3101,7 +3101,7 @@ function sheetCoupons(){const L=(S.coupons||[]).slice().sort((a,b)=>(cpnLive(b)?
    <p class="help" style="margin:0"><b>ใช้ได้ทุกบิลอัตโนมัติ</b> เช่น โปร 10.10 ลด 10 บาททุกบิล · <b>ต้องเก็บก่อน</b> เช่น แจก 100 ใบ คนละ 1 ใบ (ลูกค้าเก็บในหน้าสั่งเดลิเวอรี่ ต้องเป็นสมาชิก) · ใช้ได้ทั้งเดลิเวอรี่ออนไลน์ และหน้าร้าน (พนักงานกดใช้ในหน้าเก็บเงิน)</p>
    ${L.length?'<div class="list">'+L.map(c=>{const st=cpnStat(c.id),live=cpnLive(c);return `<div class="row"><div class="grow"><div class="t">${esc(c.name||'')} <span class="pill ${live?'ok':'mute'}">${live?'ใช้ได้':c.on?'นอกช่วงเวลา':'ปิดแจก'}</span></div>
       <div class="s">${cpnTypeTxt(c)} · ${cpnVal(c)}${+c.minOrder?' · ขั้นต่ำ '+baht(c.minOrder):''} · ${c.mode==='claim'?'ต้องเก็บก่อน':'ใช้ได้ทุกบิล'}${+c.perUser?' · คนละ '+c.perUser+' ใบ':''}</div>
-      <div class="s">${c.mode==='claim'?`เก็บแล้ว ${st.claimed||0}${+c.total?'/'+c.total:''} · `:''}ใช้แล้ว ${st.used||0}${c.mode!=='claim'&&+c.total?'/'+c.total:''} ครั้ง${+c.start||+c.end?' · '+(+c.start?dshort(c.start)+' '+hm(c.start):'ตอนนี้')+' – '+(+c.end?dshort(c.end)+' '+hm(c.end):'ไม่กำหนด'):''}${c.dl===false?' · ไม่ใช้กับเดลิเวอรี่':''}${c.store===false?' · ไม่ใช้หน้าร้าน':''}</div></div>
+      <div class="s">${(()=>{const lim=c.mode==='claim'?+c.useLimit||0:+c.total||0,paid=+st.paid||0,pend=Math.max(0,(+st.used||0)-paid);return `${c.mode==='claim'?`เก็บแล้ว ${st.claimed||0}${+c.total?'/'+c.total:''} คน · `:''}<b style="color:var(--fg)">ใช้จริง ${paid}${lim?'/'+lim:''}</b>${pend?` · รอชำระ ${pend}`:''}${lim?` · <b style="color:${lim-paid-pend>0?'#3ddc84':'var(--chili)'}">คงเหลือ ${Math.max(0,lim-paid-pend)}</b>`:''}`})()}${+c.start||+c.end?' · '+(+c.start?dshort(c.start)+' '+hm(c.start):'ตอนนี้')+' – '+(+c.end?dshort(c.end)+' '+hm(c.end):'ไม่กำหนด'):''}${c.dl===false?' · ไม่ใช้กับเดลิเวอรี่':''}${c.store===false?' · ไม่ใช้หน้าร้าน':''}</div></div>
       <button class="btn sm${c.on?'':' pri'}" data-act="cpnToggle" data-id="${esc(c.id)}" type="button">${c.on?'ปิดแจก':'เปิดแจก'}</button><button class="btn sm" data-act="cpnEdit" data-id="${esc(c.id)}" type="button">แก้</button></div>`}).join('')+'</div>':'<div class="empty"><b>ยังไม่มีคูปอง</b>กด "+ สร้างคูปอง" ด้านล่าง</div>'}</div>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="cpnEdit" type="button">+ สร้างคูปอง</button></div>`}
 function sheetCpnEdit(){const s=S.sheet,c=s.c;const sel=(id,v,opts)=>`<select id="${id}">${opts.map(([k,l])=>`<option value="${k}" ${String(v)===String(k)?'selected':''}>${l}</option>`).join('')}</select>`;
@@ -3112,6 +3112,7 @@ function sheetCpnEdit(){const s=S.sheet,c=s.c;const sel=(id,v,opts)=>`<select id
    <div class="field"><label for="cpMin">ยอดค่าอาหารขั้นต่ำ (บาท)</label><input id="cpMin" inputmode="decimal" value="${esc(c.minOrder||'')}" placeholder="0 = ไม่มีขั้นต่ำ"></div>
    <div class="field"><label for="cpMode">วิธีแจก</label>${sel('cpMode',c.mode||'auto',[['auto','ใช้ได้ทุกบิลอัตโนมัติ (ไม่ต้องเก็บ)'],['claim','ต้องกดเก็บก่อน (จำนวนจำกัด · สมาชิก)']])}</div>
    <div class="grid2"><div class="field"><label for="cpTotal" id="cpTotalL">จำนวนทั้งหมด (ใบ)</label><input id="cpTotal" inputmode="numeric" value="${esc(c.total||'')}" placeholder="0 = ไม่จำกัด"></div><div class="field"><label for="cpPer">ต่อสมาชิก 1 คน (ใบ)</label><input id="cpPer" inputmode="numeric" value="${esc(c.perUser||'')}" placeholder="0 = ไม่จำกัด"></div></div>
+   <div class="field" id="cpUseF"><label for="cpUse">จำกัดการใช้จริงทั้งหมด (ครั้ง)</label><input id="cpUse" inputmode="numeric" value="${esc(c.useLimit||'')}" placeholder="0 = ไม่จำกัด"><span class="help">นับเมื่อร้านยืนยันชำระเงิน · ระหว่างรอชำระจะกันสิทธิ์ไว้ก่อน ถ้ายกเลิกคืนสิทธิ์ให้คนอื่น · เช่น ให้เก็บไม่จำกัด คนละ 1 ใบ แต่ใช้จริงได้ 100 ใบ</span></div>
    <span class="help" id="cpHelp"></span>
    <div class="grid2"><div class="field"><label for="cpStart">เริ่ม</label><input id="cpStart" type="datetime-local" value="${dtLocal(c.start)}"></div><div class="field"><label for="cpEnd">หมดเขต</label><input id="cpEnd" type="datetime-local" value="${dtLocal(c.end)}"></div></div>
    <span class="help">เว้นว่าง = เริ่มทันที / ไม่มีวันหมด</span>
@@ -3120,7 +3121,7 @@ function sheetCpnEdit(){const s=S.sheet,c=s.c;const sel=(id,v,opts)=>`<select id
    <label class="check"><input type="checkbox" id="cpOn" ${c.on!==false?'checked':''}> เปิดแจก / ใช้งาน</label>
    <div class="field"><label for="cpNote">เงื่อนไขเพิ่มเติม (ลูกค้าเห็นในหน้าบัตรสมาชิก)</label><textarea id="cpNote" maxlength="300" rows="3" style="border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);color:var(--fg);font:inherit" placeholder="เช่น เฉพาะเมนูก๋วยเตี๋ยว · ไม่ร่วมกับโปรอื่น">${esc(c.note||'')}</textarea><span class="help">ระบบเขียนเงื่อนไขพื้นฐานให้อัตโนมัติ (ยอดขั้นต่ำ ช่วงเวลา จำนวนต่อคน ช่องทาง)</span></div></form>
    <div class="sh-foot">${c.id?'<button class="btn danger" data-act="cpnDel" data-confirm="1" type="button">ลบ</button>':''}<button class="btn" data-act="cpnBack" type="button">กลับ</button><button class="btn pri wide" data-act="cpnSave" type="button">บันทึก</button></div>`;
-  const hp=()=>{const cl=val('cpMode')==='claim';$('#cpTotalL').textContent=cl?'จำนวนที่แจก (ใบ)':'ใช้ได้ทั้งหมด (ครั้ง)';$('#cpHelp').textContent=cl?'ลูกค้าต้องเป็นสมาชิกและกดเก็บก่อน · เก็บครบจำนวนแล้วคนอื่นเก็บไม่ได้ · "ต่อสมาชิก" = เก็บได้คนละกี่ใบ':'ทุกบิลได้ส่วนลดเลย · ถ้าใส่ "ต่อสมาชิก" ต้องใส่เบอร์สมาชิกถึงใช้ได้ (เช่น ส่งฟรีคนละ 3 ครั้ง)'};
+  const hp=()=>{const cl=val('cpMode')==='claim';$('#cpTotalL').textContent=cl?'จำนวนที่ให้เก็บ (ใบ · 0 = เก็บได้ไม่จำกัด)':'ใช้ได้ทั้งหมด (ครั้ง)';$('#cpUseF').hidden=!cl;$('#cpHelp').textContent=cl?'ลูกค้าต้องเป็นสมาชิกและกดเก็บก่อน · เก็บครบจำนวนแล้วคนอื่นเก็บไม่ได้ · "ต่อสมาชิก" = เก็บได้คนละกี่ใบ':'ทุกบิลได้ส่วนลดเลย · ถ้าใส่ "ต่อสมาชิก" ต้องใส่เบอร์สมาชิกถึงใช้ได้ (เช่น ส่งฟรีคนละ 3 ครั้ง)'};
   $('#cpMode').addEventListener('change',hp);hp()}
 async function renderCpn(){const box=$('#payCpn');if(!box)return;const s=S.sheet,o=S.open[s.id];if(!o)return;
   const L=(S.coupons||[]).filter(c=>cpnLive(c)&&c.store!==false);
@@ -3133,7 +3134,7 @@ Object.assign(ACT,{
   cpnSave:async()=>{const s=S.sheet,c=s.c;const name=val('cpName');if(!name)return toast('ใส่ชื่อคูปอง','bad');const v=Math.max(0,nval('cpVal'));if(!v)return toast('ใส่จำนวนส่วนลด','bad');
     const kind=val('cpKind');if(kind==='pct'&&v>100)return toast('เปอร์เซ็นต์ไม่เกิน 100','bad');
     const st=dtParse(val('cpStart')),en=dtParse(val('cpEnd'));if(st&&en&&en<=st)return toast('หมดเขตต้องหลังวันเริ่ม','bad');
-    const data={name:name.slice(0,40),type:val('cpType'),kind,value:v,maxDisc:Math.max(0,nval('cpMax')),minOrder:Math.max(0,nval('cpMin')),mode:val('cpMode'),total:Math.max(0,Math.round(nval('cpTotal'))),perUser:Math.max(0,Math.round(nval('cpPer'))),
+    const data={name:name.slice(0,40),type:val('cpType'),kind,value:v,maxDisc:Math.max(0,nval('cpMax')),minOrder:Math.max(0,nval('cpMin')),mode:val('cpMode'),total:Math.max(0,Math.round(nval('cpTotal'))),perUser:Math.max(0,Math.round(nval('cpPer'))),useLimit:Math.max(0,Math.round(nval('cpUse'))),
       start:st||null,end:en||null,dl:$('#cpDl').checked,store:$('#cpStore').checked,on:$('#cpOn').checked,note:val('cpNote').slice(0,300),createdAt:c.createdAt||Date.now(),by:S.me||''};
     if(data.mode==='claim'&&!data.perUser)data.perUser=1;
     const id=c.id||('cp'+Date.now().toString(36));if(await write('coupons/'+id,r=>r.set(data))){toast('บันทึกคูปองแล้ว');S.coupons=[...(S.coupons||[]).filter(x=>x.id!==id),{id,...data}];openSheet({type:'coupons'})}},

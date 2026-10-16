@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1840">
+<meta name="app-version" content="2026.10.16-1420">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#14110f">
 <title>สั่งเดลิเวอรี่ · เนื้อล้วนๆ</title>
@@ -322,7 +322,7 @@ const cpDisc=(c,base)=>{base=+base||0;let d=c.kind==='pct'?Math.floor(base*(+c.v
 const cpTxt=c=>(c.kind==='pct'?`ลด ${+c.value}%${+c.maxDisc?' สูงสุด '+baht(c.maxDisc):''}`:`ลด ${baht(c.value)}`)+(c.type==='fee'?' ค่าส่ง':'');
 // สถานะคูปองของลูกค้า: use = ใช้ได้, claim = กดเก็บได้, หรือข้อความว่าทำไมใช้ไม่ได้
 function cpState(c,food){const mem=!!(S.cl&&S.cl.member);
-  if(c.mode==='claim'){if(c.claimed-c.used>0)return +c.minOrder&&food<+c.minOrder?'ขั้นต่ำ '+baht(c.minOrder):'use';
+  if(c.mode==='claim'){if(+c.useLimit&&!(c.useLeft>0))return 'สิทธิ์ใช้ครบแล้ว';if(c.claimed-c.used>0)return +c.minOrder&&food<+c.minOrder?'ขั้นต่ำ '+baht(c.minOrder):'use';
     if(!mem)return 'เฉพาะสมาชิก';if(c.left===0)return 'เก็บครบแล้ว';if(c.claimed>=Math.max(1,+c.perUser||1))return 'ใช้สิทธิ์ครบแล้ว';return 'claim'}
   if(c.left===0)return 'หมดแล้ว';if(+c.perUser){if(!mem)return 'เฉพาะสมาชิก';if(c.used>=+c.perUser)return 'ใช้สิทธิ์ครบแล้ว'}
   if(+c.minOrder&&food<+c.minOrder)return 'ขั้นต่ำ '+baht(c.minOrder);return 'use'}
@@ -343,7 +343,7 @@ function sumCalc(){const food=cartT(),fee=(S.fee&&!S.fee.over&&S.fee.fee)||0,L=(
 function memView(){const box=$('#memBox');if(!box)return;autoPick();const cl=S.cl,food=cartT();
   if(!cl){box.innerHTML='<p class="help">ใส่เบอร์โทร 10 หลัก เพื่อดูแต้มสมาชิกและคูปองส่วนลด</p>';sumView();return}
   const m=cl.member,L=cl.coupons||[],k=sumCalc();
-  const cpRow=c=>{const st=cpState(c,food),on=S.pick[c.type]===c.id&&st==='use';return `<div class="cp${on?' on':''}${st!=='use'&&st!=='claim'?' dis':''}"><div class="grow"><b>${esc(c.name)}</b><small>${cpTxt(c)}${+c.minOrder?' · ขั้นต่ำ '+baht(c.minOrder):''}${c.end?' · ถึง '+new Date(+c.end).toLocaleDateString('th-TH',{day:'numeric',month:'short',timeZone:'Asia/Bangkok'}):''}${c.left!=null?' · เหลือ '+c.left+' ใบ':''}</small></div>
+  const cpRow=c=>{const st=cpState(c,food),on=S.pick[c.type]===c.id&&st==='use';return `<div class="cp${on?' on':''}${st!=='use'&&st!=='claim'?' dis':''}"><div class="grow"><b>${esc(c.name)}</b><small>${cpTxt(c)}${+c.minOrder?' · ขั้นต่ำ '+baht(c.minOrder):''}${c.end?' · ถึง '+new Date(+c.end).toLocaleDateString('th-TH',{day:'numeric',month:'short',timeZone:'Asia/Bangkok'}):''}${+c.useLimit?' · ใช้แล้ว '+c.paid+'/'+c.useLimit+' เหลือ '+c.useLeft+' สิทธิ์':c.left!=null?' · เหลือ '+c.left+' ใบ':''}</small></div>
     ${st==='use'?`<button class="btn sm${on?' pri':''}" data-a="cpPick" data-id="${esc(c.id)}" data-t="${c.type}" type="button">${on?'✓ ใช้อยู่':'ใช้'}</button>`:st==='claim'?`<button class="btn sm gold" data-a="cpClaim" data-id="${esc(c.id)}" type="button">เก็บคูปอง</button>`:`<span class="pill wait">${esc(st)}</span>`}</div>`};
   box.innerHTML=(cl.pointsOn?(m?`<div class="memrow">⭐ <div class="grow"><b>สมาชิก คุณ${esc(m.name||S.cust.name||'')}</b><small>มี ${(+m.points||0).toLocaleString('th-TH')} แต้ม · บิลนี้จะได้ +${k.earn} แต้ม (เข้าเมื่อร้านยืนยันยอด)</small></div></div>
       ${k.maxP>0||S.usePts?`<label class="chk"><input type="checkbox" id="usePts" ${S.usePts?'checked':''}> ใช้ ${k.maxP.toLocaleString('th-TH')} แต้ม เป็นส่วนลด ${baht(Math.round(k.maxP*Math.max(.01,+cl.pointValue||1)*100)/100)} <small class="muted">(ร้านยืนยันอีกครั้ง)</small></label>`:''}`

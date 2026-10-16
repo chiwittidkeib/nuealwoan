@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1400">
+<meta name="app-version" content="2026.10.16-1420">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0907">
 <title>บัตรสะสมแต้ม · เนื้อล้วนๆ</title>
@@ -76,6 +76,7 @@ h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600;line-height:1.25}
 @media (min-width:700px){.sheetbg{align-items:center}.sheet{border-radius:20px}}
 .rules{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:#e9dccb}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:linear-gradient(180deg,var(--gold2),var(--gold));color:#1d1307;padding:10px 16px;border-radius:12px;font-weight:700;z-index:60;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.live{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}.live div{background:#0e0b09;border:1px solid var(--line);border-radius:12px;padding:8px 4px}.live b{display:block;font-family:var(--f-d);font-size:22px;color:var(--gold2)}.live small{color:var(--muted);font-size:11.5px}
 .links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 </style>
 </head>
@@ -120,13 +121,14 @@ function rules(c){const r=[];
   r.push(`ส่วนลด${c.type==='fee'?'ค่าส่ง':'ค่าอาหาร'} ${c.kind==='pct'?num(c.value)+'%'+(+c.maxDisc?' (ลดสูงสุด '+baht(c.maxDisc)+')':''):baht(c.value)}`);
   r.push('ใช้ได้กับ '+[c.dl!==false&&'สั่งเดลิเวอรี่ออนไลน์',c.store!==false&&c.type!=='fee'&&'ทานที่ร้าน / หน้าร้าน'].filter(Boolean).join(' และ '));
   if(+c.minOrder)r.push(`ยอดค่าอาหารขั้นต่ำ ${baht(c.minOrder)}`);
-  if(c.mode==='claim')r.push(`ต้องกดเก็บคูปองก่อน (เฉพาะสมาชิก)${+c.total?' · แจกทั้งหมด '+num(c.total)+' ใบ':''} · เก็บได้คนละ ${num(Math.max(1,+c.perUser||1))} ใบ`);
+  if(c.mode==='claim'){r.push(`ต้องกดเก็บคูปองก่อน (เฉพาะสมาชิก)${+c.total?' · แจกทั้งหมด '+num(c.total)+' ใบ':' · เก็บได้ไม่จำกัดจำนวน'} · เก็บได้คนละ ${num(Math.max(1,+c.perUser||1))} ใบ`);
+    if(+c.useLimit)r.push(`ใช้ได้จริงทั้งหมด ${num(c.useLimit)} สิทธิ์ (นับเมื่อชำระเงิน) ใครใช้ก่อนได้ก่อน · ใช้ครบแล้วคูปองที่เก็บไว้จะใช้ไม่ได้`)}
   else{r.push('ใช้ได้ทุกบิลอัตโนมัติ ไม่ต้องเก็บ');if(+c.perUser)r.push(`ใช้ได้คนละ ${num(c.perUser)} ครั้ง (ต้องใช้เบอร์สมาชิก)`);if(+c.total)r.push(`จำนวนจำกัด ${num(c.total)} สิทธิ์`)}
   r.push(+c.start||+c.end?`ระยะเวลา ${+c.start?dtTH(c.start):'ตั้งแต่วันนี้'} – ${+c.end?dtTH(c.end):'ไม่มีวันหมดอายุ'}`:'ไม่มีวันหมดอายุ (จนกว่าร้านจะปิดโปร)');
   r.push('ใช้ส่วนลดค่าอาหารได้ 1 ใบ และส่วนลดค่าส่งได้ 1 ใบ ต่อ 1 บิล · ใช้คู่กับแต้มสะสมได้');
   r.push('ไม่สามารถแลกเปลี่ยนเป็นเงินสด');return r}
 function cpState(c){const mem=!!(S.card&&S.card.member);
-  if(c.mode==='claim'){if(c.claimed-c.used>0)return ['have',`มีอยู่ ${c.claimed-c.used} ใบ`];if(!mem)return ['x','เฉพาะสมาชิก'];if(c.left===0)return ['x','เก็บครบแล้ว'];if(c.claimed>=Math.max(1,+c.perUser||1))return ['x','ใช้สิทธิ์ครบแล้ว'];return ['claim','เก็บคูปอง']}
+  if(c.mode==='claim'){if(+c.useLimit&&!(c.useLeft>0))return ['x',c.claimed-c.used>0?'สิทธิ์ใช้ครบแล้ว':'ครบ '+num(c.useLimit)+' สิทธิ์แล้ว'];if(c.claimed-c.used>0)return ['have',`มีอยู่ ${c.claimed-c.used} ใบ`];if(!mem)return ['x','เฉพาะสมาชิก'];if(c.left===0)return ['x','เก็บครบแล้ว'];if(c.claimed>=Math.max(1,+c.perUser||1))return ['x','ใช้สิทธิ์ครบแล้ว'];return ['claim','เก็บคูปอง']}
   if(c.left===0)return ['x','หมดแล้ว'];if(+c.perUser){if(!mem)return ['x','เฉพาะสมาชิก'];if(c.used>=+c.perUser)return ['x','ใช้สิทธิ์ครบแล้ว'];return ['have',`เหลือ ${+c.perUser-c.used} ครั้ง`]}return ['auto','ใช้ได้เลย']}
 function render(){const d=S.card,m=d.member,L=(S.cl&&S.cl.coupons)||[];let h='';
   if(!m){h=`<div class="box" style="text-align:center"><h2 style="color:var(--gold2)">ยังไม่เป็นสมาชิก</h2><p class="help">เบอร์ ${esc(S.phone)} · สมัครฟรี ทุก ${num(d.pointsPer)} บาท ได้ 1 แต้ม · ใช้แต้มแทนเงินสด และเก็บคูปองสมาชิกได้</p>
@@ -140,13 +142,13 @@ function render(){const d=S.card,m=d.member,L=(S.cl&&S.cl.coupons)||[];let h='';
   h+=`<div class="tabs" role="group"><button data-a="tab" data-v="cpn" aria-pressed="${S.tab==='cpn'}" type="button">🎟️ คูปอง</button><button data-a="tab" data-v="rw" aria-pressed="${S.tab==='rw'}" type="button">🎁 ของรางวัล</button><button data-a="tab" data-v="hist" aria-pressed="${S.tab==='hist'}" type="button">🧾 ประวัติ</button></div>`;
   if(S.tab==='cpn')h+=L.length?L.map(c=>{const [k,t]=cpState(c);return `<button class="cp${k==='x'?' dis':''}" data-a="cp" data-id="${esc(c.id)}" type="button"><div class="l"><small>${c.type==='fee'?'ลดค่าส่ง':'ส่วนลด'}</small><b>${cVal(c)}</b>${+c.maxDisc&&c.kind==='pct'?`<small>สูงสุด ${baht(c.maxDisc)}</small>`:''}</div>
       <div class="r"><b>${esc(c.name)}</b><small>${+c.minOrder?'ขั้นต่ำ '+baht(c.minOrder)+' · ':''}${[c.dl!==false&&'เดลิเวอรี่',c.store!==false&&c.type!=='fee'&&'หน้าร้าน'].filter(Boolean).join(' / ')}${+c.end?' · ถึง '+dTH(c.end):''}</small>
-      <div class="st">${k==='claim'?`<span class="pill g">แตะเพื่อเก็บ</span>`:`<span class="pill ${k==='x'?'x':'ok'}">${esc(t)}</span>`}${c.left!=null&&k!=='x'?`<span class="pill x">เหลือ ${num(c.left)} ใบ</span>`:''}<span class="pill x">ดูเงื่อนไข ›</span></div></div></button>`}).join('')
+      <div class="st">${k==='claim'?`<span class="pill g">แตะเพื่อเก็บ</span>`:`<span class="pill ${k==='x'?'x':'ok'}">${esc(t)}</span>`}${+c.useLimit?`<span class="pill ${c.useLeft>0?'g':'x'}">ใช้แล้ว ${num(c.paid)}/${num(c.useLimit)} · เหลือ ${num(c.useLeft)}</span>`:c.left!=null&&k!=='x'?`<span class="pill x">เหลือ ${num(c.left)} ใบ</span>`:''}<span class="pill x">ดูเงื่อนไข ›</span></div></div></button>`}).join('')
       :'<div class="box" style="text-align:center"><p class="muted" style="margin:0">ตอนนี้ยังไม่มีคูปอง · ติดตามโปรใหม่ทาง LINE OA ของร้าน</p></div>';
   else if(S.tab==='rw'){const R=d.rewards||[];h+=`<div class="box">${R.length?R.map(r=>{const p=m?Math.min(100,Math.round((+m.points||0)/Math.max(1,r.pts)*100)):0;return `<div class="rw"><span class="ic">${r.type==='gift'?'🎁':'🍜'}</span><div class="g"><b>${esc(r.name)}</b><div class="help">${num(r.pts)} แต้ม${r.left!=null?' · เหลือ '+num(r.left)+' ชิ้น':''}${m?(m.points>=r.pts?' · <span style="color:var(--green)">แลกได้แล้ว!</span>':' · ขาดอีก '+num(r.pts-m.points)+' แต้ม'):''}</div><div class="bar"><i style="width:${p}%"></i></div></div></div>`}).join('')+'<p class="help" style="margin-top:6px">แลกของรางวัลที่ร้าน แจ้งพนักงานพร้อมเบอร์สมาชิก</p>':'<p class="muted" style="margin:0">ร้านยังไม่ได้ตั้งของรางวัล</p>'}</div>`}
   else h+=`<div class="box">${m&&(m.hist||[]).length?m.hist.map(x=>{const p=+x.p||0;return `<div class="hs"><div><div>${{earn:'ได้แต้ม',use:'ใช้แต้ม',redeem:'แลกของรางวัล',expire:'แต้มหมดอายุ',adjust:'ปรับแต้ม'}[x.k]||esc(x.k)}${x.n?' · <span class="muted">'+esc(x.n)+'</span>':''}</div><small class="muted">${x.at>1e11?dtTH(x.at):''}</small></div><span class="p ${p>=0?'plus':'minus'}">${p>=0?'+':''}${num(p)}</span></div>`}).join(''):'<p class="muted" style="margin:0">ยังไม่มีประวัติแต้ม</p>'}</div>`;
   h+=links();$('#view').innerHTML=h}
-function showRules(c){const [k,t]=cpState(c);const el=document.createElement('div');el.className='sheetbg';
-  el.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"><div style="display:flex;gap:12px;align-items:center"><div class="cp" style="flex:none;width:auto;cursor:default"><div class="l" style="border-right:0"><small>${c.type==='fee'?'ลดค่าส่ง':'ส่วนลด'}</small><b>${cVal(c)}</b></div></div><div><h2 style="font-size:20px">${esc(c.name)}</h2><span class="pill ${k==='x'?'x':'ok'}">${esc(t)}</span></div></div>
+function showRules(c){const [k,t]=cpState(c);const el=document.createElement('div');el.className='sheetbg';el.dataset.id=c.id;
+  el.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${+c.useLimit?`<div class="live"><div><b>${num(c.paid)}</b><small>ใช้แล้ว</small></div><div><b>${num(c.pending)}</b><small>รอชำระ</small></div><div><b style="color:${c.useLeft>0?'var(--green)':'#ff8a8c'}">${num(c.useLeft)}</b><small>คงเหลือ</small></div><div><b>${num(c.useLimit)}</b><small>ทั้งหมด</small></div></div><div class="bar"><i style="width:${Math.min(100,Math.round((c.paid+c.pending)/Math.max(1,c.useLimit)*100))}%"></i></div><p class="help" style="text-align:center">อัปเดตสด · นับเมื่อร้านยืนยันชำระเงิน</p>`:''}<div style="display:flex;gap:12px;align-items:center"><div class="cp" style="flex:none;width:auto;cursor:default"><div class="l" style="border-right:0"><small>${c.type==='fee'?'ลดค่าส่ง':'ส่วนลด'}</small><b>${cVal(c)}</b></div></div><div><h2 style="font-size:20px">${esc(c.name)}</h2><span class="pill ${k==='x'?'x':'ok'}">${esc(t)}</span></div></div>
     <h3 style="color:var(--gold2);font-size:16px">เงื่อนไขการใช้</h3><ul class="rules">${rules(c).map(x=>`<li>${esc(x)}</li>`).join('')}${c.note?`<li>${esc(c.note)}</li>`:''}</ul>
     <h3 style="color:var(--gold2);font-size:16px">วิธีใช้</h3><ul class="rules"><li>สั่งเดลิเวอรี่: ใส่เบอร์นี้ตอนสั่ง ระบบเลือกคูปองที่ลดได้มากที่สุดให้อัตโนมัติ</li>${c.store!==false&&c.type!=='fee'?'<li>ที่ร้าน: แจ้งพนักงานตอนชำระเงินพร้อมเบอร์สมาชิก หรือเปิดหน้านี้ให้ดู</li>':''}</ul>
     ${k==='claim'?`<button class="btn pri" data-a="claim" data-id="${esc(c.id)}" type="button">🎟️ เก็บคูปองนี้</button>`:''}${c.dl!==false&&k!=='x'?`<a class="btn${k==='claim'?'':' pri'}" href="${esc(base('delivery.html'))}">🛵 ใช้สั่งเดลิเวอรี่</a>`:''}<button class="btn" data-a="close" type="button">ปิด</button></div>`;
@@ -162,6 +164,11 @@ async function act(a,b){const d=(b&&b.dataset)||{};
     if(error){b.disabled=false;return toast(/cpn_gone/.test(error.message)?'คูปองถูกเก็บครบแล้ว':/cpn_limit/.test(error.message)?'คุณเก็บคูปองนี้ครบสิทธิ์แล้ว':/cpn_member/.test(error.message)?'ต้องสมัครสมาชิกก่อน':'เก็บคูปองไม่สำเร็จ')}
     document.querySelector('.sheetbg')?.remove();toast('🎟️ เก็บคูปองแล้ว');await load()}}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled||b.dataset.a==='close')return;act(b.dataset.a,b)});
+// ยอดคูปองอัปเดตสด ทุก 10 วินาที (เฉพาะตอนเปิดหน้าอยู่)
+async function liveTick(){if(!SB||!S.phone||!S.card||document.hidden||S.busy)return;try{const {data,error}=await SB.rpc('cpn_list',{p_phone:S.phone,p_ch:'all'});if(error||!data)return;
+  if(JSON.stringify(data.coupons)===JSON.stringify((S.cl||{}).coupons))return;S.cl=data;const open=document.querySelector('.sheetbg');const oid=open&&open.dataset.id;
+  if(!document.activeElement||!/INPUT/.test(document.activeElement.tagName))render();if(oid){open.remove();const c=(data.coupons||[]).find(x=>x.id===oid);if(c)showRules(c)}}catch(e){}}
+setInterval(liveTick,10000);document.addEventListener('visibilitychange',liveTick);
 start();
 </script>
 </body>
