@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1115">
+<meta name="app-version" content="2026.10.16-1400">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -3014,10 +3014,12 @@ async function dlPay(noSlip){if(!can('pay'))return deny();const s=S.sheet,q=(S.d
 function dlPanel(){const c=rdCfg();if(!c.selfOn||!canDl())return '';const L=(S.dlReq||[]).filter(q=>['new','accepted','slip'].includes(q.status));const on=shopOpen();
   return `<div class="dlbox"><div class="inrow" style="flex-wrap:wrap"><button class="btn sm ${on?'dl-on':'dl-off'}" data-act="shopOpen" type="button">${on?'🟢 เปิดรับออร์เดอร์ออนไลน์':'🔴 ปิดรับออร์เดอร์ออนไลน์'}</button><button class="btn sm" data-act="dlLink" type="button">🔗 ลิงก์สั่ง / QR</button>${S.role==='owner'&&oaCfg().on?`<button class="btn sm" data-act="oaPost" type="button">📣 ประกาศใน LINE OA</button>`:''}<span class="help" style="margin:0">${on?'ลูกค้าสั่งผ่านลิงก์ได้':'ลูกค้าจะเห็นว่าร้านปิด'}</span></div>
    ${L.length?'<div class="list">'+L.map(q=>{const st=DL_ST[q.status];return `<button class="row click" data-act="dlOpen" data-id="${esc(q.id)}" type="button" style="width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);color:inherit;font:inherit;cursor:pointer"><div class="grow"><div class="t">${esc(dlNo(q))} · คุณ${esc(q.name)} <span class="pill ${st[1]}">${st[0]}</span></div><div class="s">${baht(q.amount??q.total)} · ${esc(String(q.km??'?'))} กม. · ${hm(q.at)}${q.slipBad&&q.status==='accepted'?' · รอแนบสลิปใหม่':''}</div></div><span>›</span></button>`}).join('')+'</div>':''}</div>`}
+const oaLinks=()=>[['📖 เมนู (E-book)',new URL('menu-book.html',location.href).href.split('?')[0]],['⭐ บัตรสะสมแต้ม / คูปอง',new URL('card.html',location.href).href.split('?')[0]],['🛵 เดลิเวอรี่',dlUrl()]];
 function sheetDlLink(){const u=dlUrl();
   $('#panel').innerHTML=head('ลิงก์ให้ลูกค้าสั่งเดลิเวอรี่','ใส่ในปุ่มเมนู LINE OA หรือส่งให้ลูกค้า')+`<div class="sh-body">
    <div class="qrbig">${qrCard(u,'สั่งเดลิเวอรี่','สแกนเพื่อสั่งอาหารส่งถึงบ้าน')}</div>
    <div class="inrow"><input readonly value="${esc(u)}" aria-label="ลิงก์สั่งเดลิเวอรี่"><button class="btn sm" data-act="rdCopyLink" data-v="${esc(u)}" type="button">คัดลอก</button></div>
+   <div class="card"><h3>ลิงก์ 3 ปุ่มของ LINE OA</h3>${oaLinks().map(([n,l])=>`<div class="field"><label>${n}</label><div class="inrow"><input readonly value="${esc(l)}"><button class="btn sm" data-act="rdCopyLink" data-v="${esc(l)}" type="button">คัดลอก</button><a class="btn sm ghost" href="${esc(l)}" target="_blank" rel="noopener">เปิด</a></div></div>`).join('')}</div>
    <div class="card"><h3>ใส่ปุ่มใน LINE OA (Rich menu)</h3><ol class="help" style="margin:0;padding-left:18px"><li>เปิด LINE Official Account Manager → หน้าหลัก → <b>ริชเมนู</b> → สร้าง</li><li>เลือกเทมเพลต แล้วอัปโหลดรูปปุ่ม</li><li>ปุ่ม "สั่งเดลิเวอรี่" → ประเภท <b>ลิงก์</b> → วางลิงก์ด้านบน</li><li>ตั้งช่วงเวลาแสดง แล้วกดบันทึก</li></ol></div>
    <p class="help">ลูกค้าเปิดลิงก์ → เลือกเมนู → ปักหมุดบ้าน → ระบบคิดค่าส่งให้ → ส่งออร์เดอร์ แล้วร้านได้ยินเสียงเตือนให้กดรับ</p></div>
    <div class="sh-foot"><a class="btn" href="${esc(u)}" target="_blank" rel="noopener">เปิดหน้าสั่ง</a><button class="btn pri wide" data-act="close" type="button">เสร็จ</button></div>`}
@@ -3045,7 +3047,7 @@ function oaSettingsCard(){const c=oaCfg();
    <div class="field"><label for="oaCap">เพดานข้อความต่อเดือน</label><input id="oaCap" inputmode="numeric" value="${esc(c.cap||'')}" placeholder="0 = ไม่จำกัด (ใช้ตามโควตาแพ็กเกจ)"><span class="help">ถ้าส่งแล้วจะเกินเพดาน ระบบไม่ส่ง กันค่าใช้จ่ายเกิน</span></div>
    <div class="field"><label for="oaOpenMsg">ข้อความตอนเปิดร้าน</label><input id="oaOpenMsg" maxlength="300" value="${esc(c.openMsg)}"></div>
    <div class="field"><label for="oaCloseMsg">ข้อความตอนปิดร้าน</label><input id="oaCloseMsg" maxlength="300" value="${esc(c.closeMsg)}"><span class="help">ใช้ {ร้าน} = ชื่อร้าน · {ลิงก์} = ลิงก์สั่งเดลิเวอรี่</span></div>
-   <div class="inrow" style="flex-wrap:wrap"><button class="btn sm" data-act="oaQuota" type="button">เช็กโควตาเดือนนี้</button><button class="btn sm" data-act="oaPost" type="button">📣 ประกาศเมนูพิเศษ</button><span class="help" id="oaQ" style="margin:0"></span></div>
+   <div class="inrow" style="flex-wrap:wrap"><button class="btn sm pri" data-act="dlLink" type="button">🔗 ลิงก์ 3 ปุ่ม (เมนู / บัตรสมาชิก / เดลิเวอรี่)</button><button class="btn sm" data-act="oaQuota" type="button">เช็กโควตาเดือนนี้</button><button class="btn sm" data-act="oaPost" type="button">📣 ประกาศเมนูพิเศษ</button><span class="help" id="oaQ" style="margin:0"></span></div>
    <p class="help" style="margin:0">ตอบอัตโนมัติ (ฟรี ไม่นับโควตา): ลูกค้าพิมพ์ "เปิดไหม" → ตอบสถานะร้าน · พิมพ์ "สั่ง" / "เมนู" / "เดลิเวอรี่" → ส่งลิงก์สั่งให้</p></div>`}
 const oaReadCfg=()=>!$('#oaOn')?(S.settings.lineOa||null):{on:$('#oaOn').checked,autoOn:$('#oaAuto').checked,cap:Math.max(0,Math.round(nval('oaCap'))),openMsg:val('oaOpenMsg').slice(0,300)||OA_DEF.openMsg,closeMsg:val('oaCloseMsg').slice(0,300)||OA_DEF.closeMsg,link:dlUrl()};
 function sheetOaPost(){const s=S.sheet;
@@ -3116,7 +3118,7 @@ function sheetCpnEdit(){const s=S.sheet,c=s.c;const sel=(id,v,opts)=>`<select id
    <label class="check"><input type="checkbox" id="cpDl" ${c.dl!==false?'checked':''}> ใช้กับเดลิเวอรี่ออนไลน์</label>
    <label class="check"><input type="checkbox" id="cpStore" ${c.store!==false?'checked':''}> ใช้หน้าร้าน (พนักงานกดใช้ในหน้าเก็บเงิน)</label>
    <label class="check"><input type="checkbox" id="cpOn" ${c.on!==false?'checked':''}> เปิดแจก / ใช้งาน</label>
-   <div class="field"><label for="cpNote">รายละเอียด (ไม่บังคับ)</label><input id="cpNote" maxlength="120" value="${esc(c.note||'')}"></div></form>
+   <div class="field"><label for="cpNote">เงื่อนไขเพิ่มเติม (ลูกค้าเห็นในหน้าบัตรสมาชิก)</label><textarea id="cpNote" maxlength="300" rows="3" style="border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);color:var(--fg);font:inherit" placeholder="เช่น เฉพาะเมนูก๋วยเตี๋ยว · ไม่ร่วมกับโปรอื่น">${esc(c.note||'')}</textarea><span class="help">ระบบเขียนเงื่อนไขพื้นฐานให้อัตโนมัติ (ยอดขั้นต่ำ ช่วงเวลา จำนวนต่อคน ช่องทาง)</span></div></form>
    <div class="sh-foot">${c.id?'<button class="btn danger" data-act="cpnDel" data-confirm="1" type="button">ลบ</button>':''}<button class="btn" data-act="cpnBack" type="button">กลับ</button><button class="btn pri wide" data-act="cpnSave" type="button">บันทึก</button></div>`;
   const hp=()=>{const cl=val('cpMode')==='claim';$('#cpTotalL').textContent=cl?'จำนวนที่แจก (ใบ)':'ใช้ได้ทั้งหมด (ครั้ง)';$('#cpHelp').textContent=cl?'ลูกค้าต้องเป็นสมาชิกและกดเก็บก่อน · เก็บครบจำนวนแล้วคนอื่นเก็บไม่ได้ · "ต่อสมาชิก" = เก็บได้คนละกี่ใบ':'ทุกบิลได้ส่วนลดเลย · ถ้าใส่ "ต่อสมาชิก" ต้องใส่เบอร์สมาชิกถึงใช้ได้ (เช่น ส่งฟรีคนละ 3 ครั้ง)'};
   $('#cpMode').addEventListener('change',hp);hp()}
@@ -3132,7 +3134,7 @@ Object.assign(ACT,{
     const kind=val('cpKind');if(kind==='pct'&&v>100)return toast('เปอร์เซ็นต์ไม่เกิน 100','bad');
     const st=dtParse(val('cpStart')),en=dtParse(val('cpEnd'));if(st&&en&&en<=st)return toast('หมดเขตต้องหลังวันเริ่ม','bad');
     const data={name:name.slice(0,40),type:val('cpType'),kind,value:v,maxDisc:Math.max(0,nval('cpMax')),minOrder:Math.max(0,nval('cpMin')),mode:val('cpMode'),total:Math.max(0,Math.round(nval('cpTotal'))),perUser:Math.max(0,Math.round(nval('cpPer'))),
-      start:st||null,end:en||null,dl:$('#cpDl').checked,store:$('#cpStore').checked,on:$('#cpOn').checked,note:val('cpNote').slice(0,120),createdAt:c.createdAt||Date.now(),by:S.me||''};
+      start:st||null,end:en||null,dl:$('#cpDl').checked,store:$('#cpStore').checked,on:$('#cpOn').checked,note:val('cpNote').slice(0,300),createdAt:c.createdAt||Date.now(),by:S.me||''};
     if(data.mode==='claim'&&!data.perUser)data.perUser=1;
     const id=c.id||('cp'+Date.now().toString(36));if(await write('coupons/'+id,r=>r.set(data))){toast('บันทึกคูปองแล้ว');S.coupons=[...(S.coupons||[]).filter(x=>x.id!==id),{id,...data}];openSheet({type:'coupons'})}},
   cpnToggle:async d=>{const c=(S.coupons||[]).find(x=>x.id===d.id);if(!c)return;const on=!c.on;if(await write('coupons/'+d.id,r=>r.update({on}))){c.on=on;toast(on?'เปิดแจกคูปองแล้ว':'ปิดแจกคูปองแล้ว');sheetCoupons()}},

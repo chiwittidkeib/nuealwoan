@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="app-version" content="2026.10.16-1400">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0907">
+<title>บัตรสะสมแต้ม · เนื้อล้วนๆ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<style>
+/* บัตรสะสมแต้ม + คูปอง: ธีมดำทอง เข้ากับปุ่มเมนู LINE OA */
+:root{--bg:#0b0907;--card:#16120e;--card2:#1e1813;--gold:#d9a441;--gold2:#f2c46d;--goldd:#8a6420;--fg:#f6efe4;--muted:#b7a68f;--line:rgba(217,164,65,.25);--red:#e5383b;--green:#3ddc84;
+  --f-d:"Kanit","IBM Plex Sans Thai",system-ui,sans-serif;--f-b:"IBM Plex Sans Thai",system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;max-width:100%;overflow-x:clip}
+body{min-height:100vh;background:radial-gradient(120% 60% at 50% 0%,#2a1d12 0%,#0b0907 62%);color:var(--fg);font-family:var(--f-b);font-size:15px;line-height:1.5}
+[hidden]{display:none!important}
+button,input{font:inherit;color:inherit}
+@media (pointer:coarse),(max-width:820px){input{font-size:16px!important}}
+h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600;line-height:1.25}
+.top{display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;border-bottom:1px solid var(--line)}
+.top img{width:38px;height:38px;border-radius:10px;object-fit:contain;background:#000;border:1px solid var(--line)}
+.top b{font-family:var(--f-d);font-size:17px;display:block;line-height:1.1}.top small{color:var(--gold);font-size:11px;letter-spacing:.18em}
+.wrap{max-width:520px;margin:0 auto;padding:16px 16px calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.muted{color:var(--muted)}.help{font-size:13px;color:var(--muted);margin:0}.err{color:#ff8a8c;margin:0;font-size:14px;min-height:1em}
+.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:13px;color:var(--gold);font-weight:600}
+.field input{border:1px solid var(--line);background:#0e0b09;border-radius:12px;padding:12px 14px;min-height:50px;font-size:18px;letter-spacing:.04em}
+.field input:focus{outline:2px solid var(--gold)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:50px;border-radius:14px;border:1px solid var(--gold);background:rgba(217,164,65,.06);color:var(--gold2);font-family:var(--f-d);font-weight:600;font-size:16px;cursor:pointer;text-decoration:none;padding:0 16px}
+.btn.pri{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#1d1307;border:0}
+.btn.sm{min-height:38px;font-size:14px;border-radius:11px;padding:0 12px}
+.btn:disabled{opacity:.45}
+.lnk{border:0;background:none;color:var(--gold);cursor:pointer;padding:4px;font-size:14px}
+/* บัตร */
+.mcard{position:relative;overflow:hidden;aspect-ratio:1.586;border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;justify-content:space-between;
+  background:radial-gradient(circle at 88% 10%,rgba(242,196,109,.28),transparent 45%),radial-gradient(circle at 0% 100%,rgba(200,16,46,.25),transparent 50%),linear-gradient(135deg,#1c1612,#070605 58%,#1a130d);
+  border:1.5px solid var(--gold);box-shadow:0 18px 50px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.05)}
+.mcard::before{content:"";position:absolute;inset:0;background:url(images/card-nl.png) center/auto 72% no-repeat;opacity:.13;pointer-events:none}
+.mcard::after{content:"";position:absolute;inset:-40% -60%;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.12) 50%,transparent 58%);animation:sh 3.6s ease-in-out infinite;pointer-events:none}
+@keyframes sh{0%{transform:translateX(-30%)}60%,100%{transform:translateX(30%)}}
+.mcard>*{position:relative;z-index:1}
+.mc-top{display:flex;justify-content:space-between;align-items:center}.mc-top img{width:40px;height:40px;border-radius:10px;border:1px solid var(--gold);object-fit:cover}
+.mc-top span{font-family:var(--f-d);letter-spacing:.3em;font-size:12px;color:var(--gold2)}
+.mc-mid b{font-family:var(--f-d);font-size:22px;display:block}.mc-mid span{letter-spacing:.2em;color:#efe2cc;font-variant-numeric:tabular-nums}
+.mc-bot{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.mc-bot small{display:block;color:#cdb894;font-size:12px}.mc-bot strong{font-family:var(--f-d);font-weight:800;font-size:44px;line-height:1;color:var(--gold2);text-shadow:0 2px 14px rgba(242,196,109,.35)}
+.mc-bot em{font-style:normal;font-size:11.5px;color:#cdb894;text-align:right;line-height:1.4}
+.warn{background:rgba(255,180,60,.12);border:1px solid rgba(255,180,60,.5);color:#ffd58a;border-radius:12px;padding:9px 12px;font-size:14px}
+/* แท็บ */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:5px}
+.tabs button{border:0;background:none;border-radius:10px;padding:10px 4px;font-family:var(--f-d);font-weight:500;color:var(--muted);cursor:pointer}
+.tabs button[aria-pressed=true]{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#1d1307}
+/* คูปอง */
+.cp{position:relative;display:flex;border-radius:14px;background:linear-gradient(90deg,#241c13,#17120d);border:1px solid var(--line);overflow:hidden;cursor:pointer;text-align:left;width:100%;padding:0;color:inherit}
+.cp .l{flex:none;width:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:12px 6px;border-right:2px dashed rgba(217,164,65,.45);background:rgba(217,164,65,.08);text-align:center}
+.cp .l b{font-family:var(--f-d);font-weight:800;font-size:24px;color:var(--gold2);line-height:1.05}.cp .l small{font-size:11px;color:var(--muted)}
+.cp .r{flex:1;min-width:0;padding:11px 12px;display:flex;flex-direction:column;gap:3px}
+.cp .r b{font-family:var(--f-d);font-weight:500;font-size:16px}.cp .r small{color:var(--muted);font-size:12.5px;line-height:1.4}
+.cp .st{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:2px}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:1px 9px}
+.pill.ok{background:rgba(61,220,132,.15);color:var(--green)}.pill.g{background:rgba(217,164,65,.15);color:var(--gold2)}.pill.x{background:rgba(255,255,255,.08);color:var(--muted)}
+.cp.dis{opacity:.55}
+/* ของรางวัล / ประวัติ */
+.rw{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid rgba(217,164,65,.12)}.rw:first-child{border-top:0}
+.rw .ic{font-size:26px}.rw .g{flex:1;min-width:0}.rw b{font-family:var(--f-d);font-weight:500}
+.bar{height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.hs{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid rgba(217,164,65,.12);font-size:14px}.hs:first-child{border-top:0}
+.hs .p{font-family:var(--f-d);font-weight:600}.hs .p.plus{color:var(--green)}.hs .p.minus{color:#ff8a8c}
+/* แผ่นเงื่อนไข */
+.sheetbg{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:520px;max-height:88vh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+@media (min-width:700px){.sheetbg{align-items:center}.sheet{border-radius:20px}}
+.rules{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:#e9dccb}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:linear-gradient(180deg,var(--gold2),var(--gold));color:#1d1307;padding:10px 16px;border-radius:12px;font-weight:700;z-index:60;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+</style>
+</head>
+<body>
+<header class="top"><img id="logo" src="images/logo-nl.png" alt=""><div><b id="shop">เนื้อล้วนๆ</b><small>LOYALTY POINTS</small></div></header>
+<main class="wrap" id="view"><div class="box"><p class="muted" style="margin:0">กำลังโหลด…</p></div></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script>window.APP_CONFIG||document.write('<script src="config.js"><\/script>')</script>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const baht=n=>'฿'+(Math.round((+n||0)*100)/100).toLocaleString('th-TH',{maximumFractionDigits:2});
+const num=n=>(+n||0).toLocaleString('th-TH');
+const dTH=t=>new Date(+t).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',timeZone:'Asia/Bangkok'});
+const dtTH=t=>new Date(+t).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'})+' น.';
+function toast(m){document.querySelector('.toast')?.remove();const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
+const base=f=>new URL(f,location.href).href.split('?')[0];
+let SB=null;const S={phone:'',card:null,cl:null,tab:'cpn',busy:false};
+const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){return null}};
+// ใช้เบอร์เดียวกับหน้าสั่งเดลิเวอรี่ (ถ้าเคยกรอก)
+function savedPhone(){const p=LS('nl_card_phone');if(p)return p;try{return (JSON.parse(LS('nl_dl_cust')||'{}')||{}).phone||''}catch(e){return ''}}
+
+async function start(){const c=window.APP_CONFIG||{};if(!window.supabase||!c.SUPABASE_URL){$('#view').innerHTML='<div class="box">ระบบยังไม่พร้อม</div>';return}
+  SB=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_KEY,{auth:{persistSession:false}});
+  const p=new URLSearchParams(location.search).get('p')||savedPhone();if(/^0\d{8,9}$/.test(p)){S.phone=p;await load()}else renderLogin()}
+async function load(){S.busy=true;try{const [a,b]=await Promise.all([SB.rpc('member_card',{p_phone:S.phone}),SB.rpc('cpn_list',{p_phone:S.phone,p_ch:'all'})]);
+    if(a.error)throw a.error;S.card=a.data;S.cl=b.error?{coupons:[]}:b.data;if(S.card.shopName)$('#shop').textContent=S.card.shopName}
+  catch(e){S.busy=false;const m=String(e&&e.message||e);if(/bad_phone/.test(m)){LS('nl_card_phone',null);S.phone='';return renderLogin('เบอร์โทรไม่ถูกต้อง')}
+    $('#view').innerHTML=`<div class="box"><b>เชื่อมต่อไม่ได้</b><p class="help">${/function|PGRST20/i.test(m)?'ร้านกำลังเปิดระบบบัตรสมาชิก ลองใหม่ภายหลัง':'ตรวจอินเทอร์เน็ตแล้วลองใหม่'}</p><button class="btn" onclick="location.reload()">ลองใหม่</button></div>`;return}
+  S.busy=false;render()}
+function renderLogin(err){$('#view').innerHTML=`<div class="box" style="text-align:center;gap:12px"><img src="images/logo-nl.png" alt="" style="width:96px;height:96px;object-fit:contain;align-self:center"><h2 style="color:var(--gold2)">บัตรสะสมแต้ม & คูปอง</h2><p class="help">ใส่เบอร์โทรเพื่อดูแต้ม คูปองส่วนลด และของรางวัล · ยังไม่เป็นสมาชิก สมัครฟรีได้เลย</p>
+  <form id="lf" class="field" style="text-align:left"><label for="ph">เบอร์โทรศัพท์</label><input id="ph" type="tel" inputmode="tel" maxlength="12" autocomplete="tel" placeholder="0812345678" value="${esc(S.phone)}"></form>
+  <p class="err" id="le">${esc(err||'')}</p><button class="btn pri" data-a="go" type="button">ดูบัตรของฉัน</button></div>${links()}`;
+  $('#lf').addEventListener('submit',e=>{e.preventDefault();act('go')});setTimeout(()=>$('#ph')?.focus(),50)}
+const links=()=>`<div class="links"><a class="btn sm" href="${esc(base('menu-book.html'))}">📖 เมนู</a><a class="btn sm" href="${esc(base('delivery.html'))}">🛵 เดลิเวอรี่</a></div>`;
+// ข้อความเงื่อนไขคูปอง (สร้างจากการตั้งค่าของร้าน + เงื่อนไขเพิ่มเติมที่แอดมินพิมพ์)
+const cVal=c=>c.kind==='pct'?`${num(c.value)}%`:baht(c.value);
+function rules(c){const r=[];
+  r.push(`ส่วนลด${c.type==='fee'?'ค่าส่ง':'ค่าอาหาร'} ${c.kind==='pct'?num(c.value)+'%'+(+c.maxDisc?' (ลดสูงสุด '+baht(c.maxDisc)+')':''):baht(c.value)}`);
+  r.push('ใช้ได้กับ '+[c.dl!==false&&'สั่งเดลิเวอรี่ออนไลน์',c.store!==false&&c.type!=='fee'&&'ทานที่ร้าน / หน้าร้าน'].filter(Boolean).join(' และ '));
+  if(+c.minOrder)r.push(`ยอดค่าอาหารขั้นต่ำ ${baht(c.minOrder)}`);
+  if(c.mode==='claim')r.push(`ต้องกดเก็บคูปองก่อน (เฉพาะสมาชิก)${+c.total?' · แจกทั้งหมด '+num(c.total)+' ใบ':''} · เก็บได้คนละ ${num(Math.max(1,+c.perUser||1))} ใบ`);
+  else{r.push('ใช้ได้ทุกบิลอัตโนมัติ ไม่ต้องเก็บ');if(+c.perUser)r.push(`ใช้ได้คนละ ${num(c.perUser)} ครั้ง (ต้องใช้เบอร์สมาชิก)`);if(+c.total)r.push(`จำนวนจำกัด ${num(c.total)} สิทธิ์`)}
+  r.push(+c.start||+c.end?`ระยะเวลา ${+c.start?dtTH(c.start):'ตั้งแต่วันนี้'} – ${+c.end?dtTH(c.end):'ไม่มีวันหมดอายุ'}`:'ไม่มีวันหมดอายุ (จนกว่าร้านจะปิดโปร)');
+  r.push('ใช้ส่วนลดค่าอาหารได้ 1 ใบ และส่วนลดค่าส่งได้ 1 ใบ ต่อ 1 บิล · ใช้คู่กับแต้มสะสมได้');
+  r.push('ไม่สามารถแลกเปลี่ยนเป็นเงินสด');return r}
+function cpState(c){const mem=!!(S.card&&S.card.member);
+  if(c.mode==='claim'){if(c.claimed-c.used>0)return ['have',`มีอยู่ ${c.claimed-c.used} ใบ`];if(!mem)return ['x','เฉพาะสมาชิก'];if(c.left===0)return ['x','เก็บครบแล้ว'];if(c.claimed>=Math.max(1,+c.perUser||1))return ['x','ใช้สิทธิ์ครบแล้ว'];return ['claim','เก็บคูปอง']}
+  if(c.left===0)return ['x','หมดแล้ว'];if(+c.perUser){if(!mem)return ['x','เฉพาะสมาชิก'];if(c.used>=+c.perUser)return ['x','ใช้สิทธิ์ครบแล้ว'];return ['have',`เหลือ ${+c.perUser-c.used} ครั้ง`]}return ['auto','ใช้ได้เลย']}
+function render(){const d=S.card,m=d.member,L=(S.cl&&S.cl.coupons)||[];let h='';
+  if(!m){h=`<div class="box" style="text-align:center"><h2 style="color:var(--gold2)">ยังไม่เป็นสมาชิก</h2><p class="help">เบอร์ ${esc(S.phone)} · สมัครฟรี ทุก ${num(d.pointsPer)} บาท ได้ 1 แต้ม · ใช้แต้มแทนเงินสด และเก็บคูปองสมาชิกได้</p>
+      <div class="field" style="text-align:left"><label for="nm">ชื่อเล่น (ไม่บังคับ)</label><input id="nm" maxlength="40" autocomplete="nickname" style="font-size:16px;letter-spacing:0"></div>
+      <button class="btn pri" data-a="join" type="button">สมัครสมาชิกฟรี</button><button class="lnk" data-a="out" type="button">ใช้เบอร์อื่น</button></div>`}
+  else{h=`<div class="mcard"><div class="mc-top"><img src="images/logo-nl.png" alt=""><span>MEMBER CARD</span></div>
+      <div class="mc-mid"><b>${m.name?'คุณ'+esc(m.name):'สมาชิก'}</b><span>${esc(m.phone)}</span></div>
+      <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${num(m.points)}</strong></div><em>1 แต้ม = ${baht(d.pointValue)}<br>ทุก ${num(d.pointsPer)} บาท ได้ 1 แต้ม</em></div></div>
+      ${m.exp&&+m.exp.pts?`<div class="warn">⚠️ ${num(m.exp.pts)} แต้ม จะหมดอายุ ${dTH(m.exp.at)} · รีบใช้ก่อนหมดนะครับ</div>`:''}
+      <p class="help" style="text-align:center">แต้มมีอายุ 1 ปี · แจ้งเบอร์นี้กับพนักงานเพื่อสะสม/ใช้แต้มที่ร้าน · <button class="lnk" data-a="out" type="button">เปลี่ยนเบอร์</button></p>`}
+  h+=`<div class="tabs" role="group"><button data-a="tab" data-v="cpn" aria-pressed="${S.tab==='cpn'}" type="button">🎟️ คูปอง</button><button data-a="tab" data-v="rw" aria-pressed="${S.tab==='rw'}" type="button">🎁 ของรางวัล</button><button data-a="tab" data-v="hist" aria-pressed="${S.tab==='hist'}" type="button">🧾 ประวัติ</button></div>`;
+  if(S.tab==='cpn')h+=L.length?L.map(c=>{const [k,t]=cpState(c);return `<button class="cp${k==='x'?' dis':''}" data-a="cp" data-id="${esc(c.id)}" type="button"><div class="l"><small>${c.type==='fee'?'ลดค่าส่ง':'ส่วนลด'}</small><b>${cVal(c)}</b>${+c.maxDisc&&c.kind==='pct'?`<small>สูงสุด ${baht(c.maxDisc)}</small>`:''}</div>
+      <div class="r"><b>${esc(c.name)}</b><small>${+c.minOrder?'ขั้นต่ำ '+baht(c.minOrder)+' · ':''}${[c.dl!==false&&'เดลิเวอรี่',c.store!==false&&c.type!=='fee'&&'หน้าร้าน'].filter(Boolean).join(' / ')}${+c.end?' · ถึง '+dTH(c.end):''}</small>
+      <div class="st">${k==='claim'?`<span class="pill g">แตะเพื่อเก็บ</span>`:`<span class="pill ${k==='x'?'x':'ok'}">${esc(t)}</span>`}${c.left!=null&&k!=='x'?`<span class="pill x">เหลือ ${num(c.left)} ใบ</span>`:''}<span class="pill x">ดูเงื่อนไข ›</span></div></div></button>`}).join('')
+      :'<div class="box" style="text-align:center"><p class="muted" style="margin:0">ตอนนี้ยังไม่มีคูปอง · ติดตามโปรใหม่ทาง LINE OA ของร้าน</p></div>';
+  else if(S.tab==='rw'){const R=d.rewards||[];h+=`<div class="box">${R.length?R.map(r=>{const p=m?Math.min(100,Math.round((+m.points||0)/Math.max(1,r.pts)*100)):0;return `<div class="rw"><span class="ic">${r.type==='gift'?'🎁':'🍜'}</span><div class="g"><b>${esc(r.name)}</b><div class="help">${num(r.pts)} แต้ม${r.left!=null?' · เหลือ '+num(r.left)+' ชิ้น':''}${m?(m.points>=r.pts?' · <span style="color:var(--green)">แลกได้แล้ว!</span>':' · ขาดอีก '+num(r.pts-m.points)+' แต้ม'):''}</div><div class="bar"><i style="width:${p}%"></i></div></div></div>`}).join('')+'<p class="help" style="margin-top:6px">แลกของรางวัลที่ร้าน แจ้งพนักงานพร้อมเบอร์สมาชิก</p>':'<p class="muted" style="margin:0">ร้านยังไม่ได้ตั้งของรางวัล</p>'}</div>`}
+  else h+=`<div class="box">${m&&(m.hist||[]).length?m.hist.map(x=>{const p=+x.p||0;return `<div class="hs"><div><div>${{earn:'ได้แต้ม',use:'ใช้แต้ม',redeem:'แลกของรางวัล',expire:'แต้มหมดอายุ',adjust:'ปรับแต้ม'}[x.k]||esc(x.k)}${x.n?' · <span class="muted">'+esc(x.n)+'</span>':''}</div><small class="muted">${x.at>1e11?dtTH(x.at):''}</small></div><span class="p ${p>=0?'plus':'minus'}">${p>=0?'+':''}${num(p)}</span></div>`}).join(''):'<p class="muted" style="margin:0">ยังไม่มีประวัติแต้ม</p>'}</div>`;
+  h+=links();$('#view').innerHTML=h}
+function showRules(c){const [k,t]=cpState(c);const el=document.createElement('div');el.className='sheetbg';
+  el.innerHTML=`<div class="sheet" role="dialog" aria-modal="true"><div style="display:flex;gap:12px;align-items:center"><div class="cp" style="flex:none;width:auto;cursor:default"><div class="l" style="border-right:0"><small>${c.type==='fee'?'ลดค่าส่ง':'ส่วนลด'}</small><b>${cVal(c)}</b></div></div><div><h2 style="font-size:20px">${esc(c.name)}</h2><span class="pill ${k==='x'?'x':'ok'}">${esc(t)}</span></div></div>
+    <h3 style="color:var(--gold2);font-size:16px">เงื่อนไขการใช้</h3><ul class="rules">${rules(c).map(x=>`<li>${esc(x)}</li>`).join('')}${c.note?`<li>${esc(c.note)}</li>`:''}</ul>
+    <h3 style="color:var(--gold2);font-size:16px">วิธีใช้</h3><ul class="rules"><li>สั่งเดลิเวอรี่: ใส่เบอร์นี้ตอนสั่ง ระบบเลือกคูปองที่ลดได้มากที่สุดให้อัตโนมัติ</li>${c.store!==false&&c.type!=='fee'?'<li>ที่ร้าน: แจ้งพนักงานตอนชำระเงินพร้อมเบอร์สมาชิก หรือเปิดหน้านี้ให้ดู</li>':''}</ul>
+    ${k==='claim'?`<button class="btn pri" data-a="claim" data-id="${esc(c.id)}" type="button">🎟️ เก็บคูปองนี้</button>`:''}${c.dl!==false&&k!=='x'?`<a class="btn${k==='claim'?'':' pri'}" href="${esc(base('delivery.html'))}">🛵 ใช้สั่งเดลิเวอรี่</a>`:''}<button class="btn" data-a="close" type="button">ปิด</button></div>`;
+  el.addEventListener('click',e=>{if(e.target===el||e.target.closest('[data-a=close]'))el.remove()});document.body.appendChild(el)}
+async function act(a,b){const d=(b&&b.dataset)||{};
+  if(a==='go'){const p=String($('#ph')?.value||'').replace(/\D/g,'').replace(/^66(?=\d{9}$)/,'0');if(!/^0\d{8,9}$/.test(p)){$('#le').textContent='ใส่เบอร์โทร 10 หลัก';return}S.phone=p;LS('nl_card_phone',p);$('#view').innerHTML='<div class="box"><p class="muted" style="margin:0">กำลังโหลด…</p></div>';await load()}
+  else if(a==='out'){LS('nl_card_phone',null);S.card=null;renderLogin()}
+  else if(a==='tab'){S.tab=d.v;render()}
+  else if(a==='cp'){const c=((S.cl&&S.cl.coupons)||[]).find(x=>x.id===d.id);if(c)showRules(c)}
+  else if(a==='join'){b.disabled=true;const {error}=await SB.rpc('member_signup',{p_phone:S.phone,p_name:String($('#nm')?.value||'').trim()});b.disabled=false;
+    if(error)return toast(/points_off/.test(error.message)?'ร้านปิดระบบสมาชิกอยู่':/busy/.test(error.message)?'มีคนสมัครพร้อมกันเยอะ ลองอีกครั้ง':'สมัครไม่สำเร็จ ลองอีกครั้ง');LS('nl_card_phone',S.phone);toast('⭐ สมัครสมาชิกแล้ว');await load()}
+  else if(a==='claim'){b.disabled=true;const {error}=await SB.rpc('cpn_claim',{p_id:d.id,p_phone:S.phone});
+    if(error){b.disabled=false;return toast(/cpn_gone/.test(error.message)?'คูปองถูกเก็บครบแล้ว':/cpn_limit/.test(error.message)?'คุณเก็บคูปองนี้ครบสิทธิ์แล้ว':/cpn_member/.test(error.message)?'ต้องสมัครสมาชิกก่อน':'เก็บคูปองไม่สำเร็จ')}
+    document.querySelector('.sheetbg')?.remove();toast('🎟️ เก็บคูปองแล้ว');await load()}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled||b.dataset.a==='close')return;act(b.dataset.a,b)});
+start();
+</script>
+</body>
+</html>
