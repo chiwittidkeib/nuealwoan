@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1900">
+<meta name="app-version" content="2026.10.16-2010">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -392,6 +392,21 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .stepper.big{align-self:flex-start}.stepper.big button{width:48px;height:48px;font-size:22px}.stepper.big span{min-width:48px;font-size:20px}
 .perm input.pct{width:64px;text-align:right;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px}
 #hdrLogout{color:var(--muted)}
+.outmsg{background:rgba(198,40,40,.16);border:1px solid rgba(229,56,59,.55);color:#ffd2cc;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.45}
+#hdrShop{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:6px 14px 6px 11px;border:1px solid rgba(46,204,113,.45);background:linear-gradient(180deg,rgba(46,204,113,.16),rgba(46,204,113,.06));color:#bff3d2;font-weight:500}
+#hdrShop b{font-weight:700;color:#fff}
+#hdrShop .dot{width:9px;height:9px;border-radius:50%;background:#2ecc71;box-shadow:0 0 0 3px rgba(46,204,113,.25)}
+#hdrShop.closed{border-color:#e5383b;background:linear-gradient(180deg,#d32f2f,#9f1b1b);color:#ffe1dd;animation:shopPulse 2s ease-in-out infinite}
+#hdrShop.closed .dot{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.3)}
+.closedwrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center;background:radial-gradient(circle at 20% 30%,rgba(229,56,59,.18),transparent 60%),rgba(16,10,9,.9);border:1px solid rgba(229,56,59,.5);border-radius:18px;padding:18px;margin-bottom:12px}
+.cstamp{flex:none;width:168px;height:168px;border-radius:50%;border:4px solid #e5383b;background:rgba(25,6,6,.9);box-shadow:inset 0 0 0 5px rgba(229,56,59,.35),0 0 0 3px rgba(229,56,59,.25),0 10px 30px rgba(0,0,0,.45);transform:rotate(-12deg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.cstamp img{width:104px;height:73px;object-fit:contain;margin-top:-6px}
+.cstamp b{color:#5ec59c;font-size:22px;font-weight:800;line-height:1.15;padding-bottom:4px;border-bottom:2px solid #5ec59c}
+.cstamp i{color:#5ec59c;font-style:normal;font-weight:800;font-size:15px;letter-spacing:3px;text-transform:uppercase}
+.closedtx{display:flex;flex-direction:column;gap:6px;min-width:220px;max-width:420px}
+.closedtx b{font-size:20px;color:#fff}.closedtx span{color:#ffd2cc;font-size:14px;line-height:1.5}.closedtx small{color:var(--muted)}
+.closedtx .btn{align-self:flex-start}
+@keyframes shopPulse{50%{box-shadow:0 0 0 4px rgba(198,40,40,.35)}}
 .btn.lineb{background:#06c755;border-color:#06c755;color:#fff}.btn.lineb b{background:#fff;color:#06c755;border-radius:5px;padding:0 5px;font-size:12px;margin-right:6px}
 .lg-or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}.lg-or::before,.lg-or::after{content:"";flex:1;height:1px;background:var(--line)}
 #hdrLogout[data-armed]{color:#fff}
@@ -719,6 +734,7 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
   <label class="modesel" id="hdrModeWrap" hidden><span>โหมด</span><select id="hdrMode" aria-label="โหมดหน้าจอ"><option value="">Admin</option><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">แม่ครัว</option><option value="partner">หุ้นส่วน</option></select></label>
   <button class="btn sm" id="hdrMe" data-act="myAcct" type="button" hidden>👤 บัญชี</button>
   <button class="btn sm" data-act="settings" type="button">ตั้งค่าร้าน</button>
+  <button class="btn sm" id="hdrShop" data-act="shopSession" type="button" hidden>🔒 ปิดร้าน</button>
   <button class="btn sm" id="hdrLogout" data-act="logout" data-confirm="1" type="button">ออกจากระบบ</button>
 </div></header>
 
@@ -909,7 +925,7 @@ try{S.menuLay=localStorage.getItem('nl_menulay')==='grid'?'grid':'list'}catch(e)
 const curCats=()=>S.shop==='po'?((S.po&&S.po.cats)||[]):(S.settings.cats||[]);
 /* ---------- db writes: one at a time per document ---------- */
 const queues={};
-function errMsg(e){const c=e&&e.code;
+function errMsg(e){const c=e&&e.code;if(/shop_closed/.test(String((e&&e.message)||'')))return '🔒 ร้านปิดอยู่ · เปิดบิลใหม่ / เพิ่มรายการไม่ได้ (แอดมินกด "เปิดร้าน" ก่อน)';
   if(c==='not_found')return 'ไม่พบรายการนี้แล้ว อาจถูกลบหรือปิดจากอีกเครื่อง';
   if(c==='quota_exceeded')return 'พื้นที่ฐานข้อมูลเต็ม ลบบิลหรือรายการเก่าบางส่วนก่อน';
   if(c==='invalid_argument')return 'บันทึกไม่สำเร็จ บัญชีนี้ไม่มีสิทธิ์แก้ไข หรือข้อมูลไม่ถูกต้อง';
@@ -941,6 +957,7 @@ const ppValid=id=>{const d=String(id||'').replace(/\D/g,'');return d.length===10
 const onErr=e=>{toast(errMsg(e),'bad');render()};
 let SB=null;
 async function init(){
+  {let m='';try{m=sessionStorage.getItem('nl_out_msg')||'';sessionStorage.removeItem('nl_out_msg')}catch(e){}if(m)S.outMsg=m}
   render();
   const cfg=window.APP_CONFIG||{};
   if(!window.supabase||!cfg.SUPABASE_URL||/x{6}/.test(cfg.SUPABASE_URL)||!cfg.SUPABASE_KEY||/ใส่/.test(cfg.SUPABASE_KEY)){S.state='noconfig';render();return}
@@ -948,9 +965,6 @@ async function init(){
   try{const lr=await slReturn();if(lr==='login'){startData();return}}catch(e){S.lineMsg='เข้าสู่ระบบด้วย LINE ไม่สำเร็จ'}
   let data={};try{data=(await Promise.race([SB.auth.getSession(),new Promise((_,no)=>setTimeout(()=>no(new Error('t')),15000))])).data||{}}catch(e){if(bumpFail()>=2){clearAuth();S.state='login';render();return}S.state='loading';S.loadErr='เชื่อมต่อระบบเข้าสู่ระบบไม่ได้';render();setTimeout(()=>location.reload(),5000);return}
   if(!data.session){S.state='login';render();return}
-  // ออกจากระบบอัตโนมัติเมื่อข้ามวัน (เวลาไทย)
-  {let d='';try{d=localStorage.getItem('nl_login_day')||''}catch(e){}if(!d){try{localStorage.setItem('nl_login_day',bkDay())}catch(e){}}
-   else if(d!==bkDay()){try{await Promise.race([SB.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,3000))])}catch(e){}clearAuth();try{localStorage.removeItem('nl_login_day')}catch(e){}S.state='login';render();setTimeout(()=>toast('ข้ามวันแล้ว กรุณาเข้าสู่ระบบใหม่'),300);return}}
   startData();
 }
 const LOGIN_DOMAIN=()=>String((window.APP_CONFIG||{}).LOGIN_DOMAIN||'nuealwoan.com').replace(/^@/,'');
@@ -971,6 +985,21 @@ async function login(){
 function clearAuth(){try{Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}try{sessionStorage.removeItem('nl_fail')}catch(e){}}
 function bumpFail(){let n=0;try{n=(+sessionStorage.getItem('nl_fail')||0)+1;sessionStorage.setItem('nl_fail',n)}catch(e){}return n}
 async function logout(){try{await Promise.race([SB.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,3000))])}catch(e){}clearAuth();location.reload()}
+/* ---------- ออกจากระบบอัตโนมัติ (ยกเว้นแอดมิน): ข้ามเที่ยงคืน / แอดมินปิดร้าน ---------- */
+function closedCard(){if(!shopClosed())return '';const ss=S.lists.shopSession||{},lg=S.shop==='po'?'images/logo-po.png':'images/stamp-logo.png';
+  return `<div class="closedwrap"><div class="cstamp"><img src="${lg}" alt=""><b>ปิดให้บริการ</b><i>Closed</i></div>
+   <div class="closedtx"><b>🔒 ร้านปิดแล้ว</b><span>เปิดบิลใหม่ / เพิ่มรายการ / ลูกค้าสั่งเองไม่ได้ · บิลที่ค้างอยู่ยังเก็บเงินได้</span>${ss.closedAt?`<small>ปิดเมื่อ ${dshort(ss.closedAt)} ${hm(ss.closedAt)} น.${ss.closedBy?' · '+esc(emailToUser(ss.closedBy)):''}</small>`:''}
+   ${S.role==='owner'?'<button class="btn pri" data-act="shopSession" type="button">🔓 เปิดร้าน</button>':'<small>แอดมินจะเป็นคนเปิดร้าน</small>'}</div></div>`}
+const shopClosed=()=>!!(S.lists&&S.lists.shopSession&&S.lists.shopSession.closed);
+const GATE_MSG={closed:'🔒 ร้านปิดแล้ว · แอดมินปิดร้าน ระบบจึงออกจากระบบให้อัตโนมัติ · เข้าได้อีกครั้งเมื่อแอดมินเปิดร้าน',expired:'🌙 ขึ้นวันใหม่แล้ว ระบบออกจากระบบให้อัตโนมัติ (หลัง 23:59 น. เมื่อไม่มีออร์เดอร์ค้าง) · กรุณาเข้าสู่ระบบใหม่'};
+async function forceOut(why){try{sessionStorage.setItem('nl_out_msg',GATE_MSG[why]||'กรุณาเข้าสู่ระบบใหม่')}catch(e){}try{localStorage.removeItem('nl_login_day')}catch(e){}logout()}
+let GATE_BUSY=false;
+async function gateCheck(){if(!SB||S.role==='owner'||GATE_BUSY)return;GATE_BUSY=true;
+  try{const {data,error}=await SB.rpc('staff_gate');
+    if(error){// ยังไม่ได้รัน SQL ใหม่ → ใช้วิธีเดิม: ข้ามวันแล้วออก
+      let d='';try{d=localStorage.getItem('nl_login_day')||''}catch(e){}if(d&&d!==bkDay())return forceOut('expired');return}
+    if(data&&data.gate==='expired')return forceOut('expired')}
+  catch(e){}finally{GATE_BUSY=false}}
 async function startData(){
   S.state='loading';S.loadStep='ตรวจสิทธิ์ผู้ใช้';S.loadErr='';render();
   const tmo=(p,ms)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),ms))]);
@@ -981,6 +1010,7 @@ async function startData(){
   S.loadStep='โหลดบัญชี';try{sessionStorage.removeItem('nl_fail')}catch(e){}
   if(!['owner','staff','waiter','chef','partner'].includes(st.data)){S.state='nostaff';render();return}
   S.role=st.data;
+  if(S.role!=='owner'){try{const g=await tmo(SB.rpc('staff_gate'),8000);if(!g.error&&g.data&&g.data.gate==='expired'){forceOut('expired');return}}catch(e){}}
   if(S.role==='owner'){try{const m=localStorage.getItem('nl_mode');if(m&&ROLES[m]&&m!=='owner')S.viewAs=m}catch(e){}}
   S.tab=homeTab(effRole());
   let u;try{u=await tmo(SB.auth.getUser(),15000)}catch(e){u={data:{user:null}}}S.me=emailToUser(u.data.user?.email||'');S.email=String(u.data.user?.email||'').toLowerCase();
@@ -988,7 +1018,7 @@ async function startData(){
   const db=makeDb(SB);
   S.db=db;S.state='ready';render();
   pushBoot();loadQrDay();setInterval(()=>{const d=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);if(!S.qrDay||S.qrDay.day!==d)loadQrDay()},10*60000);
-  const day0=bkDay();setInterval(()=>{if(bkDay()!==day0){try{localStorage.removeItem('nl_login_day')}catch(e){}logout()}},60000);
+  if(S.role!=='owner'){gateCheck();setInterval(gateCheck,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)gateCheck()})}
   db.doc('config/permissions').onSnapshot(s=>{S.perms=s.exists?(s.data().roles||null):null;render();refreshSheet()},onErr);
   db.doc('config/settings').onSnapshot(s=>{S.settings={...DEFAULTS,...(s.exists?s.data():{})};render();refreshSheet()},onErr);
   db.collection('menu').onSnapshot(s=>{const all=s.docs.map(d=>({id:d.id,...d.data()}));S.nMenu=all.filter(m=>m.shop!=='po');S.poMenu=all.filter(m=>m.shop==='po');sortMenu(true);render();refreshSheet('menu')},onErr);
@@ -1017,7 +1047,7 @@ async function startData(){
     renderCalls();if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet)render();if(S.sheet&&S.sheet.type==='dlReq')sheetDlReq()},onErr);
   db.collection('consign_log').where('at','>=',sod()-90*DAY).onSnapshot(s=>{S.consignLog=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back')render()},onErr);
   db.collection('purchases').where('at','>=',since).onSnapshot(s=>{S.purch=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
-  db.collection('lists').onSnapshot(s=>{const L={};s.docs.forEach(d=>L[d.id]=d.data());S.lists=L;refreshSheet();if(S.tab==='back')render()},onErr);
+  db.collection('lists').onSnapshot(s=>{const L={};s.docs.forEach(d=>L[d.id]=d.data());S.lists=L;refreshSheet();render()},onErr);
   db.collection('incomes').where('at','>=',since).onSnapshot(s=>{S.inc=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back'||S.tab==='report')render()},onErr);
   db.collection('expenses').where('at','>=',since).onSnapshot(s=>{S.exp=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
 }
@@ -1127,7 +1157,8 @@ function render(){
   const c=$('#conn');
   c.innerHTML=S.state==='ready'?'<span class="dot on"></span>ออนไลน์ · '+esc(dlong(Date.now())):['noconfig','offline','nostaff'].includes(S.state)?'<span class="dot off"></span>ไม่ได้เชื่อมฐานข้อมูล':S.state==='login'?'<span class="dot"></span>ยังไม่ได้เข้าสู่ระบบ':'<span class="dot"></span>กำลังเชื่อมต่อ…';
   document.querySelector('[data-act="settings"]').hidden=S.state!=='ready';
-  $('#hdrLogout').hidden=S.state!=='ready';$('#hdrMe').hidden=S.state!=='ready';if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!((S.calls.length&&canCall())||dlWaiting().length);
+  $('#hdrLogout').hidden=S.state!=='ready';$('#hdrMe').hidden=S.state!=='ready';
+  {const hb=$('#hdrShop');if(hb){const own=S.state==='ready'&&S.role==='owner',cl=shopClosed();hb.hidden=!own;hb.innerHTML=cl?'<span class="dot"></span>ร้านปิดอยู่ · <b>เปิดร้าน</b>':'<span class="dot"></span>เปิดอยู่ · <b>ปิดร้าน</b>';hb.classList.toggle('closed',cl);hb.title=cl?'ร้านปิดอยู่ · กดเพื่อเปิดร้าน':'ปิดร้าน: หยุดขายทุกช่องทาง'}}if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!((S.calls.length&&canCall())||dlWaiting().length);
   const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){{const sel=$('#hdrMode'),want=isPo()?'po':'all';if(sel.dataset.set!==want){sel.dataset.set=want;sel.innerHTML=(isPo()?[['','Admin'],['chef','แม่ครัว']]:[['','Admin'],['waiter','พนักงานเสิร์ฟ'],['chef','แม่ครัว'],['partner','หุ้นส่วน']]).map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}}$('#hdrMode').value=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs);mw.dataset.r=S.viewAs||'owner'}
   const va=$('#viewAs');va.hidden=!(S.state==='ready'&&S.viewAs);if(!va.hidden)va.innerHTML=`<span>โหมด <b>${roleName(S.viewAs)}</b> · ใช้งานจริงตามสิทธิ์ของตำแหน่งนี้</span><button class="btn sm" data-act="viewAsOff" type="button">กลับโหมดแอดมิน</button>`;
   $('#tabs').parentElement.hidden=S.state!=='ready';
@@ -1150,6 +1181,7 @@ function render(){
   if(S.state==='login'){let last='';try{last=localStorage.getItem('nl_user')||''}catch(e){}
     v.innerHTML=`<form class="login" id="lgForm" novalidate>
     <div class="lg-brand"><div class="lg-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M9 3c-1 2 1 3 0 5M14 3c-1 2 1 3 0 5"/></svg></div><div><h2>${esc(S.settings.shopName||'NueaLwoan')}</h2><p class="help" style="margin:0">ระบบจัดการร้าน</p></div></div>
+    ${S.outMsg?`<div class="outmsg" role="alert">${esc(S.outMsg)}</div>`:''}
     <div class="field"><label for="lgUser">ชื่อผู้ใช้</label><input id="lgUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" value="${esc(last)}" placeholder="เช่น admin"></div>
     <div class="field"><label for="lgPw">รหัสผ่าน</label><div class="pw"><input id="lgPw" type="password" autocomplete="current-password"><button type="button" class="pw-eye" data-act="pwToggle" data-for="lgPw" aria-label="แสดงรหัสผ่าน">แสดง</button></div></div>
     <p class="err" id="lgErr" role="alert"></p>
@@ -1173,7 +1205,7 @@ function viewTables(){
   const sales=S.today.reduce((s,o)=>s+(+o.total||0),0);
   const pend=Object.values(S.open).reduce((s,o)=>s+linesTotal(o.items),0);
   const busy=Object.keys(byTable).length;
-  let h=noticeBar()+`<div class="strip">
+  let h=noticeBar()+closedCard()+`<div class="strip">
     <div class="stat"><b class="money">${baht(sales)}</b><span>ยอดขายวันนี้</span></div>
     <div class="stat"><b class="num">${S.today.length}</b><span>บิลที่ชำระแล้ว</span></div>
     <div class="stat"><b class="num">${busy}/${n}</b><span>โต๊ะที่มีลูกค้า</span></div>
@@ -1398,13 +1430,15 @@ const roundDown=o=>{const fl=Math.floor(o.total+1e-6);o.round=r2(o.total-fl);o.t
 function vatCalc(base){const v=vatCfg();if(!v.on||!(+v.rate>0))return roundDown({vat:0,total:r2(base),beforeVat:r2(base),rate:0,mode:''});
   const rt=+v.rate;if(v.mode==='excl'){const vat=r2(base*rt/100);return roundDown({vat,total:r2(base+vat),beforeVat:r2(base),rate:rt,mode:'excl'})}
   const vat=r2(base*rt/(100+rt));return roundDown({vat,total:r2(base),beforeVat:r2(base-vat),rate:rt,mode:'incl'})}
-const ordPrefix=t=>t==='TA'?'TX':'T'+t;
+// เลขออร์เดอร์: โต๊ะ = T<เลขโต๊ะ> · เดลิเวอรี่ (ไรเดอร์ร้าน/แอปเดลิเวอรี่) = DL · กลับบ้าน/ไม่ระบุโต๊ะ = TX
+const ordPrefix=(t,ch)=>t!=='TA'?'T'+t:(ch&&!['takeaway','walkin'].includes(ch)?'DL':'TX');
 function localOrderNo(prefix){const d=new Date(),p2=n=>String(n).padStart(2,'0');return prefix+'-'+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'-'+p2(d.getHours())+p2(d.getMinutes())+'-L'+String(Date.now()).slice(-3)}
 async function nextOrderNo(prefix){try{const {data,error}=await SB.rpc('next_order_no',{p_prefix:prefix});if(!error&&data)return data}catch(e){}return localOrderNo(prefix)}
 async function createOrder(extra){
   if(!S.db)return toast('ยังไม่ได้เชื่อมฐานข้อมูล','bad');
+  if(shopClosed())return toast('🔒 ร้านปิดอยู่ · เปิดบิลใหม่ไม่ได้'+(S.role==='owner'?' (กด "เปิดร้าน" ก่อน)':''),'bad');
   if(S.creating)return;S.creating=true;
-  try{const orderNo=await nextOrderNo(ordPrefix(extra.table));
+  try{const orderNo=await nextOrderNo(ordPrefix(extra.table,extra.channel));
     const ref=S.db.collection('orders').doc();const o={status:'open',openedAt:Date.now(),items:[],orderNo,...extra};if(o.table!=='TA')o.qrToken=newTok();
     S.open[ref.id]={id:ref.id,...o};write('orders/'+ref.id,r=>r.set(o));
     render();openSheet({type:'order',id:ref.id,cat:'all',q:'',edit:null});}
@@ -1456,7 +1490,7 @@ const chMul=ch=>{const mk=ch&&DELIV.includes(ch)?(+chCfg(ch).markup||0):0;return
 function newLine(m,by,ch,sel){const opts=(sel&&sel.opts)||[];const raw=(+m.price||0)+opts.reduce((a,o)=>a+(+o.p||0),0);
   const l={id:uid(),menuId:m.id,name:m.name,price:chMul(ch)(raw),cost:+m.cost||0,qty:(sel&&sel.qty)||1,note:(sel&&sel.note)||'',extra:0,served:false,by,at:Date.now()};
   if(opts.length)l.opts=opts.map(o=>({g:o.g,n:o.n,p:+o.p||0,cid:o.cid}));return l}
-function addItem(oid,mid,sel){const m=S.menu.find(x=>x.id===mid);if(!m||!S.open[oid])return;
+function addItem(oid,mid,sel){if(shopClosed()){toast('🔒 ร้านปิดอยู่ · เพิ่มรายการไม่ได้','bad');return}const m=S.menu.find(x=>x.id===mid);if(!m||!S.open[oid])return;
   if(!sel){const l=menuLeft(m);if(isSoldOut(m)&&!confirm('"'+m.name+'" '+(m.active===false?'ปิดขายอยู่':'ขายครบจำนวนของวันนี้แล้ว')+'\nยังต้องการเพิ่มลงบิลไหม?'))return 'pick'}
   if(!sel&&hasOpts(m)){optPick(m,{mul:chMul(chOf(S.open[oid])),notes:QUICK_NOTES,addLabel:'เพิ่มในบิล',onAdd:s=>{addItem(oid,mid,s);toast('เพิ่ม '+m.name+(s.opts.length?' ('+optNames(s.opts)+')':'')+' แล้ว')}});return 'pick'}
   const nl=newLine(m,'staff',chOf(S.open[oid]),sel);
@@ -3159,6 +3193,11 @@ Object.assign(ACT,{
       if(ok&&done){toast('แจ้งลูกค้าให้แนบสลิปใหม่แล้ว');s.rej=null;sheetDlReq()}else if(ok)toast('สถานะเปลี่ยนไปแล้ว','bad');return}
     let done=false;const ok=await write('dl_req/'+id,r=>r.transform(q=>['new','accepted','slip'].includes(q.status)?(done=true,{status:'rejected',reason:why,rejectAt:Date.now(),rejectBy:S.me||''}):null));
     if(ok&&done){toast('ยกเลิกออร์เดอร์แล้ว ระบบแจ้งลูกค้าให้');closeSheet()}else if(ok)toast('สถานะเปลี่ยนไปแล้ว','bad')},
+  shopSession:async()=>{if(S.role!=='owner')return deny();const cl=shopClosed();
+    if(!cl){const n=Object.keys(S.open||{}).length;if(!confirm('ปิดร้าน?\n\n• ทุกคนยังเข้าระบบได้ แต่เปิดบิลใหม่ / เพิ่มรายการไม่ได้\n• ลูกค้าสแกน QR สั่งเองไม่ได้ · ปิดรับออร์เดอร์ออนไลน์ด้วย\n• บิลที่ค้างอยู่ยังเก็บเงินได้'+(n?'\n\n⚠️ ยังมีบิลเปิดอยู่ '+n+' บิล':'')))return}
+    const {error}=await SB.rpc('shop_session',{p_closed:!cl});if(error)return toast(/function|PGRST20/i.test(error.message)?'ยังไม่ได้รัน SQL ล่าสุด (nuealwoan-update.sql)':'ทำไม่สำเร็จ: '+error.message,'bad');
+    S.lists=S.lists||{};S.lists.shopSession={...(S.lists.shopSession||{}),closed:!cl,[cl?'openedAt':'closedAt']:Date.now()};if(!cl)S.lists.shopState={...(S.lists.shopState||{}),open:false};render();
+    toast(cl?'🔓 เปิดร้านแล้ว · ขายได้ตามปกติ':'🔒 ปิดร้านแล้ว · ขายไม่ได้จนกว่าจะเปิดร้าน')},
   dlVia:d=>{S.sheet.via=d.v;sheetDlReq()},
   lmCopyJob:d=>{const j=(S.dlv||[]).find(x=>x.id===d.id);if(j)lmCopy(j.cust||{},dlNo({orderNo:j.orderNo||j.billNo}))},
   lmBook:d=>openSheet({type:'lmBook',id:d.id}),

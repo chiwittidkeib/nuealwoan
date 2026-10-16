@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1850">
+<meta name="app-version" content="2026.10.16-2010">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -249,6 +249,11 @@ label.btn{display:flex;align-items:center;justify-content:center;text-align:cent
 .mcard.mc-po .mc-logos img{border-color:#d9a441}
 .mcard.mc-po>.mc-shine{background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%)}
 .mini img.noimg{object-fit:cover;background:#15120f}
+.closedv{padding-top:36px;gap:16px}
+.cstamp{width:190px;height:190px;border-radius:50%;border:4px solid #e5383b;background:rgba(25,6,6,.92);box-shadow:inset 0 0 0 5px rgba(229,56,59,.35),0 0 0 3px rgba(229,56,59,.25),0 12px 34px rgba(0,0,0,.35);transform:rotate(-12deg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;margin-bottom:8px}
+.cstamp img{width:118px;height:83px;object-fit:contain;margin-top:-6px}
+.cstamp b{color:#5ec59c;font-size:24px;font-weight:800;line-height:1.15;padding-bottom:4px;border-bottom:2px solid #5ec59c;font-family:var(--f-body)}
+.cstamp i{color:#5ec59c;font-style:normal;font-weight:800;font-size:16px;letter-spacing:3px;text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -401,6 +406,8 @@ const saveName=n=>{try{localStorage.setItem(NAME_KEY,n)}catch(e){}};
 function setSub(){const mb=(typeof memGet==='function'&&S.status&&(memGet()||{}).found)?' · ⭐ สมาชิก':'';$('#sub').innerHTML=S.name?`สวัสดี คุณ${esc(S.name)}${mb} · <button class="lnk-w" data-a="editName" type="button">แก้ชื่อ</button>`:'สั่งอาหารได้จากมือถือ'}
 let sb=null;
 
+function shopClosedView(d){document.title=(d.shopName||'NueaLwoan')+' · ปิดให้บริการ';$('#shop').textContent=d.shopName||'NueaLwoan';$('#sub').textContent='ปิดให้บริการ';
+  $('#view').innerHTML=`<div class="msg closedv"><div class="cstamp"><img src="images/stamp-logo.png" alt=""><b>ปิดให้บริการ</b><i>Closed</i></div><h2>ร้านปิดให้บริการแล้ว</h2><p class="muted">ขอบคุณที่แวะมาค่ะ · พบกันใหม่รอบหน้า</p></div>`;$('#foot').hidden=true}
 function fail(title,text){$('#view').innerHTML=`<div class="msg"><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p></div>`;$('#foot').hidden=true}
 function rpcErr(e){const m=String(e&&e.message||'');
   if(/bad_key/.test(m))return ['QR นี้หมดอายุแล้ว','QR ของร้านเปลี่ยนใหม่ทุกวัน และ QR โต๊ะใช้ได้เฉพาะบิลที่ยังเปิดอยู่ รบกวนขอ QR ใหม่จากพนักงาน'];
@@ -410,6 +417,7 @@ function rpcErr(e){const m=String(e&&e.message||'');
   {const so=m.match(/sold_out:([^:]+)(?::(\d+))?/);if(so)return [so[1]+' หมดแล้ว',so[2]&&+so[2]>0?'เหลือแค่ '+so[2]+' ที่ ลดจำนวนในตะกร้าแล้วส่งใหม่':'ลบเมนูนี้ออกจากตะกร้า แล้วเลือกเมนูอื่นแทน']}
   if(/need_option/.test(m))return ['ยังเลือกตัวเลือกไม่ครบ','ร้านเพิ่งปรับตัวเลือกเมนู ลบรายการในตะกร้าแล้วเลือกใหม่อีกครั้ง'];
   if(/walkin_off/.test(m))return ['ร้านปิดรับออร์เดอร์แบบสั่งเอง','สั่งกับพนักงานที่เคาน์เตอร์ได้เลย'];
+  if(/shop_closed/.test(m))return ['ร้านปิดให้บริการแล้ว','ขอบคุณที่แวะมาค่ะ · พบกันใหม่รอบหน้า'];
   if(/table_closed/.test(m))return ['โต๊ะนี้ยังไม่เปิด','แจ้งพนักงานให้เปิดโต๊ะก่อน แล้วสั่งได้เลย'];
   return ['เชื่อมต่อไม่ได้','ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง'];}
 
@@ -421,6 +429,7 @@ async function start(){
   const {data,error}=await sb.rpc('public_menu',{p_key:K});
   if(error){if(lastOid()&&await tryReceipt())return;const [a,b]=rpcErr(error);return fail(a,b)}
   if(!WALK&&(+T<1||+T>data.tables))return fail('ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน');
+  if(data.shopClosed){if(data.logo){$('#logo').src=data.logo;$('#logo').hidden=false}return shopClosedView(data)}
   S.menu=data.menu||[];S.callOpts=data.callOptions||null;S.cats=(data.cats||[]).filter(c=>S.menu.some(m=>m.cat===c));
   document.title=(data.shopName||'NueaLwoan')+(WALK?' · สั่งอาหาร':' · โต๊ะ '+T);
   if(data.logo){$('#logo').src=data.logo;$('#logo').hidden=false}
