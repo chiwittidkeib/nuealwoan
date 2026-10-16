@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-2010">
+<meta name="app-version" content="2026.10.16-2030">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -96,8 +96,8 @@ footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:cente
 
 /* ---- พื้นหลังรูปหน้าร้าน (หน้าต้อนรับลูกค้า) ---- */
 body.welcome::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.1) 35vw,#0b0a09 100vw),url(images/bg-m.jpg) 50% 0/100% auto no-repeat,url(bg-m.jpg) 50% 0/100% auto no-repeat,#0b0a09}
-@media (min-width:701px){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.3),rgba(8,6,5,.85)),url(images/bg.jpg) center 40%/cover no-repeat,url(bg.jpg) center 40%/cover no-repeat}}
+  background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.1) 35vw,#0b0a09 100vw),url(images/bg-m.jpg?v=20261016b) 50% 0/100% auto no-repeat,url(bg-m.jpg?v=20261016b) 50% 0/100% auto no-repeat,#0b0a09}
+@media (min-width:701px){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.3),rgba(8,6,5,.85)),url(images/bg.jpg?v=20261016b) center 40%/cover no-repeat,url(bg.jpg?v=20261016b) center 40%/cover no-repeat}}
 body.welcome header,body.welcome main{position:relative;z-index:1}
 body.welcome header{background:transparent}
 body.welcome main{display:flex;align-items:flex-end}
@@ -106,7 +106,7 @@ body.welcome .namebox{--surface:rgba(18,15,12,.62);--fg:#f6efe4;--muted:#cdbfae;
   color:var(--fg);background:var(--surface);border-color:var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);margin-bottom:max(24px,env(safe-area-inset-bottom));box-shadow:0 20px 50px rgba(0,0,0,.5)}
 body.welcome .namebox input{background:rgba(0,0,0,.35);color:var(--fg)}
 body.welcome .namebox .btn.pri{background:linear-gradient(180deg,#e2b265,#c48d3d);border-color:#c48d3d;color:#1d1307}
-@media (min-width:701px) and (orientation:portrait){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/bg-m.jpg) center 30%/cover no-repeat,url(bg-m.jpg) center 30%/cover no-repeat,#0b0a09}}
+@media (min-width:701px) and (orientation:portrait){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/bg-m.jpg?v=20261016b) center 30%/cover no-repeat,url(bg-m.jpg?v=20261016b) center 30%/cover no-repeat,#0b0a09}}
 
 /* มือถือ: ช่องกรอกตัวอักษร 16px ขึ้นไป กัน iPhone ซูมเข้าเองตอนแตะช่องกรอก และกันหน้าเลื่อนออกด้านข้าง */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -274,7 +274,7 @@ function showMemberCard(m){const o=document.getElementById('mCardOv');if(o)o.rem
   const pts=(+m.points||0).toLocaleString('th-TH');
   const el=document.createElement('div');el.id='mCardOv';el.className='mcard-ov';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','บัตรสมาชิก');
   const bg=[...String(m.phone||m.name||'')].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7)%2?'po':'nl';
-  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
+  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png?v=20261016b" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
     <div class="mc-mid"><b>${m.name?'คุณ'+e(m.name):'สมาชิก'}</b><span>${e(m.phone||'')}</span></div>
     <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${pts}</strong></div><em>ใช้ได้ทั้ง 2 ร้าน<br>เนื้อล้วนๆ · ข้าวมันไก่</em></div><i class="mc-shine"></i></div>
     ${m.note?`<p class="mc-note">${e(m.note)}</p>`:''}
@@ -407,7 +407,7 @@ function setSub(){const mb=(typeof memGet==='function'&&S.status&&(memGet()||{})
 let sb=null;
 
 function shopClosedView(d){document.title=(d.shopName||'NueaLwoan')+' · ปิดให้บริการ';$('#shop').textContent=d.shopName||'NueaLwoan';$('#sub').textContent='ปิดให้บริการ';
-  $('#view').innerHTML=`<div class="msg closedv"><div class="cstamp"><img src="images/stamp-logo.png" alt=""><b>ปิดให้บริการ</b><i>Closed</i></div><h2>ร้านปิดให้บริการแล้ว</h2><p class="muted">ขอบคุณที่แวะมาค่ะ · พบกันใหม่รอบหน้า</p></div>`;$('#foot').hidden=true}
+  $('#view').innerHTML=`<div class="msg closedv"><div class="cstamp"><img src="images/stamp-logo.png?v=20261016b" alt=""><b>ปิดให้บริการ</b><i>Closed</i></div><h2>ร้านปิดให้บริการแล้ว</h2><p class="muted">ขอบคุณที่แวะมาค่ะ · พบกันใหม่รอบหน้า</p></div>`;$('#foot').hidden=true}
 function fail(title,text){$('#view').innerHTML=`<div class="msg"><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p></div>`;$('#foot').hidden=true}
 function rpcErr(e){const m=String(e&&e.message||'');
   if(/bad_key/.test(m))return ['QR นี้หมดอายุแล้ว','QR ของร้านเปลี่ยนใหม่ทุกวัน และ QR โต๊ะใช้ได้เฉพาะบิลที่ยังเปิดอยู่ รบกวนขอ QR ใหม่จากพนักงาน'];
@@ -509,7 +509,7 @@ const cartT=()=>Object.values(S.cart).reduce((s,e)=>s+eUnit(e)*e.qty,0);
 const inCart=id=>Object.values(S.cart).reduce((a,e)=>a+(e.menuId===id?e.qty:0),0);
 function putCart(m,sel){const k=m.id+'|'+optKey(sel.opts)+'|'+sel.note;if(S.cart[k])S.cart[k].qty+=sel.qty;else S.cart[k]={menuId:m.id,opts:sel.opts,note:sel.note,qty:sel.qty};render()}
 
-const MENU_PH='images/menu-ph.jpg';
+const MENU_PH='images/menu-ph.jpg?v=20261016b';
 function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph"><img src="${esc(m.img||MENU_PH)}" alt="${esc(m.name)}" loading="lazy"${m.img?'':' class="noimg"'}></div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
 function menuGrid(empty){const list=S.menu.filter(m=>S.cat==='all'||m.cat===S.cat);if(!list.length)return empty;
   if(S.cat!=='all')return `<div class="grid">${list.map(menuCard).join('')}</div>`;

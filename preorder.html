@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1830">
+<meta name="app-version" content="2026.10.16-2030">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -93,8 +93,8 @@ footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:cente
 
 /* ---- พื้นหลังรูปหน้าร้าน (หน้าต้อนรับลูกค้า) ---- */
 body.welcome::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.1) 35vw,#0b0a09 100vw),url(images/bg-m.jpg) 50% 0/100% auto no-repeat,url(bg-m.jpg) 50% 0/100% auto no-repeat,#0b0a09}
-@media (min-width:701px){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.3),rgba(8,6,5,.85)),url(images/bg.jpg) center 40%/cover no-repeat,url(bg.jpg) center 40%/cover no-repeat}}
+  background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.1) 35vw,#0b0a09 100vw),url(images/bg-m.jpg?v=20261016b) 50% 0/100% auto no-repeat,url(bg-m.jpg?v=20261016b) 50% 0/100% auto no-repeat,#0b0a09}
+@media (min-width:701px){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.3),rgba(8,6,5,.85)),url(images/bg.jpg?v=20261016b) center 40%/cover no-repeat,url(bg.jpg?v=20261016b) center 40%/cover no-repeat}}
 body.welcome header,body.welcome main{position:relative;z-index:1}
 body.welcome header{background:transparent}
 body.welcome main{display:flex;align-items:flex-end}
@@ -103,7 +103,7 @@ body.welcome .namebox{--surface:rgba(18,15,12,.62);--fg:#f6efe4;--muted:#cdbfae;
   color:var(--fg);background:var(--surface);border-color:var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);margin-bottom:max(24px,env(safe-area-inset-bottom));box-shadow:0 20px 50px rgba(0,0,0,.5)}
 body.welcome .namebox input{background:rgba(0,0,0,.35);color:var(--fg)}
 body.welcome .namebox .btn.pri{background:linear-gradient(180deg,#e2b265,#c48d3d);border-color:#c48d3d;color:#1d1307}
-@media (min-width:701px) and (orientation:portrait){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/bg-m.jpg) center 30%/cover no-repeat,url(bg-m.jpg) center 30%/cover no-repeat,#0b0a09}}
+@media (min-width:701px) and (orientation:portrait){body.welcome::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/bg-m.jpg?v=20261016b) center 30%/cover no-repeat,url(bg-m.jpg?v=20261016b) center 30%/cover no-repeat,#0b0a09}}
 
 /* มือถือ: ช่องกรอกตัวอักษร 16px ขึ้นไป กัน iPhone ซูมเข้าเองตอนแตะช่องกรอก และกันหน้าเลื่อนออกด้านข้าง */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -276,7 +276,7 @@ function showMemberCard(m){const o=document.getElementById('mCardOv');if(o)o.rem
   const pts=(+m.points||0).toLocaleString('th-TH');
   const el=document.createElement('div');el.id='mCardOv';el.className='mcard-ov';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','บัตรสมาชิก');
   const bg=[...String(m.phone||m.name||'')].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7)%2?'po':'nl';
-  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
+  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png?v=20261016b" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
     <div class="mc-mid"><b>${m.name?'คุณ'+e(m.name):'สมาชิก'}</b><span>${e(m.phone||'')}</span></div>
     <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${pts}</strong></div><em>ใช้ได้ทั้ง 2 ร้าน<br>เนื้อล้วนๆ · ข้าวมันไก่</em></div><i class="mc-shine"></i></div>
     ${m.note?`<p class="mc-note">${e(m.note)}</p>`:''}

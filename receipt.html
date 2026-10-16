@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.09-1830">
+<meta name="app-version" content="2026.10.16-2030">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#5a2e14">
 <meta name="robots" content="noindex">
@@ -148,7 +148,7 @@ function showMemberCard(m){const o=document.getElementById('mCardOv');if(o)o.rem
   const pts=(+m.points||0).toLocaleString('th-TH');
   const el=document.createElement('div');el.id='mCardOv';el.className='mcard-ov';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','บัตรสมาชิก');
   const bg=[...String(m.phone||m.name||'')].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7)%2?'po':'nl';
-  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
+  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png?v=20261016b" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
     <div class="mc-mid"><b>${m.name?'คุณ'+e(m.name):'สมาชิก'}</b><span>${e(m.phone||'')}</span></div>
     <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${pts}</strong></div><em>ใช้ได้ทั้ง 2 ร้าน<br>เนื้อล้วนๆ · ข้าวมันไก่</em></div><i class="mc-shine"></i></div>
     ${m.note?`<p class="mc-note">${e(m.note)}</p>`:''}
@@ -184,7 +184,7 @@ function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bi
   const telHtml=s.phone?`<a href="tel:${esc(String(s.phone).replace(/[^\d+]/g,''))}">${IC.tel}${esc(s.phone)}</a>`:'';
   const mapHtml=s.mapText||safeUrl(s.mapUrl)?(safeUrl(s.mapUrl)?`<a class="map" href="${esc(safeUrl(s.mapUrl))}" target="_blank" rel="noopener">${IC.pin}${esc(s.mapText||'ดูแผนที่ร้าน')}</a>`:`<span class="map">${IC.pin}${esc(s.mapText)}</span>`):'';
   $('#view').innerHTML=`<div class="rc" id="rc">
-   <img class="logo${po?' po':''}" src="${esc(safeUrl(s.logo)||(po?'images/logo-po-t.png':'images/logo-nl-t.png'))}" alt="" crossorigin="anonymous">
+   <img class="logo${po?' po':''}" src="${esc(safeUrl(s.logo)||(po?'images/logo-po-t.png':'images/logo-nl-t.png?v=20261016b'))}" alt="" crossorigin="anonymous">
    <h2 class="nm">${esc(s.name)}</h2>${s.nameEn?`<div class="en">${esc(s.nameEn)}</div>`:''}${s.tagline&&!(s.theme!=='po'&&s.tagline==='BEEF NOODLES • BRAISED BEEF • KHAO SOI')?`<div class="tag">${esc(s.tagline)}</div>`:''}
    ${fbHtml||telHtml||mapHtml?`<div class="contact">${fbHtml}${telHtml}${mapHtml}</div>`:''}
    <hr class="br">

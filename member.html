@@ -12,8 +12,8 @@
 :root{--brown:#5a2e14;--gold:#c98a3c;--red:#c8102e;--ink:#2b1a10;--muted:#8a6f5a;--line:#e3d4c3;--paper:#fffdf9}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;min-height:100vh;background:#0b0a09 url(images/bg-m.jpg) center top/cover no-repeat;color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px;display:flex;align-items:flex-end;justify-content:center;padding:16px 12px calc(20px + env(safe-area-inset-bottom,0px))}
-@media (min-width:700px){body{align-items:center;background-image:url(images/bg.jpg)}}
+body{margin:0;min-height:100vh;background:#0b0a09 url(images/bg-m.jpg?v=20261016b) center top/cover no-repeat;color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px;display:flex;align-items:flex-end;justify-content:center;padding:16px 12px calc(20px + env(safe-area-inset-bottom,0px))}
+@media (min-width:700px){body{align-items:center;background-image:url(images/bg.jpg?v=20261016b)}}
 .card{width:100%;max-width:420px;background:var(--paper);border-radius:18px;padding:22px 20px;box-shadow:0 20px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px}
 .logo{width:120px;align-self:center}
 h1{font-family:Kanit,sans-serif;font-weight:800;font-size:28px;color:var(--red);margin:0;text-align:center;line-height:1.15}
@@ -78,7 +78,7 @@ button:disabled{opacity:.5}
 </head>
 <body>
 <form class="card" id="f" novalidate>
-  <img class="logo" src="images/logo-nl-t.png" alt="">
+  <img class="logo" src="images/logo-nl-t.png?v=20261016b" alt="">
   <h1>สมัครสมาชิก<br>สะสมแต้ม</h1>
   <div class="perk" id="perk">สมัครฟรี · ซื้อครบทุก <b id="per">50</b> บาท ได้ 1 แต้ม · ใช้แต้มแทนเงินสดได้<br><small>แต้มเริ่มสะสมในการซื้อครั้งถัดไป (ไม่นับย้อนหลัง)</small></div>
   <div><label for="ph">เบอร์โทรศัพท์</label><input id="ph" type="tel" inputmode="tel" autocomplete="tel" maxlength="12" placeholder="08x-xxx-xxxx" required></div>
@@ -99,7 +99,7 @@ button:disabled{opacity:.5}
 "use strict";
 function cardHtml(m){const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const bg=[...String(m.phone||m.name||'')].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7)%2?'po':'nl';
-  return `<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
+  return `<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png?v=20261016b" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
     <div class="mc-mid"><b>${m.name?'คุณ'+e(m.name):'สมาชิก'}</b><span>${e(m.phone||'')}</span></div>
     <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${m.points==null?'—':(+m.points).toLocaleString('th-TH')}</strong></div><em>ใช้ได้ทั้ง 2 ร้าน<br>เนื้อล้วนๆ · ข้าวมันไก่</em></div><i class="mc-shine"></i></div>`}
 

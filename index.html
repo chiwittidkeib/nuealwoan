@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-2020">
+<meta name="app-version" content="2026.10.16-2030">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -341,8 +341,8 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 /* ---- พื้นหลังรูปหน้าร้าน (หน้าเข้าสู่ระบบ) ---- */
 body.auth{background:#0b0a09}
 body.auth::before{content:"";position:fixed;inset:0;z-index:-1;
-  background:linear-gradient(180deg,rgba(8,6,5,.30) 0%,rgba(8,6,5,.55) 55%,rgba(8,6,5,.88) 100%),url(images/login-bg.jpg) center 40%/cover no-repeat,url(images/login-bg.jpg) center 40%/cover no-repeat}
-@media (max-width:700px){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.1) 35vw,#0b0a09 100vw),url(images/login-bg-m.jpg) 50% 0/100% auto no-repeat,url(images/login-bg-m.jpg) 50% 0/100% auto no-repeat,#0b0a09}}
+  background:linear-gradient(180deg,rgba(8,6,5,.30) 0%,rgba(8,6,5,.55) 55%,rgba(8,6,5,.88) 100%),url(images/login-bg.jpg?v=20261016b) center 40%/cover no-repeat,url(images/login-bg.jpg?v=20261016b) center 40%/cover no-repeat}
+@media (max-width:700px){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.1) 35vw,#0b0a09 100vw),url(images/login-bg-m.jpg?v=20261016b) 50% 0/100% auto no-repeat,url(images/login-bg-m.jpg?v=20261016b) 50% 0/100% auto no-repeat,#0b0a09}}
 body.auth .top{background:transparent;border-color:transparent}
 body.auth .top h1,body.auth .top small{color:#f6efe4;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 body.auth .wrap{min-height:calc(100vh - 70px);padding-block:16px 24px;max-width:none}
@@ -357,13 +357,13 @@ body.auth .lg-mark{background:linear-gradient(140deg,#e9bd6f,#b9802f)}
 body.auth .lg-mark svg{stroke:#1d1307}
 body.auth .btn.pri{background:linear-gradient(180deg,#e2b265,#c48d3d);border-color:#c48d3d;color:#1d1307;font-weight:600}
 @media (max-width:700px){body.auth .login{margin:auto 0 8px;width:100%}}
-@media (min-width:701px) and (orientation:portrait){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/login-bg-m.jpg) center 30%/cover no-repeat,url(images/login-bg-m.jpg) center 30%/cover no-repeat,#0b0a09}}
+@media (min-width:701px) and (orientation:portrait){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/login-bg-m.jpg?v=20261016b) center 30%/cover no-repeat,url(images/login-bg-m.jpg?v=20261016b) center 30%/cover no-repeat,#0b0a09}}
 
 /* ---- พื้นหลังรูปหน้าร้าน (หลังเข้าสู่ระบบ) ---- */
 body.app::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg.jpg) center/cover no-repeat,url(bg.jpg) center/cover no-repeat,var(--bg)}
+  background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg.jpg?v=20261016b) center/cover no-repeat,url(bg.jpg?v=20261016b) center/cover no-repeat,var(--bg)}
 @media (max-width:700px),(orientation:portrait){body.app::before{
-  background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-m.jpg) center 20%/cover no-repeat,url(bg-m.jpg) center 20%/cover no-repeat,var(--bg)}}
+  background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-m.jpg?v=20261016b) center 20%/cover no-repeat,url(bg-m.jpg?v=20261016b) center 20%/cover no-repeat,var(--bg)}}
 body.app.nobg::before{display:none}
 /* ร้านข้าวมันไก่: ฉากหลังของร้านเอง */
 body.app.shop-po::before{background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-po.jpg) center/cover no-repeat,url(bg-po.jpg) center/cover no-repeat,var(--bg)}
@@ -729,8 +729,8 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 <body>
 
 <header class="top"><div class="top-in">
-  <img id="brandLogo" class="brandlogo" src="images/logo-nl.png" alt="" hidden><div class="brand"><h1 id="shopName">เนื้อล้วนๆ</h1><small id="conn"><span class="dot"></span>กำลังเชื่อมต่อ…</small></div>
-  <div class="shopsw" id="shopSw" role="group" aria-label="เลือกร้าน" hidden><button type="button" data-act="shopSw" data-v="noodle"><img class="swlogo" src="images/logo-nl.png" alt="">เนื้อล้วนๆ</button><button type="button" data-act="shopSw" data-v="po"><img class="swlogo" src="images/logo-po.png" alt="">ข้าวมันไก่</button></div>
+  <img id="brandLogo" class="brandlogo" src="images/logo-nl.png?v=20261016b" alt="" hidden><div class="brand"><h1 id="shopName">เนื้อล้วนๆ</h1><small id="conn"><span class="dot"></span>กำลังเชื่อมต่อ…</small></div>
+  <div class="shopsw" id="shopSw" role="group" aria-label="เลือกร้าน" hidden><button type="button" data-act="shopSw" data-v="noodle"><img class="swlogo" src="images/logo-nl.png?v=20261016b" alt="">เนื้อล้วนๆ</button><button type="button" data-act="shopSw" data-v="po"><img class="swlogo" src="images/logo-po.png" alt="">ข้าวมันไก่</button></div>
   <label class="modesel" id="hdrModeWrap" hidden><span>โหมด</span><select id="hdrMode" aria-label="โหมดหน้าจอ"><option value="">Admin</option><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">แม่ครัว</option><option value="partner">หุ้นส่วน</option></select></label>
   <button class="btn sm" id="hdrMe" data-act="myAcct" type="button" hidden>👤 บัญชี</button>
   <button class="btn sm" data-act="settings" type="button">ตั้งค่าร้าน</button>
@@ -772,7 +772,7 @@ function showMemberCard(m){const o=document.getElementById('mCardOv');if(o)o.rem
   const pts=(+m.points||0).toLocaleString('th-TH');
   const el=document.createElement('div');el.id='mCardOv';el.className='mcard-ov';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','บัตรสมาชิก');
   const bg=[...String(m.phone||m.name||'')].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7)%2?'po':'nl';
-  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
+  el.innerHTML=`<div class="mcard mc-${bg}" style="--mcbg:url(images/card-${bg}.png)"><div class="mc-top"><div class="mc-logos"><img src="images/logo-nl.png?v=20261016b" alt=""><img src="images/logo-po.png" alt=""></div><span>MEMBER CARD</span></div>
     <div class="mc-mid"><b>${m.name?'คุณ'+e(m.name):'สมาชิก'}</b><span>${e(m.phone||'')}</span></div>
     <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${pts}</strong></div><em>ใช้ได้ทั้ง 2 ร้าน<br>เนื้อล้วนๆ · ข้าวมันไก่</em></div><i class="mc-shine"></i></div>
     ${m.note?`<p class="mc-note">${e(m.note)}</p>`:''}
@@ -876,7 +876,7 @@ const lineAmt=l=>((+l.price||0)+(+l.extra||0))*l.qty;
 const linesTotal=items=>(items||[]).reduce((s,l)=>s+lineAmt(l),0);
 const linesCost=items=>(items||[]).reduce((s,l)=>s+(+l.cost||0)*l.qty,0);
 const linesCount=items=>(items||[]).reduce((s,l)=>s+l.qty,0);
-const thumb=(m,cls)=>!m.img&&S.shop!=='po'?`<div class="${cls}"><img src="images/menu-ph.jpg" alt="${esc(m.name)}" loading="lazy"></div>`:m.img?`<div class="${cls}"><img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy"></div>`:`<div class="${cls} none"><span>${esc(String(m.name||'?').trim().charAt(0))}</span></div>`;
+const thumb=(m,cls)=>!m.img&&S.shop!=='po'?`<div class="${cls}"><img src="images/menu-ph.jpg?v=20261016b" alt="${esc(m.name)}" loading="lazy"></div>`:m.img?`<div class="${cls}"><img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy"></div>`:`<div class="${cls} none"><span>${esc(String(m.name||'?').trim().charAt(0))}</span></div>`;
 const soldToday=mid=>{if(S.shop==='po')return poSold(mid);const t0=sod();let n=0;const f=o=>(o.items||[]).forEach(l=>{if(l.menuId===mid&&(+l.at||0)>=t0)n+=+l.qty||0});Object.values(S.open).forEach(f);(S.today||[]).forEach(f);return n};
 const menuLeft=m=>typeof m.dailyLimit==='number'?Math.max(0,m.dailyLimit-soldToday(m.id)):null;
 const isSoldOut=m=>m.active===false||(typeof m.dailyLimit==='number'&&menuLeft(m)<=0);
@@ -986,7 +986,7 @@ function clearAuth(){try{Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/
 function bumpFail(){let n=0;try{n=(+sessionStorage.getItem('nl_fail')||0)+1;sessionStorage.setItem('nl_fail',n)}catch(e){}return n}
 async function logout(){try{await Promise.race([SB.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,3000))])}catch(e){}clearAuth();location.reload()}
 /* ---------- ออกจากระบบอัตโนมัติ (ยกเว้นแอดมิน): ข้ามเที่ยงคืน / แอดมินปิดร้าน ---------- */
-function closedCard(){if(!shopClosed())return '';const ss=S.lists.shopSession||{},lg=S.shop==='po'?'images/logo-po.png':'images/stamp-logo.png';
+function closedCard(){if(!shopClosed())return '';const ss=S.lists.shopSession||{},lg=S.shop==='po'?'images/logo-po.png':'images/stamp-logo.png?v=20261016b';
   return `<div class="closedwrap"><div class="cstamp"><img src="${lg}" alt=""><b>ปิดให้บริการ</b><i>Closed</i></div>
    <div class="closedtx"><b>🔒 ร้านปิดแล้ว</b><span>เปิดบิลใหม่ / เพิ่มรายการ / ลูกค้าสั่งเองไม่ได้ · บิลที่ค้างอยู่ยังเก็บเงินได้</span>${ss.closedAt?`<small>ปิดเมื่อ ${dshort(ss.closedAt)} ${hm(ss.closedAt)} น.${ss.closedBy?' · '+esc(emailToUser(ss.closedBy)):''}</small>`:''}
    ${S.role==='owner'?'<button class="btn pri" data-act="shopSession" type="button">🔓 เปิดร้าน</button>':'<small>แอดมินจะเป็นคนเปิดร้าน</small>'}</div></div>`}
@@ -1153,7 +1153,7 @@ function sortMenu(both){if(both){const k=S.shop;S.shop=k==='po'?'noodle':'po';so
 function render(){
   document.body.classList.toggle('auth',S.state!=='ready');
   document.body.classList.toggle('app',S.state==='ready');
-  $('#shopName').textContent=S.state!=='ready'?'เนื้อล้วนๆ':isPo()?(poCfg().shopName||'ข้าวมันไก่'):'เนื้อล้วนๆ';{const bl=$('#brandLogo'),src=isPo()&&S.state==='ready'?'images/logo-po.png':'images/logo-nl.png';if(bl.getAttribute('src')!==src)bl.setAttribute('src',src);bl.hidden=S.state!=='ready';}
+  $('#shopName').textContent=S.state!=='ready'?'เนื้อล้วนๆ':isPo()?(poCfg().shopName||'ข้าวมันไก่'):'เนื้อล้วนๆ';{const bl=$('#brandLogo'),src=isPo()&&S.state==='ready'?'images/logo-po.png':'images/logo-nl.png?v=20261016b';if(bl.getAttribute('src')!==src)bl.setAttribute('src',src);bl.hidden=S.state!=='ready';}
   const c=$('#conn');
   c.innerHTML=S.state==='ready'?'<span class="dot on"></span>ออนไลน์ · '+esc(dlong(Date.now())):['noconfig','offline','nostaff'].includes(S.state)?'<span class="dot off"></span>ไม่ได้เชื่อมฐานข้อมูล':S.state==='login'?'<span class="dot"></span>ยังไม่ได้เข้าสู่ระบบ':'<span class="dot"></span>กำลังเชื่อมต่อ…';
   document.querySelector('[data-act="settings"]').hidden=S.state!=='ready';
@@ -1679,7 +1679,7 @@ function receiptHTML(o,mode){const st=S.settings,isBill=mode==='bill',items=o.it
   const ln=(a,b,c='')=>`<div class="rl ${c}"><span>${a}</span><span>${b}</span></div>`;
   const po=o.shop==='po',pc=po?poCfg():null;
   const B=po?{logo:pc.rcLogo||'images/logo-po-t.png',name:pc.rcName||pc.shopName||'ข้าวมันไก่',en:pc.rcNameEn??'KHAO MAN GAI',phone:pc.phone,fb:pc.rcFb}
-    :{logo:st.rcLogo||'images/logo-nl-t.png',name:st.rcName||'เนื้อล้วนๆ',en:st.rcNameEn??'NUEA LWOON',phone:st.phone,fb:st.rcFb??'เนื้อล้วนๆ ก๋วยเตี๋ยวเนื้อ'};
+    :{logo:st.rcLogo||'images/logo-nl-t.png?v=20261016b',name:st.rcName||'เนื้อล้วนๆ',en:st.rcNameEn??'NUEA LWOON',phone:st.phone,fb:st.rcFb??'เนื้อล้วนๆ ก๋วยเตี๋ยวเนื้อ'};
   let h=`<div class="rc rc-brand${po?' rc-po':''}">`;
   h+=`<img class="rc-logo" src="${esc(B.logo)}" alt=""><div class="rc-shop">${esc(B.name)}</div>${B.en?`<div class="rc-en">${esc(B.en)}</div>`:''}`;
   [B.fb?'Facebook: '+B.fb:'',B.phone?'โทร '+B.phone:'',st.address,st.taxId&&!po?'เลขประจำตัวผู้เสียภาษี '+st.taxId:''].filter(Boolean).forEach(x=>h+=`<div class="rc-sub">${esc(x)}</div>`);
@@ -2036,7 +2036,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <p class="help" style="margin:0" id="cVatEx"></p></div>
   <div class="card"><h3>โลโก้ร้าน & หัวใบเสร็จ</h3>
    <div class="field" style="margin-bottom:4px"><label>โลโก้ร้าน</label></div>
-   ${rcLogoField('rcLogo',s.rcLogo||s.logo,'images/logo-nl-t.png')}
+   ${rcLogoField('rcLogo',s.rcLogo||s.logo,'images/logo-nl-t.png?v=20261016b')}
    <p class="help" style="margin:2px 0 10px">โลโก้เดียวใช้ทุกที่: ใบแจ้งยอด/ใบเสร็จที่พิมพ์ · ใบเสร็จออนไลน์ · หน้าสั่งอาหารของลูกค้า · ป้าย QR</p>
    <div class="field"><label for="cAddr">ที่อยู่ร้าน</label><input id="cAddr" value="${esc(s.address||'')}" placeholder="เช่น 12 ถ.สุขุมวิท บางนา กทม." autocomplete="off"></div>
    <div class="grid2"><div class="field"><label for="cPhone">เบอร์โทรร้าน</label><input id="cPhone" inputmode="tel" value="${esc(s.phone||'')}"></div><div class="field"><label for="cTax">เลขผู้เสียภาษี (ถ้ามี)</label><input id="cTax" inputmode="numeric" value="${esc(s.taxId||'')}"></div></div>

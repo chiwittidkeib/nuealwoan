@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1850">
+<meta name="app-version" content="2026.10.16-2030">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0907">
 <title>เมนู · เนื้อล้วนๆ</title>
@@ -94,7 +94,7 @@ body{display:flex;flex-direction:column;background:radial-gradient(120% 70% at 5
 </style>
 </head>
 <body>
-<header class="top"><img id="logo" src="images/logo-nl.png" alt=""><div><b id="shop">เนื้อล้วนๆ</b><small>MENU · E-BOOK</small></div><span class="sp"></span><button class="tbtn" data-a="toc" type="button">☰ สารบัญ</button></header>
+<header class="top"><img id="logo" src="images/logo-nl.png?v=20261016b" alt=""><div><b id="shop">เนื้อล้วนๆ</b><small>MENU · E-BOOK</small></div><span class="sp"></span><button class="tbtn" data-a="toc" type="button">☰ สารบัญ</button></header>
 <main class="stage"><div class="book" id="book" aria-live="polite"><div class="pg"><div class="sheet"><div class="inner msg">กำลังเปิดเล่มเมนู…</div></div></div></div></main>
 <nav class="nav"><button data-a="prev" type="button" aria-label="หน้าก่อน">‹</button><span class="cnt" id="cnt"></span><button data-a="next" type="button" aria-label="หน้าถัดไป">›</button></nav>
 
@@ -117,10 +117,10 @@ function build(d){D=d;PAGES=[];const menu=d.menu||[];
   const firstOf={};PAGES.forEach((p,i)=>{if(p.k==='cat'&&!(p.c in firstOf))firstOf[p.c]=i});
   const upd=new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Bangkok'});
   const html=PAGES.map((p,i)=>{let h='';
-    if(p.k==='cover')h=`<div class="sheet cover"><div class="inner"><img class="lg" src="${esc(d.logo||'images/logo-nl.png')}" alt=""><h1>${esc(d.shopName||'เนื้อล้วนๆ')}</h1>${d.shopNameEn?`<div class="en">${esc(d.shopNameEn)}</div>`:''}<div class="menu">MENU</div>${d.tag?`<div class="tag">${esc(d.tag)}</div>`:''}<div class="hint">ปัดเพื่อเปิดเล่ม <span>›</span></div><small style="color:var(--goldd)">อัปเดต ${esc(upd)}</small></div></div>`;
+    if(p.k==='cover')h=`<div class="sheet cover"><div class="inner"><img class="lg" src="${esc(d.logo||'images/logo-nl.png?v=20261016b')}" alt=""><h1>${esc(d.shopName||'เนื้อล้วนๆ')}</h1>${d.shopNameEn?`<div class="en">${esc(d.shopNameEn)}</div>`:''}<div class="menu">MENU</div>${d.tag?`<div class="tag">${esc(d.tag)}</div>`:''}<div class="hint">ปัดเพื่อเปิดเล่ม <span>›</span></div><small style="color:var(--goldd)">อัปเดต ${esc(upd)}</small></div></div>`;
     else if(p.k==='toc')h=`<div class="sheet toc"><div class="inner"><h2>สารบัญ</h2><div class="orn">✦</div><ol>${Object.entries(firstOf).map(([c,ix])=>`<li><button data-a="go" data-i="${ix}" type="button">${esc(c)}<span>${ix+1}</span></button></li>`).join('')}</ol></div><div class="pno">${i+1}</div></div>`;
-    else if(p.k==='cat')h=`<div class="sheet cat"><div class="inner"><h2>${esc(p.c)}${p.cont?' <small style="font-size:14px;color:var(--muted)">(ต่อ)</small>':''}</h2><div class="orn">✦</div><div class="items">${p.items.map(m=>`<div class="it${m.soldOut?' off':''}"><div class="ph" data-a="zoom" data-id="${esc(m.id)}"><img src="${esc(m.img||'images/menu-ph.jpg')}" alt="" loading="lazy"${m.img?'':' class="noimg"'}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}</div><div class="tx"><div class="nm"><b>${esc(m.name)}</b><em>${baht(m.price)}</em></div>${m.desc?`<p>${esc(m.desc)}</p>`:''}${m.opts?`<div class="op">${esc(m.opts)}</div>`:''}${m.rec?'<span class="badge rec">★ แนะนำ</span>':''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></div>`).join('')}</div></div><div class="pno">${i+1}</div></div>`;
-    else h=`<div class="sheet back"><div class="inner"><img src="${esc(d.logo||'images/logo-nl.png')}" alt="" style="width:110px;height:110px;object-fit:contain"><h2>ขอบคุณที่แวะมาครับ</h2><div class="orn">✦</div>
+    else if(p.k==='cat')h=`<div class="sheet cat"><div class="inner"><h2>${esc(p.c)}${p.cont?' <small style="font-size:14px;color:var(--muted)">(ต่อ)</small>':''}</h2><div class="orn">✦</div><div class="items">${p.items.map(m=>`<div class="it${m.soldOut?' off':''}"><div class="ph" data-a="zoom" data-id="${esc(m.id)}"><img src="${esc(m.img||'images/menu-ph.jpg?v=20261016b')}" alt="" loading="lazy"${m.img?'':' class="noimg"'}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}</div><div class="tx"><div class="nm"><b>${esc(m.name)}</b><em>${baht(m.price)}</em></div>${m.desc?`<p>${esc(m.desc)}</p>`:''}${m.opts?`<div class="op">${esc(m.opts)}</div>`:''}${m.rec?'<span class="badge rec">★ แนะนำ</span>':''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></div>`).join('')}</div></div><div class="pno">${i+1}</div></div>`;
+    else h=`<div class="sheet back"><div class="inner"><img src="${esc(d.logo||'images/logo-nl.png?v=20261016b')}" alt="" style="width:110px;height:110px;object-fit:contain"><h2>ขอบคุณที่แวะมาครับ</h2><div class="orn">✦</div>
       ${d.deliveryOn?`<a class="cta pri" href="${esc(base('delivery.html'))}">🛵 สั่งเดลิเวอรี่${d.open?'':' <small style="font-weight:400">(ตอนนี้ปิด)</small>'}</a>`:''}
       <a class="cta" href="${esc(base('card.html'))}">⭐ บัตรสะสมแต้ม / คูปอง</a>
       ${d.phone?`<a class="cta" href="tel:${esc(d.phone)}">📞 ${esc(d.phone)}</a>`:''}${d.map?`<a class="cta" href="${esc(d.map)}" target="_blank" rel="noopener">📍 แผนที่ร้าน</a>`:''}

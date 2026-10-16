@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1440">
+<meta name="app-version" content="2026.10.16-2030">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0907">
 <title>บัตรสะสมแต้ม · เนื้อล้วนๆ</title>
@@ -81,7 +81,7 @@ h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600;line-height:1.25}
 </style>
 </head>
 <body>
-<header class="top"><img id="logo" src="images/logo-nl.png" alt=""><div><b id="shop">เนื้อล้วนๆ</b><small>LOYALTY POINTS</small></div></header>
+<header class="top"><img id="logo" src="images/logo-nl.png?v=20261016b" alt=""><div><b id="shop">เนื้อล้วนๆ</b><small>LOYALTY POINTS</small></div></header>
 <main class="wrap" id="view"><div class="box"><p class="muted" style="margin:0">กำลังโหลด…</p></div></main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
@@ -110,7 +110,7 @@ async function load(){S.busy=true;try{const [a,b]=await Promise.all([SB.rpc('mem
   catch(e){S.busy=false;const m=String(e&&e.message||e);if(/bad_phone/.test(m)){LS('nl_card_phone',null);S.phone='';return renderLogin('เบอร์โทรไม่ถูกต้อง')}
     $('#view').innerHTML=`<div class="box"><b>เชื่อมต่อไม่ได้</b><p class="help">${/function|PGRST20/i.test(m)?'ร้านกำลังเปิดระบบบัตรสมาชิก ลองใหม่ภายหลัง':'ตรวจอินเทอร์เน็ตแล้วลองใหม่'}</p><button class="btn" onclick="location.reload()">ลองใหม่</button></div>`;return}
   S.busy=false;render()}
-function renderLogin(err){$('#view').innerHTML=`<div class="box" style="text-align:center;gap:12px"><img src="images/logo-nl.png" alt="" style="width:96px;height:96px;object-fit:contain;align-self:center"><h2 style="color:var(--gold2)">บัตรสะสมแต้ม & คูปอง</h2><p class="help">ใส่เบอร์โทรเพื่อดูแต้ม คูปองส่วนลด และของรางวัล · ยังไม่เป็นสมาชิก สมัครฟรีได้เลย</p>
+function renderLogin(err){$('#view').innerHTML=`<div class="box" style="text-align:center;gap:12px"><img src="images/logo-nl.png?v=20261016b" alt="" style="width:96px;height:96px;object-fit:contain;align-self:center"><h2 style="color:var(--gold2)">บัตรสะสมแต้ม & คูปอง</h2><p class="help">ใส่เบอร์โทรเพื่อดูแต้ม คูปองส่วนลด และของรางวัล · ยังไม่เป็นสมาชิก สมัครฟรีได้เลย</p>
   <form id="lf" class="field" style="text-align:left"><label for="ph">เบอร์โทรศัพท์</label><input id="ph" type="tel" inputmode="tel" maxlength="12" autocomplete="tel" placeholder="0812345678" value="${esc(S.phone)}"></form>
   <p class="err" id="le">${esc(err||'')}</p><button class="btn pri" data-a="go" type="button">ดูบัตรของฉัน</button></div>${links()}`;
   $('#lf').addEventListener('submit',e=>{e.preventDefault();act('go')});setTimeout(()=>$('#ph')?.focus(),50)}
@@ -135,7 +135,7 @@ function render(){const d=S.card,m=d.member,L=(S.cl&&S.cl.coupons)||[];let h='';
   if(!m){h=`<div class="box" style="text-align:center"><h2 style="color:var(--gold2)">ยังไม่เป็นสมาชิก</h2><p class="help">เบอร์ ${esc(S.phone)} · สมัครฟรี ทุก ${num(d.pointsPer)} บาท ได้ 1 แต้ม · ใช้แต้มแทนเงินสด และเก็บคูปองสมาชิกได้</p>
       <div class="field" style="text-align:left"><label for="nm">ชื่อเล่น (ไม่บังคับ)</label><input id="nm" maxlength="40" autocomplete="nickname" style="font-size:16px;letter-spacing:0"></div>
       <button class="btn pri" data-a="join" type="button">สมัครสมาชิกฟรี</button><button class="lnk" data-a="out" type="button">ใช้เบอร์อื่น</button></div>`}
-  else{h=`<div class="mcard"><div class="mc-top"><img src="images/logo-nl.png" alt=""><span>MEMBER CARD</span></div>
+  else{h=`<div class="mcard"><div class="mc-top"><img src="images/logo-nl.png?v=20261016b" alt=""><span>MEMBER CARD</span></div>
       <div class="mc-mid"><b>${m.name?'คุณ'+esc(m.name):'สมาชิก'}</b><span>${esc(m.phone)}</span></div>
       <div class="mc-bot"><div><small>แต้มสะสม</small><strong>${num(m.points)}</strong></div><em>1 แต้ม = ${baht(d.pointValue)}<br>ทุก ${num(d.pointsPer)} บาท ได้ 1 แต้ม</em></div></div>
       ${m.exp&&+m.exp.pts?`<div class="warn">⚠️ ${num(m.exp.pts)} แต้ม จะหมดอายุ ${dTH(m.exp.at)} · รีบใช้ก่อนหมดนะครับ</div>`:''}
