@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1840">
+<meta name="app-version" content="2026.10.16-1030">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -390,6 +390,8 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .stepper.big{align-self:flex-start}.stepper.big button{width:48px;height:48px;font-size:22px}.stepper.big span{min-width:48px;font-size:20px}
 .perm input.pct{width:64px;text-align:right;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px}
 #hdrLogout{color:var(--muted)}
+.btn.lineb{background:#06c755;border-color:#06c755;color:#fff}.btn.lineb b{background:#fff;color:#06c755;border-radius:5px;padding:0 5px;font-size:12px;margin-right:6px}
+.lg-or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}.lg-or::before,.lg-or::after{content:"";flex:1;height:1px;background:var(--line)}
 #hdrLogout[data-armed]{color:#fff}
 .brand small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:420px){.top-in{gap:8px}.top-in .btn.sm{padding:5px 8px;font-size:13px}}
@@ -707,6 +709,7 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
   <img id="brandLogo" class="brandlogo" src="images/logo-nl.png" alt="" hidden><div class="brand"><h1 id="shopName">เนื้อล้วนๆ</h1><small id="conn"><span class="dot"></span>กำลังเชื่อมต่อ…</small></div>
   <div class="shopsw" id="shopSw" role="group" aria-label="เลือกร้าน" hidden><button type="button" data-act="shopSw" data-v="noodle"><img class="swlogo" src="images/logo-nl.png" alt="">เนื้อล้วนๆ</button><button type="button" data-act="shopSw" data-v="po"><img class="swlogo" src="images/logo-po.png" alt="">ข้าวมันไก่</button></div>
   <label class="modesel" id="hdrModeWrap" hidden><span>โหมด</span><select id="hdrMode" aria-label="โหมดหน้าจอ"><option value="">Admin</option><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">แม่ครัว</option><option value="partner">หุ้นส่วน</option></select></label>
+  <button class="btn sm" id="hdrMe" data-act="myAcct" type="button" hidden>👤 บัญชี</button>
   <button class="btn sm" data-act="settings" type="button">ตั้งค่าร้าน</button>
   <button class="btn sm" id="hdrLogout" data-act="logout" data-confirm="1" type="button">ออกจากระบบ</button>
 </div></header>
@@ -934,6 +937,7 @@ async function init(){
   const cfg=window.APP_CONFIG||{};
   if(!window.supabase||!cfg.SUPABASE_URL||/x{6}/.test(cfg.SUPABASE_URL)||!cfg.SUPABASE_KEY||/ใส่/.test(cfg.SUPABASE_KEY)){S.state='noconfig';render();return}
   SB=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,lock:async(n,t,fn)=>await fn()}});
+  try{const lr=await slReturn();if(lr==='login'){startData();return}}catch(e){S.lineMsg='เข้าสู่ระบบด้วย LINE ไม่สำเร็จ'}
   let data={};try{data=(await Promise.race([SB.auth.getSession(),new Promise((_,no)=>setTimeout(()=>no(new Error('t')),15000))])).data||{}}catch(e){if(bumpFail()>=2){clearAuth();S.state='login';render();return}S.state='loading';S.loadErr='เชื่อมต่อระบบเข้าสู่ระบบไม่ได้';render();setTimeout(()=>location.reload(),5000);return}
   if(!data.session){S.state='login';render();return}
   // ออกจากระบบอัตโนมัติเมื่อข้ามวัน (เวลาไทย)
@@ -1115,7 +1119,7 @@ function render(){
   const c=$('#conn');
   c.innerHTML=S.state==='ready'?'<span class="dot on"></span>ออนไลน์ · '+esc(dlong(Date.now())):['noconfig','offline','nostaff'].includes(S.state)?'<span class="dot off"></span>ไม่ได้เชื่อมฐานข้อมูล':S.state==='login'?'<span class="dot"></span>ยังไม่ได้เข้าสู่ระบบ':'<span class="dot"></span>กำลังเชื่อมต่อ…';
   document.querySelector('[data-act="settings"]').hidden=S.state!=='ready';
-  $('#hdrLogout').hidden=S.state!=='ready';if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!((S.calls.length&&canCall())||dlWaiting().length);
+  $('#hdrLogout').hidden=S.state!=='ready';$('#hdrMe').hidden=S.state!=='ready';if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!((S.calls.length&&canCall())||dlWaiting().length);
   const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){{const sel=$('#hdrMode'),want=isPo()?'po':'all';if(sel.dataset.set!==want){sel.dataset.set=want;sel.innerHTML=(isPo()?[['','Admin'],['chef','แม่ครัว']]:[['','Admin'],['waiter','พนักงานเสิร์ฟ'],['chef','แม่ครัว'],['partner','หุ้นส่วน']]).map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}}$('#hdrMode').value=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs);mw.dataset.r=S.viewAs||'owner'}
   const va=$('#viewAs');va.hidden=!(S.state==='ready'&&S.viewAs);if(!va.hidden)va.innerHTML=`<span>โหมด <b>${roleName(S.viewAs)}</b> · ใช้งานจริงตามสิทธิ์ของตำแหน่งนี้</span><button class="btn sm" data-act="viewAsOff" type="button">กลับโหมดแอดมิน</button>`;
   $('#tabs').parentElement.hidden=S.state!=='ready';
@@ -1142,7 +1146,10 @@ function render(){
     <div class="field"><label for="lgPw">รหัสผ่าน</label><div class="pw"><input id="lgPw" type="password" autocomplete="current-password"><button type="button" class="pw-eye" data-act="pwToggle" data-for="lgPw" aria-label="แสดงรหัสผ่าน">แสดง</button></div></div>
     <p class="err" id="lgErr" role="alert"></p>
     <button class="btn pri" id="lgBtn" type="submit">เข้าสู่ระบบ</button>
-    <p class="help" style="margin:0">ลืมรหัสผ่าน ติดต่อเจ้าของร้านให้ตั้งรหัสใหม่</p></form>`;
+    <div class="lg-or"><span>หรือ</span></div>
+    <button class="btn lineb" data-act="slLogin" type="button"><b>LINE</b> เข้าสู่ระบบด้วย LINE</button>
+    ${S.lineMsg?`<p class="err" role="alert" style="margin:0">${esc(S.lineMsg)}</p>`:''}
+    <p class="help" style="margin:0">ครั้งแรกเข้าด้วยชื่อผู้ใช้/รหัสผ่านที่แอดมินให้ แล้วกด 👤 บัญชี → ผูกบัญชี LINE · ลืมรหัสผ่าน ติดต่อเจ้าของร้าน</p></form>`;
     $('#lgForm').addEventListener('submit',e=>{e.preventDefault();login()});(last?$('#lgPw'):$('#lgUser')).focus();return}
   if(S.state==='loading'){v.innerHTML=S.loadErr?`<div class="empty"><b>ยังเชื่อมต่อไม่ได้</b>${esc(S.loadErr)} · กำลังลองใหม่อัตโนมัติ…<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn pri" type="button" onclick="location.reload()">โหลดหน้าใหม่</button><button class="btn" type="button" data-act="logout">ออกจากระบบ</button></div></div>`:`<div class="empty"><b>กำลังโหลดข้อมูลร้าน…</b>โต๊ะ เมนู และยอดขายวันนี้จะขึ้นในไม่กี่วินาที<br><small class="muted">${esc(S.loadStep||'')}</small><div style="margin-top:14px"><button class="btn sm ghost" type="button" data-act="logout">ค้างนาน? เข้าสู่ระบบใหม่</button></div></div>`;return}
   const fqF=document.activeElement&&document.activeElement.id==='fq';
@@ -1342,7 +1349,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2032,12 +2039,13 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
 function renderPerm(src){const b=$('#permBody');if(!b)return;const P=src||S.perms||DEFAULT_PERMS;
   b.innerHTML=PERMS.map(([k,label])=>`<tr><td>${label}</td><td class="c"><input type="checkbox" checked disabled aria-label="Admin ${label}"></td>${['waiter','chef','partner'].map(r=>`<td class="c"><input type="checkbox" data-perm="${r}:${k}" ${(k in (P[r]||{})?P[r][k]:(DEFAULT_PERMS[r]||{})[k])?'checked':''} aria-label="${ROLES[r]} ${label}"></td>`).join('')}</tr>`).join('');}
 async function loadStaff(){const box=$('#staffList');if(!box)return;
-  let {data,error}=await SB.from('staff').select('email,username,role,created_at,display_name').order('created_at');
+  let {data,error}=await SB.from('staff').select('email,username,role,created_at,display_name,line_name').order('created_at');
+  if(error)({data,error}=await SB.from('staff').select('email,username,role,created_at,display_name').order('created_at'));
   S.noStaffName=false;if(error){S.noStaffName=true;({data,error}=await SB.from('staff').select('email,username,role,created_at').order('created_at'))}
   if(!$('#staffList'))return;
   if(error){box.innerHTML='<p class="err">โหลดรายชื่อพนักงานไม่ได้ ลองรัน schema.sql เวอร์ชันล่าสุด</p>';return}
   box.innerHTML='<div class="list">'+data.map(r=>{const u=r.username||emailToUser(r.email),me=u===S.me;
-    return `<div class="row staffrow"><div class="grow"><div class="t">${r.display_name?esc(r.display_name)+' <small class="muted">('+esc(u)+')</small>':esc(u)} ${me?'<span class="pill mute">คุณ</span>':''}</div><div class="s rolec-${roleKey(r.role)}">${roleName(r.role)}</div></div>${me?'':`<button class="btn sm ghost" data-act="staffName" data-email="${esc(r.email)}" data-name="${esc(r.display_name||'')}" data-user="${esc(u)}" type="button">✏️ ชื่อ</button><select class="sm-sel" data-role-for="${esc(r.email)}" aria-label="ตำแหน่งของ ${esc(u)}">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${roleKey(r.role)===k?'selected':''}>${v}</option>`).join('')}</select><button class="btn sm" data-act="staffPwOpen" data-user="${esc(u)}" type="button">ตั้งรหัส</button><button class="btn sm danger" data-act="staffDel" data-user="${esc(u)}" data-confirm="1" type="button">ลบ</button>`}</div>`}).join('')+'</div>';
+    return `<div class="row staffrow"><div class="grow"><div class="t">${r.display_name?esc(r.display_name)+' <small class="muted">('+esc(u)+')</small>':esc(u)} ${me?'<span class="pill mute">คุณ</span>':''}</div><div class="s rolec-${roleKey(r.role)}">${roleName(r.role)}${r.line_name?` · <span style="color:#06c755">🟢 LINE ${esc(r.line_name)}</span>`:''}</div></div>${r.line_name&&!me?`<button class="btn sm ghost" data-act="slUnlinkOther" data-email="${esc(r.email)}" data-user="${esc(u)}" data-confirm="1" type="button" title="ยกเลิกการผูก LINE">✕ LINE</button>`:''}${me?'':`<button class="btn sm ghost" data-act="staffName" data-email="${esc(r.email)}" data-name="${esc(r.display_name||'')}" data-user="${esc(u)}" type="button">✏️ ชื่อ</button><select class="sm-sel" data-role-for="${esc(r.email)}" aria-label="ตำแหน่งของ ${esc(u)}">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${roleKey(r.role)===k?'selected':''}>${v}</option>`).join('')}</select><button class="btn sm" data-act="staffPwOpen" data-user="${esc(u)}" type="button">ตั้งรหัส</button><button class="btn sm danger" data-act="staffDel" data-user="${esc(u)}" data-confirm="1" type="button">ลบ</button>`}</div>`}).join('')+'</div>';
   box.querySelectorAll('[data-role-for]').forEach(sel=>sel.addEventListener('change',async()=>{
     const {error}=await SB.from('staff').update({role:sel.value}).eq('email',sel.dataset.roleFor);
     toast(error?'เปลี่ยนตำแหน่งไม่สำเร็จ':'เปลี่ยนตำแหน่งแล้ว',error?'bad':'');if(error)loadStaff()}));}
@@ -3134,6 +3142,44 @@ Object.assign(ACT,{
     if(error||!data||!data.ok){const t=cpnErr(error||(data&&data.err));if(m)m.textContent=t;return toast(t,'bad')}
     s.cpn={id:d.id,name:data.name,disc:+data.disc,type:data.type};renderCpn();payUpdate()},
   cpnOff:()=>{S.sheet.cpn=null;renderCpn();payUpdate()}
+});
+
+/* ---------- พนักงาน / แม่ครัว เข้าสู่ระบบด้วย LINE (แอดมินสร้างบัญชีก่อน → เข้าด้วยรหัสผ่านครั้งแรก → ผูก LINE) ---------- */
+const SL_ID=()=>String((window.APP_CONFIG||{}).LINE_CHANNEL_ID||'2012035513');
+const SL_FN=()=>String((window.APP_CONFIG||{}).SUPABASE_URL||'').replace(/\/$/,'')+'/functions/v1/line-login';
+const slSelf=()=>location.origin+location.pathname;
+function slStart(op){const st=op+'-'+Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
+  try{localStorage.setItem('nl_sline',JSON.stringify({st,op,at:Date.now()}))}catch(e){}
+  location.href='https://access.line.me/oauth2/v2.1/authorize?'+new URLSearchParams({response_type:'code',client_id:SL_ID(),redirect_uri:slSelf(),state:st,scope:'profile openid'})}
+async function slCall(body,tok){const cfg=window.APP_CONFIG||{};let r;try{r=await fetch(SL_FN(),{method:'POST',headers:{'Content-Type':'application/json',apikey:cfg.SUPABASE_KEY||'',...(tok?{'x-user-token':tok}:{})},body:JSON.stringify({...body,app:'staff',redirect:slSelf()})})}catch(e){return {error:'net'}}
+  let j={};try{j=await r.json()}catch(e){}if(!r.ok&&!j.error)j.error='fn_'+r.status;return j}
+const slErr=e=>({not_linked:'บัญชี LINE นี้ยังไม่ได้ผูกกับพนักงาน · เข้าสู่ระบบด้วยชื่อผู้ใช้/รหัสผ่านครั้งแรก แล้วกด 👤 → ผูกบัญชี LINE',line_used:'บัญชี LINE นี้ผูกกับพนักงานคนอื่นอยู่แล้ว',need_login:'เข้าสู่ระบบก่อน แล้วค่อยผูก LINE',not_staff:'บัญชีนี้ไม่ใช่พนักงานของร้าน',bad_redirect:'ลิงก์แอปร้านไม่ตรงกับที่ตั้งไว้',not_configured:'ร้านยังตั้งค่า LINE ไม่เสร็จ',net:'อินเทอร์เน็ตหลุด ลองอีกครั้ง'})[e]||(/fn_404/.test(e)?'ยังไม่ได้ติดตั้งฟังก์ชัน line-login':'ทำรายการกับ LINE ไม่สำเร็จ ลองอีกครั้ง');
+// กลับมาจาก LINE: คืน 'login' (เข้าสู่ระบบสำเร็จ) / 'link' / false
+async function slReturn(){const P=new URLSearchParams(location.search),code=P.get('code'),state=String(P.get('state')||''),err=P.get('error');if(!code&&!err)return false;
+  history.replaceState(null,'',slSelf());let saved=null;try{saved=JSON.parse(localStorage.getItem('nl_sline')||'null');localStorage.removeItem('nl_sline')}catch(e){}
+  if(err){S.lineMsg='ยกเลิกการเข้าสู่ระบบด้วย LINE';return false}
+  const op=saved&&saved.st===state?saved.op:state.split('-')[0];
+  if(op==='link'){const ses=(await SB.auth.getSession()).data.session;if(!ses){S.lineMsg='หน้านี้ยังไม่ได้เข้าสู่ระบบ · เข้าด้วยชื่อผู้ใช้/รหัสผ่าน แล้วกดผูก LINE อีกครั้ง';return false}
+    const j=await slCall({op:'link',code},ses.access_token);setTimeout(()=>toast(j.ok?'✅ ผูกบัญชี LINE แล้ว ครั้งหน้ากด "เข้าสู่ระบบด้วย LINE" ได้เลย':slErr(j.error),j.ok?'':'bad'),800);return 'link'}
+  if(op!=='login'){S.lineMsg='ลิงก์ LINE ไม่ถูกต้อง ลองใหม่';return false}
+  const j=await slCall({op:'login',code});if(!j.ok){S.lineMsg=slErr(j.error);return false}
+  const {error}=await SB.auth.verifyOtp({token_hash:j.token_hash,type:'magiclink'});if(error){S.lineMsg='เข้าสู่ระบบด้วย LINE ไม่สำเร็จ ลองอีกครั้ง';return false}
+  try{localStorage.setItem('nl_login_day',bkDay());localStorage.setItem('nl_user',emailToUser(j.email||''))}catch(e){}return 'login'}
+async function sheetMyAcct(){const s=S.sheet;
+  if(!s.loaded){s.loaded=true;try{const {data,error}=await SB.from('staff').select('line_name,line_at,display_name').eq('email',S.email).maybeSingle();s.row=error?{err:/line_name|column/i.test(String(error.message||''))?'sql':'load'}:(data||{})}catch(e){s.row={err:'load'}}}
+  const r=s.row||{};
+  $('#panel').innerHTML=head('👤 บัญชีของฉัน',esc(r.display_name||S.me)+' · '+esc(roleName(S.role)))+`<div class="sh-body">
+   <div class="card"><div class="kv"><span>ชื่อผู้ใช้</span><b>${esc(S.me)}</b></div><div class="kv"><span>ตำแหน่ง</span><b>${esc(roleName(S.role))}</b></div></div>
+   <div class="card"><h3>เข้าสู่ระบบด้วย LINE</h3>
+    ${r.err==='sql'?'<p class="help" style="margin:0">ร้านยังไม่ได้รัน SQL เข้าสู่ระบบด้วย LINE ของพนักงาน</p>':r.line_name?`<div class="kv"><span>🟢 ผูกกับ LINE</span><b>${esc(r.line_name)}</b></div><p class="help" style="margin:0">หน้าเข้าสู่ระบบ กด "เข้าสู่ระบบด้วย LINE" ได้เลย ไม่ต้องจำรหัส</p><button class="btn sm" data-act="slUnlink" data-confirm="1" type="button">ยกเลิกการผูก LINE</button>`
+      :`<p class="help" style="margin:0">ผูกครั้งเดียว ครั้งหน้ากดปุ่ม LINE เข้าได้เลย (ยังใช้ชื่อผู้ใช้/รหัสผ่านเดิมได้)</p><button class="btn lineb" data-act="slLink" type="button">ผูกบัญชี LINE</button>`}</div></div>
+   <div class="sh-foot"><button class="btn wide" data-act="close" type="button">ปิด</button></div>`}
+Object.assign(ACT,{
+  myAcct:()=>openSheet({type:'myAcct'}),
+  slLogin:()=>slStart('login'),
+  slLink:()=>slStart('link'),
+  slUnlink:async()=>{const {error}=await SB.rpc('staff_line_unlink',{p_email:null});if(error)return toast('ยกเลิกไม่สำเร็จ','bad');toast('ยกเลิกการผูก LINE แล้ว');S.sheet.loaded=false;sheetMyAcct()},
+  slUnlinkOther:async d=>{const {error}=await SB.rpc('staff_line_unlink',{p_email:d.email});if(error)return toast(adminErr(error),'bad');toast('ยกเลิกการผูก LINE ของ '+d.user+' แล้ว');loadStaff()}
 });
 
 init();
