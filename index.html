@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1850">
+<meta name="app-version" content="2026.10.16-1900">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -287,7 +287,9 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 .chips-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.chips-row .chips{flex:1 1 280px;min-width:0}
 .mtgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
 .mtile{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;position:relative}
-.mtile.off{opacity:.62}
+.mtile.off .mg-img img{filter:grayscale(1);opacity:.45}.mtile.off .mn,.mtile.off .ms{opacity:.6}
+.mtile .mg-img .stamp{z-index:2}
+.btn.offsale{background:#c62828;border-color:#c62828;color:#fff}.btn.offsale:hover{background:#b71c1c}
 .mtile .mg-img{aspect-ratio:4/3;width:100%;background:var(--sunk);position:relative;overflow:hidden;flex:none}
 .mtile .mg-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .mtile .mg-img.none{display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--muted);font-family:var(--f-display)}
@@ -1228,15 +1230,15 @@ function viewMenu(){
   <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div><div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
   const list=S.menu.filter(m=>S.menuCat==='all'||m.cat===S.menuCat);
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุนต่อจาน</div>`;
-  const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':''}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิด (หมด)'}</button>`:'';
+  const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':' offsale'}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิดการขาย'}</button>`:'';
   if(S.menuLay==='grid'){h+='<div class="mtgrid">';
     list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-      h+=`<div class="mtile${isSoldOut(m)?' off':''}" data-act="menuEdit" data-id="${m.id}">${thumb(m,'mg-img')}<div class="tags">${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?'<span class="pill mute">ซ่อน</span>':''}${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
+      const so=isSoldOut(m),th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}" data-act="menuEdit" data-id="${m.id}">${so?th.replace(/<\/div>$/,stampHtml(false)+'</div>'):th}<div class="tags">${m.hidden?'<span class="pill mute">ซ่อน</span>':''}${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
        <div class="mb"><div class="mn">${esc(m.name)}</div><div class="ms">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%</div><div class="mf"><b>${baht(p)}</b>${tog(m)}</div></div></div>`});
     return h+'</div>';}
   h+='<div class="list">';
   list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?' <span class="pill mute">ซ่อน</span>':''}${m.consign?` <span class="pill info">📦 ฝากขาย · เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?` <span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div>${(can('menu_edit')||can('menu_toggle'))?`<button class="btn sm${m.active===false?' pri':''}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิด (หมด)'}</button>`:''}<div class="r"><b>${baht(p)}</b></div></div>`});
+    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?' <span class="pill mute">ซ่อน</span>':''}${m.consign?` <span class="pill info">📦 ฝากขาย · เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?` <span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div>${(can('menu_edit')||can('menu_toggle'))?`${tog(m)}`:''}<div class="r"><b>${baht(p)}</b></div></div>`});
   return h+'</div>';
 }
 
