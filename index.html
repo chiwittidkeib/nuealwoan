@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1740">
+<meta name="app-version" content="2026.10.16-1810">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1355,7 +1355,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({lmBook:sheetLmBook,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2731,7 +2731,15 @@ function rdFee(km,food,c=rdCfg(),rain=rdRain()){if(km==null)return null;if(+c.ma
   if(+c.freeOver&&food!=null&&food>=+c.freeOver){f=0;parts.push('ส่งฟรี (ยอดถึง '+baht(c.freeOver)+')')}
   return {fee:Math.round(f),why:parts.join(' · ')}}
 const rdFoodTotal=o=>linesTotal((o.items||[]).filter(l=>!l.fee));
-const rdFeeLine=(fee,km)=>({id:'fee',name:'ค่าส่ง Raptor Rider'+(km?` (${km} กม.)`:''),price:fee,qty:1,served:true,fee:true,cost:fee,menuId:'',at:Date.now()});
+const rdFeeLine=(fee,km,via)=>({id:'fee',name:(via==='lineman'?'ค่าส่ง LINE MAN':'ค่าส่ง Raptor Rider')+(km?` (${km} กม.)`:''),price:fee,qty:1,served:true,fee:true,cost:fee,menuId:'',at:Date.now()});
+/* ---------- ส่งด้วย LINE MAN (ร้านเรียกให้) ---------- */
+const gPin=(lat,lng)=>lat&&lng?`https://maps.google.com/?q=${lat},${lng}`:'';
+function lmText(c,bill){const st=S.settings||{},rc=rdCfg();
+  return [`🟢 ส่งของ ${st.rcName||st.shopName||'เนื้อล้วนๆ'}${bill?' · '+bill:''}`,
+    `รับที่: ${st.rcName||st.shopName||'ร้าน'}${st.address?' · '+st.address:''}${st.phone?' · โทร '+st.phone:''}${rc.lat?'\nหมุดร้าน: '+gPin(rc.lat,rc.lng):''}`,
+    `ส่งที่: คุณ${c.name||''}${c.phone?' · โทร '+c.phone:''}`,`ที่อยู่: ${c.addr||'-'}`,c.note?`หมายเหตุ: ${c.note}`:'',c.lat?`หมุดลูกค้า: ${gPin(c.lat,c.lng)}`:''].filter(Boolean).join('\n')}
+async function lmCopy(c,bill){const t=lmText(c,bill);
+  try{await navigator.clipboard.writeText(t);toast('📋 คัดลอกข้อมูลส่งแล้ว · เปิดแอป LINE MAN → ส่งของ แล้ววางที่อยู่/หมุดปลายทาง')}catch(e){prompt('คัดลอกข้อความนี้ไปวางในแอป LINE MAN',t)}}
 /* แผนที่ฟรี OpenStreetMap (Leaflet) */
 let LL=null;
 function loadLeaflet(){if(window.L)return Promise.resolve(window.L);if(LL)return LL;LL=new Promise((ok,no)=>{const c=document.createElement('link');c.rel='stylesheet';c.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(c);
@@ -2829,7 +2837,7 @@ function rdOrderCard(o){const d=o.deliv||{};
    <span class="help">ลูกค้าโอนก่อน · ยืนยันรับเงินแล้วระบบส่งงานให้ไรเดอร์คิวแรกอัตโนมัติ</span></div>`}
 
 /* ---------- งานส่ง (deliveries) + จัดคิว ---------- */
-async function rdCreateJob(o){const d=o.deliv||{};const job={orderId:o.id,billNo:o.billNo||o.orderNo||'',orderNo:o.orderNo||'',req:o.dlReq||null,at:Date.now(),status:'wait',tok:rcTok(),
+async function rdCreateJob(o){const d=o.deliv||{},lm=d.via==='lineman';const job={orderId:o.id,billNo:o.billNo||o.orderNo||'',orderNo:o.orderNo||'',req:o.dlReq||null,at:Date.now(),status:lm?'ext':'wait',tok:rcTok(),...(lm?{ext:'lineman',extCost:+d.fee||0}:{}),
   cust:{name:d.name||o.customerName||'',phone:d.phone||'',addr:d.addr||'',note:d.note||'',lat:d.lat||null,lng:d.lng||null},km:d.km??null,fee:+d.fee||0,
   items:(o.items||[]).filter(l=>!l.fee).map(l=>({name:l.name,qty:l.qty})),total:o.total,skip:[]};
   await write('deliveries/'+o.id,r=>r.set(job));S.dlv=[{id:o.id,...job},...(S.dlv||[]).filter(x=>x.id!==o.id)];setTimeout(rdTick,300)}
@@ -2852,23 +2860,43 @@ const trackUrl=d=>new URL('track.html',location.href).href.split('?')[0]+'?d='+e
 function rdEta(d){const L=d.riderLoc,c=d.cust||{},cf=rdCfg();if(!L||!c.lat)return '';const sp=Math.max(5,+cf.speed||25);
   let km=haversine(L,c)*(+cf.factor||1.3);if(d.status==='accepted'&&cf.lat)km=(haversine(L,{lat:+cf.lat,lng:+cf.lng})+haversine({lat:+cf.lat,lng:+cf.lng},c))*(+cf.factor||1.3);
   const min=Math.max(1,Math.round(km/sp*60));const age=Math.round((Date.now()-(+L.at||0))/60000);return ` · ห่างลูกค้า ~${km.toFixed(1)} กม. ≈ ${min} นาที${age>=3?` (ตำแหน่ง ${age} นาทีที่แล้ว)`:''}`}
-const rdStatusTxt=d=>({wait:'⏳ รอไรเดอร์',offer:`📨 ส่งให้ ${esc(d.offerName||'')} · รอกดรับ`,accepted:`✅ ${esc(d.riderName||'')} รับงานแล้ว · กำลังมารับ`,picked:`🛵 ${esc(d.riderName||'')} กำลังไปส่ง`,done:`🎉 ส่งสำเร็จ ${d.doneAt?hm(d.doneAt):''}`,cancel:'ยกเลิก'})[d.status]||d.status;
+const rdStatusTxt=d=>({ext:'🟢 รอเรียก LINE MAN',wait:'⏳ รอไรเดอร์',offer:`📨 ส่งให้ ${esc(d.offerName||'')} · รอกดรับ`,accepted:`✅ ${esc(d.riderName||'')} รับงานแล้ว · กำลังมารับ`,picked:`🛵 ${esc(d.riderName||'')} กำลังไปส่ง`,done:`🎉 ส่งสำเร็จ ${d.doneAt?hm(d.doneAt):''}`,cancel:'ยกเลิก'})[d.status]||d.status;
+function lmRow(d){const st=d.status==='ext'?['🟢 รอเรียก LINE MAN','warn']:d.status==='accepted'?['🟢 LINE MAN '+esc(d.extName||'')+' กำลังมารับ','info']:['🟢 LINE MAN '+esc(d.extName||'')+' กำลังไปส่ง','ok'];
+  return `<div class="row" style="flex-wrap:wrap;gap:8px"><div class="grow" style="min-width:200px"><div class="t">${esc(d.billNo)} · คุณ${esc(d.cust.name)} <span class="pill ${st[1]}">${st[0]}</span></div>
+    <div class="s">📍 ${esc(d.cust.addr||'')}${d.km!=null?' · '+d.km+' กม.':''} · ลูกค้าจ่ายค่าส่ง ${baht(d.fee)}${d.extCost!=null&&+d.extCost!==+d.fee?' · จ่าย LINE MAN '+baht(d.extCost):''}${d.extPhone?' · 📞 '+esc(d.extPhone):''}</div></div>
+    <button class="btn sm" data-act="lmCopyJob" data-id="${d.id}" type="button">📋 คัดลอกข้อมูล</button>
+    <button class="btn sm${d.status==='ext'?' pri':''}" data-act="lmBook" data-id="${d.id}" type="button">${d.status==='ext'?'✏️ เรียกแล้ว · ใส่ข้อมูลไรเดอร์':'✏️ แก้ข้อมูล'}</button>
+    ${d.extUrl?`<a class="btn sm" href="${esc(d.extUrl)}" target="_blank" rel="noopener">ติดตาม ↗</a>`:''}${d.extPhone?`<a class="btn sm" href="tel:${esc(d.extPhone)}">📞</a>`:''}
+    ${d.status==='accepted'?`<button class="btn sm" data-act="lmPicked" data-id="${d.id}" type="button">🛵 รับอาหารแล้ว</button>`:''}
+    ${['accepted','picked'].includes(d.status)?`<button class="btn sm ok" data-act="lmDone" data-id="${d.id}" data-confirm="1" type="button">✅ ส่งสำเร็จ</button>`:''}
+    <button class="btn sm danger" data-act="rdCancel" data-id="${d.id}" data-confirm="1" type="button">ยกเลิกงาน</button></div>`}
+const okUrl=u=>/^https?:\/\/\S+$/i.test(u||'');
+function sheetLmBook(){const s=S.sheet,d=(S.dlv||[]).find(x=>x.id===s.id);if(!d){closeSheet();return}
+  $('#panel').innerHTML=head('🟢 LINE MAN · '+esc(d.billNo),'คุณ'+esc(d.cust.name)+' · ลูกค้าจ่ายค่าส่ง '+baht(d.fee))+`<form class="sh-body" onsubmit="return false">
+   <button class="btn" data-act="lmCopyJob" data-id="${d.id}" type="button">📋 คัดลอกข้อมูลส่ง (วางในแอป LINE MAN)</button>
+   <div class="field"><label for="lmUrl">ลิงก์ติดตามจากแอป LINE MAN</label><input id="lmUrl" inputmode="url" value="${esc(d.extUrl||'')}" placeholder="https://…" autocomplete="off"><span class="help">ในแอป LINE MAN กด "แชร์" / "ติดตามการส่ง" แล้วคัดลอกลิงก์มาวาง · ลูกค้ากดดูในหน้าสถานะได้</span></div>
+   <div class="grid2"><div class="field"><label for="lmName">ชื่อไรเดอร์</label><input id="lmName" maxlength="40" value="${esc(d.extName||'')}" autocomplete="off"></div><div class="field"><label for="lmPhone">เบอร์ไรเดอร์</label><input id="lmPhone" type="tel" inputmode="tel" maxlength="12" value="${esc(d.extPhone||'')}" autocomplete="off"></div></div>
+   <div class="field"><label for="lmCost">ค่าส่งที่ร้านจ่าย LINE MAN จริง (บาท)</label><input id="lmCost" inputmode="numeric" value="${esc(String(d.extCost??d.fee))}"><span class="help">ใช้ทำบัญชี · ถ้าแพงกว่าที่ลูกค้าจ่าย (${baht(d.fee)}) ร้านรับส่วนต่างเอง ไม่เก็บลูกค้าเพิ่ม</span></div>
+   <p class="err" id="lmErr" role="alert"></p></form>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="lmSave" data-id="${d.id}" type="button">${d.status==='ext'?'บันทึก · แจ้งลูกค้าว่าเรียกไรเดอร์แล้ว':'บันทึก'}</button></div>`}
 function viewRdPanel(){const c=rdCfg();if(!c.on||!can('rider'))return '';const q=rdReadyQueue(),riders=S.riders||[],dl=S.dlv||[];
   const busy=riders.filter(r=>r.status==='active'&&r.job),pend=riders.filter(r=>r.status==='pending'||(r.status==='active'&&r.pwReq)).length;
-  const act=dl.filter(d=>['wait','offer','accepted','picked'].includes(d.status)).sort((a,b)=>a.at-b.at),done=dl.filter(d=>d.status==='done'&&(d.doneAt||0)>=sod());
+  const act=dl.filter(d=>['ext','wait','offer','accepted','picked'].includes(d.status)).sort((a,b)=>a.at-b.at),doneAll=dl.filter(d=>d.status==='done'&&(d.doneAt||0)>=sod()),done=doneAll.filter(d=>!d.ext),lmDone=doneAll.filter(d=>d.ext);
   const left=d=>Math.max(0,Math.ceil(((+d.offerAt||0)+(+c.timeout||60)*1000-Date.now())/1000));
   let h=`<div class="card rdpanel"><div class="rdph"><b>🛵 Raptor Rider</b><span class="rdlive">${q.length?`<i></i> พร้อม ${q.length} คน`:'ยังไม่มีไรเดอร์เปิด Ready'}</span>
     <label class="check" style="margin-left:auto"><input type="checkbox" data-act="rdRain" ${rdRain()?'checked':''}> 🌧️ ฝนตก +${baht(c.rainFee)}</label>
     <button class="btn sm" data-act="rdRiders" type="button">ไรเดอร์${pend?` <span class="pill warn">${pend} รอดำเนินการ</span>`:''}</button></div>${dlPanel()}
    <div class="rdq">${q.map((r,i)=>`<span class="rdqc${r.offered?' off':''}" title="${esc(r.name)}">${r.photo?`<img src="${esc(r.photo)}" alt="">`:'🛵'}<b>${i+1}</b>${esc(r.name.split(' ')[0])}${r.offered?' · รอกดรับ':''}</span>`).join('')}${busy.map(r=>`<span class="rdqc busy">${r.photo?`<img src="${esc(r.photo)}" alt="">`:'🛵'}${esc(r.name.split(' ')[0])} · กำลังส่ง</span>`).join('')}</div>`;
-  h+=act.length?'<div class="list">'+act.map(d=>`<div class="row" style="flex-wrap:wrap;gap:8px"><div class="grow" style="min-width:200px"><div class="t">${esc(d.billNo)} · คุณ${esc(d.cust.name)} <span class="pill ${d.status==='wait'?'warn':d.status==='offer'?'info':'ok'}">${rdStatusTxt(d)}${d.status==='offer'?' '+left(d)+' วิ':''}</span></div><div class="s">📍 ${esc(d.cust.addr||'')}${d.km!=null?' · '+d.km+' กม.':''} · ค่าส่ง ${baht(d.fee)}${rdEta(d)}</div></div>
+  h+=act.length?'<div class="list">'+act.map(d=>d.ext?lmRow(d):`<div class="row" style="flex-wrap:wrap;gap:8px"><div class="grow" style="min-width:200px"><div class="t">${esc(d.billNo)} · คุณ${esc(d.cust.name)} <span class="pill ${d.status==='wait'?'warn':d.status==='offer'?'info':'ok'}">${rdStatusTxt(d)}${d.status==='offer'?' '+left(d)+' วิ':''}</span></div><div class="s">📍 ${esc(d.cust.addr||'')}${d.km!=null?' · '+d.km+' กม.':''} · ค่าส่ง ${baht(d.fee)}${rdEta(d)}</div></div>
       ${d.tok?`<button class="btn sm" data-act="rdTrack" data-id="${d.id}" type="button">📤 ลิงก์ติดตาม</button>`:''}
       ${['wait','offer'].includes(d.status)?`<select data-rdpick="${d.id}" aria-label="เลือกไรเดอร์"><option value="">ส่งให้…</option>${q.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select>`:''}
       <a class="btn sm" href="${gNav(d.cust.lat,d.cust.lng,d.cust.addr)}" target="_blank" rel="noopener">แผนที่</a>${d.riderPhone?`<a class="btn sm" href="tel:${esc(d.riderPhone)}">📞 ไรเดอร์</a>`:''}
+      ${['wait','offer'].includes(d.status)?`<button class="btn sm" data-act="lmSwitch" data-id="${d.id}" type="button">🟢 เรียก LINE MAN แทน</button>`:''}
       <button class="btn sm danger" data-act="rdCancel" data-id="${d.id}" data-confirm="1" type="button">ยกเลิกงาน</button></div>`).join('')+'</div>'
     :'<p class="help" style="margin:0">ยังไม่มีงานส่ง · ยืนยันรับโอนในบิล Raptor Rider แล้วงานจะขึ้นที่นี่และส่งให้ไรเดอร์คิวแรกอัตโนมัติ</p>';
   if(done.length){const by={};done.forEach(d=>{const k=d.riderName||'?';by[k]=by[k]||{n:0,f:0};by[k].n++;by[k].f+=+d.fee||0});
     h+=`<div class="help" style="margin:0">วันนี้ส่งสำเร็จ ${done.length} เที่ยว · ค่าส่งรวม ${baht(done.reduce((a,d)=>a+(+d.fee||0),0))} · ${Object.entries(by).map(([k,v])=>`${esc(k)} ${v.n} เที่ยว ${baht(v.f)}`).join(' · ')}</div>`}
+  if(lmDone.length)h+=`<div class="help" style="margin:0">🟢 LINE MAN วันนี้ ${lmDone.length} เที่ยว · ร้านจ่าย LINE MAN รวม ${baht(lmDone.reduce((a,d)=>a+(+d.extCost||+d.fee||0),0))} · เก็บจากลูกค้า ${baht(lmDone.reduce((a,d)=>a+(+d.fee||0),0))}</div>`;
   {const pf=done.filter(d=>d.proofAt).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0)).slice(0,12);if(pf.length)h+=`<div class="inrow" style="flex-wrap:wrap;gap:6px"><span class="help" style="margin:0">📷 รูปตอนส่ง:</span>${pf.map(d=>`<button class="btn sm" data-act="dlProof" data-id="${esc(d.id)}" type="button">${esc(dlNo({orderNo:d.orderNo||d.billNo}))} ${d.doneAt?hm(d.doneAt):''}</button>`).join('')}</div>`}
   return h+'</div>'}
 document.addEventListener('change',e=>{const s=e.target.closest('[data-rdpick]');if(!s||!s.value)return;const d=(S.dlv||[]).find(x=>x.id===s.dataset.rdpick),r=(S.riders||[]).find(x=>x.id===s.value);if(d&&r)rdOffer(d,r,true).then(ok=>toast(ok?'ส่งงานให้ '+r.name+' แล้ว':'ส่งงานไม่สำเร็จ',ok?'':'bad'))});
@@ -3003,7 +3031,9 @@ function dlCalc(q,s,fee){const food=+q.food||linesTotal(q.items||[]),cf=Math.min
 function sheetDlReq(){const s=S.sheet,q=(S.dlReq||[]).find(x=>x.id===s.id);
   if(!q){$('#panel').innerHTML=head('ออร์เดอร์เดลิเวอรี่','')+'<div class="sh-body"><div class="empty">ไม่พบออร์เดอร์นี้แล้ว</div></div><div class="sh-foot"><button class="btn wide" data-act="close" type="button">ปิด</button></div>';return}
   const st=DL_ST[q.status]||[q.status,'mute'],items=q.items||[];if(s.fee===undefined)s.fee=String(q.fee??0);
-  const food=+q.food||linesTotal(items),fee=q.status==='new'?Math.max(0,Math.round(+s.fee||0)):(+q.fee||0);
+  if(s.via===undefined){s.via=q.via||(q.status==='new'&&rdCfg().on&&!rdReadyQueue().length?'lineman':'rider');s.lmFee=''}
+  const via=q.status==='new'?s.via:(q.via||'rider'),lm=via==='lineman',nReady=rdReadyQueue().length;
+  const food=+q.food||linesTotal(items),fee=q.status==='new'?dlFeeOf(s):(+q.fee||0);
   const dc=dlCalc(q,s,fee),amt=q.status==='new'?dc.amount:(+q.amount||+q.total||0);
   const out=items.filter(l=>{const m=(S.nMenu||S.menu).find(x=>x.id===l.menuId);return !m||isSoldOut(m)});
   if((q.slipAt||q.status==='slip')&&!(S.dlSlip&&S.dlSlip.id===q.id))dlSlipLoad(q.id);
@@ -3013,10 +3043,14 @@ function sheetDlReq(){const s=S.sheet,q=(S.dlReq||[]).find(x=>x.id===s.id);
    <div class="card rdcard"><div class="kv"><b>คุณ${esc(q.name)}</b><a class="btn sm" href="tel:${esc(q.phone)}">📞 ${esc(q.phone)}</a></div>
     <div class="help" style="margin:0">📍 ${esc(q.addr||'')}${q.note?'<br>📝 '+esc(q.note):''}</div>
     <div class="kv"><span>ระยะทาง ~${esc(String(q.km??'?'))} กม.</span><a class="lnk" href="${gNav(q.lat,q.lng,q.addr)}" target="_blank" rel="noopener">ดูแผนที่ ↗</a></div></div>
+   ${q.status==='new'?`<div class="card"><h3>ผู้ส่ง</h3><div class="chips" style="flex-wrap:wrap"><button class="chip" aria-pressed="${!lm}" data-act="dlVia" data-v="rider" type="button">🛵 ไรเดอร์ร้าน${rdCfg().on?` (พร้อม ${nReady})`:''}</button><button class="chip" aria-pressed="${lm}" data-act="dlVia" data-v="lineman" type="button">🟢 LINE MAN</button></div>
+     ${!lm&&rdCfg().on&&!nReady?'<div class="pwreq">⚠️ ตอนนี้ไม่มีไรเดอร์ร้านเปิด Ready · เลือก LINE MAN ได้</div>':''}
+     ${lm?`<button class="btn" data-act="dlLmCopy" type="button">📋 คัดลอกข้อมูลไปเรียก LINE MAN</button><span class="help">เปิดแอป LINE MAN → ส่งของ → วางที่อยู่/หมุดปลายทาง → ดูค่าส่ง แล้วใส่ "ค่าส่ง LINE MAN" ด้านล่าง (ลูกค้าจ่ายตามจริง ร้านจ่าย LINE MAN เอง) · ยังไม่ต้องกดเรียกจนกว่าลูกค้าจะโอน</span>`:''}</div>`
+     :q.via==='lineman'?'<div class="help">🟢 ส่งโดย LINE MAN (ร้านเรียกให้)</div>':''}
    ${out.length&&['new','accepted','slip'].includes(q.status)?`<div class="pwreq">⚠️ ตอนนี้ปิดขาย/หมด: <b>${out.map(l=>esc(l.name)).join(', ')}</b> · โทรถามลูกค้าก่อน หรือกดปฏิเสธ</div>`:''}
    <div class="list">${items.map(l=>`<div class="row"><div class="grow"><div class="t">${l.qty}× ${esc(l.name)}</div>${optLine(l)}${l.note?`<div class="note">${esc(l.note)}</div>`:''}</div><div class="r">${baht(lineAmt(l))}</div></div>`).join('')}
     <div class="row"><div class="grow">ค่าอาหาร</div><div class="r">${baht(food)}</div></div>
-    <div class="row"><div class="grow">ค่าส่ง Raptor Rider${q.status==='new'?` <small class="muted">(ระบบคิด ${baht(q.fee)} · แก้ได้)</small>`:''}</div><div class="r">${q.status==='new'?`<input id="dlFee" inputmode="numeric" value="${esc(s.fee)}" aria-label="ค่าส่ง" style="width:84px;text-align:right;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--fg)">`:baht(fee)}</div></div>
+    <div class="row"><div class="grow">${lm?'ค่าส่ง LINE MAN'+(q.status==='new'?' <small class="muted">(ตามแอป LINE MAN)</small>':''):'ค่าส่ง Raptor Rider'+(q.status==='new'?` <small class="muted">(ระบบคิด ${baht(q.fee)} · แก้ได้)</small>`:'')}</div><div class="r">${q.status==='new'?`<input id="dlFee" inputmode="numeric" value="${esc(lm?s.lmFee:s.fee)}" placeholder="${lm?'ใส่ค่าส่ง':''}" aria-label="ค่าส่ง" style="width:84px;text-align:right;border:1px solid ${lm&&!(+s.lmFee>0)?'var(--chili)':'var(--line)'};border-radius:8px;padding:6px 8px;background:var(--surface);color:var(--fg)">`:baht(fee)}</div></div>
     ${(q.cpns||[]).map(c=>`<div class="row"><div class="grow">🎟️ ${esc(c.name)} <small class="muted">${c.type==='fee'?'(ค่าส่ง)':'(ค่าอาหาร)'}</small></div><div class="r" style="color:var(--chili)">−${baht(c.type==='fee'?(q.status==='new'?dc.feeDisc:+q.cpnFee||0):c.disc)}</div></div>`).join('')}
     ${dc.memTxt?`<div class="row"><div class="grow">${dc.memTxt}</div><div class="r" style="color:var(--chili)">${dc.ptsDisc?'−'+baht(dc.ptsDisc):''}</div></div>`:''}
     <div class="row"><div class="grow"><b>ยอดที่ลูกค้าโอน</b></div><div class="r"><b id="dlAmt">${baht(amt)}</b></div></div></div>
@@ -3028,9 +3062,10 @@ function sheetDlReq(){const s=S.sheet,q=(S.dlReq||[]).find(x=>x.id===s.id);
      <div class="field"><label for="dlRsn">ข้อความถึงลูกค้า</label><input id="dlRsn" maxlength="120" value="${esc(s.rsn||'')}" autocomplete="off"></div>
      <div class="inrow"><button class="btn" data-act="dlRejX" type="button">ไม่ใช่</button><button class="btn danger wide" data-act="dlRejGo" type="button">${s.rej==='slip'?'ให้ลูกค้าแนบสลิปใหม่':'ยืนยัน · แจ้งลูกค้า'}</button></div></div>`:''}
    </div><div class="sh-foot">${dlFoot(q,amt)}</div>`;
-  const fi=$('#dlFee');if(fi)fi.addEventListener('change',()=>{s.fee=fi.value;sheetDlReq()});
+  const fi=$('#dlFee');if(fi)fi.addEventListener('change',()=>{if(s.via==='lineman')s.lmFee=fi.value;else s.fee=fi.value;sheetDlReq()});
   const pu=$('#dlPts');if(pu)pu.addEventListener('change',()=>{s.noPts=!pu.checked;sheetDlReq()});
   const ri=$('#dlRsn');if(ri)ri.addEventListener('input',()=>{s.rsn=ri.value})}
+const dlFeeOf=s=>Math.max(0,Math.round(+(s.via==='lineman'?s.lmFee:s.fee)||0));
 function dlFoot(q,amt){const pay=can('pay');
   if(q.status==='new')return `<button class="btn danger" data-act="dlRej" type="button">ปฏิเสธ</button><button class="btn pri wide" id="dlAcceptBtn" data-act="dlAccept" type="button">รับออเดอร์ · ${baht(amt)}</button>`;
   if(q.status==='accepted')return `<button class="btn danger" data-act="dlRej" type="button">ยกเลิก</button>${pay?`<button class="btn wide" data-act="dlPay" data-v="noslip" type="button">เงินเข้าแล้ว (ลูกค้าไม่ได้แนบสลิป)</button>`:'<span class="help grow">รอลูกค้าโอนและแนบสลิป</span>'}`;
@@ -3041,14 +3076,15 @@ async function dlPay(noSlip){if(!can('pay'))return deny();const s=S.sheet,q=(S.d
   if(noSlip&&!confirm('ตรวจในแอปธนาคารแล้วว่าได้รับเงิน '+baht(q.amount??q.total)+' จากคุณ'+q.name+' แล้วใช่ไหม?'))return;
   if(S.dlPaying)return;S.dlPaying=true;
   try{const now=Date.now(),id=q.id,fee=+q.fee||0,km=q.km??null;
-    const items=[...(q.items||[]).map(l=>({...l,served:false,by:'customer',cname:q.name,at:now})),rdFeeLine(fee,km)];
+    const via=q.via==='lineman'?'lineman':'rider';
+    const items=[...(q.items||[]).map(l=>({...l,served:false,by:'customer',cname:q.name,at:now})),rdFeeLine(fee,km,via)];
     const food0=+q.food||linesTotal(q.items||[]),cpnF=Math.min(food0,+q.cpnFood||0),cpnFe=Math.min(fee,+q.cpnFee||0),redeem=Math.min(food0-cpnF,+q.ptsDisc||0),use=+q.ptsUse||0;
     const sub=linesTotal(items),vc=vatCalc(sub-cpnF-cpnFe-redeem);const billNo=q.orderNo||await nextBillNo();
     const memPh=q.member?q.phone:'',st0=S.settings,earn=memPh&&st0.pointsOn?Math.floor(Math.max(0,vatCalc(food0-cpnF-redeem).beforeVat)/Math.max(1,+st0.pointsPer||50)+1e-9):0;
     let won=false;const ok=await write('dl_req/'+id,r=>r.transform(x=>['accepted','slip'].includes(x.status)?(won=true,{status:'paid',payAt:now,payBy:S.me||'',orderId:id,billNo,amount:vc.total}):null));
     if(!ok)return;if(!won){toast('ออร์เดอร์นี้ยืนยันไปแล้วจากอีกเครื่อง','bad');return}
-    const deliv={name:q.name,phone:q.phone,addr:q.addr,note:q.note||'',lat:q.lat,lng:q.lng,km,fee,manual:false};
-    const order={status:'paid',table:'TA',channel:'rider',online:true,dlReq:id,label:'Raptor Rider · คุณ'+q.name,customerName:q.name,deliv,openedAt:now,orderNo:q.orderNo||'',items,
+    const deliv={name:q.name,phone:q.phone,addr:q.addr,note:q.note||'',lat:q.lat,lng:q.lng,km,fee,manual:false,...(via==='lineman'?{via}:{})};
+    const order={status:'paid',table:'TA',channel:'rider',online:true,dlReq:id,label:(via==='lineman'?'LINE MAN · คุณ':'Raptor Rider · คุณ')+q.name,customerName:q.name,deliv,openedAt:now,orderNo:q.orderNo||'',items,
       ...(memPh?{memberPhone:memPh,memberName:q.memberName||q.name,ptsUsed:use,ptsEarned:earn,redeem}:{}),...((q.cpns||[]).length?{cpns:q.cpns.map(c=>({...c,disc:c.type==='fee'?cpnFe:c.disc}))}:{}),
       paidAt:now,billNo,method:'promptpay',subtotal:r2(sub),discount:r2(cpnF+cpnFe),total:vc.total,cost:r2(linesCost(items)),received:vc.total,change:0,ref:'',gp:0,net:vc.total,
       vat:vc.vat,vatRate:vc.rate,vatMode:vc.mode,beforeVat:vc.beforeVat,roundOff:vc.round||0,rcptTok:rcTok()};
@@ -3060,7 +3096,7 @@ async function dlPay(noSlip){if(!can('pay'))return deny();const s=S.sheet,q=(S.d
     if(memPh){try{const bal=await applyPoints(memPh,q.memberName||q.name,use,earn,vc.total,'บิล '+billNo+' (เดลิเวอรี่)');write('orders/'+id,r=>r.update({ptsBalance:bal}))}catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
     await rdCreateJob({id,...order});
     if(q.amount!=null&&Math.abs(vc.total-(+q.amount))>0.01)toast('ยอดบิล '+baht(vc.total)+' ไม่ตรงกับที่แจ้งลูกค้า '+baht(q.amount)+' ตรวจอีกครั้ง','bad');
-    else toast('ยืนยันรับเงินแล้ว · เข้าคิวครัว และส่งหาไรเดอร์');
+    else toast(via==='lineman'?'ยืนยันรับเงินแล้ว · เข้าคิวครัว · 🟢 เรียก LINE MAN ได้เลย (ดูที่แผง Raptor Rider)':'ยืนยันรับเงินแล้ว · เข้าคิวครัว และส่งหาไรเดอร์');
     closeSheet();render()}
   finally{S.dlPaying=false}}
 function dlPanel(){const c=rdCfg();if(!c.selfOn||!canDl())return '';const L=(S.dlReq||[]).filter(q=>['new','accepted','slip'].includes(q.status));const on=shopOpen();
@@ -3121,10 +3157,29 @@ Object.assign(ACT,{
       if(ok&&done){toast('แจ้งลูกค้าให้แนบสลิปใหม่แล้ว');s.rej=null;sheetDlReq()}else if(ok)toast('สถานะเปลี่ยนไปแล้ว','bad');return}
     let done=false;const ok=await write('dl_req/'+id,r=>r.transform(q=>['new','accepted','slip'].includes(q.status)?(done=true,{status:'rejected',reason:why,rejectAt:Date.now(),rejectBy:S.me||''}):null));
     if(ok&&done){toast('ยกเลิกออร์เดอร์แล้ว ระบบแจ้งลูกค้าให้');closeSheet()}else if(ok)toast('สถานะเปลี่ยนไปแล้ว','bad')},
-  dlAccept:async()=>{const s=S.sheet,q=(S.dlReq||[]).find(x=>x.id===s.id);if(!q)return;const fee=Math.max(0,Math.round(+s.fee||0)),dc=dlCalc(q,s,fee),amount=dc.amount;
-    let done=false;const ok=await write('dl_req/'+q.id,r=>r.transform(x=>x.status==='new'?(done=true,{status:'accepted',fee,amount,cpnFee:dc.feeDisc,ptsUse:dc.use,ptsDisc:dc.ptsDisc,acceptAt:Date.now(),acceptBy:S.me||''}):null));
+  dlVia:d=>{S.sheet.via=d.v;sheetDlReq()},
+  lmCopyJob:d=>{const j=(S.dlv||[]).find(x=>x.id===d.id);if(j)lmCopy(j.cust||{},dlNo({orderNo:j.orderNo||j.billNo}))},
+  lmBook:d=>openSheet({type:'lmBook',id:d.id}),
+  lmSwitch:async d=>{const j=(S.dlv||[]).find(x=>x.id===d.id);if(!j)return;
+    if(!confirm('เปลี่ยนงานนี้เป็นส่งด้วย LINE MAN?\nลูกค้าจ่ายค่าส่งไปแล้ว '+baht(j.fee)+' · ถ้า LINE MAN แพงกว่า ร้านจ่ายส่วนต่างเอง'))return;
+    let ok=false;await write('deliveries/'+d.id,r=>r.transform(x=>['wait','offer'].includes(x.status)?(ok=true,{status:'ext',ext:'lineman',extCost:+x.fee||0,offerTo:null}):null));
+    if(!ok)return toast('งานนี้ไรเดอร์รับไปแล้ว หรือเปลี่ยนสถานะแล้ว','bad');Object.assign(j,{status:'ext',ext:'lineman',extCost:+j.fee||0,offerTo:null});render();openSheet({type:'lmBook',id:d.id})},
+  lmSave:async d=>{const j=(S.dlv||[]).find(x=>x.id===d.id);if(!j)return;const u=val('lmUrl').trim(),nm=val('lmName').trim(),ph=val('lmPhone').replace(/[^\d+]/g,''),cost=Math.max(0,Math.round(+val('lmCost')||0));const e=$('#lmErr');
+    if(u&&!okUrl(u)){if(e)e.textContent='ลิงก์ต้องขึ้นต้นด้วย https://';return}
+    const patch={extUrl:u,extName:nm.slice(0,40),extPhone:ph.slice(0,12),extCost:cost,riderName:'LINE MAN'+(nm?' · '+nm.slice(0,40):''),riderPhone:ph.slice(0,12)};
+    let ok=false;await write('deliveries/'+d.id,r=>r.transform(x=>['ext','accepted','picked'].includes(x.status)?(ok=true,{...patch,...(x.status==='ext'?{status:'accepted',acceptedAt:Date.now()}:{})}):null));
+    if(!ok)return toast('บันทึกไม่ได้ งานนี้เปลี่ยนสถานะแล้ว','bad');Object.assign(j,patch,j.status==='ext'?{status:'accepted',acceptedAt:Date.now()}:{});closeSheet();render();toast('บันทึกแล้ว · ลูกค้าเห็นข้อมูลไรเดอร์ LINE MAN')},
+  lmPicked:async d=>{const j=(S.dlv||[]).find(x=>x.id===d.id);if(!j)return;const at=Date.now();let ok=false;
+    await write('deliveries/'+d.id,r=>r.transform(x=>x.status==='accepted'?(ok=true,{status:'picked',pickedAt:at}):null));if(ok){Object.assign(j,{status:'picked',pickedAt:at});render();toast('อัปเดตแล้ว · แจ้งลูกค้าว่ากำลังไปส่ง')}},
+  lmDone:async d=>{const j=(S.dlv||[]).find(x=>x.id===d.id);if(!j)return;const at=Date.now();let ok=false;
+    await write('deliveries/'+d.id,r=>r.transform(x=>['accepted','picked'].includes(x.status)?(ok=true,{status:'done',doneAt:at,...(x.pickedAt?{}:{pickedAt:at})}):null));if(ok){Object.assign(j,{status:'done',doneAt:at});render();toast('🎉 ส่งสำเร็จ · แจ้งลูกค้าแล้ว')}},
+  dlLmCopy:()=>{const q=(S.dlReq||[]).find(x=>x.id===S.sheet.id);if(q)lmCopy(q,dlNo(q))},
+  dlAccept:async()=>{const s=S.sheet,q=(S.dlReq||[]).find(x=>x.id===s.id);if(!q)return;const fi=$('#dlFee');if(fi){if(s.via==='lineman')s.lmFee=fi.value;else s.fee=fi.value}
+    const via=s.via==='lineman'?'lineman':'rider',fee=dlFeeOf(s);if(via==='lineman'&&!(fee>0)){toast('ใส่ค่าส่ง LINE MAN ตามแอปก่อน','bad');sheetDlReq();return}
+    const dc=dlCalc(q,s,fee),amount=dc.amount;
+    let done=false;const ok=await write('dl_req/'+q.id,r=>r.transform(x=>x.status==='new'?(done=true,{status:'accepted',via,fee,amount,cpnFee:dc.feeDisc,ptsUse:dc.use,ptsDisc:dc.ptsDisc,acceptAt:Date.now(),acceptBy:S.me||''}):null));
     if(!ok)return;if(!done)return toast('ออร์เดอร์นี้มีคนกดไปแล้ว หรือลูกค้ายกเลิก','bad');
-    Object.assign(q,{status:'accepted',fee,amount});toast('รับออเดอร์แล้ว · ระบบแจ้งลูกค้าให้โอน '+baht(amount));sheetDlReq();renderCalls()},
+    Object.assign(q,{status:'accepted',via,fee,amount});toast('รับออเดอร์แล้ว · ระบบแจ้งลูกค้าให้โอน '+baht(amount));sheetDlReq();renderCalls()},
   dlPay:d=>dlPay(d.v==='noslip'),
   dlBill:d=>{const o=(S.today||[]).find(x=>x.id===d.id);if(o)openSheet({type:'receipt',order:o,mode:'receipt'});else toast('ไม่พบบิลนี้ในรายการวันนี้','bad')},
   dlLink:()=>openSheet({type:'dlLink'}),

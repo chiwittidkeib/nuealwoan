@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1700">
+<meta name="app-version" content="2026.10.16-1820">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#14110f">
 <title>สั่งเดลิเวอรี่ · เนื้อล้วนๆ</title>
@@ -65,8 +65,10 @@ main{flex:1}
 .item .pr{margin-top:auto;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums}
 .item em{position:absolute;top:8px;right:8px;font-style:normal;background:var(--red);color:#fff;border-radius:999px;min-width:26px;height:26px;line-height:26px;text-align:center;font-weight:700;font-size:13px;padding:0 7px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .item.is-out{cursor:not-allowed}.item.is-out .ph img{filter:grayscale(1);opacity:.45}.item.is-out .tx{opacity:.55}
-.stamp{position:absolute;top:34%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);width:88px;height:88px;border:3px solid #e5383b;border-radius:50%;color:#e5383b;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,.88);z-index:2;pointer-events:none;font-size:15px}
-.stamp i{font-style:normal;font-size:10px;letter-spacing:.6px}
+.stamp{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);width:92px;height:92px;border:3px solid #e5383b;border-radius:50%;color:#ff4d4f;font-weight:800;font-size:17px;line-height:1;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;background:rgba(25,6,6,.82);box-shadow:inset 0 0 0 3px rgba(229,56,59,.35),0 0 0 2px rgba(229,56,59,.25);pointer-events:none;z-index:2}
+.stamp b{display:block;font-weight:800;font-size:17px;line-height:1.15;padding-bottom:3px;border-bottom:2px solid currentColor;margin:0}
+.stamp i{display:block;font-style:normal;font-weight:800;font-size:.62em;letter-spacing:.6px;text-transform:uppercase;line-height:1}
+.stamp b,.stamp i{color:#5ec59c!important;opacity:1!important}
 .leftq{display:inline-block;font-size:12px;font-weight:700;color:#8a5a00;background:var(--gold-soft);border-radius:999px;padding:1px 8px;align-self:flex-start}
 .leftq.low{color:#fff;background:#c2410c}
 .cath{font-size:18px;margin:6px 2px -4px;display:flex;align-items:center;gap:8px}.cath::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -529,15 +531,22 @@ function renderStatus(){const d=S.st,v=$('#view');$('#footIn').innerHTML='';$('#
     picked:['🛵','<span class="pulse"></span>ไรเดอร์กำลังไปส่ง',`${esc(dv.riderName||'ไรเดอร์')} รับอาหารแล้ว${dv.pickedAt?' ตอน '+hm(dv.pickedAt):''}`],
     done:['🎉','ส่งอาหารสำเร็จ',`${dv.doneAt?'ส่งถึงเวลา '+hm(dv.doneAt)+' น. · ':''}ขอบคุณที่สั่งนะครับ`],
     rejected:['😢','ร้านรับออร์เดอร์ไม่ได้',esc(d.reason||'ขออภัยครับ')],cancelled:['🗑️','ยกเลิกออร์เดอร์แล้ว','สั่งใหม่ได้ทุกเมื่อ'],dlvcancel:['ℹ️','งานส่งถูกยกเลิก','ติดต่อร้านได้เลย']}[stg]||['🛵','กำลังดำเนินการ',''];
+  if(dv.ext||d.via==='lineman'){const nm=String(dv.riderName||'').replace(/^LINE MAN( · )?/,'');
+    if(stg==='ready')sc[2]=dv.status==='accepted'?`ไรเดอร์ LINE MAN ${esc(nm)} กำลังมารับที่ร้าน`:'<span class="pulse"></span>ร้านกำลังเรียกไรเดอร์ LINE MAN มารับ';
+    if(stg==='ready_rider')sc[2]=`ไรเดอร์ LINE MAN ${esc(nm)} กำลังมารับที่ร้าน`;
+    if(stg==='picked')sc[2]=`ไรเดอร์ LINE MAN ${esc(nm)} รับอาหารแล้ว${dv.pickedAt?' ตอน '+hm(dv.pickedAt):''}`}
   if(stg==='queue'&&k.ahead>0)sc[2]=`<div class="big">อีก ${k.ahead} คิว</div>ก่อนถึงออร์เดอร์ของคุณ`;
   let h=`<div class="card stage${stg==='done'?' ok':bad?' bad':''}"><div class="em">${sc[0]}</div><h2>${sc[1]}</h2><div class="sub">${sc[2]}</div></div>
    ${bad?'':`<div class="card"><div class="steps">${steps}</div></div>`}`;
   if(stg==='accepted'||stg==='slipbad'){
     h+=`<div class="card">${stg==='slipbad'?`<div class="warn">⚠️ ร้านแจ้ง: <b>${esc(d.slipBad||'')}</b></div>`:''}
-      ${pp?`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,amt))}<b>${baht(amt)}</b><small>ค่าอาหาร ${baht(d.food)} + ค่าส่ง ${baht(d.fee)}</small></div><p class="help" style="text-align:center">กดค้างที่ QR เพื่อบันทึกรูป แล้วเปิดในแอปธนาคาร</p>`:`<div class="warn">ร้านยังไม่ได้ตั้งพร้อมเพย์ โทรถามเลขบัญชีกับร้าน${d.shopPhone?` <a href="tel:${esc(d.shopPhone)}">${esc(d.shopPhone)}</a>`:''}</div>`}
+      ${pp?`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,amt))}<b>${baht(amt)}</b><small>ค่าอาหาร ${baht(d.food)} + ค่าส่ง${d.via==='lineman'?' LINE MAN':''} ${baht(d.fee)}</small></div><p class="help" style="text-align:center">กดค้างที่ QR เพื่อบันทึกรูป แล้วเปิดในแอปธนาคาร</p>`:`<div class="warn">ร้านยังไม่ได้ตั้งพร้อมเพย์ โทรถามเลขบัญชีกับร้าน${d.shopPhone?` <a href="tel:${esc(d.shopPhone)}">${esc(d.shopPhone)}</a>`:''}</div>`}
       ${slipBox()}</div>`}
   if(stg==='slip')h+=`<div class="card">${S.slipSent&&S.slipSent.id===S.id?`<div class="slipok"><img src="${S.slipSent.img}" alt="สลิป" data-a="viewSlip"><div class="grow"><b>✓ ส่งสลิปแล้ว</b><small class="muted">ร้านกำลังตรวจยอด ${baht(amt)}</small></div></div>`:`<div class="slipok"><span style="font-size:30px">📎</span><div class="grow"><b>✓ ส่งสลิปแล้ว</b><small class="muted">ร้านกำลังตรวจยอด ${baht(amt)}</small></div></div>`}<label class="btn sm" for="slipIn">ส่งสลิปใหม่</label></div>`;
-  if(dv.status&&['accepted','picked'].includes(dv.status)&&dv.riderName)h+=`<div class="card"><div class="rider"><span class="av">🛵</span><div style="flex:1"><b>${esc(dv.riderName)}</b>${dv.riderPlate?`<span class="plate">${esc(dv.riderPlate)}</span>`:''}<div class="help">${dv.status==='picked'?'กำลังไปส่งอาหารให้คุณ':'กำลังไปรับอาหารที่ร้าน'}</div></div></div>
+  if(dv.ext&&['accepted','picked'].includes(dv.status)){const nm=String(dv.riderName||'').replace(/^LINE MAN( · )?/,'');
+    h+=`<div class="card"><div class="rider"><span class="av" style="background:#06c755;color:#fff">LM</span><div style="flex:1"><b>LINE MAN${nm?' · '+esc(nm):''}</b><div class="help">${dv.status==='picked'?'กำลังไปส่งอาหารให้คุณ':'กำลังไปรับอาหารที่ร้าน'} · ร้านเรียกไรเดอร์ให้</div></div></div>
+    <div class="row2">${dv.extUrl?`<a class="btn ok wide" href="${esc(dv.extUrl)}" target="_blank" rel="noopener">📍 ติดตามไรเดอร์ LINE MAN</a>`:'<span class="help" style="flex:1">ติดตามสถานะได้ที่หน้านี้</span>'}${dv.riderPhone?`<a class="btn" href="tel:${esc(dv.riderPhone)}">📞</a>`:''}</div></div>`}
+  else if(dv.status&&['accepted','picked'].includes(dv.status)&&dv.riderName)h+=`<div class="card"><div class="rider"><span class="av">🛵</span><div style="flex:1"><b>${esc(dv.riderName)}</b>${dv.riderPlate?`<span class="plate">${esc(dv.riderPlate)}</span>`:''}<div class="help">${dv.status==='picked'?'กำลังไปส่งอาหารให้คุณ':'กำลังไปรับอาหารที่ร้าน'}</div></div></div>
     <div class="row2"><a class="btn ok wide" href="track.html?d=${encodeURIComponent(d.orderId)}&t=${encodeURIComponent(dv.tok||'')}">📍 ดูไรเดอร์บนแผนที่</a>${dv.riderPhone?`<a class="btn" href="tel:${esc(dv.riderPhone)}">📞</a>`:''}</div></div>`;
   if(stg==='done'){h+=`<div class="card">${S.proof&&S.proof.img?`<b>📷 รูปตอนส่งอาหาร</b><img class="proof" src="${esc(S.proof.img)}" alt="รูปตอนส่งอาหาร" data-a="viewProof">`:dv.proofAt?'<span class="help">กำลังโหลดรูปตอนส่ง…</span>':''}
     ${d.receipt&&d.receipt.tok?`<a class="btn" href="receipt.html?r=${encodeURIComponent(d.receipt.id)}&t=${encodeURIComponent(d.receipt.tok)}">🧾 ดู / บันทึกใบเสร็จ</a>`:''}<button class="btn pri" data-a="again" type="button">สั่งอีกครั้ง</button></div>`}
@@ -546,7 +555,7 @@ function renderStatus(){const d=S.st,v=$('#view');$('#footIn').innerHTML='';$('#
     <div class="list">${(d.items||[]).map(l=>`<div class="li"><div class="g">${l.qty}× ${esc(l.name)}${optLine(l)}${l.note?`<div class="note">${esc(l.note)}</div>`:''}</div><div class="r">${baht(((+l.price||0)+(+l.extra||0))*l.qty)}</div></div>`).join('')}
      <div class="li"><div class="g">ค่าอาหาร</div><div class="r">${baht(d.food)}</div></div>${(d.cpns||[]).filter(c=>c.type!=='fee').map(c=>`<div class="li"><div class="g">🎟️ ${esc(c.name)}</div><div class="r neg">−${baht(c.disc)}</div></div>`).join('')}
      ${+(d.status==='new'?d.ptsDisc:(d.ptsUse!=null?d.ptsDisc:d.ptsDisc))?`<div class="li"><div class="g">⭐ ใช้ ${d.status==='new'?d.ptsReq:(d.ptsUse??d.ptsReq)} แต้ม${d.status==='new'?' (รอร้านยืนยัน)':''}</div><div class="r neg">−${baht(d.ptsDisc)}</div></div>`:''}
-     <div class="li"><div class="g">ค่าส่ง ${d.km!=null?'('+d.km+' กม.)':''}</div><div class="r">${baht(d.fee)}</div></div>${(d.cpns||[]).filter(c=>c.type==='fee').map(c=>`<div class="li"><div class="g">🎟️ ${esc(c.name)}</div><div class="r neg">−${baht(d.cpnFee!=null?Math.min(+d.cpnFee,+d.fee):c.disc)}</div></div>`).join('')}
+     <div class="li"><div class="g">ค่าส่ง${d.via==='lineman'?' LINE MAN':''} ${d.km!=null?'('+d.km+' กม.)':''}</div><div class="r">${baht(d.fee)}</div></div>${(d.cpns||[]).filter(c=>c.type==='fee').map(c=>`<div class="li"><div class="g">🎟️ ${esc(c.name)}</div><div class="r neg">−${baht(d.cpnFee!=null?Math.min(+d.cpnFee,+d.fee):c.disc)}</div></div>`).join('')}
      <div class="li sum"><div class="g"><b>${['new'].includes(d.status)?'ยอดโดยประมาณ':'ยอดรวม'}</b></div><b>${baht(amt)}</b></div></div>
     <div class="help">📍 ส่งที่: คุณ${esc(d.name)} · ${esc(d.addr||'')}${d.note?' · '+esc(d.note):''}</div>
     <div class="row2" style="flex-wrap:wrap">${d.shopPhone?`<a class="btn sm" href="tel:${esc(d.shopPhone)}">📞 โทรหาร้าน</a>`:''}${['new','accepted'].includes(d.status)?'<button class="btn sm" data-a="cancel" type="button">ยกเลิกออร์เดอร์</button>':''}</div></div>`;

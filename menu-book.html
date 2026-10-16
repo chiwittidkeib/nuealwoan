@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1400">
+<meta name="app-version" content="2026.10.16-1820">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0907">
 <title>เมนู · เนื้อล้วนๆ</title>
@@ -64,6 +64,13 @@ body{display:flex;flex-direction:column;background:radial-gradient(120% 70% at 5
 .it p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.45}
 .it .op{font-size:12.5px;color:#d9c39a}
 .it.off .ph img{filter:grayscale(1);opacity:.4}.it.off .tx{opacity:.55}
+.it .ph{position:relative}
+.stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);width:74px;height:74px;border:3px solid #e5383b;border-radius:50%;color:#ff4d4f;font-weight:800;font-size:14px;line-height:1;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;background:rgba(25,6,6,.82);box-shadow:inset 0 0 0 3px rgba(229,56,59,.35),0 0 0 2px rgba(229,56,59,.25);pointer-events:none;z-index:2}
+.stamp b{display:block;font-weight:800;font-size:14px;line-height:1.15;padding-bottom:3px;border-bottom:2px solid currentColor;margin:0}
+.stamp i{display:block;font-style:normal;font-weight:800;font-size:.62em;letter-spacing:.6px;text-transform:uppercase;line-height:1}
+.stamp b,.stamp i{color:#5ec59c!important;opacity:1!important}
+.leftq{display:inline-block;align-self:flex-start;width:max-content;font-size:12px;font-weight:700;color:#ffd58a;background:rgba(255,190,80,.14);border-radius:999px;padding:1px 8px;margin-top:4px}
+.leftq.low{color:#fff;background:#c2410c}
 .badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-top:2px;align-self:flex-start}
 .badge.rec{background:linear-gradient(90deg,var(--gold),var(--gold2));color:#1d1307}.badge.out{background:rgba(229,56,59,.18);color:#ff8a8c;border:1px solid rgba(229,56,59,.5)}
 .it+.it{padding-top:14px;border-top:1px solid rgba(217,164,65,.12)}
@@ -111,7 +118,7 @@ function build(d){D=d;PAGES=[];const menu=d.menu||[];
   const html=PAGES.map((p,i)=>{let h='';
     if(p.k==='cover')h=`<div class="sheet cover"><div class="inner"><img class="lg" src="${esc(d.logo||'images/logo-nl.png')}" alt=""><h1>${esc(d.shopName||'เนื้อล้วนๆ')}</h1>${d.shopNameEn?`<div class="en">${esc(d.shopNameEn)}</div>`:''}<div class="menu">MENU</div>${d.tag?`<div class="tag">${esc(d.tag)}</div>`:''}<div class="hint">ปัดเพื่อเปิดเล่ม <span>›</span></div><small style="color:var(--goldd)">อัปเดต ${esc(upd)}</small></div></div>`;
     else if(p.k==='toc')h=`<div class="sheet toc"><div class="inner"><h2>สารบัญ</h2><div class="orn">✦</div><ol>${Object.entries(firstOf).map(([c,ix])=>`<li><button data-a="go" data-i="${ix}" type="button">${esc(c)}<span>${ix+1}</span></button></li>`).join('')}</ol></div><div class="pno">${i+1}</div></div>`;
-    else if(p.k==='cat')h=`<div class="sheet cat"><div class="inner"><h2>${esc(p.c)}${p.cont?' <small style="font-size:14px;color:var(--muted)">(ต่อ)</small>':''}</h2><div class="orn">✦</div><div class="items">${p.items.map(m=>`<div class="it${m.soldOut?' off':''}"><div class="ph" data-a="zoom" data-id="${esc(m.id)}">${m.img?`<img src="${esc(m.img)}" alt="" loading="lazy">`:'🍜'}</div><div class="tx"><div class="nm"><b>${esc(m.name)}</b><em>${baht(m.price)}</em></div>${m.desc?`<p>${esc(m.desc)}</p>`:''}${m.opts?`<div class="op">${esc(m.opts)}</div>`:''}${m.rec?'<span class="badge rec">★ แนะนำ</span>':''}${m.soldOut?'<span class="badge out">หมดชั่วคราว</span>':''}</div></div>`).join('')}</div></div><div class="pno">${i+1}</div></div>`;
+    else if(p.k==='cat')h=`<div class="sheet cat"><div class="inner"><h2>${esc(p.c)}${p.cont?' <small style="font-size:14px;color:var(--muted)">(ต่อ)</small>':''}</h2><div class="orn">✦</div><div class="items">${p.items.map(m=>`<div class="it${m.soldOut?' off':''}"><div class="ph" data-a="zoom" data-id="${esc(m.id)}">${m.img?`<img src="${esc(m.img)}" alt="" loading="lazy">`:'🍜'}${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}</div><div class="tx"><div class="nm"><b>${esc(m.name)}</b><em>${baht(m.price)}</em></div>${m.desc?`<p>${esc(m.desc)}</p>`:''}${m.opts?`<div class="op">${esc(m.opts)}</div>`:''}${m.rec?'<span class="badge rec">★ แนะนำ</span>':''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></div>`).join('')}</div></div><div class="pno">${i+1}</div></div>`;
     else h=`<div class="sheet back"><div class="inner"><img src="${esc(d.logo||'images/logo-nl.png')}" alt="" style="width:110px;height:110px;object-fit:contain"><h2>ขอบคุณที่แวะมาครับ</h2><div class="orn">✦</div>
       ${d.deliveryOn?`<a class="cta pri" href="${esc(base('delivery.html'))}">🛵 สั่งเดลิเวอรี่${d.open?'':' <small style="font-weight:400">(ตอนนี้ปิด)</small>'}</a>`:''}
       <a class="cta" href="${esc(base('card.html'))}">⭐ บัตรสะสมแต้ม / คูปอง</a>
