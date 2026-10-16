@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1030">
+<meta name="app-version" content="2026.10.16-1045">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -691,7 +691,7 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .rc-ty::before,.rc-ty::after{content:"";width:24px;height:1.5px;background:currentColor}
 .rc-brand .rc-foot small{display:block;font-size:11.5px}
 .rc-hrt{color:var(--rg)}
-.staffrow{flex-wrap:wrap;row-gap:6px}.staffrow .grow{flex-basis:140px}
+.staffrow{flex-wrap:wrap;row-gap:8px}.staffrow .grow{flex-basis:120px;min-width:0}.stact{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;margin-left:auto}.stact .sm-sel{max-width:118px}
 .sgtabs{position:sticky;top:-14px;z-index:3;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:-4px 0 4px;padding:6px 0;background:var(--bg)}
 .sgtabs button{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:12px;padding:8px 4px;font:inherit;font-size:12px;font-weight:600;line-height:1.2;text-align:center;cursor:pointer;min-height:58px}
 .sgtabs button span{font-size:20px}
@@ -2045,7 +2045,7 @@ async function loadStaff(){const box=$('#staffList');if(!box)return;
   if(!$('#staffList'))return;
   if(error){box.innerHTML='<p class="err">โหลดรายชื่อพนักงานไม่ได้ ลองรัน schema.sql เวอร์ชันล่าสุด</p>';return}
   box.innerHTML='<div class="list">'+data.map(r=>{const u=r.username||emailToUser(r.email),me=u===S.me;
-    return `<div class="row staffrow"><div class="grow"><div class="t">${r.display_name?esc(r.display_name)+' <small class="muted">('+esc(u)+')</small>':esc(u)} ${me?'<span class="pill mute">คุณ</span>':''}</div><div class="s rolec-${roleKey(r.role)}">${roleName(r.role)}${r.line_name?` · <span style="color:#06c755">🟢 LINE ${esc(r.line_name)}</span>`:''}</div></div>${r.line_name&&!me?`<button class="btn sm ghost" data-act="slUnlinkOther" data-email="${esc(r.email)}" data-user="${esc(u)}" data-confirm="1" type="button" title="ยกเลิกการผูก LINE">✕ LINE</button>`:''}${me?'':`<button class="btn sm ghost" data-act="staffName" data-email="${esc(r.email)}" data-name="${esc(r.display_name||'')}" data-user="${esc(u)}" type="button">✏️ ชื่อ</button><select class="sm-sel" data-role-for="${esc(r.email)}" aria-label="ตำแหน่งของ ${esc(u)}">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${roleKey(r.role)===k?'selected':''}>${v}</option>`).join('')}</select><button class="btn sm" data-act="staffPwOpen" data-user="${esc(u)}" type="button">ตั้งรหัส</button><button class="btn sm danger" data-act="staffDel" data-user="${esc(u)}" data-confirm="1" type="button">ลบ</button>`}</div>`}).join('')+'</div>';
+    return `<div class="row staffrow"><div class="grow"><div class="t">${r.display_name?esc(r.display_name)+' <small class="muted">('+esc(u)+')</small>':esc(u)} ${me?'<span class="pill mute">คุณ</span>':''}</div><div class="s rolec-${roleKey(r.role)}">${roleName(r.role)}${r.line_name?` · <span style="color:#06c755">🟢 LINE ${esc(r.line_name)}</span>`:''}</div></div>${r.line_name&&!me?`<button class="btn sm ghost" data-act="slUnlinkOther" data-email="${esc(r.email)}" data-user="${esc(u)}" data-confirm="1" type="button" title="ยกเลิกการผูก LINE">✕ LINE</button>`:''}${me?'':`<div class="stact"><button class="btn sm ghost" data-act="staffName" data-email="${esc(r.email)}" data-name="${esc(r.display_name||'')}" data-user="${esc(u)}" type="button">✏️ ชื่อ</button><select class="sm-sel" data-role-for="${esc(r.email)}" aria-label="ตำแหน่งของ ${esc(u)}">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${roleKey(r.role)===k?'selected':''}>${v}</option>`).join('')}</select><button class="btn sm" data-act="staffPwOpen" data-user="${esc(u)}" type="button">ตั้งรหัส</button><button class="btn sm danger" data-act="staffDel" data-user="${esc(u)}" data-name="${esc(r.display_name||'')}" data-role="${esc(roleName(r.role))}" type="button">ลบ</button></div>`}</div>`}).join('')+'</div>';
   box.querySelectorAll('[data-role-for]').forEach(sel=>sel.addEventListener('change',async()=>{
     const {error}=await SB.from('staff').update({role:sel.value}).eq('email',sel.dataset.roleFor);
     toast(error?'เปลี่ยนตำแหน่งไม่สำเร็จ':'เปลี่ยนตำแหน่งแล้ว',error?'bad':'');if(error)loadStaff()}));}
@@ -2303,7 +2303,7 @@ const ACT={
   permSave:async()=>{const roles={waiter:{},chef:{},partner:{}};document.querySelectorAll('[data-perm]').forEach(c=>{const [r,k]=c.dataset.perm.split(':');roles[r][k]=c.checked});
     const ok=await write('config/permissions',r=>r.set({roles}));if(ok){S.perms=roles;toast('บันทึกสิทธิ์แล้ว มีผลกับทุกเครื่องทันที')}},
   staffCreate,
-  staffDel:async d=>{const {error}=await SB.rpc('admin_delete_user',{p_username:d.user});if(error)toast(adminErr(error),'bad');else{toast('ลบบัญชีแล้ว เข้าระบบไม่ได้อีก');loadStaff()}},
+  staffDel:async d=>{if(!confirm(`ยืนยันลบบัญชี "${d.name?d.name+' ('+d.user+')':d.user}" · ${d.role||''}?\n\nพนักงานคนนี้จะเข้าระบบไม่ได้อีก (รวมถึงเข้าด้วย LINE)\nยอดขายและข้อมูลเดิมของร้านไม่หาย`))return;const {error}=await SB.rpc('admin_delete_user',{p_username:d.user});if(error)toast(adminErr(error),'bad');else{toast('ลบบัญชีแล้ว เข้าระบบไม่ได้อีก');loadStaff()}},
   staffPwOpen:d=>openSheet({type:'staffPw',user:d.user}),
   staffPwSave:async()=>{const pw=$('#spPw').value,er=$('#spErr');if(pw.length<6){er.textContent='รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร';return}
     const btn=$('#spBtn');btn.disabled=true;const {error}=await SB.rpc('admin_set_password',{p_username:S.sheet.user,p_password:pw});btn.disabled=false;
