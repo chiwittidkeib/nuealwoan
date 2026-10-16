@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1820">
+<meta name="app-version" content="2026.10.16-1850">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0907">
 <title>เมนู · เนื้อล้วนๆ</title>
@@ -90,6 +90,7 @@ body{display:flex;flex-direction:column;background:radial-gradient(120% 70% at 5
 .imgview img{max-width:100%;max-height:78%;object-fit:contain;border-radius:12px}.imgview b{font-family:var(--f-d);font-size:20px}.imgview span{color:var(--gold2);font-family:var(--f-d);font-size:20px}
 .msg{padding:40px 24px;text-align:center;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.sheet{transform:none!important}.hint{animation:none}}
+.it .ph img.noimg{object-fit:cover;background:#15120f}
 </style>
 </head>
 <body>
@@ -118,7 +119,7 @@ function build(d){D=d;PAGES=[];const menu=d.menu||[];
   const html=PAGES.map((p,i)=>{let h='';
     if(p.k==='cover')h=`<div class="sheet cover"><div class="inner"><img class="lg" src="${esc(d.logo||'images/logo-nl.png')}" alt=""><h1>${esc(d.shopName||'เนื้อล้วนๆ')}</h1>${d.shopNameEn?`<div class="en">${esc(d.shopNameEn)}</div>`:''}<div class="menu">MENU</div>${d.tag?`<div class="tag">${esc(d.tag)}</div>`:''}<div class="hint">ปัดเพื่อเปิดเล่ม <span>›</span></div><small style="color:var(--goldd)">อัปเดต ${esc(upd)}</small></div></div>`;
     else if(p.k==='toc')h=`<div class="sheet toc"><div class="inner"><h2>สารบัญ</h2><div class="orn">✦</div><ol>${Object.entries(firstOf).map(([c,ix])=>`<li><button data-a="go" data-i="${ix}" type="button">${esc(c)}<span>${ix+1}</span></button></li>`).join('')}</ol></div><div class="pno">${i+1}</div></div>`;
-    else if(p.k==='cat')h=`<div class="sheet cat"><div class="inner"><h2>${esc(p.c)}${p.cont?' <small style="font-size:14px;color:var(--muted)">(ต่อ)</small>':''}</h2><div class="orn">✦</div><div class="items">${p.items.map(m=>`<div class="it${m.soldOut?' off':''}"><div class="ph" data-a="zoom" data-id="${esc(m.id)}">${m.img?`<img src="${esc(m.img)}" alt="" loading="lazy">`:'🍜'}${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}</div><div class="tx"><div class="nm"><b>${esc(m.name)}</b><em>${baht(m.price)}</em></div>${m.desc?`<p>${esc(m.desc)}</p>`:''}${m.opts?`<div class="op">${esc(m.opts)}</div>`:''}${m.rec?'<span class="badge rec">★ แนะนำ</span>':''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></div>`).join('')}</div></div><div class="pno">${i+1}</div></div>`;
+    else if(p.k==='cat')h=`<div class="sheet cat"><div class="inner"><h2>${esc(p.c)}${p.cont?' <small style="font-size:14px;color:var(--muted)">(ต่อ)</small>':''}</h2><div class="orn">✦</div><div class="items">${p.items.map(m=>`<div class="it${m.soldOut?' off':''}"><div class="ph" data-a="zoom" data-id="${esc(m.id)}"><img src="${esc(m.img||'images/menu-ph.jpg')}" alt="" loading="lazy"${m.img?'':' class="noimg"'}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}</div><div class="tx"><div class="nm"><b>${esc(m.name)}</b><em>${baht(m.price)}</em></div>${m.desc?`<p>${esc(m.desc)}</p>`:''}${m.opts?`<div class="op">${esc(m.opts)}</div>`:''}${m.rec?'<span class="badge rec">★ แนะนำ</span>':''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></div>`).join('')}</div></div><div class="pno">${i+1}</div></div>`;
     else h=`<div class="sheet back"><div class="inner"><img src="${esc(d.logo||'images/logo-nl.png')}" alt="" style="width:110px;height:110px;object-fit:contain"><h2>ขอบคุณที่แวะมาครับ</h2><div class="orn">✦</div>
       ${d.deliveryOn?`<a class="cta pri" href="${esc(base('delivery.html'))}">🛵 สั่งเดลิเวอรี่${d.open?'':' <small style="font-weight:400">(ตอนนี้ปิด)</small>'}</a>`:''}
       <a class="cta" href="${esc(base('card.html'))}">⭐ บัตรสะสมแต้ม / คูปอง</a>

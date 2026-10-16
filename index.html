@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1810">
+<meta name="app-version" content="2026.10.16-1850">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -858,7 +858,7 @@ const lineAmt=l=>((+l.price||0)+(+l.extra||0))*l.qty;
 const linesTotal=items=>(items||[]).reduce((s,l)=>s+lineAmt(l),0);
 const linesCost=items=>(items||[]).reduce((s,l)=>s+(+l.cost||0)*l.qty,0);
 const linesCount=items=>(items||[]).reduce((s,l)=>s+l.qty,0);
-const thumb=(m,cls)=>m.img?`<div class="${cls}"><img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy"></div>`:`<div class="${cls} none"><span>${esc(String(m.name||'?').trim().charAt(0))}</span></div>`;
+const thumb=(m,cls)=>!m.img&&S.shop!=='po'?`<div class="${cls}"><img src="images/menu-ph.jpg" alt="${esc(m.name)}" loading="lazy"></div>`:m.img?`<div class="${cls}"><img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy"></div>`:`<div class="${cls} none"><span>${esc(String(m.name||'?').trim().charAt(0))}</span></div>`;
 const soldToday=mid=>{if(S.shop==='po')return poSold(mid);const t0=sod();let n=0;const f=o=>(o.items||[]).forEach(l=>{if(l.menuId===mid&&(+l.at||0)>=t0)n+=+l.qty||0});Object.values(S.open).forEach(f);(S.today||[]).forEach(f);return n};
 const menuLeft=m=>typeof m.dailyLimit==='number'?Math.max(0,m.dailyLimit-soldToday(m.id)):null;
 const isSoldOut=m=>m.active===false||(typeof m.dailyLimit==='number'&&menuLeft(m)<=0);
