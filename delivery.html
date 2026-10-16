@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1820">
+<meta name="app-version" content="2026.10.16-1830">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#14110f">
 <title>สั่งเดลิเวอรี่ · เนื้อล้วนๆ</title>
@@ -165,6 +165,10 @@ footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:cente
 .op-qn{display:flex;gap:6px;flex-wrap:wrap}
 .op-foot{display:flex;gap:10px;align-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}.op-foot .op-add{flex:1}
 .op-x{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:20px;line-height:1;cursor:pointer}
+.rnote{display:flex;gap:10px;align-items:flex-start;border-radius:14px;padding:11px 13px;border:1px solid #f1c27d;background:#fff4e2;color:#5a3a06;margin-bottom:12px}
+.rnote .ic{font-size:22px;line-height:1.2;flex:none}
+.rnote b{display:block;font-size:15px}.rnote span{display:block;font-size:13px;line-height:1.45;opacity:.9}
+.rnote.lm{border-color:#9be0b6;background:#e9f9ef;color:#0d4f2b}
 </style>
 </head>
 <body>
@@ -421,6 +425,11 @@ function menuGrid(){const list=S.menu.filter(m=>S.cat==='all'||m.cat===S.cat);if
   if(S.cat!=='all')return `<div class="grid">${list.map(menuCard).join('')}</div>`;
   const order=[...S.cats,...new Set(list.map(m=>m.cat||'').filter(c=>!S.cats.includes(c)))];
   return order.map(c=>{const g=list.filter(m=>(m.cat||'')===c);return g.length?`${c?`<h3 class="cath">${esc(c)}</h3>`:''}<div class="grid">${g.map(menuCard).join('')}</div>`:''}).join('')}
+// ไรเดอร์ร้านไม่ว่าง / ติดงาน → แจ้งลูกค้าว่าร้านอาจเรียกไรเดอร์จากแอปส่งแทน
+const riderState=()=>{const r=S.pub&&S.pub.riders;if(!r||!S.pub.open)return '';if(!r.on||(+r.free===0&&+r.busy===0))return 'off';if(+r.free===0)return 'busy';return ''};
+const riderNote=()=>{const st=riderState();if(!st)return '';
+  return `<div class="rnote"><span class="ic">${st==='off'?'🛵💤':'🛵⏳'}</span><div><b>${st==='off'?'ไรเดอร์ร้าน (Raptor Rider) ไม่ว่างตอนนี้':'ไรเดอร์ร้าน (Raptor Rider) ติดงานส่งอยู่'}</b>
+    <span>${st==='off'?'ร้านจะเรียกไรเดอร์จากแอป (เช่น LINE MAN) ไปส่งแทน':'อาจรอนานขึ้นเล็กน้อย หรือร้านอาจเรียกไรเดอร์จากแอป (เช่น LINE MAN) ไปส่งแทน'} · ค่าส่งอาจเปลี่ยนตามแอป ร้านจะแจ้งยอดจริงก่อนให้โอนทุกครั้ง</span></div></div>`};
 const mineBar=()=>{const L=mine().filter(x=>x.id!==S.id);return L.length?L.slice(0,3).map(x=>`<a class="mine" href="${esc(statusUrl(x.id,x.tok))}"><span style="font-size:22px">🛵</span><div class="grow"><b>ออร์เดอร์ของคุณ ${esc(shortNo(x.no))}</b><div style="font-size:13px;color:#d9cbb8">สั่งเมื่อ ${hm(x.at)} · แตะเพื่อดูสถานะ</div></div><span>›</span></a>`).join(''):''};
 const mapBlock=()=>`<div class="georow"><button class="btn sm gold" data-a="gps" type="button">📍 ใช้ตำแหน่งปัจจุบัน</button></div>
   <div class="georow"><input id="gQ" placeholder="${gOn()?'พิมพ์ชื่อคอนโด หมู่บ้าน ร้าน สถานที่ใกล้บ้าน':'ค้นหา เช่น ชื่อหมู่บ้าน คอนโด ถนน'}" autocomplete="off" enterkeyhint="search"><button class="btn sm" data-a="gSearch" type="button">ค้นหา</button></div>
@@ -431,11 +440,11 @@ function render(){const v=$('#view'),f=$('#footIn');let h='',ft='';const pub=S.p
   if(S.view==='status')return renderStatus();
   if(S.view==='menu'&&pub.open&&!pinOk())S.view='pin';
   if(S.view==='pin'){
-    h=mineBar()+(pub.notice?`<div class="notice">📢 ${esc(pub.notice)}</div>`:'')+`<div class="card"><h2>ส่งถึงบ้านคุณไหม?</h2><p class="help">ปักหมุดบ้านก่อน ระบบเช็กระยะทางและบอกค่าส่งให้ แล้วค่อยเลือกเมนู</p>${mapBlock()}<div id="feeBox"></div></div>`;
+    h=mineBar()+(pub.notice?`<div class="notice">📢 ${esc(pub.notice)}</div>`:'')+`<div class="card"><h2>ส่งถึงบ้านคุณไหม?</h2><p class="help">ปักหมุดบ้านก่อน ระบบเช็กระยะทางและบอกค่าส่งให้ แล้วค่อยเลือกเมนู</p>${mapBlock()}<div id="feeBox"></div></div>${riderNote()}`;
     ft=`${S.pinBack?'<button class="btn" data-a="pinCancel" type="button">กลับ</button>':''}<button class="btn pri wide" id="pinGo" data-a="pinGo" type="button" disabled>${S.pinBack?'ใช้หมุดนี้':'ส่งถึงได้ · เลือกเมนู'}</button>`;
   }else if(S.view==='menu'){
     const why={closed:'ร้านปิดรับออร์เดอร์ออนไลน์ตอนนี้',off:'ร้านยังไม่เปิดให้สั่งเดลิเวอรี่ผ่านลิงก์',setup:'ร้านกำลังตั้งค่าระบบเดลิเวอรี่'}[pub.reason]||'';
-    h=mineBar()+(pub.open?pinBar():`<div class="closed"><span style="font-size:30px">🔴</span><div><b>${esc(why||'ปิดรับออร์เดอร์อยู่')}</b><span>ดูเมนูไว้ก่อนได้ · เปิดเมื่อไหร่สั่งได้ทันที${pub.phone?` · โทร <a href="tel:${esc(pub.phone)}" style="color:#ffd58a">${esc(pub.phone)}</a>`:''}</span></div></div>`)+
+    h=mineBar()+(pub.open?pinBar()+riderNote():`<div class="closed"><span style="font-size:30px">🔴</span><div><b>${esc(why||'ปิดรับออร์เดอร์อยู่')}</b><span>ดูเมนูไว้ก่อนได้ · เปิดเมื่อไหร่สั่งได้ทันที${pub.phone?` · โทร <a href="tel:${esc(pub.phone)}" style="color:#ffd58a">${esc(pub.phone)}</a>`:''}</span></div></div>`)+
       (pub.notice&&pub.open?`<div class="notice">📢 ${esc(pub.notice)}</div>`:'')+
       `<button class="cpbar" data-a="go" data-v="coupons" type="button">🎟️ <span class="grow">ดูคูปองส่วนลด / เก็บคูปอง</span><span>›</span></button>`+
       (S.menu.length?`<div class="chips">${['all',...S.cats].map(c=>`<button class="chip" aria-pressed="${S.cat===c}" data-a="cat" data-v="${esc(c)}" type="button">${c==='all'?'ทั้งหมด':esc(c)}</button>`).join('')}</div>${menuGrid()}`:'')+
@@ -448,10 +457,10 @@ function render(){const v=$('#view'),f=$('#footIn');let h='',ft='';const pub=S.p
   }else if(S.view==='cart'){
     const rows=Object.entries(S.cart).map(([k,e])=>{const m=S.menu.find(x=>x.id===e.menuId);return m?`<div class="li">${m.img?`<div class="mini"><img src="${esc(m.img)}" alt=""></div>`:''}<div class="g">${esc(m.name)}${optLine(e)}${e.note?`<div class="note">${esc(e.note)}</div>`:''}</div><div class="stepper"><button data-a="qty" data-k="${esc(k)}" data-d="-1" type="button" aria-label="ลด">−</button><span>${e.qty}</span><button data-a="qty" data-k="${esc(k)}" data-d="1" type="button" aria-label="เพิ่ม">+</button></div><div class="r" style="min-width:62px;text-align:right">${baht(eUnit(e)*e.qty)}</div></div>`:''}).join('');
     const r=S.cust.lat?feeCalc(S.cust.lat,S.cust.lng,cartT()):null;
-    h=`<h2>ตะกร้าของคุณ</h2>${rows?`<div class="list">${rows}<div class="li"><div class="g">ค่าอาหาร</div><div class="r">${baht(cartT())}</div></div>${r&&!r.over?`<div class="li"><div class="g">ค่าส่ง (${r.km} กม.)</div><div class="r">${baht(r.fee)}</div></div><div class="li sum"><div class="g"><b>รวม</b></div><b>${baht(cartT()+r.fee)}</b></div>`:''}</div>${r&&r.why?`<p class="help">${esc(r.why)}</p>`:''}<p class="help">ใช้คูปองและแต้มสมาชิกได้ในขั้นถัดไป</p>`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}`;
+    h=`<h2>ตะกร้าของคุณ</h2>${rows?`<div class="list">${rows}<div class="li"><div class="g">ค่าอาหาร</div><div class="r">${baht(cartT())}</div></div>${r&&!r.over?`<div class="li"><div class="g">ค่าส่ง (${r.km} กม.)${riderState()?' <small class="muted">· อาจเปลี่ยนถ้าใช้ไรเดอร์แอป</small>':''}</div><div class="r">${baht(r.fee)}</div></div><div class="li sum"><div class="g"><b>รวม</b></div><b>${baht(cartT()+r.fee)}</b></div>`:''}</div>${r&&r.why?`<p class="help">${esc(r.why)}</p>`:''}<p class="help">ใช้คูปองและแต้มสมาชิกได้ในขั้นถัดไป</p>`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}`;
     ft=`<button class="btn" data-a="go" data-v="menu" type="button">เลือกเพิ่ม</button><button class="btn pri wide" data-a="go" data-v="addr" type="button" ${cartN()?'':'disabled'}>ต่อไป: ข้อมูลผู้รับ</button>`;
   }else if(S.view==='addr'){const c=S.cust;S.fee=c.lat?feeCalc(c.lat,c.lng,cartT()):null;
-    h=`<h2>ข้อมูลผู้รับ</h2>${pinBar()}
+    h=`<h2>ข้อมูลผู้รับ</h2>${pinBar()}${riderNote()}
      <div class="card"><div class="row2"><div class="field" style="flex:1"><label for="cName">ชื่อผู้รับ</label><input id="cName" maxlength="40" autocomplete="name" value="${esc(c.name||'')}"></div><div class="field" style="flex:1"><label for="cPhone">เบอร์โทร</label><input id="cPhone" type="tel" inputmode="tel" maxlength="12" autocomplete="tel" value="${esc(c.phone||'')}"></div></div>
       <div class="field"><label for="cAddr">ที่อยู่</label><input id="cAddr" maxlength="200" autocomplete="street-address" placeholder="บ้านเลขที่ ซอย ถนน หมู่บ้าน / คอนโด ห้อง" value="${esc(c.addr||'')}"></div>
       <div class="field"><label for="cNote">จุดสังเกต / ฝากถึงไรเดอร์ (ไม่บังคับ)</label><input id="cNote" maxlength="150" placeholder="เช่น บ้านรั้วสีเขียว · ฝากไว้กับ รปภ. · โทรก่อนถึง" value="${esc(c.note||'')}"></div></div>
@@ -538,6 +547,7 @@ function renderStatus(){const d=S.st,v=$('#view');$('#footIn').innerHTML='';$('#
   if(stg==='queue'&&k.ahead>0)sc[2]=`<div class="big">อีก ${k.ahead} คิว</div>ก่อนถึงออร์เดอร์ของคุณ`;
   let h=`<div class="card stage${stg==='done'?' ok':bad?' bad':''}"><div class="em">${sc[0]}</div><h2>${sc[1]}</h2><div class="sub">${sc[2]}</div></div>
    ${bad?'':`<div class="card"><div class="steps">${steps}</div></div>`}`;
+  if((stg==='accepted'||stg==='slipbad')&&d.via==='lineman')h+=`<div class="rnote lm"><span class="ic">🟢</span><div><b>ส่งโดยไรเดอร์ LINE MAN</b><span>ไรเดอร์ร้านไม่ว่างตอนนี้ ร้านจะเรียก LINE MAN ไปส่งให้ · ค่าส่ง ${baht(d.fee)} ตามแอป LINE MAN</span></div></div>`;
   if(stg==='accepted'||stg==='slipbad'){
     h+=`<div class="card">${stg==='slipbad'?`<div class="warn">⚠️ ร้านแจ้ง: <b>${esc(d.slipBad||'')}</b></div>`:''}
       ${pp?`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,amt))}<b>${baht(amt)}</b><small>ค่าอาหาร ${baht(d.food)} + ค่าส่ง${d.via==='lineman'?' LINE MAN':''} ${baht(d.fee)}</small></div><p class="help" style="text-align:center">กดค้างที่ QR เพื่อบันทึกรูป แล้วเปิดในแอปธนาคาร</p>`:`<div class="warn">ร้านยังไม่ได้ตั้งพร้อมเพย์ โทรถามเลขบัญชีกับร้าน${d.shopPhone?` <a href="tel:${esc(d.shopPhone)}">${esc(d.shopPhone)}</a>`:''}</div>`}
