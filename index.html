@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1105">
+<meta name="app-version" content="2026.10.16-1115">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -3160,11 +3160,13 @@ async function slReturn(){const P=new URLSearchParams(location.search),code=P.ge
   if(err){S.lineMsg='ยกเลิกการเข้าสู่ระบบด้วย LINE';return false}
   const op=saved&&saved.st===state?saved.op:state.split('-')[0];
   if(op==='link'){const ses=(await SB.auth.getSession()).data.session;if(!ses){S.lineMsg='หน้านี้ยังไม่ได้เข้าสู่ระบบ · เข้าด้วยชื่อผู้ใช้/รหัสผ่าน แล้วกดผูก LINE อีกครั้ง';return false}
-    const j=await slCall({op:'link',code},ses.access_token);setTimeout(()=>toast(j.ok?'✅ ผูกบัญชี LINE แล้ว ครั้งหน้ากด "เข้าสู่ระบบด้วย LINE" ได้เลย':slErr(j.error),j.ok?'':'bad'),800);return 'link'}
+    const j=await slCall({op:'link',code},ses.access_token);if(j.ok)try{localStorage.setItem('nl_line_done',String(Date.now()))}catch(e){}setTimeout(()=>toast(j.ok?'✅ ผูกบัญชี LINE แล้ว ครั้งหน้ากด "เข้าสู่ระบบด้วย LINE" ได้เลย':slErr(j.error),j.ok?'':'bad'),800);return 'link'}
   if(op!=='login'){S.lineMsg='ลิงก์ LINE ไม่ถูกต้อง ลองใหม่';return false}
   const j=await slCall({op:'login',code});if(!j.ok){S.lineMsg=slErr(j.error);return false}
   const {error}=await SB.auth.verifyOtp({token_hash:j.token_hash,type:'magiclink'});if(error){S.lineMsg='เข้าสู่ระบบด้วย LINE ไม่สำเร็จ ลองอีกครั้ง';return false}
-  try{localStorage.setItem('nl_login_day',bkDay());localStorage.setItem('nl_user',emailToUser(j.email||''))}catch(e){}return 'login'}
+  try{localStorage.setItem('nl_login_day',bkDay());localStorage.setItem('nl_user',emailToUser(j.email||''));localStorage.setItem('nl_line_done',String(Date.now()))}catch(e){}return 'login'}
+// มือถือ: LINE มักเปิดแท็บใหม่ตอนกลับมา → แท็บเดิมที่ค้างหน้าเข้าสู่ระบบ / หน้าบัญชี จะรีเฟรชตามเองเมื่อแท็บใหม่เข้าสู่ระบบหรือผูกสำเร็จ
+window.addEventListener('storage',e=>{if(e.key!=='nl_line_done'||!e.newValue)return;if(S.state==='login'||(S.sheet&&S.sheet.type==='myAcct'))location.replace(slSelf())});
 async function sheetMyAcct(){const s=S.sheet;
   if(!s.loaded){s.loaded=true;try{let {data,error}=await SB.from('staff').select('line_name,line_at,display_name').eq('email',S.email).maybeSingle();if(error&&/display_name/.test(String(error.message||'')))({data,error}=await SB.from('staff').select('line_name,line_at').eq('email',S.email).maybeSingle());s.row=error?{err:/line_name|line_at/i.test(String(error.message||''))?'sql':'load',msg:String(error.message||error.code||'')}:(data||{})}catch(e){s.row={err:'load',msg:String(e&&e.message||e)}}}
   const r=s.row||{};

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.15-1900">
+<meta name="app-version" content="2026.10.16-1115">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f0d0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -194,12 +194,14 @@ async function lineReturn(){const code=P.get('code'),state=P.get('state'),err=P.
   const ok=saved&&saved.st===state&&Date.now()-(saved.at||0)<15*60000;
   if(!ok){const op=String(state||'').split('-')[0];if(op==='login'||op==='link')saved={op};else{toast('ลิงก์ LINE ไม่ถูกต้อง ลองใหม่');return false}}
   if(saved.op==='link'){const ses=(await SB.auth.getSession()).data.session;if(!ses){toast('หน้านี้ยังไม่ได้เข้าสู่ระบบ (LINE เด้งกลับมาคนละเบราว์เซอร์) · เข้าสู่ระบบด้วยเบอร์/รหัสผ่านที่นี่ แล้วกด "ผูก" อีกครั้ง');return false}
-    const j=await lineCall({op:'link',code},ses.access_token);toast(j.ok?'✅ ผูกบัญชี LINE แล้ว ครั้งหน้ากดเข้าสู่ระบบด้วย LINE ได้เลย':lineErr(j.error));return false}
+    const j=await lineCall({op:'link',code},ses.access_token);if(j.ok)try{localStorage.setItem('nl_rline_done',String(Date.now()))}catch(e){}toast(j.ok?'✅ ผูกบัญชี LINE แล้ว ครั้งหน้ากดเข้าสู่ระบบด้วย LINE ได้เลย':lineErr(j.error));return false}
   $('#view').innerHTML='<div class="card"><p class="muted" style="margin:0">กำลังเข้าสู่ระบบด้วย LINE…</p></div>';
   const j=await lineCall({op:'login',code});
   if(!j.ok){LINEMSG=lineErr(j.error);return false}
   const {error}=await SB.auth.verifyOtp({token_hash:j.token_hash,type:'magiclink'});if(error){LINEMSG='เข้าสู่ระบบด้วย LINE ไม่สำเร็จ ลองอีกครั้ง';return false}
-  try{localStorage.setItem('nl_rider_day',bkDay());localStorage.removeItem('nl_rider_apply')}catch(e){}return true}
+  try{localStorage.setItem('nl_rider_day',bkDay());localStorage.removeItem('nl_rider_apply');localStorage.setItem('nl_rline_done',String(Date.now()))}catch(e){}return true}
+// มือถือ: LINE มักเปิดแท็บใหม่ตอนกลับมา → แท็บเดิมรีเฟรชตามเองเมื่อแท็บใหม่เข้าสู่ระบบ/ผูกสำเร็จ
+window.addEventListener('storage',e=>{if(e.key==='nl_rline_done'&&e.newValue)location.replace(selfUrl())});
 let LINEMSG='';
 /* ---------- สถานะการสมัคร ---------- */
 async function checkStatus(){clearTimeout(stT);const {data,error}=await SB.rpc('rider_status',{p_phone:APPH});
