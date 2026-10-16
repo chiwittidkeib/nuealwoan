@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1440">
+<meta name="app-version" content="2026.10.16-1700">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -701,6 +701,12 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .sg-h{font-size:15px;color:var(--muted);font-weight:500;margin:4px 0 0}
 @media (max-width:420px){.sgtabs button{font-size:11px;padding:6px 2px}}
 .subtabs{overflow-x:auto;scrollbar-width:none}.subtabs::-webkit-scrollbar{display:none}.subtabs button{flex:1 0 auto;white-space:nowrap;padding:8px 12px}
+.gmbox{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0;display:flex;flex-direction:column;gap:6px}
+.gmuse{display:flex;flex-direction:column;gap:6px}
+.gmrow{display:grid;grid-template-columns:minmax(0,1.3fr) 1fr auto;gap:8px;align-items:center;font-size:13.5px}
+.gmrow b{min-width:52px;text-align:right}
+.gmbar{height:8px;border-radius:99px;background:rgba(127,127,127,.22);overflow:hidden}.gmbar i{display:block;height:100%;background:#3ba776;border-radius:99px}
+.gmrow.warn .gmbar i{background:#e0a020}.gmrow.full .gmbar i{background:#d03838}.gmrow.warn b{color:#e0a020}.gmrow.full b{color:#d03838}
 </style>
 </head>
 <body>
@@ -998,7 +1004,7 @@ async function startData(){
   db.collection('members').onSnapshot(s=>{S.members=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.lastAt||0)-(a.lastAt||0));if(S.tab==='back')render()},onErr);
   const since=sod()-30*DAY;
   if(S.role==='owner')db.collection('notices').where('at','>=',sod()-7*DAY).onSnapshot(s=>{const prev=new Set((S.notices||[]).map(n=>n.id));const first=!S.notices;S.notices=s.docs.map(d=>({id:d.id,...d.data()}));
-    if(!first)S.notices.filter(n=>!prev.has(n.id)&&!n.seen).forEach(n=>toast('🔑 ไรเดอร์ '+(n.name||'')+' รีเซตรหัสผ่านเอง','bad'));if(S.tab==='tables')render()},onErr);
+    if(!first)S.notices.filter(n=>!prev.has(n.id)&&!n.seen).forEach(n=>toast(n.kind==='gmap'?(n.level==='max'?'⛔ Google Maps ถึงเพดานแล้ว':'⚠️ Google Maps ใกล้ครบโควตาฟรี')+' · '+(n.label||''):'🔑 ไรเดอร์ '+(n.name||'')+' รีเซตรหัสผ่านเอง','bad'));if(S.tab==='tables')render()},onErr);
   db.collection('riders').onSnapshot(s=>{S.riders=s.docs.map(d=>({id:d.id,...d.data()}));if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet)render();if(S.sheet&&S.sheet.type==='riders')sheetRiders()},onErr);
   db.collection('deliveries').where('at','>=',sod()-DAY).onSnapshot(s=>{const prev=new Map((S.dlv||[]).map(d=>[d.id,d.status])),first=!S.dlvInit;S.dlvInit=true;S.dlv=s.docs.map(d=>({id:d.id,...d.data()}));
     if(!first)S.dlv.filter(d=>d.status==='done'&&prev.has(d.id)&&prev.get(d.id)!=='done').forEach(dlDoneAlert);if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet)render();rdTick()},onErr);
@@ -2707,7 +2713,7 @@ Object.assign(ACT,{
 
 /* ===================== Raptor Rider: ไรเดอร์ส่งเองของร้าน ===================== */
 CH.rider={n:'Raptor Rider',c:'#ff7a00'};
-const RD_DEF={speed:25,on:false,lat:null,lng:null,base:20,baseKm:3,perKm:7,maxKm:8,factor:1.3,minOrder:0,smallFee:0,freeOver:0,rainFee:10,minFee:0,maxFee:0,timeout:60,auto:true};
+const RD_DEF={speed:25,on:false,lat:null,lng:null,base:20,baseKm:3,perKm:7,maxKm:8,factor:1.3,minOrder:0,smallFee:0,freeOver:0,rainFee:10,minFee:0,maxFee:0,timeout:60,auto:true,gOn:false,gKey:'',gRoad:false,gCap:300,gWarn:8000,gMax:9500,gAutoOff:true};
 const rdCfg=()=>Object.assign({},RD_DEF,S.settings.rider||{});
 const rdRain=()=>!!(S.lists&&S.lists.riderState&&S.lists.riderState.rain);
 const rdOn=()=>rdCfg().on&&can('rider');
@@ -2843,7 +2849,7 @@ setInterval(()=>{if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet&&(S.dlv||[]).s
 
 /* ---------- จัดการไรเดอร์ ---------- */
 function noticeBar(){if(S.role!=='owner')return '';const L=(S.notices||[]).filter(n=>!n.seen).sort((a,b)=>b.at-a.at);if(!L.length)return '';
-  return '<div class="noticebar">'+L.slice(0,5).map(n=>`<div class="nb"><div class="grow"><b>🔑 ไรเดอร์รีเซตรหัสผ่านเอง</b><div class="help" style="margin:0">${esc(n.name||'')} (${esc(n.username||'')} · ${esc(n.rider||'')}) เปลี่ยนรหัสผ่าน: <b>รหัสเดิม → รหัสใหม่ที่ไรเดอร์ตั้งเอง</b> · ยืนยันด้วยเบอร์ + ทะเบียน ${esc(n.plate||'')} · ${dshort(n.at)} ${hm(n.at)} น.</div><div class="help" style="margin:0">ถ้าไม่ใช่ไรเดอร์ทำเอง: เปิด "ไรเดอร์" → ระงับ หรือตั้งรหัสใหม่ทันที</div></div><button class="btn sm" data-act="noticeSeen" data-id="${esc(n.id)}" type="button">รับทราบ</button></div>`).join('')+'</div>'}
+  return '<div class="noticebar">'+L.slice(0,5).map(n=>n.kind==='gmap'?`<div class="nb"><div class="grow"><b>${n.level==='max'?'⛔ Google Maps ถึงเพดานที่ตั้งไว้':'⚠️ Google Maps ใกล้ครบโควตาฟรี'}</b><div class="help" style="margin:0">${esc(n.label||'')} เดือนนี้ ${(+n.count||0).toLocaleString()} ครั้ง (ฟรี 10,000) · ${n.level==='max'?(n.autoOff?'ระบบสลับให้ลูกค้าใช้แผนที่ฟรีแล้ว เดือนหน้าเปิด Google เอง':'ยังไม่ปิด! ถ้าเกิน 10,000 จะเริ่มเสียเงิน'):'ถึง '+(+n.max||0).toLocaleString()+' ระบบจะ'+(n.autoOff?'ปิดเอง':'ไม่ปิดเอง')} · ${dshort(n.at)} ${hm(n.at)} น.</div><div class="help" style="margin:0">ปิดเองได้ที่ ตั้งค่าร้าน → เดลิเวอรี่ → เอาติ๊ก "ใช้แผนที่ Google" ออก</div></div><button class="btn sm" data-act="noticeSeen" data-id="${esc(n.id)}" type="button">รับทราบ</button></div>`:`<div class="nb"><div class="grow"><b>🔑 ไรเดอร์รีเซตรหัสผ่านเอง</b><div class="help" style="margin:0">${esc(n.name||'')} (${esc(n.username||'')} · ${esc(n.rider||'')}) เปลี่ยนรหัสผ่าน: <b>รหัสเดิม → รหัสใหม่ที่ไรเดอร์ตั้งเอง</b> · ยืนยันด้วยเบอร์ + ทะเบียน ${esc(n.plate||'')} · ${dshort(n.at)} ${hm(n.at)} น.</div><div class="help" style="margin:0">ถ้าไม่ใช่ไรเดอร์ทำเอง: เปิด "ไรเดอร์" → ระงับ หรือตั้งรหัสใหม่ทันที</div></div><button class="btn sm" data-act="noticeSeen" data-id="${esc(n.id)}" type="button">รับทราบ</button></div>`).join('')+'</div>'}
 const nextRR=()=>{const n=(S.riders||[]).map(r=>/^rr(\d+)$/i.exec(r.username||'')).filter(Boolean).map(m=>+m[1]);return 'RR'+String((n.length?Math.max(...n):0)+1).padStart(3,'0')};
 const upU=u=>/^rr\d+$/i.test(u||'')?String(u).toUpperCase():u;
 function sheetRiders(){const own=S.role==='owner',rs=S.riders||[],pend=rs.filter(r=>r.status==='pending'),act=rs.filter(r=>r.status!=='pending').sort((a,b)=>(b.pwReq?1:0)-(a.pwReq?1:0));
@@ -2911,16 +2917,32 @@ function rdSettingsCard(){const c=rdCfg();const n=(id,v,lab,help)=>`<div class="
    ${n('rdSpeed',c.speed,'ความเร็วเฉลี่ยไรเดอร์ (กม./ชม.)','ใช้ประมาณเวลาถึงที่ลูกค้าเห็น (ปกติ 20–30)')}
    <label class="check"><input type="checkbox" id="rdAuto" ${c.auto!==false?'checked':''}> ส่งงานให้ไรเดอร์คิวแรกอัตโนมัติ (ปิด = พนักงานเลือกไรเดอร์เอง)</label>
    <div id="rdEx" class="help"></div>
+   <div class="gmbox"><b>🗺️ Google Maps (หน้าปักหมุดของลูกค้า)</b>
+    <label class="check"><input type="checkbox" id="rdGOn" ${c.gOn?'checked':''}> ใช้แผนที่ + ช่องค้นหาของ Google (ลูกค้าพิมพ์ชื่อคอนโด/หมู่บ้านแล้วเจอ)</label>
+    <div class="field"><label for="rdGKey">Browser API key (คีย์สำหรับหน้าเว็บ)</label><input id="rdGKey" value="${esc(c.gKey||'')}" placeholder="AIza…" autocomplete="off" spellcheck="false"><span class="help">คีย์นี้อยู่ในหน้าเว็บได้ แต่ต้องจำกัดให้ใช้ได้เฉพาะเว็บร้านใน Google Cloud · ใส่ผิด/ใช้ไม่ได้ ระบบกลับไปใช้แผนที่ฟรีให้เอง</span></div>
+    <label class="check"><input type="checkbox" id="rdGRoad" ${c.gRoad?'checked':''}> คิดค่าส่งตามระยะถนนจริง (ต้องติดตั้ง dl-route + ใส่ GMAP_SERVER_KEY ใน Supabase Secrets ก่อน)</label>
+    ${n('rdGCap',c.gCap||300,'เพดานคำนวณระยะถนน / วัน','เกินแล้ววันนั้นใช้สูตรตัวคูณแทน')}
+    <b style="margin-top:4px">📊 ใช้ไปเดือนนี้ (ฟรีเดือนละ 10,000 ครั้ง ต่อแต่ละประเภท)</b><div id="rdGUse" class="gmuse"><span class="help">กำลังโหลด…</span></div>
+    <div class="grid2">${n('rdGWarn',c.gWarn??8000,'แจ้งเตือนเมื่อถึง (ครั้ง)','เด้งเตือนแอดมิน + แจ้งเตือนเครื่อง')}${n('rdGMax',c.gMax??9500,'เพดานต่อเดือน (ครั้ง)','ไม่ควรเกิน 10,000')}</div>
+    <label class="check"><input type="checkbox" id="rdGAuto" ${c.gAutoOff!==false?'checked':''}><span>ถึงเพดานแล้ว <b>ปิด Google อัตโนมัติ</b> (ลูกค้าใช้แผนที่ฟรีแทน · เดือนใหม่เปิดเอง)</span></label></div>
    <label class="check" style="align-items:flex-start;margin-top:6px"><input type="checkbox" id="rdSelf" ${c.selfOn?'checked':''}><span><b>ให้ลูกค้าสั่งเดลิเวอรี่เองผ่านลิงก์</b> (ใส่ปุ่มใน LINE OA ได้)<br><small class="muted">ลูกค้าสั่ง → ร้านกดรับ → ลูกค้าโอน+แนบสลิป → ร้านยืนยันยอด → เข้าคิวครัว → ไรเดอร์ส่ง · เปิด/ปิดรับรายวันได้ที่แผง Raptor Rider</small></span></label>
    <div class="field"><label for="rdSelfNote">ข้อความบนหน้าสั่ง (ไม่บังคับ)</label><input id="rdSelfNote" maxlength="200" value="${esc(c.selfNote||'')}" placeholder="เช่น เปิด 10:00–20:00 · ส่งในรัศมี 8 กม."></div>
    <div class="inrow"><input readonly value="${esc(dlUrl())}" aria-label="ลิงก์สั่งเดลิเวอรี่"><button class="btn sm" data-act="rdCopyLink" data-v="${esc(dlUrl())}" type="button">คัดลอก</button><button class="btn sm" data-act="dlLink" type="button">QR</button></div></div>`}
 function rdReadCfg(){const g=id=>{const e=$('#'+id);return e?Math.max(0,parseFloat(e.value)||0):0};const sh=S.sheet.rdShop||{};const c=rdCfg();
   if(!$('#rdOn'))return S.settings.rider||null;
-  return {on:$('#rdOn').checked,lat:sh.lat??c.lat,lng:sh.lng??c.lng,base:g('rdBase'),baseKm:g('rdBaseKm'),perKm:g('rdPerKm'),maxKm:g('rdMaxKm'),minOrder:g('rdMinOrder'),smallFee:g('rdSmall'),freeOver:g('rdFree'),rainFee:g('rdRainFee'),minFee:g('rdMinFee'),maxFee:g('rdMaxFee'),factor:g('rdFactor')||1.3,speed:g('rdSpeed')||25,timeout:Math.max(20,g('rdTimeout')||60),auto:$('#rdAuto').checked,selfOn:!!$('#rdSelf')?.checked,selfNote:($('#rdSelfNote')?.value||'').trim().slice(0,200)}}
+  return {on:$('#rdOn').checked,lat:sh.lat??c.lat,lng:sh.lng??c.lng,base:g('rdBase'),baseKm:g('rdBaseKm'),perKm:g('rdPerKm'),maxKm:g('rdMaxKm'),minOrder:g('rdMinOrder'),smallFee:g('rdSmall'),freeOver:g('rdFree'),rainFee:g('rdRainFee'),minFee:g('rdMinFee'),maxFee:g('rdMaxFee'),factor:g('rdFactor')||1.3,speed:g('rdSpeed')||25,timeout:Math.max(20,g('rdTimeout')||60),auto:$('#rdAuto').checked,selfOn:!!$('#rdSelf')?.checked,selfNote:($('#rdSelfNote')?.value||'').trim().slice(0,200),gOn:!!$('#rdGOn')?.checked,gKey:($('#rdGKey')?.value||'').trim().slice(0,100),gRoad:!!$('#rdGRoad')?.checked,gCap:Math.max(1,Math.round(g('rdGCap')||300)),gWarn:Math.max(1,Math.round(g('rdGWarn')||8000)),gMax:Math.max(1,Math.round(g('rdGMax')||9500)),gAutoOff:!!$('#rdGAuto')?.checked}}
 function rdShopTxt(){const sh=S.sheet.rdShop||rdCfg();const t=$('#rdShopTxt');if(t)t.textContent=sh.lat?`ร้านอยู่ที่ ${sh.lat}, ${sh.lng} · ลากหมุดสีทองให้ตรงหน้าร้าน แล้วกด "บันทึกการตั้งค่า"`:'ยังไม่ได้ปักหมุดร้าน · กดใช้ตำแหน่งปัจจุบันตอนอยู่ที่ร้าน หรือแตะแผนที่'}
 function rdExample(){const box=$('#rdEx');if(!box)return;const c=rdReadCfg();if(!c)return;
   box.innerHTML='ตัวอย่างค่าส่ง (ยอดอาหาร ฿150 ไม่มีฝน): '+[1.5,3,4.2,6,8.5].map(k=>{const r=rdFee(k,150,c,false);return `${k} กม. = ${r.over?'ไม่รับ':baht(r.fee)}`}).join(' · ')}
+const GM_KIND=[['map','🗺️ เปิดแผนที่'],['pick','📍 เลือกสถานที่'],['ac','🔎 ค้นหาไม่ได้เลือก'],['route','🛣️ ระยะถนน']];
+function gmUseView(){const el=$('#rdGUse');if(!el||!SB)return;
+  SB.from('docs').select('data').eq('collection','lists').eq('id','gmapUse').maybeSingle().then(({data})=>{const box=$('#rdGUse');if(!box)return;const u=data&&data.data||{},c=rdCfg();
+    const mon=new Date(Date.now()+7*3600e3).toISOString().slice(0,7),m=u.mon===mon?u.m||{}:{},mx=+c.gMax||9500,wn=+c.gWarn||8000,day=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);
+    box.innerHTML=GM_KIND.map(([k,l])=>{const v=+m[k]||0,pc=Math.min(100,v/100);const st=v>=mx?'full':v>=wn?'warn':'';
+      return `<div class="gmrow ${st}"><span>${l}</span><div class="gmbar"><i style="width:${pc}%"></i></div><b>${v.toLocaleString()}</b></div>`}).join('')+
+      `<span class="help">ระยะถนนวันนี้ ${u.day===day?+u.n||0:0} / ${c.gCap||300} ครั้ง · ตัวเลขนับจากระบบร้าน (ใกล้เคียงของ Google) · ดูยอดจริงได้ที่ Google Cloud → Billing</span>`},()=>{})}
 function rdBindSettings(){if(!$('#rdOn'))return;rdShopTxt();rdExample();
+  gmUseView();
   document.querySelectorAll('#rdOn,[id^="rd"]').forEach(e=>{if(e.tagName==='INPUT')e.addEventListener('input',rdExample)});
   const c=rdCfg();mountMap('rdShopMap',c.lat?{lat:c.lat,lng:c.lng}:null,(lat,lng)=>{if(!S.sheet||S.sheet.type!=='settings')return;S.sheet.rdShop={lat,lng};S.sheet.dirty=true;rdShopTxt()},{shopMode:true,quiet:true}).then(m=>{if(S.sheet&&S.sheet.type==='settings')S.sheet.rdMap=m})}
 

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1440">
+<meta name="app-version" content="2026.10.16-1700">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#14110f">
 <title>สั่งเดลิเวอรี่ · เนื้อล้วนๆ</title>
@@ -84,7 +84,13 @@ footer{position:sticky;bottom:0;z-index:15;background:var(--surface);border-top:
 footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:center}
 .tot{flex:1;display:flex;flex-direction:column;min-width:0}.tot small{color:var(--muted);font-size:12.5px}.tot b{font-family:var(--f-d);font-size:22px;font-variant-numeric:tabular-nums}
 /* ที่อยู่ + แผนที่ */
-.map{height:min(46vh,340px);border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#ddd}
+.map{position:relative;height:min(46vh,340px);border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#ddd}
+.map .gm{position:absolute;inset:0}
+.cpin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);pointer-events:none;z-index:5;transition:transform .15s;filter:drop-shadow(0 3px 3px rgba(0,0,0,.35))}
+.cpin.up{transform:translate(-50%,-118%)}
+.cpin::after{content:"";position:absolute;left:50%;bottom:-3px;width:8px;height:4px;margin-left:-4px;border-radius:50%;background:rgba(0,0,0,.35)}
+.maphint{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(20,20,20,.78);color:#fff;font-size:12.5px;padding:5px 12px;border-radius:99px;z-index:5;pointer-events:none;white-space:nowrap}
+.geores button small{display:block;color:var(--muted,#777);font-size:12px;margin-top:1px}
 .feebox{background:var(--sunk);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
 .kv{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .georow{display:flex;gap:8px;flex-wrap:wrap}
@@ -259,6 +265,7 @@ async function loadPub(first){const {data,error}=await SB.rpc('dl_public');
   $('#shop').textContent=data.shopName||'เนื้อล้วนๆ';document.title='สั่งเดลิเวอรี่ · '+(data.shopName||'เนื้อล้วนๆ');if(data.logo)$('#logo').src=data.logo;
   const b=$('#stBadge');b.hidden=false;b.className='st '+(data.open?'on':'off');b.textContent=data.open?'● เปิดรับออร์เดอร์':'● ปิดอยู่';
   for(const k of Object.keys(S.cart)){if(!S.menu.some(m=>m.id===S.cart[k].menuId))delete S.cart[k]}
+  if(first&&S.cust.lat)roadFetch();
   if(first||S.view==='boot')S.view='menu';if(['menu','cart'].includes(S.view)&&!typing())render()}
 const typing=()=>{const a=document.activeElement;return a&&/INPUT|TEXTAREA/.test(a.tagName)&&a.closest('#view')};
 setInterval(()=>{if(SB&&!document.hidden&&['menu','cart'].includes(S.view))loadPub()},45000);
@@ -273,21 +280,58 @@ function putCart(m,sel){const k=m.id+'|'+optKey(sel.opts)+'|'+sel.note;if(S.cart
 /* ---------- ค่าส่ง (สูตรเดียวกับร้าน ร้านยืนยันอีกครั้งตอนกดรับ) ---------- */
 function hav(a,b){const R=6371,t=x=>x*Math.PI/180,dLa=t(b.lat-a.lat),dLo=t(b.lng-a.lng);const h=Math.sin(dLa/2)**2+Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function feeCalc(lat,lng,food){const c=(S.pub&&S.pub.fee)||{};if(!(c.lat&&c.lng&&lat&&lng))return null;
-  const km=Math.round(hav({lat:+c.lat,lng:+c.lng},{lat:+lat,lng:+lng})*(+c.factor||1.3)*10)/10;
+  const rk=S.road&&S.road.k===pinKey(lat,lng)&&S.road.km;
+  const km=rk?+rk:Math.round(hav({lat:+c.lat,lng:+c.lng},{lat:+lat,lng:+lng})*(+c.factor||1.3)*10)/10;
   if(+c.maxKm&&km>+c.maxKm)return {km,over:true,max:+c.maxKm};
   let f=+c.base||0;const ex=km-(+c.baseKm||0);if(ex>0)f+=Math.ceil(ex-1e-9)*(+c.perKm||0);const why=[];
   if(+c.minOrder&&food<+c.minOrder&&+c.smallFee){f+=+c.smallFee;why.push('ยอดไม่ถึง '+baht(c.minOrder)+' +'+baht(c.smallFee))}
   if(c.rain&&+c.rainFee){f+=+c.rainFee;why.push('ช่วงฝนตก +'+baht(c.rainFee))}
   if(+c.minFee)f=Math.max(f,+c.minFee);if(+c.maxFee)f=Math.min(f,+c.maxFee);
   if(+c.freeOver&&food>=+c.freeOver){f=0;why.push('ส่งฟรี ยอดถึง '+baht(c.freeOver))}
-  return {km,fee:Math.round(f),why:why.join(' · ')}}
+  return {km,fee:Math.round(f),why:why.join(' · '),road:!!rk}}
+const pinKey=(lat,lng)=>(+lat).toFixed(6)+','+(+lng).toFixed(6);
+// ระยะตามถนนจริง (Google · คำนวณที่เซิร์ฟเวอร์ร้าน) · ไม่ได้ = ใช้สูตรประมาณ
+let RT=null;
+function roadFetch(){const g=S.pub&&S.pub.gmap,c=S.cust;if(!(g&&g.road&&SB&&c.lat))return;const lat=+c.lat,lng=+c.lng,k=pinKey(lat,lng);
+  if((S.road&&S.road.k===k)||S.roadBusy===k)return;clearTimeout(RT);S.roadBusy=k;
+  RT=setTimeout(async()=>{let km=null;try{const {data,error}=await SB.functions.invoke('dl-route',{body:{lat,lng}});if(!error&&data&&data.road&&+data.km>0)km=+data.km}catch(e){}
+    if(S.roadBusy!==k)return;S.roadBusy=null;S.road={k,km};
+    if(S.view==='pin')feeView();else if(['menu','cart'].includes(S.view)&&!typing())render()},600)}
 
-/* ---------- แผนที่ (OpenStreetMap ฟรี) ---------- */
-let LL=null,MAP=null;
+/* ---------- แผนที่: Google Maps (ถ้าร้านเปิดใช้) · สำรอง OpenStreetMap ฟรี ---------- */
+let LL=null,MAP=null,GL=null,GFAIL=false;
+const gTick=(k,n)=>{try{SB&&SB.rpc('gmap_tick',{p_kind:k,p_n:n||1}).then(()=>{},()=>{})}catch(e){}};
+// ค้นหาแล้วไม่ได้เลือก = Google คิดเป็นครั้งค้นหา · นับตอนออกจากหน้าปักหมุด
+const gAcFlush=()=>{if(S.gAc>0){gTick('ac',S.gAc);S.gAc=0;S.gTok=null}};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)gAcFlush()});
+const gOn=()=>{const g=S.pub&&S.pub.gmap;return !!(g&&g.on&&g.key&&!GFAIL)};
+const gReady=()=>!!(gOn()&&window.google&&google.maps&&google.maps.Map);
+function loadG(key){if(gReady())return Promise.resolve(window.google);if(GL)return GL;
+  GL=new Promise((ok,no)=>{window.__gmOk=()=>ok(window.google);
+    window.gm_authFailure=()=>{GFAIL=true;toast('แผนที่ Google ใช้ไม่ได้ตอนนี้ ใช้แผนที่สำรองแทน');if(S.view==='pin')mountMap()};
+    const s=document.createElement('script');s.async=true;s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(key)+'&v=weekly&libraries=places&language=th&region=TH&loading=async&callback=__gmOk';
+    s.onerror=()=>{GL=null;no(new Error('gmap'))};document.head.appendChild(s);setTimeout(()=>no(new Error('gmap_timeout')),15000)});return GL}
+async function mountG(){const el=$('#map');const g=await loadG(S.pub.gmap.key);if(!$('#map')||GFAIL)throw new Error('gone');
+  if(MAP){try{MAP.remove()}catch(e){}MAP=null}
+  el.innerHTML='<div class="gm"></div><div class="cpin" id="cpin">'+PIN('#c8202a')+'</div><div class="maphint" id="mhint">เลื่อนแผนที่ให้หมุดแดงตรงบ้านคุณ</div>';
+  const f=(S.pub&&S.pub.fee)||{},shop=f.lat?{lat:+f.lat,lng:+f.lng}:null,c=S.cust,start=c.lat?{lat:+c.lat,lng:+c.lng}:shop||{lat:13.7563,lng:100.5018};
+  gTick('map');
+  const m=new g.maps.Map(el.firstChild,{center:start,zoom:c.lat?18:(shop?15:12),gestureHandling:'greedy',disableDefaultUI:true,zoomControl:true,clickableIcons:false});
+  if(shop)try{new g.maps.Marker({position:shop,map:m,title:'ร้าน',icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(PIN('#c48d3d')),scaledSize:new g.maps.Size(26,35),anchor:new g.maps.Point(13,34)}})}catch(e){}
+  const pin=$('#cpin'),hint=$('#mhint');if(c.lat)hint.hidden=true;
+  const set=(lat,lng)=>{S.cust.lat=+(+lat).toFixed(6);S.cust.lng=+(+lng).toFixed(6);hint.hidden=true;feeView()};
+  const here=()=>{const p=m.getCenter();set(p.lat(),p.lng())};
+  m.addListener('dragstart',()=>pin.classList.add('up'));
+  m.addListener('dragend',()=>{pin.classList.remove('up');here()});
+  m.addListener('idle',()=>{if(!S.cust.lat)return;const p=m.getCenter();if(Math.abs(p.lat()-S.cust.lat)>2e-6||Math.abs(p.lng()-S.cust.lng)>2e-6)here()});
+  m.addListener('click',e=>{m.panTo(e.latLng);set(e.latLng.lat(),e.latLng.lng())});
+  MAP={g:true,remove(){try{g.maps.event.clearInstanceListeners(m)}catch(e){}},__set(lat,lng){m.setCenter({lat:+lat,lng:+lng});if(m.getZoom()<17)m.setZoom(18);set(lat,lng)}}}
 function loadLeaflet(){if(window.L)return Promise.resolve(window.L);if(LL)return LL;LL=new Promise((ok,no)=>{const c=document.createElement('link');c.rel='stylesheet';c.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(c);
   const s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=()=>ok(window.L);s.onerror=()=>{LL=null;no(new Error('leaflet'))};document.head.appendChild(s)});return LL}
 const PIN=c=>`<svg xmlns="http://www.w3.org/2000/svg" width="34" height="46" viewBox="0 0 34 46"><path d="M17 45C17 45 33 27 33 17A16 16 0 1 0 1 17C1 27 17 45 17 45Z" fill="${c}" stroke="#fff" stroke-width="2"/><circle cx="17" cy="17" r="6" fill="#fff"/></svg>`;
-async function mountMap(){const el=$('#map');if(!el)return;let L;try{L=await loadLeaflet()}catch(e){el.innerHTML='<p class="help" style="padding:14px">โหลดแผนที่ไม่ได้ ตรวจอินเทอร์เน็ต</p>';return}
+async function mountMap(){const el=$('#map');if(!el)return;
+  if(gOn()){try{await mountG();return}catch(e){if(!$('#map'))return;GFAIL=true;if(!/gone/.test(e.message))toast('โหลดแผนที่ Google ไม่ได้ ใช้แผนที่สำรองแทน')}}
+  if(MAP&&MAP.g){MAP.remove();MAP=null}el.innerHTML='';const hp=$('#mapHelp');if(hp)hp.textContent='แตะแผนที่หรือลากหมุดแดงให้ตรงบ้าน ไรเดอร์จะนำทางตามหมุดนี้';let L;try{L=await loadLeaflet()}catch(e){el.innerHTML='<p class="help" style="padding:14px">โหลดแผนที่ไม่ได้ ตรวจอินเทอร์เน็ต</p>';return}
   if(!$('#map'))return;if(MAP){try{MAP.remove()}catch(e){}MAP=null}
   const f=(S.pub&&S.pub.fee)||{},shop=f.lat?[+f.lat,+f.lng]:null,c=S.cust,start=c.lat?[+c.lat,+c.lng]:shop||[13.7563,100.5018];
   const m=L.map(el).setView(start,c.lat?17:(shop?14:12));MAP=m;
@@ -305,15 +349,27 @@ function parseGLink(s){s=String(s||'').trim();let m;
   if(m=s.match(/^(-?\d{1,2}\.\d+)\s*,\s*(-?\d{2,3}\.\d+)$/))return {lat:+m[1],lng:+m[2]};return null}
 async function geoSearch(q){const f=(S.pub&&S.pub.fee)||{};let u='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&countrycodes=th&accept-language=th&q='+encodeURIComponent(q);
   if(f.lat)u+=`&viewbox=${+f.lng-0.3},${+f.lat+0.3},${+f.lng+0.3},${+f.lat-0.3}`;const r=await fetch(u,{headers:{Accept:'application/json'}});if(!r.ok)throw new Error('geo');return (await r.json()).map(x=>({name:x.display_name,lat:+x.lat,lng:+x.lon}))}
+async function gSuggest(q){const P=google.maps.places;if(!P||!P.AutocompleteSuggestion)throw new Error('places');if(!S.gTok)S.gTok=new P.AutocompleteSessionToken();
+  const f=(S.pub&&S.pub.fee)||{},req={input:q,sessionToken:S.gTok,language:'th',region:'th',includedRegionCodes:['th']};
+  if(f.lat){req.locationBias={center:{lat:+f.lat,lng:+f.lng},radius:20000};req.origin={lat:+f.lat,lng:+f.lng}}
+  S.gAc=(S.gAc||0)+1;
+  const {suggestions}=await P.AutocompleteSuggestion.fetchAutocompleteSuggestions(req);
+  return (suggestions||[]).filter(x=>x.placePrediction).slice(0,6).map(x=>{const p=x.placePrediction;return {name:String(p.text||''),main:String(p.mainText||p.text||''),sub:String(p.secondaryText||''),km:p.distanceMeters?Math.round(p.distanceMeters/100)/10:null,pred:p}})}
+const geoRow=(r,i)=>`<button type="button" data-a="gPick" data-i="${i}">${r.pred?`<b>${esc(r.main)}</b><small>${esc(r.sub)}${r.km!=null?' · ห่างร้าน ~'+r.km+' กม.':''}</small>`:esc(r.name)}</button>`;
+async function doSearch(q,quiet){const box=$('#gRes');if(!box)return;if(!q){box.innerHTML='';return}if(!quiet)box.innerHTML='<span class="help">กำลังค้นหา…</span>';const my=S.gq=(S.gq||0)+1;
+  try{const rs=gReady()?await gSuggest(q):await geoSearch(q);if(my!==S.gq||!$('#gRes'))return;S.geo=rs;
+    box.innerHTML=rs.length?rs.map(geoRow).join(''):'<span class="help">ไม่พบ ลองพิมพ์ชื่ออื่น หรือเลื่อนแผนที่ปักหมุดเอง</span>'}
+  catch(e){if(my===S.gq&&$('#gRes'))box.innerHTML='<span class="help">ค้นหาไม่ได้ตอนนี้ ปักหมุดบนแผนที่แทน</span>'}}
 function setPin(lat,lng){if(MAP&&MAP.__set)MAP.__set(lat,lng);else{S.cust.lat=lat;S.cust.lng=lng;feeView()}}
 // ผลเช็กระยะ: แสดงในหน้าปักหมุด
-function feeView(){const box=$('#feeBox');if(!box)return;const c=S.cust,r=c.lat?feeCalc(c.lat,c.lng,cartT()):null;S.fee=r;
+function feeView(){const box=$('#feeBox');if(!box)return;roadFetch();const c=S.cust,r=c.lat?feeCalc(c.lat,c.lng,cartT()):null;S.fee=r;
+  const busy=!!(c.lat&&S.roadBusy===pinKey(c.lat,c.lng));
   box.className='feebox'+(r&&r.over?' over':r?' okk':'');
   box.innerHTML=!c.lat?'<span class="muted">📍 แตะแผนที่ / ลากหมุดแดง / กดใช้ตำแหน่งปัจจุบัน ให้ตรงบ้าน แล้วระบบจะเช็กว่าส่งถึงไหม</span>'
     :!r?'<span class="muted">ร้านยังไม่ได้ตั้งตำแหน่งร้าน คิดค่าส่งไม่ได้ ติดต่อร้าน</span>'
     :r.over?`<b style="color:var(--red);font-size:17px">❌ ไกลเกินระยะส่ง</b><span>หมุดของคุณห่างร้าน ~${r.km} กม. · ร้านส่งได้ไม่เกิน ${r.max} กม.</span><span class="help">ตรวจว่าหมุดตรงบ้านไหม หรือโทรถามร้าน${S.pub&&S.pub.phone?' '+esc(S.pub.phone):''}</span>`
-    :`<b style="color:#0d6b3b;font-size:17px">✅ ส่งถึงได้</b><div class="kv"><span>ระยะทางโดยประมาณ</span><b>${r.km} กม.</b></div><div class="kv"><span>ค่าส่ง${cartN()?'':'เริ่มต้น'}</span><b>${baht(r.fee)}</b></div>${r.why?`<span class="help">${esc(r.why)}</span>`:''}`;
-  const b=$('#pinGo');if(b)b.disabled=!(r&&!r.over)}
+    :`<b style="color:#0d6b3b;font-size:17px">✅ ส่งถึงได้</b><div class="kv"><span>${busy?'กำลังคำนวณระยะตามถนน…':r.road?'ระยะทางตามถนน':'ระยะทางโดยประมาณ'}</span><b>${r.km} กม.</b></div><div class="kv"><span>ค่าส่ง${cartN()?'':'เริ่มต้น'}</span><b>${baht(r.fee)}</b></div>${r.why?`<span class="help">${esc(r.why)}</span>`:''}`;
+  const b=$('#pinGo');if(b)b.disabled=!(r&&!r.over)||busy}
 const pinOk=()=>{const c=S.cust;if(!c.lat)return false;const r=feeCalc(c.lat,c.lng,cartT());return !!(r&&!r.over)};
 const pinBar=()=>{const c=S.cust,r=c.lat?feeCalc(c.lat,c.lng,cartT()):null;return r&&!r.over?`<div class="pinbar"><span style="font-size:20px">📍</span><div class="grow"><b>ส่งถึงได้ · ${r.km} กม. · ค่าส่ง ${baht(r.fee)}</b><small>${esc(c.addr||'ตามหมุดที่ปักไว้')}</small></div><button class="btn sm" data-a="pinEdit" type="button">เปลี่ยน</button></div>`:''};
 
@@ -365,10 +421,10 @@ function menuGrid(){const list=S.menu.filter(m=>S.cat==='all'||m.cat===S.cat);if
   return order.map(c=>{const g=list.filter(m=>(m.cat||'')===c);return g.length?`${c?`<h3 class="cath">${esc(c)}</h3>`:''}<div class="grid">${g.map(menuCard).join('')}</div>`:''}).join('')}
 const mineBar=()=>{const L=mine().filter(x=>x.id!==S.id);return L.length?L.slice(0,3).map(x=>`<a class="mine" href="${esc(statusUrl(x.id,x.tok))}"><span style="font-size:22px">🛵</span><div class="grow"><b>ออร์เดอร์ของคุณ ${esc(shortNo(x.no))}</b><div style="font-size:13px;color:#d9cbb8">สั่งเมื่อ ${hm(x.at)} · แตะเพื่อดูสถานะ</div></div><span>›</span></a>`).join(''):''};
 const mapBlock=()=>`<div class="georow"><button class="btn sm gold" data-a="gps" type="button">📍 ใช้ตำแหน่งปัจจุบัน</button></div>
-  <div class="georow"><input id="gQ" placeholder="ค้นหา เช่น ชื่อหมู่บ้าน คอนโด ถนน" autocomplete="off"><button class="btn sm" data-a="gSearch" type="button">ค้นหา</button></div>
+  <div class="georow"><input id="gQ" placeholder="${gOn()?'พิมพ์ชื่อคอนโด หมู่บ้าน ร้าน สถานที่ใกล้บ้าน':'ค้นหา เช่น ชื่อหมู่บ้าน คอนโด ถนน'}" autocomplete="off" enterkeyhint="search"><button class="btn sm" data-a="gSearch" type="button">ค้นหา</button></div>
   <div class="geores" id="gRes"></div>
   <div class="georow"><input id="gLink" placeholder="หรือวางลิงก์ Google Maps / พิกัด" autocomplete="off"><button class="btn sm" data-a="gLink" type="button">ใช้</button></div>
-  <div class="map" id="map"></div><span class="help">แตะแผนที่หรือลากหมุดแดงให้ตรงบ้าน ไรเดอร์จะนำทางตามหมุดนี้</span>`;
+  <div class="map" id="map"></div><span class="help" id="mapHelp">${gOn()?'เลื่อนแผนที่ให้หมุดแดงตรงบ้าน (ซูมให้ใกล้ ๆ) ไรเดอร์จะนำทางตามหมุดนี้':'แตะแผนที่หรือลากหมุดแดงให้ตรงบ้าน ไรเดอร์จะนำทางตามหมุดนี้'}</span>`;
 function render(){const v=$('#view'),f=$('#footIn');let h='',ft='';const pub=S.pub||{};
   if(S.view==='status')return renderStatus();
   if(S.view==='menu'&&pub.open&&!pinOk())S.view='pin';
@@ -403,7 +459,8 @@ function render(){const v=$('#view'),f=$('#footIn');let h='',ft='';const pub=S.p
     ft=`<button class="btn" data-a="go" data-v="cart" type="button">กลับ</button><button class="btn pri wide" id="sendBtn" data-a="send" type="button">ส่งออร์เดอร์</button>`;
   }
   v.innerHTML=h;f.innerHTML=ft;$('#foot').hidden=!ft;
-  if(S.view==='pin'){$('#gQ').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();act('gSearch')}});$('#gLink').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();act('gLink')}});mountMap();feeView()}
+  if(S.view==='pin'){$('#gQ').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();act('gSearch')}});
+    $('#gQ').addEventListener('input',e=>{clearTimeout(S.gT);const q=e.target.value.trim();if(!gOn())return;if(q.length<2){$('#gRes').innerHTML='';return}S.gT=setTimeout(()=>doSearch(q,true),450)});$('#gLink').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();act('gLink')}});mountMap();feeView()}
   if(S.view==='addr'){['cName','cPhone','cAddr','cNote'].forEach(id=>$('#'+id).addEventListener('input',e=>{const k={cName:'name',cPhone:'phone',cAddr:'addr',cNote:'note'}[id];S.cust[k]=e.target.value;if(k==='phone'){clearTimeout(clT);clT=setTimeout(loadCl,400)}}));
     memView();loadCl()}
   if(S.view==='coupons'){$('#cpPh').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();act('cpLoad')}});memView();loadCl()}}
@@ -528,10 +585,10 @@ async function act(a,b){const d=(b&&b.dataset)||{};
   else if(a==='qty'){const e=S.cart[d.k];if(!e)return;e.qty+= +d.d;if(e.qty<1)delete S.cart[d.k];render()}
   else if(a==='go'){S.view=d.v;render();window.scrollTo(0,0)}
   else if(a==='send')send();
-  else if(a==='pinGo'){if(!pinOk())return;const c=S.cust;try{const {data,error}=await SB.rpc('dl_quote',{p_lat:c.lat,p_lng:c.lng,p_food:cartT()});if(!error&&data&&data.over){toast('ไกลเกินระยะส่ง ('+data.km+' กม.)');return}}catch(e){}
+  else if(a==='pinGo'){gAcFlush();if(!pinOk())return;const c=S.cust;try{const {data,error}=await SB.rpc('dl_quote',{p_lat:c.lat,p_lng:c.lng,p_food:cartT()});if(!error&&data&&data.over){toast('ไกลเกินระยะส่ง ('+data.km+' กม.)');return}}catch(e){}
     saveCust();S.view=S.pinBack||'menu';S.pinBack=null;render();window.scrollTo(0,0)}
   else if(a==='pinEdit'){S.pinBack=S.view==='addr'?'addr':'menu';S.view='pin';render();window.scrollTo(0,0)}
-  else if(a==='pinCancel'){S.view=S.pinBack||'menu';S.pinBack=null;render()}
+  else if(a==='pinCancel'){gAcFlush();S.view=S.pinBack||'menu';S.pinBack=null;render()}
   else if(a==='cpPick'){S.pickTouched=true;S.pick[d.t]=S.pick[d.t]===d.id?null:d.id;memView()}
   else if(a==='cpLoad'){S.cust.phone=$('#cpPh').value;S.clPh=null;S.cl=null;loadCl()}
   else if(a==='cpClaim'){const ph=String(S.cust.phone||'').replace(/\D/g,'');b.disabled=true;const {error}=await SB.rpc('cpn_claim',{p_id:d.id,p_phone:ph});
@@ -542,9 +599,11 @@ async function act(a,b){const d=(b&&b.dataset)||{};
   else if(a==='gps'){if(!navigator.geolocation)return toast('เครื่องนี้หาตำแหน่งไม่ได้');toast('กำลังหาตำแหน่ง…');
     navigator.geolocation.getCurrentPosition(p=>setPin(p.coords.latitude,p.coords.longitude),()=>toast('หาตำแหน่งไม่ได้ อนุญาตตำแหน่งในเบราว์เซอร์ หรือปักหมุดเอง'),{enableHighAccuracy:true,timeout:15000})}
   else if(a==='gLink'){const p=parseGLink($('#gLink').value);if(!p)return toast(/goo\.gl|maps\.app/.test($('#gLink').value)?'ลิงก์สั้นอ่านพิกัดไม่ได้ ใช้ค้นหาหรือปักหมุดแทน':'ไม่พบพิกัดในลิงก์นี้');setPin(p.lat,p.lng);toast('ใช้พิกัดจากลิงก์แล้ว')}
-  else if(a==='gSearch'){const q=$('#gQ').value.trim(),box=$('#gRes');if(!q)return;box.innerHTML='<span class="help">กำลังค้นหา…</span>';
-    try{const rs=await geoSearch(q);S.geo=rs;box.innerHTML=rs.length?rs.map((r,i)=>`<button type="button" data-a="gPick" data-i="${i}">${esc(r.name)}</button>`).join(''):'<span class="help">ไม่พบ ลองคำอื่น หรือปักหมุดบนแผนที่</span>'}catch(e){box.innerHTML='<span class="help">ค้นหาไม่ได้ตอนนี้ ปักหมุดบนแผนที่แทน</span>'}}
-  else if(a==='gPick'){const r=(S.geo||[])[+d.i];if(!r)return;setPin(r.lat,r.lng);$('#gRes').innerHTML='';if(!S.cust.addr)S.cust.addr=r.name.split(',').slice(0,3).join(',')}
+  else if(a==='gSearch'){clearTimeout(S.gT);doSearch($('#gQ').value.trim())}
+  else if(a==='gPick'){const r=(S.geo||[])[+d.i];if(!r)return;
+    if(r.pred){try{const pl=r.pred.toPlace();await pl.fetchFields({fields:['location']});S.gTok=null;S.gAc=0;gTick('pick');setPin(pl.location.lat(),pl.location.lng());if(!S.cust.addr)S.cust.addr=r.main+(r.sub?' '+r.sub.split(',')[0]:'')}catch(e){return toast('ดึงตำแหน่งไม่ได้ ลองใหม่ หรือเลื่อนแผนที่เอง')}}
+    else{setPin(r.lat,r.lng);if(!S.cust.addr)S.cust.addr=r.name.split(',').slice(0,3).join(',')}
+    $('#gRes').innerHTML='';const q=$('#gQ');if(q)q.value=r.pred?r.main:q.value}
   else if(a==='slipDel'){S.slipDraft=null;renderStatus();setTimeout(()=>$('#slipIn').click(),50)}
   else if(a==='slipSend')slipSend();
   else if(a==='viewSlip')viewImg(S.slipSent&&S.slipSent.img,'สลิป');
