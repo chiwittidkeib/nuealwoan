@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-1420">
+<meta name="app-version" content="2026.10.16-1440">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0907">
 <title>บัตรสะสมแต้ม · เนื้อล้วนๆ</title>
@@ -124,12 +124,13 @@ function rules(c){const r=[];
   if(c.mode==='claim'){r.push(`ต้องกดเก็บคูปองก่อน (เฉพาะสมาชิก)${+c.total?' · แจกทั้งหมด '+num(c.total)+' ใบ':' · เก็บได้ไม่จำกัดจำนวน'} · เก็บได้คนละ ${num(Math.max(1,+c.perUser||1))} ใบ`);
     if(+c.useLimit)r.push(`ใช้ได้จริงทั้งหมด ${num(c.useLimit)} สิทธิ์ (นับเมื่อชำระเงิน) ใครใช้ก่อนได้ก่อน · ใช้ครบแล้วคูปองที่เก็บไว้จะใช้ไม่ได้`)}
   else{r.push('ใช้ได้ทุกบิลอัตโนมัติ ไม่ต้องเก็บ');if(+c.perUser)r.push(`ใช้ได้คนละ ${num(c.perUser)} ครั้ง (ต้องใช้เบอร์สมาชิก)`);if(+c.total)r.push(`จำนวนจำกัด ${num(c.total)} สิทธิ์`)}
-  r.push(+c.start||+c.end?`ระยะเวลา ${+c.start?dtTH(c.start):'ตั้งแต่วันนี้'} – ${+c.end?dtTH(c.end):'ไม่มีวันหมดอายุ'}`:'ไม่มีวันหมดอายุ (จนกว่าร้านจะปิดโปร)');
+  if(c.mode==='claim'&&(+c.claimStart||+c.claimEnd))r.push(`เปิดให้เก็บ ${+c.claimStart?dtTH(c.claimStart):'ตั้งแต่วันนี้'} – ${+c.claimEnd?dtTH(c.claimEnd):+c.end?dtTH(c.end):'ไม่กำหนด'}`);
+  r.push(+c.start||+c.end?`ใช้ได้ ${+c.start?dtTH(c.start):'ตั้งแต่วันนี้'} – ${+c.end?dtTH(c.end):'ไม่มีวันหมดอายุ'}`:'ไม่มีวันหมดอายุ (จนกว่าร้านจะปิดโปร)');
   r.push('ใช้ส่วนลดค่าอาหารได้ 1 ใบ และส่วนลดค่าส่งได้ 1 ใบ ต่อ 1 บิล · ใช้คู่กับแต้มสะสมได้');
   r.push('ไม่สามารถแลกเปลี่ยนเป็นเงินสด');return r}
 function cpState(c){const mem=!!(S.card&&S.card.member);
-  if(c.mode==='claim'){if(+c.useLimit&&!(c.useLeft>0))return ['x',c.claimed-c.used>0?'สิทธิ์ใช้ครบแล้ว':'ครบ '+num(c.useLimit)+' สิทธิ์แล้ว'];if(c.claimed-c.used>0)return ['have',`มีอยู่ ${c.claimed-c.used} ใบ`];if(!mem)return ['x','เฉพาะสมาชิก'];if(c.left===0)return ['x','เก็บครบแล้ว'];if(c.claimed>=Math.max(1,+c.perUser||1))return ['x','ใช้สิทธิ์ครบแล้ว'];return ['claim','เก็บคูปอง']}
-  if(c.left===0)return ['x','หมดแล้ว'];if(+c.perUser){if(!mem)return ['x','เฉพาะสมาชิก'];if(c.used>=+c.perUser)return ['x','ใช้สิทธิ์ครบแล้ว'];return ['have',`เหลือ ${+c.perUser-c.used} ครั้ง`]}return ['auto','ใช้ได้เลย']}
+  if(c.mode==='claim'){if(c.useNow===false&&c.claimed-c.used>0)return ['have','เก็บแล้ว · ใช้ได้ '+dTH(c.start)];if(c.useNow===false&&!c.claimNow)return ['x','ปิดรับเก็บแล้ว'];if(+c.useLimit&&!(c.useLeft>0))return ['x',c.claimed-c.used>0?'สิทธิ์ใช้ครบแล้ว':'ครบ '+num(c.useLimit)+' สิทธิ์แล้ว'];if(c.claimed-c.used>0)return ['have',`มีอยู่ ${c.claimed-c.used} ใบ`];if(!mem)return ['x','เฉพาะสมาชิก'];if(c.left===0)return ['x','เก็บครบแล้ว'];if(c.claimed>=Math.max(1,+c.perUser||1))return ['x','ใช้สิทธิ์ครบแล้ว'];return ['claim','เก็บคูปอง']}
+  if(c.useNow===false)return ['x','ใช้ได้ '+dTH(c.start)];if(c.left===0)return ['x','หมดแล้ว'];if(+c.perUser){if(!mem)return ['x','เฉพาะสมาชิก'];if(c.used>=+c.perUser)return ['x','ใช้สิทธิ์ครบแล้ว'];return ['have',`เหลือ ${+c.perUser-c.used} ครั้ง`]}return ['auto','ใช้ได้เลย']}
 function render(){const d=S.card,m=d.member,L=(S.cl&&S.cl.coupons)||[];let h='';
   if(!m){h=`<div class="box" style="text-align:center"><h2 style="color:var(--gold2)">ยังไม่เป็นสมาชิก</h2><p class="help">เบอร์ ${esc(S.phone)} · สมัครฟรี ทุก ${num(d.pointsPer)} บาท ได้ 1 แต้ม · ใช้แต้มแทนเงินสด และเก็บคูปองสมาชิกได้</p>
       <div class="field" style="text-align:left"><label for="nm">ชื่อเล่น (ไม่บังคับ)</label><input id="nm" maxlength="40" autocomplete="nickname" style="font-size:16px;letter-spacing:0"></div>
@@ -161,7 +162,7 @@ async function act(a,b){const d=(b&&b.dataset)||{};
   else if(a==='join'){b.disabled=true;const {error}=await SB.rpc('member_signup',{p_phone:S.phone,p_name:String($('#nm')?.value||'').trim()});b.disabled=false;
     if(error)return toast(/points_off/.test(error.message)?'ร้านปิดระบบสมาชิกอยู่':/busy/.test(error.message)?'มีคนสมัครพร้อมกันเยอะ ลองอีกครั้ง':'สมัครไม่สำเร็จ ลองอีกครั้ง');LS('nl_card_phone',S.phone);toast('⭐ สมัครสมาชิกแล้ว');await load()}
   else if(a==='claim'){b.disabled=true;const {error}=await SB.rpc('cpn_claim',{p_id:d.id,p_phone:S.phone});
-    if(error){b.disabled=false;return toast(/cpn_gone/.test(error.message)?'คูปองถูกเก็บครบแล้ว':/cpn_limit/.test(error.message)?'คุณเก็บคูปองนี้ครบสิทธิ์แล้ว':/cpn_member/.test(error.message)?'ต้องสมัครสมาชิกก่อน':'เก็บคูปองไม่สำเร็จ')}
+    if(error){b.disabled=false;return toast(/cpn_gone/.test(error.message)?'คูปองถูกเก็บครบแล้ว':/cpn_limit/.test(error.message)?'คุณเก็บคูปองนี้ครบสิทธิ์แล้ว':/cpn_member/.test(error.message)?'ต้องสมัครสมาชิกก่อน':/cpn_not_yet/.test(error.message)?'ยังไม่ถึงเวลาเปิดให้เก็บ':/cpn_off/.test(error.message)?'คูปองนี้ปิดรับเก็บแล้ว':'เก็บคูปองไม่สำเร็จ')}
     document.querySelector('.sheetbg')?.remove();toast('🎟️ เก็บคูปองแล้ว');await load()}}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled||b.dataset.a==='close')return;act(b.dataset.a,b)});
 // ยอดคูปองอัปเดตสด ทุก 10 วินาที (เฉพาะตอนเปิดหน้าอยู่)
