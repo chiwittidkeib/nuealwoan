@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1700">
+<meta name="app-version" content="2026.10.17-1730">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1398,7 +1398,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2429,8 +2429,8 @@ function poState(){const c=poCfg(),t=bkkHM(),today=bkkDay(0);let rd=/^\d{4}-\d\d
 const poShift=(d,n)=>new Date(new Date(d+'T00:00:00Z').getTime()+n*DAY).toISOString().slice(0,10);
 const poDate=d=>{try{return new Date(d+'T00:00:00+07:00').toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Bangkok'})}catch(e){return d}};
 const poDayName=d=>d===bkkDay(0)?'วันนี้':d===bkkDay(1)?'พรุ่งนี้':d===bkkDay(-1)?'เมื่อวาน':' '+poDate(d);
-const PO_ST={new:['รอยืนยัน','warn'],confirmed:['ยืนยันแล้ว','info'],ready:['พร้อมส่ง/รับ','ok'],done:['เสร็จแล้ว','mute'],cancelled:['ยกเลิก','bad']};
-const PO_NEXT={new:['confirmed','ยืนยันออร์เดอร์'],confirmed:['ready','ทำเสร็จ พร้อมส่ง'],ready:['done','ส่งแล้ว / รับแล้ว']};
+const PO_ST={new:['รอยืนยัน','warn'],confirmed:['ยืนยันแล้ว','info'],ready:['อยู่ระหว่างจัดส่ง','info'],done:['ส่งอาหารสำเร็จ','ok'],cancelled:['ยกเลิก','bad']};
+const PO_NEXT={new:['confirmed','ยืนยันออร์เดอร์'],confirmed:['ready','🛵 เริ่มจัดส่ง'],ready:['done','✅ ส่งอาหารสำเร็จ']};
 const PO_PREV={confirmed:'new',ready:'confirmed',done:'ready',cancelled:'new'};
 const poLive=o=>o.status!=='cancelled';
 const poQty=o=>(o.items||[]).reduce((a,l)=>a+(+l.qty||0),0);
@@ -2475,6 +2475,9 @@ function sheetPoSlipBad(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id
    <p class="help" style="margin:0">ลูกค้าจะเห็นข้อความนี้ในหน้าออร์เดอร์และหน้าสถานะ แล้วแนบสลิปใหม่ได้ · สถานะกลับเป็น "ค้างชำระ"</p>
    ${tel?`<a class="btn" href="tel:${esc(tel)}">📞 โทรหาลูกค้า ${esc(tel.replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a><a class="btn" href="sms:${esc(tel)}">💬 ส่ง SMS</a>`:''}</form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn danger wide" data-act="poSbGo" type="button">แจ้งลูกค้า · ให้แนบสลิปใหม่</button></div>`}
+function sheetPoSlips(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id)||{};
+  $('#panel').innerHTML=head('สลิป '+esc(poShort(o))+' · '+s.L.length+' ใบ','ยอดรวม '+baht(+o.total||0)+(+o.paidAmt>0?' · จ่ายแล้ว '+baht(o.paidAmt):''))+`<div class="sh-body">${s.L.map((x,i)=>`<div class="card"><b>ใบที่ ${i+1}${x.at?' · '+esc(poDate(new Date(x.at+7*3600e3).toISOString().slice(0,10)))+' '+hm(x.at):''}</b><img src="${esc(x.img)}" alt="สลิป" class="zoomable" data-act="imgv" data-src="${esc(x.img)}" data-cap="สลิปใบที่ ${i+1}" style="max-height:380px;max-width:100%;align-self:center;border-radius:10px"></div>`).join('')}</div>
+   <div class="sh-foot"><button class="btn wide" data-act="close" type="button">ปิด</button></div>`}
 function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
   const why=st.open?`รับออร์เดอร์ถึง ${st.closeDate!==bkkDay(0)?esc(poDate(st.closeDate))+' ':''}${esc(c.cutoff)} น. · ส่ง${[bkkDay(0),bkkDay(1)].includes(st.deliverDate)?poDayName(st.deliverDate)+' '+esc(poDate(st.deliverDate)):' '+esc(poDate(st.deliverDate))}${c.window?' · '+esc(c.window):''}`
     :st.reason==='after'?(st.round?`ปิดรับรอบส่ง ${esc(poDate(st.deliverDate))} แล้ว · กด "กำหนดรอบส่ง" เพื่อเปิดรอบใหม่`:`เลยเวลาปิดรับ ${esc(c.cutoff)} น. ของวันนี้แล้ว · เปิดรับอัตโนมัติพรุ่งนี้${c.openFrom?' '+esc(c.openFrom)+' น.':''}`)
@@ -2488,10 +2491,11 @@ function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
 function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=PO_PREV[o.status];
   return `<div class="card poc st-${esc(o.status)}"><div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${st[1]}">${st[0]}</span><span class="grow"></span><small class="muted">สั่ง ${hm(o.at)}${o.at<sod()?' · '+esc(poDate(new Date(o.at+7*3600e3).toISOString().slice(0,10))):''}</small></div>
     <div class="poc-who"><b>${esc(o.name)}</b>${o.memberPhone?` <span class="pill ok" title="สมาชิกสะสมแต้ม">⭐${+o.ptsEarned?' +'+o.ptsEarned:''}</span>`:''} · <a href="tel:${esc(o.phone)}">${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a></div>
-    <div class="poc-items">${(o.items||[]).map(l=>`<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
+    ${(o.rounds||1)>1&&!o.addSeen?`<div class="poc-note" style="color:#1565c0;font-weight:700">➕ ลูกค้าสั่งเพิ่ม (ครั้งที่ ${o.rounds-1}) ${o.addedAt?hm(o.addedAt):''} <button class="btn sm" data-act="poAddSeen" data-id="${esc(o.id)}" type="button">รับทราบ</button></div>`:''}
+    <div class="poc-items">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="muted" style="font-size:12px;font-weight:700;margin-top:4px">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div>`:''}<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
     ${o.note?`<div class="poc-note">📝 ${esc(o.note)}</div>`:''}
     ${o.slipBad&&o.payStatus!=='paid'&&o.payStatus!=='slip'?`<div class="poc-note" style="color:var(--chili)">❌ แจ้งลูกค้าแล้ว: ${esc(o.slipBad)} · <a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a></div>`:''}
-    <div class="poc-f"><b>${baht(+o.total||0)}</b>${poPayPill(o)}<span class="grow"></span>${(o.pay==='before'&&o.payStatus!=='waiting')||o.payStatus==='slip'?`<button class="btn sm" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button>`:''}${o.payStatus==='slip'&&['owner','chef'].includes(S.role)?`<button class="btn sm danger" data-act="poSlipBad" data-id="${esc(o.id)}" type="button">❌ สลิปไม่ถูกต้อง</button>`:''}${o.payStatus==='paid'&&poLive(o)?`<button class="btn sm" data-act="poRc" data-id="${esc(o.id)}" type="button">🧾 ใบเสร็จ</button>`:''}${o.payStatus!=='paid'&&poLive(o)?`<button class="btn sm" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">รับเงินแล้ว</button>`:''}</div>
+    <div class="poc-f"><b>${baht(+o.total||0)}</b>${+o.paidAmt>0&&o.payStatus!=='paid'?`<small class="muted">จ่ายแล้ว ${baht(o.paidAmt)} · ค้าง <b style="color:var(--chili)">${baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0)))}</b></small>`:''}${poPayPill(o)}<span class="grow"></span>${(o.pay==='before'&&o.payStatus!=='waiting')||o.payStatus==='slip'?`<button class="btn sm" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button>`:''}${o.payStatus==='slip'&&['owner','chef'].includes(S.role)?`<button class="btn sm danger" data-act="poSlipBad" data-id="${esc(o.id)}" type="button">❌ สลิปไม่ถูกต้อง</button>`:''}${o.payStatus==='paid'&&poLive(o)?`<button class="btn sm" data-act="poRc" data-id="${esc(o.id)}" type="button">🧾 ใบเสร็จ</button>`:''}${o.payStatus!=='paid'&&poLive(o)?`<button class="btn sm" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">รับเงินแล้ว</button>`:''}</div>
     ${o.status==='cancelled'?`<div class="poc-a"><span class="muted grow">ยกเลิก${o.cancelledBy==='customer'?'โดยลูกค้า':''}</span><button class="btn sm" data-act="poBack" data-id="${esc(o.id)}" type="button">กู้คืน</button></div>`
       :`<div class="poc-a">${pv?`<button class="btn sm ghost" data-act="poBack" data-id="${esc(o.id)}" type="button" aria-label="ย้อนสถานะ" title="ย้อนสถานะ">↩</button>`:''}${o.status!=='done'?`<button class="btn sm ghost" data-act="poCancel" data-id="${esc(o.id)}" data-confirm="1" type="button">ยกเลิก</button>`:''}<span class="grow"></span>${nx?`<button class="btn pri" data-act="poStep" data-id="${esc(o.id)}" type="button">${nx[1]}</button>`:''}</div>`}</div>`}
 function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliverDate===day),live=all.filter(poLive);
@@ -2582,6 +2586,7 @@ Object.assign(ACT,{
   shopSw:d=>{if(!canPo())return deny();S.shop=d.v==='po'?'po':'noodle';try{localStorage.setItem('nl_shop',S.shop)}catch(e){}S.menuCat='all';S.tab=homeTab(effRole());closeSheet();render();window.scrollTo(0,0)},
   poDay:d=>{S.poDay=d.v;render()},
   poF:d=>{S.poF=d.v;render()},
+  poAddSeen:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;o.addSeen=true;render();await write('po_orders/'+o.id,r=>r.update({addSeen:true}))},
   poSlipBad:d=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poSlipBad',id:d.id,rs:''})},
   poSbRs:d=>{const i=$('#sbTxt');if(i){i.value=d.v;S.sheet.rs=d.v}},
   poSbView:d=>ACT.poSlip({id:S.sheet.id}),
@@ -2608,13 +2613,17 @@ Object.assign(ACT,{
   poBack:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;const pv=PO_PREV[o.status];if(pv)poSet(o.id,{status:pv},'ย้อนเป็น '+PO_ST[pv][0])},
   poCancel:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(o)poSet(o.id,{status:'cancelled',cancelledBy:'shop',cancelledAt:Date.now()},'ยกเลิก '+poShort(o)+' แล้ว')},
   poPaid:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o||o.payStatus==='paid')return;
-    const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='paid'?null:{payStatus:'paid',payAt:Date.now(),payBy:S.me||''}));if(!ok)return;
-    Object.assign(o,{payStatus:'paid',payAt:Date.now()});let msg='บันทึกรับเงิน '+poShort(o)+' แล้ว';
+    const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='paid'?null:{payStatus:'paid',payAt:Date.now(),payBy:S.me||'',paidAmt:+x.total||0,slipBad:null}));if(!ok)return;
+    Object.assign(o,{payStatus:'paid',payAt:Date.now(),paidAmt:+o.total||0});let msg='บันทึกรับเงิน '+poShort(o)+' แล้ว';
     if(o.memberPhone&&S.settings.pointsOn&&!o.ptsDone){const earn=Math.floor((+o.total||0)/Math.max(1,+S.settings.pointsPer||50));
       try{const bal=await applyPoints(o.memberPhone,o.name||'',0,earn,+o.total||0);const pex=LAST_LOTS?memExpSoon(LAST_LOTS):null;await write('po_orders/'+o.id,r=>r.update({ptsEarned:earn,ptsBalance:bal,ptsDone:true,...(pex?{ptsExp:pex}:{})}));Object.assign(o,{ptsEarned:earn,ptsBalance:bal,ptsDone:true});msg+=' · สมาชิก +'+earn+' แต้ม (รวม '+bal+')'}
       catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
     render();toast(msg)},
-  poSlip:async d=>{const o=S.poOrders.find(x=>x.id===d.id);try{const s=await S.db.doc('po_slips/'+d.id).get();const x=s.exists?s.data():null;if(!x||!x.img)return toast('ไม่พบรูปสลิป','bad');viewImg(x.img,'สลิป '+poShort(o||{id:d.id})+' · '+baht(+(o&&o.total)||0))}catch(e){toast('โหลดสลิปไม่ได้','bad')}}
+  poSlip:async d=>{const o=S.poOrders.find(x=>x.id===d.id);const ids=[...new Set([d.id,...((o&&o.slipIds)||[])])];const L=[];
+    try{for(const id of ids){const g=await S.db.doc('po_slips/'+id).get();if(g.exists&&g.data().img)L.push(g.data())}}catch(e){return toast('โหลดสลิปไม่ได้','bad')}
+    if(!L.length)return toast('ไม่พบรูปสลิป','bad');L.sort((a,b)=>(a.at||0)-(b.at||0));
+    if(L.length===1)return viewImg(L[0].img,'สลิป '+poShort(o||{id:d.id})+' · '+baht(+(o&&o.total)||0));
+    openSheet({type:'poSlips',id:d.id,L})},
 });
 setInterval(()=>{if(S.state==='ready'&&isPo()&&S.tab==='po'&&!S.sheet)render()},60000);
 /* ---------- ก่อนรับเงิน: เด้งถามเบอร์สมาชิกเพื่อสะสมแต้ม ---------- */
