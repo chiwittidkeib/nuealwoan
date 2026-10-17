@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1630">
+<meta name="app-version" content="2026.10.17-1700">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -392,6 +392,7 @@ body.app .chips,body.app .subtabs{border-radius:12px}
 .stepper.big{align-self:flex-start}.stepper.big button{width:48px;height:48px;font-size:22px}.stepper.big span{min-width:48px;font-size:20px}
 .perm input.pct{width:64px;text-align:right;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px}
 #hdrLogout{color:var(--muted)}
+.sh-body a.btn{text-decoration:none}
 .outmsg{background:rgba(198,40,40,.16);border:1px solid rgba(229,56,59,.55);color:#ffd2cc;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.45}
 #hdrShop{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:6px 14px 6px 11px;border:1px solid rgba(46,204,113,.45);background:linear-gradient(180deg,rgba(46,204,113,.16),rgba(46,204,113,.06));color:#bff3d2;font-weight:500}
 #hdrShop b{font-weight:700;color:#fff}
@@ -1397,7 +1398,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({lmBook:sheetLmBook,poRound:sheetPoRound,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2437,6 +2438,7 @@ const poShort=o=>'#'+String(o.orderNo||o.id).slice(-4);
 function poSold(mid){const d=poState().deliverDate;let n=0;(S.poOrders||[]).forEach(o=>{if(poLive(o)&&o.deliverDate===d)(o.items||[]).forEach(l=>{if(l.menuId===mid)n+=+l.qty||0})});return n}
 function poPayPill(o){if(o.payStatus==='paid')return '<span class="pill ok">จ่ายแล้ว ✓</span>';
   if(o.payStatus==='slip')return '<span class="pill warn">⏳ รอตรวจสอบยอดชำระ</span>';
+  if(o.slipBad)return '<span class="pill bad" title="'+esc(o.slipBad)+'">❌ สลิปไม่ถูกต้อง · รอแนบใหม่</span>';
   if(o.pay==='after')return '<span class="pill mute">โอนตอนรับของ</span>';
   return '<span class="pill bad">ยังไม่โอน</span>'}
 let poSeen=null;
@@ -2464,6 +2466,15 @@ function sheetPoRound(){const c=poCfg(),st=poState(),t=bkkDay(0);
    <p class="help" style="margin:0">ตัวอย่าง: วันนี้ ${esc(poDate(t))} เปิดให้สั่ง ส่ง ${esc(poDate(poShift(t,3)))} → วันส่ง = ${esc(poDate(poShift(t,3)))} · ปิดรับ = ${esc(poDate(poShift(t,2)))} 20:00</p>
    <p class="err" id="prErr" role="alert"></p></form>
    <div class="sh-foot"><button class="btn" data-act="poRoundClear" type="button">ใช้แบบอัตโนมัติ</button><button class="btn pri wide" data-act="poRoundSave" type="button">บันทึกรอบส่ง</button></div>`}
+function sheetPoSlipBad(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(!o){closeSheet();return}
+  const tel=String(o.phone||''),rs=['ยอดเงินไม่ตรงกับออร์เดอร์','ยังไม่มีเงินเข้าบัญชี','สลิปไม่ชัด / อ่านไม่ได้','ชื่อบัญชีผู้รับไม่ใช่ของร้าน','สลิปซ้ำ / ใช้ไปแล้ว'];
+  $('#panel').innerHTML=head('❌ แจ้งสลิปไม่ถูกต้อง · '+esc(poShort(o)),'คุณ'+esc(o.name)+' · '+baht(+o.total||0))+`<form class="sh-body" onsubmit="return false">
+   <button class="btn" data-act="poSbView" type="button">ดูสลิปอีกครั้ง</button>
+   <div class="chips" style="flex-wrap:wrap">${rs.map(r=>`<button class="chip" data-act="poSbRs" data-v="${esc(r)}" type="button">${esc(r)}</button>`).join('')}</div>
+   <div class="field"><label for="sbTxt">ข้อความถึงลูกค้า (remark)</label><input id="sbTxt" maxlength="150" value="${esc(s.rs||'')}" placeholder="เช่น ยอดโอน 100 แต่ออร์เดอร์ 110 · โอนเพิ่ม 10 บาท"></div>
+   <p class="help" style="margin:0">ลูกค้าจะเห็นข้อความนี้ในหน้าออร์เดอร์และหน้าสถานะ แล้วแนบสลิปใหม่ได้ · สถานะกลับเป็น "ค้างชำระ"</p>
+   ${tel?`<a class="btn" href="tel:${esc(tel)}">📞 โทรหาลูกค้า ${esc(tel.replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a><a class="btn" href="sms:${esc(tel)}">💬 ส่ง SMS</a>`:''}</form>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn danger wide" data-act="poSbGo" type="button">แจ้งลูกค้า · ให้แนบสลิปใหม่</button></div>`}
 function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
   const why=st.open?`รับออร์เดอร์ถึง ${st.closeDate!==bkkDay(0)?esc(poDate(st.closeDate))+' ':''}${esc(c.cutoff)} น. · ส่ง${[bkkDay(0),bkkDay(1)].includes(st.deliverDate)?poDayName(st.deliverDate)+' '+esc(poDate(st.deliverDate)):' '+esc(poDate(st.deliverDate))}${c.window?' · '+esc(c.window):''}`
     :st.reason==='after'?(st.round?`ปิดรับรอบส่ง ${esc(poDate(st.deliverDate))} แล้ว · กด "กำหนดรอบส่ง" เพื่อเปิดรอบใหม่`:`เลยเวลาปิดรับ ${esc(c.cutoff)} น. ของวันนี้แล้ว · เปิดรับอัตโนมัติพรุ่งนี้${c.openFrom?' '+esc(c.openFrom)+' น.':''}`)
@@ -2479,7 +2490,8 @@ function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=P
     <div class="poc-who"><b>${esc(o.name)}</b>${o.memberPhone?` <span class="pill ok" title="สมาชิกสะสมแต้ม">⭐${+o.ptsEarned?' +'+o.ptsEarned:''}</span>`:''} · <a href="tel:${esc(o.phone)}">${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a></div>
     <div class="poc-items">${(o.items||[]).map(l=>`<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
     ${o.note?`<div class="poc-note">📝 ${esc(o.note)}</div>`:''}
-    <div class="poc-f"><b>${baht(+o.total||0)}</b>${poPayPill(o)}<span class="grow"></span>${(o.pay==='before'&&o.payStatus!=='waiting')||o.payStatus==='slip'?`<button class="btn sm" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button>`:''}${o.payStatus==='paid'&&poLive(o)?`<button class="btn sm" data-act="poRc" data-id="${esc(o.id)}" type="button">🧾 ใบเสร็จ</button>`:''}${o.payStatus!=='paid'&&poLive(o)?`<button class="btn sm" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">รับเงินแล้ว</button>`:''}</div>
+    ${o.slipBad&&o.payStatus!=='paid'&&o.payStatus!=='slip'?`<div class="poc-note" style="color:var(--chili)">❌ แจ้งลูกค้าแล้ว: ${esc(o.slipBad)} · <a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a></div>`:''}
+    <div class="poc-f"><b>${baht(+o.total||0)}</b>${poPayPill(o)}<span class="grow"></span>${(o.pay==='before'&&o.payStatus!=='waiting')||o.payStatus==='slip'?`<button class="btn sm" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button>`:''}${o.payStatus==='slip'&&['owner','chef'].includes(S.role)?`<button class="btn sm danger" data-act="poSlipBad" data-id="${esc(o.id)}" type="button">❌ สลิปไม่ถูกต้อง</button>`:''}${o.payStatus==='paid'&&poLive(o)?`<button class="btn sm" data-act="poRc" data-id="${esc(o.id)}" type="button">🧾 ใบเสร็จ</button>`:''}${o.payStatus!=='paid'&&poLive(o)?`<button class="btn sm" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">รับเงินแล้ว</button>`:''}</div>
     ${o.status==='cancelled'?`<div class="poc-a"><span class="muted grow">ยกเลิก${o.cancelledBy==='customer'?'โดยลูกค้า':''}</span><button class="btn sm" data-act="poBack" data-id="${esc(o.id)}" type="button">กู้คืน</button></div>`
       :`<div class="poc-a">${pv?`<button class="btn sm ghost" data-act="poBack" data-id="${esc(o.id)}" type="button" aria-label="ย้อนสถานะ" title="ย้อนสถานะ">↩</button>`:''}${o.status!=='done'?`<button class="btn sm ghost" data-act="poCancel" data-id="${esc(o.id)}" data-confirm="1" type="button">ยกเลิก</button>`:''}<span class="grow"></span>${nx?`<button class="btn pri" data-act="poStep" data-id="${esc(o.id)}" type="button">${nx[1]}</button>`:''}</div>`}</div>`}
 function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliverDate===day),live=all.filter(poLive);
@@ -2537,7 +2549,7 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
    <div class="card"><h3>ชำระเงิน</h3>
     <label class="check"><input type="checkbox" id="pPB" ${c.payBefore?'checked':''}> โอนก่อน (แสดง QR พร้อมเพย์ + แนบสลิป)</label>
     <label class="check"><input type="checkbox" id="pPA" ${c.payAfter?'checked':''}> จ่ายตอนรับของ</label>
-    <div class="field"><label for="pPP">พร้อมเพย์</label><input id="pPP" inputmode="numeric" value="${esc(c.promptpay||'')}" placeholder="${esc(S.settings.promptpay?'เว้นว่าง = ใช้ของร้านก๋วยเตี๋ยว ('+S.settings.promptpay+')':'เบอร์มือถือ หรือเลขบัตร 13 หลัก')}"></div></div>
+    <div class="field"><label for="pPP">พร้อมเพย์</label><input id="pPP" inputmode="numeric" value="${esc(c.promptpay||'')}" placeholder="${esc(S.settings.promptpay?'เว้นว่าง = ใช้ของร้านก๋วยเตี๋ยว ('+S.settings.promptpay+')':'เบอร์มือถือ หรือเลขบัตร 13 หลัก')}"></div><div class="field"><label for="pPPN">ชื่อ-นามสกุล เจ้าของพร้อมเพย์</label><input id="pPPN" maxlength="60" value="${esc(c.ppName||'')}" placeholder="แสดงให้ลูกค้าเห็นตอนโอน"></div></div>
    <div class="grid2"><div class="field"><label for="pPhone">เบอร์ร้าน (ลูกค้ากดโทรได้)</label><input id="pPhone" inputmode="tel" maxlength="20" value="${esc(c.phone||'')}"></div><div class="field"><label for="pLine">ลิงก์ LINE ร้าน (ปุ่มส่งข้อความ)</label><input id="pLine" inputmode="url" maxlength="200" value="${esc(c.line||'')}" placeholder="https://lin.ee/… (เว้นว่าง = ส่ง SMS)"></div></div>
    <div class="card"><h3>โลโก้ร้าน & หัวใบเสร็จ (ร้านข้าวมันไก่)</h3>
     ${rcLogoField('poRcLogo',c.rcLogo||c.logo,'images/logo-po-t.png')}
@@ -2556,7 +2568,7 @@ function poReadPts(){document.querySelectorAll('[data-pt]').forEach(e=>{const p=
 async function poSave(){if(S.role!=='owner')return deny();poReadPts();const d=S.sheet.d;
   const data={...(S.po||{}),open:$('#pOpen').checked,shopName:val('pShop')||'ข้าวมันไก่',openFrom:val('pFrom'),cutoff:val('pCut')||'20:00',leadDays:+val('pLead')||0,window:val('pWin'),
     pickup:$('#pPick').checked,pickupText:val('pPickT'),payBefore:$('#pPB').checked,payAfter:$('#pPA').checked,promptpay:val('pPP').replace(/\D/g,'')||String(S.settings.promptpay||'').replace(/\D/g,''),
-    phone:val('pPhone'),line:(v=>/^https?:\/\//i.test(v)?v:'')(val('pLine').trim()),logo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),notice:val('pNotice'),rcLogo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),rcName:val('poRcName'),rcNameEn:val('poRcNameEn'),rcTag:val('poRcTag'),rcFb:val('poRcFb'),rcFbUrl:val('poRcFbUrl'),rcMap:val('poRcMap'),rcMapUrl:val('poRcMapUrl'),rcThanks:val('poRcThanks'),rcThanks2:val('poRcThanks2'),
+    phone:val('pPhone'),ppName:val('pPPN').trim().slice(0,60),line:(v=>/^https?:\/\//i.test(v)?v:'')(val('pLine').trim()),logo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),notice:val('pNotice'),rcLogo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),rcName:val('poRcName'),rcNameEn:val('poRcNameEn'),rcTag:val('poRcTag'),rcFb:val('poRcFb'),rcFbUrl:val('poRcFbUrl'),rcMap:val('poRcMap'),rcMapUrl:val('poRcMapUrl'),rcThanks:val('poRcThanks'),rcThanks2:val('poRcThanks2'),
     points:d.points.filter(p=>p.name).map(p=>({id:p.id||('p'+uid()),name:p.name.slice(0,50),note:(p.note||'').slice(0,60)})),cats:(S.po&&S.po.cats)||[]};
   if(!data.payBefore&&!data.payAfter)return toast('เลือกวิธีชำระเงินอย่างน้อย 1 แบบ','bad');
   if(!data.pickup&&!data.points.length)return toast('ต้องมีจุดส่ง หรือเปิดให้มารับที่ร้าน','bad');
@@ -2570,6 +2582,12 @@ Object.assign(ACT,{
   shopSw:d=>{if(!canPo())return deny();S.shop=d.v==='po'?'po':'noodle';try{localStorage.setItem('nl_shop',S.shop)}catch(e){}S.menuCat='all';S.tab=homeTab(effRole());closeSheet();render();window.scrollTo(0,0)},
   poDay:d=>{S.poDay=d.v;render()},
   poF:d=>{S.poF=d.v;render()},
+  poSlipBad:d=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poSlipBad',id:d.id,rs:''})},
+  poSbRs:d=>{const i=$('#sbTxt');if(i){i.value=d.v;S.sheet.rs=d.v}},
+  poSbView:d=>ACT.poSlip({id:S.sheet.id}),
+  poSbGo:async()=>{const o=S.poOrders.find(x=>x.id===S.sheet.id);const t=(val('sbTxt')||'').trim().slice(0,150);if(!o)return closeSheet();if(!t)return toast('เลือกหรือพิมพ์เหตุผลก่อน','bad');
+    const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='slip'?{payStatus:x.pay==='after'?'cod':'waiting',slipBad:t,slipBadAt:Date.now(),slipBadBy:S.me||''}:null));
+    if(!ok)return;Object.assign(o,{payStatus:o.pay==='after'?'cod':'waiting',slipBad:t});closeSheet();render();toast('แจ้งลูกค้าแล้ว · ลูกค้าเห็นในหน้าออร์เดอร์และหน้าสถานะ')},
   poRound:()=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poRound'})},
   poRoundSave:async()=>{const d=val('prD'),cd=val('prC'),t=val('prT');const e=$('#prErr');
     if(!d){if(e)e.textContent='เลือกวันส่ง หรือกด "ใช้แบบอัตโนมัติ"';return}if(cd&&cd>d){if(e)e.textContent='วันปิดรับต้องไม่หลังวันส่ง';return}
