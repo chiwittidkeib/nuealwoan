@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1820">
+<meta name="app-version" content="2026.10.17-1845">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1401,7 +1401,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2082,6 +2082,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
   <div class="card"><h3>ช่องทางเดลิเวอรี่</h3><p class="help" style="margin:0">ราคาบวกเพิ่มใช้ตอนเพิ่มรายการในออร์เดอร์ของช่องทางนั้น GP ใช้คิดเงินที่ร้านได้รับจริงในรายงาน ใส่ตามสัญญาของร้าน</p>
    <div class="perm-wrap"><table class="perm"><thead><tr><th>ช่องทาง</th><th>เปิดใช้</th><th>ราคา +%</th><th>GP %</th></tr></thead><tbody>${DELIV.map(c=>{const g=chCfg(c);return `<tr><td><span class="chip-ch" style="--chc:${CH[c].c}">${CH[c].n}</span></td><td class="c"><input type="checkbox" id="chOn_${c}" ${g.on?'checked':''} aria-label="เปิดใช้ ${CH[c].n}"></td><td class="c"><input class="pct" id="chMk_${c}" inputmode="decimal" value="${g.markup||0}" aria-label="ราคาบวกเพิ่ม ${CH[c].n}"></td><td class="c"><input class="pct" id="chGp_${c}" inputmode="decimal" value="${g.gp||0}" aria-label="GP ${CH[c].n}"></td></tr>`}).join('')}</tbody></table></div></div>
   </section>
+  <section class="card" style="border:1px solid var(--chili);padding:12px;display:flex;flex-direction:column;gap:6px"><b style="color:var(--chili)">🧹 รีเซตบิล · เนื้อล้วนๆ</b><span class="help" style="margin:0">ช่วงทดลองระบบ: ล้างบิล/ออร์เดอร์ทดสอบ แล้วเริ่มเลขบิลใหม่ · เจ้าของร้านเท่านั้น · ต้องยืนยันก่อน</span><button class="btn danger" data-act="resetOpen" data-v="noodle" type="button">🧹 รีเซตบิลเนื้อล้วนๆ…</button></section>
   </form>
   <div class="sh-foot"><button class="btn pri wide" data-act="saveSettings" type="button">บันทึกการตั้งค่า</button></div>`;
   loadStaff();bindBg();bellBind();renderPerm();rdBindSettings();if(!S.sheet.co)S.sheet.co=callOpts().map(o=>({...o}));renderCo();
@@ -2494,6 +2495,21 @@ function dShow(inp){const sp=inp&&inp.nextElementSibling;if(!sp||!sp.classList.c
 function dShowAll(){document.querySelectorAll('.dwrap input').forEach(dShow)}
 document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('.dwrap'))dShow(e.target)},true);
 document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('.dwrap'))dShow(e.target)},true);
+
+// ---------- รีเซตบิล (ช่วงทดลองระบบ) · เจ้าของร้าน · SQL reset_bills สำรองไว้ใน docs_trash ----------
+const RS_OPT={noodle:[['bills','บิล / ออร์เดอร์ทั้งหมด (รวมบิลที่เปิดค้าง) + เรียกพนักงาน + สลิป',['orders','calls','slips'],1],['delivery','งานเดลิเวอรี่ / คำขอส่ง / รูปส่งของ',['deliveries','dl_req','dl_proof'],1],['coupons','ประวัติการใช้/เก็บคูปอง (ตัวคูปองไม่ลบ)',['coupon_use','coupon_stats','coupon_wallet'],1],['seq','เริ่มเลขบิล / เลขออร์เดอร์ 0001 ใหม่',[],1],['points','ล้างแต้มสมาชิกเป็น 0 (ใช้ร่วม 2 ร้าน · สมาชิกไม่ถูกลบ)',['members'],0],['finance','รายรับ / รายจ่าย / ซื้อของเข้า',['expenses','purchases','incomes'],0],['consign','ประวัติของฝากขาย',['consign_log'],0]],
+  po:[['bills','ออร์เดอร์พรีออเดอร์ทั้งหมด + สลิปโอน',['po_orders','po_slips'],1],['seq','เริ่มเลขออร์เดอร์ 0001 ใหม่',[],1],['points','ล้างแต้มสมาชิกเป็น 0 (ใช้ร่วม 2 ร้าน · สมาชิกไม่ถูกลบ)',['members'],0]]};
+function sheetReset(){const s=S.sheet,nm=s.shop==='po'?'ข้าวมันไก่':'เนื้อล้วนๆ',C=s.counts||{};
+  const cnt=cols=>cols.length?` <span class="muted">(${cols.reduce((a,c)=>a+(+C[c]||0),0).toLocaleString()} รายการ)</span>`:'';
+  $('#panel').innerHTML=head('🧹 รีเซตบิล · '+nm,'ช่วงทดลองระบบ · เจ้าของร้านเท่านั้น')+`<form class="sh-body" onsubmit="return false">
+   <div class="notice" style="border-color:var(--chili);color:var(--chili);background:color-mix(in srgb,var(--chili) 8%,transparent)">⚠️ ข้อมูลที่เลือกจะหายจากระบบทันที (ระบบสำรองไว้ในฐานข้อมูล กู้คืนได้ด้วย SQL เท่านั้น) · ใช้ตอนทดลองระบบ ก่อนเปิดขายจริง</div>
+   ${s.shop==='noodle'&&+C.openBills?`<p class="err" style="margin:0">มีบิลเปิดค้างอยู่ ${+C.openBills} บิล (โต๊ะที่เปิดอยู่จะถูกล้างด้วย)</p>`:''}
+   ${RS_OPT[s.shop].map(([k,t,cols,def])=>`<label class="check"><input type="checkbox" id="rs_${k}" ${(s.o?s.o[k]:def)?'checked':''}> <span>${esc(t)}${cnt(cols)}</span></label>`).join('')}
+   <p class="help" style="margin:0">ไม่ลบ: เมนู · สต็อก · สมาชิก · พนักงาน · ไรเดอร์ · ตั้งค่า (สต็อกที่ตัดไปตอนขายทดสอบจะไม่คืนให้)</p>
+   <div class="field"><label for="rsTxt">พิมพ์คำว่า <b>รีเซต</b> เพื่อยืนยัน</label><input id="rsTxt" autocomplete="off" placeholder="รีเซต"></div>
+   <p class="err" id="rsErr" role="alert"></p></form>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ยกเลิก</button><button class="btn danger wide" id="rsGo" data-act="resetGo" type="button" disabled>รีเซตบิล${nm}</button></div>`;
+  const t=$('#rsTxt');t.addEventListener('input',()=>{$('#rsGo').disabled=t.value.trim()!=='รีเซต'});}
 function sheetPoSlipBad(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(!o){closeSheet();return}
   const tel=String(o.phone||''),rs=['ยอดเงินไม่ตรงกับออร์เดอร์','ยังไม่มีเงินเข้าบัญชี','สลิปไม่ชัด / อ่านไม่ได้','ชื่อบัญชีผู้รับไม่ใช่ของร้าน','สลิปซ้ำ / ใช้ไปแล้ว'];
   $('#panel').innerHTML=head('❌ แจ้งสลิปไม่ถูกต้อง · '+esc(poShort(o)),'คุณ'+esc(o.name)+' · '+baht(+o.total||0))+`<form class="sh-body" onsubmit="return false">
@@ -2604,7 +2620,7 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
     <div class="grid2"><div class="field"><label for="poRcThanks">ข้อความขอบคุณ</label><input id="poRcThanks" maxlength="60" value="${esc(c.rcThanks??'ขอบคุณที่อุดหนุน')}"></div><div class="field"><label for="poRcThanks2">บรรทัดที่ 2</label><input id="poRcThanks2" maxlength="60" value="${esc(c.rcThanks2??'แล้วพบกันใหม่นะคะ')}"></div></div>
     <p class="help" style="margin:0">เบอร์โทรบนใบเสร็จใช้ "เบอร์ร้าน" ด้านล่าง · ใบเสร็จออกให้เมื่อกด "รับเงินแล้ว"</p></div>
    <div class="field"><label for="pNotice">ประกาศบนหน้าสั่ง</label><textarea id="pNotice" rows="2" maxlength="300" placeholder="เช่น ขั้นต่ำส่ง 3 กล่อง / หยุดวันอาทิตย์">${esc(c.notice||'')}</textarea></div>
-   <p class="help" style="margin:0">เมนูของร้านนี้ แก้ที่แท็บ "เมนู" ตอนเลือกร้านข้าวมันไก่ (แยกจากเมนูร้านก๋วยเตี๋ยว) · จำกัดจำนวนต่อวัน = ต่อวันส่ง</p></form>
+   <p class="help" style="margin:0">เมนูของร้านนี้ แก้ที่แท็บ "เมนู" ตอนเลือกร้านข้าวมันไก่ (แยกจากเมนูร้านก๋วยเตี๋ยว) · จำกัดจำนวนต่อวัน = ต่อวันส่ง</p><section class="card" style="border:1px solid var(--chili);padding:12px;display:flex;flex-direction:column;gap:6px"><b style="color:var(--chili)">🧹 รีเซตบิล · ข้าวมันไก่</b><span class="help" style="margin:0">ช่วงทดลองระบบ: ล้างบิล/ออร์เดอร์ทดสอบ แล้วเริ่มเลขบิลใหม่ · เจ้าของร้านเท่านั้น · ต้องยืนยันก่อน</span><button class="btn danger" data-act="resetOpen" data-v="po" type="button">🧹 รีเซตบิลข้าวมันไก่…</button></section></form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="poSave" type="button">บันทึก</button></div>`;
   poRenderPts();$('#poForm').addEventListener('input',()=>{S.sheet.dirty=true});$('#poForm').addEventListener('submit',e=>e.preventDefault())}
 function poRenderPts(){const L=S.sheet.d.points;$('#pPts').innerHTML=L.map((p,i)=>`<div class="oc-row" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 40px;margin-bottom:8px"><input data-pt="${i}" data-k="name" value="${esc(p.name)}" maxlength="50" placeholder="ชื่อจุด เช่น ตึก A ล็อบบี้" aria-label="ชื่อจุดส่ง"><input data-pt="${i}" data-k="note" value="${esc(p.note||'')}" maxlength="60" placeholder="รายละเอียด (ถ้ามี)" aria-label="รายละเอียดจุดส่ง"><button class="btn sm ghost" data-act="poPtDel" data-i="${i}" type="button" aria-label="ลบ">×</button></div>`).join('')||'<p class="help" style="margin:0">ยังไม่มีจุดส่ง ถ้าไม่ใส่ ลูกค้าเลือกได้แค่มารับที่ร้าน</p>'}
@@ -2634,6 +2650,14 @@ Object.assign(ACT,{
   poSbGo:async()=>{const o=S.poOrders.find(x=>x.id===S.sheet.id);const t=(val('sbTxt')||'').trim().slice(0,150);if(!o)return closeSheet();if(!t)return toast('เลือกหรือพิมพ์เหตุผลก่อน','bad');
     const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='slip'?{payStatus:x.pay==='after'?'cod':'waiting',slipBad:t,slipBadAt:Date.now(),slipBadBy:S.me||''}:null));
     if(!ok)return;Object.assign(o,{payStatus:o.pay==='after'?'cod':'waiting',slipBad:t});closeSheet();render();toast('แจ้งลูกค้าแล้ว · ลูกค้าเห็นในหน้าออร์เดอร์และหน้าสถานะ')},
+  resetOpen:async d=>{if(S.role!=='owner')return deny();const {data,error}=await SB.rpc('reset_counts');if(error)return toast(/function|PGRST20/i.test(error.message)?'ยังไม่ได้รัน SQL รีเซตบิล':'ทำไม่สำเร็จ: '+error.message,'bad');openSheet({type:'reset',shop:d.v,counts:data||{}})},
+  resetGo:async()=>{const s=S.sheet;if(!s||s.type!=='reset'||S.role!=='owner')return;if(val('rsTxt').trim()!=='รีเซต')return;
+    const o={};RS_OPT[s.shop].forEach(([k])=>o[k]=!!($('#rs_'+k)||{}).checked);if(!Object.values(o).some(Boolean)){$('#rsErr').textContent='เลือกอย่างน้อย 1 อย่าง';return}
+    if(!confirm('ยืนยันรีเซตบิล'+(s.shop==='po'?'ข้าวมันไก่':'เนื้อล้วนๆ')+'?\nข้อมูลที่เลือกจะหายจากระบบทันที'))return;
+    const b=$('#rsGo');b.disabled=true;b.textContent='กำลังรีเซต…';
+    const {data,error}=await SB.rpc('reset_bills',{p_shop:s.shop,p_opts:o,p_confirm:'รีเซต'});
+    if(error){b.disabled=false;b.textContent='ลองอีกครั้ง';$('#rsErr').textContent=/not_allowed/.test(error.message)?'เฉพาะเจ้าของร้าน':'รีเซตไม่สำเร็จ: '+error.message;return}
+    closeSheet();toast('🧹 รีเซตแล้ว '+((data&&data.rows)||0).toLocaleString()+' รายการ · กำลังโหลดใหม่');setTimeout(()=>location.reload(),1500)},
   poRound:()=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poRound'})},
   poRoundSave:async()=>{const d=val('prD'),cd=val('prC'),t=val('prT');const e=$('#prErr');await poSaveCancel();
     const w=poWinArg();if(!d){if(!poState().round){if(w!==null){const {error}=await SB.rpc('po_set_round',{p_round:'',p_close:'',p_cutoff:t,p_window:w});if(error)return toast('บันทึกเวลาส่งไม่สำเร็จ: '+error.message,'bad');S.po={...poCfg(),window:w}}closeSheet();render();return toast('บันทึกแล้ว')}if(e)e.textContent='เลือกวันส่ง หรือกด "ใช้แบบอัตโนมัติ"';return}if(cd&&cd>d){if(e)e.textContent='วันปิดรับต้องไม่หลังวันส่ง';return}
