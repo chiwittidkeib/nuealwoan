@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1900">
+<meta name="app-version" content="2026.10.17-1835">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -2511,10 +2511,10 @@ function sheetReset(){const s=S.sheet,nm=s.shop==='po'?'ข้าวมันไ
    ${s.shop==='noodle'&&+C.openBills?`<p class="err" style="margin:0">มีบิลเปิดค้างอยู่ ${+C.openBills} บิล (โต๊ะที่เปิดอยู่จะถูกล้างด้วย)</p>`:''}
    ${RS_OPT[s.shop].map(([k,t,cols,def])=>`<label class="check"><input type="checkbox" id="rs_${k}" ${(s.o?s.o[k]:def)?'checked':''}> <span>${esc(t)}${cnt(cols)}</span></label>`).join('')}
    <p class="help" style="margin:0">ไม่ลบ: เมนู · สต็อก · สมาชิก · พนักงาน · ไรเดอร์ · ตั้งค่า (สต็อกที่ตัดไปตอนขายทดสอบจะไม่คืนให้)</p>
-   <div class="field"><label for="rsTxt">พิมพ์คำว่า <b>รีเซต</b> เพื่อยืนยัน</label><input id="rsTxt" autocomplete="off" placeholder="รีเซต"></div>
+   <div class="field"><label for="rsTxt">พิมพ์คำว่า <b>Reset</b> เพื่อยืนยัน</label><input id="rsTxt" autocomplete="off" placeholder="Reset" autocapitalize="off" spellcheck="false"></div>
    <p class="err" id="rsErr" role="alert"></p></form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ยกเลิก</button><button class="btn danger wide" id="rsGo" data-act="resetGo" type="button" disabled>รีเซตบิล${nm}</button></div>`;
-  const t=$('#rsTxt');t.addEventListener('input',()=>{$('#rsGo').disabled=t.value.trim()!=='รีเซต'});}
+  const t=$('#rsTxt');t.addEventListener('input',()=>{$('#rsGo').disabled=t.value.trim().toLowerCase()!=='reset'});}
 function sheetPoSlipBad(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(!o){closeSheet();return}
   const tel=String(o.phone||''),rs=['ยอดเงินไม่ตรงกับออร์เดอร์','ยังไม่มีเงินเข้าบัญชี','สลิปไม่ชัด / อ่านไม่ได้','ชื่อบัญชีผู้รับไม่ใช่ของร้าน','สลิปซ้ำ / ใช้ไปแล้ว'];
   $('#panel').innerHTML=head('❌ แจ้งสลิปไม่ถูกต้อง · '+esc(poShort(o)),'คุณ'+esc(o.name)+' · '+baht(+o.total||0))+`<form class="sh-body" onsubmit="return false">
@@ -2656,11 +2656,11 @@ Object.assign(ACT,{
     const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='slip'?{payStatus:x.pay==='after'?'cod':'waiting',slipBad:t,slipBadAt:Date.now(),slipBadBy:S.me||''}:null));
     if(!ok)return;Object.assign(o,{payStatus:o.pay==='after'?'cod':'waiting',slipBad:t});closeSheet();render();toast('แจ้งลูกค้าแล้ว · ลูกค้าเห็นในหน้าออร์เดอร์และหน้าสถานะ')},
   resetOpen:async d=>{if(S.role!=='owner')return deny();const {data,error}=await SB.rpc('reset_counts');if(error)return toast(/function|PGRST20/i.test(error.message)?'ยังไม่ได้รัน SQL รีเซตบิล':'ทำไม่สำเร็จ: '+error.message,'bad');openSheet({type:'reset',shop:d.v,counts:data||{}})},
-  resetGo:async()=>{const s=S.sheet;if(!s||s.type!=='reset'||S.role!=='owner')return;if(val('rsTxt').trim()!=='รีเซต')return;
+  resetGo:async()=>{const s=S.sheet;if(!s||s.type!=='reset'||S.role!=='owner')return;if(val('rsTxt').trim().toLowerCase()!=='reset')return;
     const o={};RS_OPT[s.shop].forEach(([k])=>o[k]=!!($('#rs_'+k)||{}).checked);if(!Object.values(o).some(Boolean)){$('#rsErr').textContent='เลือกอย่างน้อย 1 อย่าง';return}
     if(!confirm('ยืนยันรีเซตบิล'+(s.shop==='po'?'ข้าวมันไก่':'เนื้อล้วนๆ')+'?\nข้อมูลที่เลือกจะหายจากระบบทันที'))return;
     const b=$('#rsGo');b.disabled=true;b.textContent='กำลังรีเซต…';
-    const {data,error}=await SB.rpc('reset_bills',{p_shop:s.shop,p_opts:o,p_confirm:'รีเซต'});
+    const {data,error}=await SB.rpc('reset_bills',{p_shop:s.shop,p_opts:o,p_confirm:'Reset'});
     if(error){b.disabled=false;b.textContent='ลองอีกครั้ง';$('#rsErr').textContent=/not_allowed/.test(error.message)?'เฉพาะเจ้าของร้าน':'รีเซตไม่สำเร็จ: '+error.message;return}
     closeSheet();toast('🧹 รีเซตแล้ว '+((data&&data.rows)||0).toLocaleString()+' รายการ · กำลังโหลดใหม่');setTimeout(()=>location.reload(),1500)},
   poRound:()=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poRound'})},
