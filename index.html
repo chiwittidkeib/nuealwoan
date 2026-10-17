@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1845">
+<meta name="app-version" content="2026.10.17-1900">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -2428,8 +2428,9 @@ const bkkHM=()=>new Date(Date.now()+7*3600e3).toISOString().slice(11,16);
 // รอบส่ง: ถ้าแอดมิน/แม่ครัวกำหนดวันส่ง (roundDate) ใช้อันนั้น · ไม่งั้นวันนี้ + leadDays (ตรงกับ _po_state ใน SQL)
 function poState(){const c=poCfg(),t=bkkHM(),today=bkkDay(0);let rd=/^\d{4}-\d\d-\d\d$/.test(c.roundDate||'')&&c.roundDate>=today?c.roundDate:'',dd,cd;
   if(rd){dd=rd;cd=/^\d{4}-\d\d-\d\d$/.test(c.closeDate||'')?c.closeDate:poShift(rd,-1);if(cd>rd)cd=rd}else{dd=bkkDay(Math.max(0,Math.min(7,+c.leadDays||0)));cd=today}
-  let r='';if(!c.open)r='off';else if(c.openFrom&&t<c.openFrom&&(!rd||today===cd))r='before';else if(today>cd||(today===cd&&t>=(c.cutoff||'20:00')))r='after';
-  return {open:!r,reason:r,deliverDate:dd,closeDate:cd,round:!!rd}}
+  let od=rd&&/^\d{4}-\d\d-\d\d$/.test(c.openDate||'')&&c.openDate<=cd&&(today<c.openDate||(today===c.openDate&&t<(c.openFrom||'00:00')))?c.openDate:'';
+  let r='';if(!c.open)r='off';else if(od)r='before';else if(c.openFrom&&t<c.openFrom&&(!rd||today===cd))r='before';else if(today>cd||(today===cd&&t>=(c.cutoff||'20:00')))r='after';
+  return {open:!r,reason:r,deliverDate:dd,closeDate:cd,round:!!rd,openDate:od}}
 const poShift=(d,n)=>new Date(new Date(d+'T00:00:00Z').getTime()+n*DAY).toISOString().slice(0,10);
 const poDate=d=>{try{return new Date(d+'T00:00:00+07:00').toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Bangkok'})}catch(e){return d}};
 const poDayName=d=>d===bkkDay(0)?'วันนี้':d===bkkDay(1)?'พรุ่งนี้':d===bkkDay(-1)?'เมื่อวาน':' '+poDate(d);
@@ -2475,9 +2476,11 @@ function sheetPoRound(){const c=poCfg(),st=poState(),t=bkkDay(0);
    <div class="grid2"><div class="field"><label for="prW1">เวลาส่ง ตั้งแต่</label><input id="prW1" type="time" value="${esc(poWin(c.window)[0])}"></div>
    <div class="field"><label for="prW2">ถึง (ไม่บังคับ)</label><input id="prW2" type="time" value="${esc(poWin(c.window)[1])}"></div></div>
    <span class="help" style="margin-top:-6px">ลูกค้าเห็นเป็น "รับวันอังคาร 20 ต.ค. · เวลา 10:30–12:00 น." · ว่าง = ไม่ระบุเวลา</span>
+   <div class="grid2"><div class="field"><label for="prO">เปิดรับวันที่</label><div class="dwrap"><input id="prO" type="date" min="${t}" value="${esc(st.round&&c.openDate&&c.openDate>=t?c.openDate:'')}"><span class="dshow"></span></div><span class="help">ว่าง = เปิดรับทันที</span></div>
+   <div class="field"><label for="prOT">เปิดรับเวลา</label><input id="prOT" type="time" value="${esc(c.openFrom||'')}"><span class="help">ก่อนเวลานี้ลูกค้าสั่งไม่ได้ (แม้มีลิงก์)</span></div></div>
    <div class="grid2"><div class="field"><label for="prC">ปิดรับวันที่</label><div class="dwrap"><input id="prC" type="date" min="${t}" value="${esc(st.round&&c.closeDate?c.closeDate:'')}"><span class="dshow"></span></div><span class="help">ว่าง = วันก่อนวันส่ง</span></div>
    <div class="field"><label for="prT">ปิดรับเวลา</label><input id="prT" type="time" value="${esc(c.cutoff||'20:00')}"></div></div>
-   <p class="help" style="margin:0">ตัวอย่าง: วันนี้ ${esc(poDate(t))} เปิดให้สั่ง ส่ง ${esc(poDate(poShift(t,3)))} → วันส่ง = ${esc(poDate(poShift(t,3)))} · ปิดรับ = ${esc(poDate(poShift(t,2)))} 20:00</p>
+   <p class="help" style="margin:0">ตัวอย่าง: ส่ง ${esc(poDate(poShift(t,3)))} → วันส่ง = ${esc(poDate(poShift(t,3)))} · เปิดรับ = ${esc(poDate(poShift(t,1)))} 09:00 · ปิดรับ = ${esc(poDate(poShift(t,2)))} 20:00 · เปิดรับไม่ระบุวัน = เปิดทุกวันตั้งแต่เวลานั้น</p>
    <div class="field"><label for="prX">ลูกค้ายกเลิกเองได้ภายใน (นาที หลังสั่ง)</label><input id="prX" type="number" min="0" max="10080" inputmode="numeric" value="${esc(String(c.cancelMins??30))}"><span class="help">0 = ลูกค้ายกเลิกเองไม่ได้ (ต้องติดต่อร้าน) · ต้องยังไม่เริ่มจัดส่ง · แม่ครัว/แอดมินยกเลิกให้ได้ทุกเวลา</span></div>
    <div class="grid2"><div class="field"><label for="prRc">เหตุผลยกเลิกให้ลูกค้าเลือก (1 บรรทัด = 1 ข้อ)</label><textarea id="prRc" rows="6" maxlength="800" style="border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);color:var(--fg);font:inherit">${esc(poCxList('cust').join('\n'))}</textarea><span class="help">ลูกค้ามีตัวเลือก "อื่นๆ (พิมพ์เอง)" ให้เสมอ</span></div>
    <div class="field"><label for="prRs">เหตุผลยกเลิกฝั่งร้าน (1 บรรทัด = 1 ข้อ)</label><textarea id="prRs" rows="6" maxlength="800" style="border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);color:var(--fg);font:inherit">${esc(poCxList('shop').join('\n'))}</textarea><span class="help">สูงสุด 12 ข้อ · ข้อละไม่เกิน 60 ตัวอักษร</span></div></div>
@@ -2490,9 +2493,11 @@ function poWinArg(){const a=val('prW1'),b=val('prW2');const n=poWinStr(a,b),o=po
 // ช่องวันที่: แสดง วัน/เดือน/ปี เสมอ (ไม่ขึ้นกับภาษาเบราว์เซอร์)
 const TH_WD=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
 function dShow(inp){const sp=inp&&inp.nextElementSibling;if(!sp||!sp.classList.contains('dshow'))return;const v=inp.value;
+  if(inp.type==='time'){const ok=/^\d\d:\d\d/.test(v);sp.textContent=ok?v.slice(0,5)+' น.':'--:-- น.';sp.classList.toggle('ph',!ok);return}
   if(!/^\d{4}-\d\d-\d\d$/.test(v)){sp.textContent='วว/ดด/ปปปป';sp.classList.add('ph');return}
   const [y,m,d]=v.split('-');sp.textContent=`${d}/${m}/${y} · ${TH_WD[new Date(+y,+m-1,+d).getDay()]}`;sp.classList.remove('ph')}
-function dShowAll(){document.querySelectorAll('.dwrap input').forEach(dShow)}
+function dShowAll(){document.querySelectorAll('#panel input[type=date],#panel input[type=time]').forEach(i=>{if(!i.parentElement.classList.contains('dwrap')){const w=document.createElement('div');w.className='dwrap';i.replaceWith(w);w.appendChild(i);const sp=document.createElement('span');sp.className='dshow';w.appendChild(sp)}});document.querySelectorAll('.dwrap input').forEach(dShow)}
+new MutationObserver(()=>{const p=document.getElementById('panel');if(p&&p.querySelector('input[type=date]:not(.dwrap input),input[type=time]:not(.dwrap input)'))dShowAll()}).observe(document.getElementById('panel')||document.body,{childList:true,subtree:true});
 document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('.dwrap'))dShow(e.target)},true);
 document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('.dwrap'))dShow(e.target)},true);
 
@@ -2537,7 +2542,7 @@ function sheetPoCx(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(
 function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
   const why=st.open?`รับออร์เดอร์ถึง ${st.closeDate!==bkkDay(0)?esc(poDate(st.closeDate))+' ':''}${esc(c.cutoff)} น. · ส่ง${[bkkDay(0),bkkDay(1)].includes(st.deliverDate)?poDayName(st.deliverDate)+' '+esc(poDate(st.deliverDate)):' '+esc(poDate(st.deliverDate))}${c.window?' · '+esc(c.window):''}`
     :st.reason==='after'?(st.round?`ปิดรับรอบส่ง ${esc(poDate(st.deliverDate))} แล้ว · กด "กำหนดรอบส่ง" เพื่อเปิดรอบใหม่`:`เลยเวลาปิดรับ ${esc(c.cutoff)} น. ของวันนี้แล้ว · เปิดรับอัตโนมัติพรุ่งนี้${c.openFrom?' '+esc(c.openFrom)+' น.':''}`)
-    :st.reason==='before'?`จะเปิดรับเวลา ${esc(c.openFrom)} น.`:'ลูกค้าเข้ามาดูเมนูได้ แต่สั่งไม่ได้';
+    :st.reason==='before'?`จะเปิดรับ${st.openDate?' '+esc(poDate(st.openDate)):''} เวลา ${esc(c.openFrom||'00:00')} น.`:'ลูกค้าเข้ามาดูเมนูได้ แต่สั่งไม่ได้';
   return `<div class="card pohead ${st.open?'on':'off'}"><div class="pohead-r"><div class="grow"><b>${st.open?'● เปิดรับพรีออเดอร์':c.open?'● ปิดรับชั่วคราว (นอกเวลา)':'● ปิดรับออร์เดอร์'}</b><small>${why}</small></div>
     ${own?`<button class="btn ${c.open?'danger':'pri'}" data-act="poOpen" type="button">${c.open?'ปิดรับ':'เปิดรับออร์เดอร์'}</button>`:''}</div>
     ${['owner','chef'].includes(S.role)?`<div class="inrow" style="gap:6px;flex-wrap:wrap;align-items:center"><button class="btn sm" data-act="poRound" type="button">📅 กำหนดรอบส่ง</button><span class="help" style="margin:0">${st.round?'รอบส่ง '+esc(poDate(st.deliverDate))+' · ปิดรับ '+esc(poDate(st.closeDate))+' '+esc(c.cutoff||'20:00')+' น.':'อัตโนมัติ: สั่งวันนี้ ส่ง'+(+c.leadDays?'อีก '+(+c.leadDays)+' วัน':'วันนี้')}</span></div>`:''}
@@ -2660,12 +2665,12 @@ Object.assign(ACT,{
     closeSheet();toast('🧹 รีเซตแล้ว '+((data&&data.rows)||0).toLocaleString()+' รายการ · กำลังโหลดใหม่');setTimeout(()=>location.reload(),1500)},
   poRound:()=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poRound'})},
   poRoundSave:async()=>{const d=val('prD'),cd=val('prC'),t=val('prT');const e=$('#prErr');await poSaveCancel();
-    const w=poWinArg();if(!d){if(!poState().round){if(w!==null){const {error}=await SB.rpc('po_set_round',{p_round:'',p_close:'',p_cutoff:t,p_window:w});if(error)return toast('บันทึกเวลาส่งไม่สำเร็จ: '+error.message,'bad');S.po={...poCfg(),window:w}}closeSheet();render();return toast('บันทึกแล้ว')}if(e)e.textContent='เลือกวันส่ง หรือกด "ใช้แบบอัตโนมัติ"';return}if(cd&&cd>d){if(e)e.textContent='วันปิดรับต้องไม่หลังวันส่ง';return}
-    const {data,error}=await SB.rpc('po_set_round',{p_round:d,p_close:cd,p_cutoff:t,p_window:w});
-    if(error){if(e)e.textContent=/function|PGRST20/i.test(error.message)?'ยังไม่ได้รัน SQL ล่าสุด':/bad_date/.test(error.message)?'วันส่งต้องเป็นวันนี้หรือหลังจากนี้':'บันทึกไม่สำเร็จ: '+error.message;return}
-    S.po={...poCfg(),roundDate:d,closeDate:cd||'',cutoff:t||poCfg().cutoff,...(w!==null?{window:w}:{})};closeSheet();render();toast('📅 ตั้งรอบส่ง '+poDate(d)+' แล้ว')},
-  poRoundClear:async()=>{await poSaveCancel();const w=poWinArg();const {error}=await SB.rpc('po_set_round',{p_round:'',p_close:'',p_cutoff:'',p_window:w});if(error)return toast('ทำไม่สำเร็จ: '+error.message,'bad');
-    S.po={...poCfg(),roundDate:'',closeDate:'',...(w!==null?{window:w}:{})};closeSheet();render();toast('กลับไปใช้รอบส่งอัตโนมัติแล้ว')},
+    const w=poWinArg(),od=val('prO'),of=val('prOT');if(!d){if(!poState().round){if(w!==null||of!==(poCfg().openFrom||'')){const {error}=await SB.rpc('po_set_round',{p_round:'',p_close:'',p_cutoff:t,p_window:w,p_open_date:'',p_open_from:of});if(error)return toast('บันทึกเวลาส่งไม่สำเร็จ: '+error.message,'bad');S.po={...poCfg(),...(w!==null?{window:w}:{}),openFrom:of,openDate:''}}closeSheet();render();return toast('บันทึกแล้ว')}if(e)e.textContent='เลือกวันส่ง หรือกด "ใช้แบบอัตโนมัติ"';return}if(cd&&cd>d){if(e)e.textContent='วันปิดรับต้องไม่หลังวันส่ง';return}if(od&&od>(cd||poShift(d,-1))){if(e)e.textContent='วันเปิดรับต้องไม่หลังวันปิดรับ';return}
+    const {data,error}=await SB.rpc('po_set_round',{p_round:d,p_close:cd,p_cutoff:t,p_window:w,p_open_date:od,p_open_from:of});
+    if(error){if(e)e.textContent=/function|PGRST20/i.test(error.message)?'ยังไม่ได้รัน SQL ล่าสุด':/bad_open/.test(error.message)?'วันเปิดรับต้องไม่หลังวันปิดรับ':/bad_date/.test(error.message)?'วันส่งต้องเป็นวันนี้หรือหลังจากนี้':'บันทึกไม่สำเร็จ: '+error.message;return}
+    S.po={...poCfg(),roundDate:d,closeDate:cd||'',cutoff:t||poCfg().cutoff,openDate:od,openFrom:of,...(w!==null?{window:w}:{})};closeSheet();render();toast('📅 ตั้งรอบส่ง '+poDate(d)+' แล้ว')},
+  poRoundClear:async()=>{await poSaveCancel();const w=poWinArg();const {error}=await SB.rpc('po_set_round',{p_round:'',p_close:'',p_cutoff:'',p_window:w,p_open_date:''});if(error)return toast('ทำไม่สำเร็จ: '+error.message,'bad');
+    S.po={...poCfg(),roundDate:'',closeDate:'',openDate:'',...(w!==null?{window:w}:{})};closeSheet();render();toast('กลับไปใช้รอบส่งอัตโนมัติแล้ว')},
   poOpen:async()=>{if(S.role!=='owner')return deny();const on=!poCfg().open;if(on&&shopClosed('po'))return toast('🔒 ร้านข้าวมันไก่ปิดอยู่ · กด "เปิดร้าน" ด้านบนก่อน','bad');const ok=await write('config/po',r=>r.set({...poCfg(),open:on}));if(ok){S.po={...poCfg(),open:on};render();toast(on?'เปิดรับออร์เดอร์แล้ว':'ปิดรับออร์เดอร์แล้ว')}},
   poSet:()=>{if(S.role!=='owner')return deny();openSheet({type:'poSet'})},
   poQr:()=>openSheet({type:'poQr'}),

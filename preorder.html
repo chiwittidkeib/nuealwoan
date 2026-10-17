@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1830">
+<meta name="app-version" content="2026.10.17-1900">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -197,6 +197,7 @@ body.welcome .callb{display:none}
 .pohero .cd b{font-family:var(--f-display);font-weight:500;font-size:22px;font-variant-numeric:tabular-nums;letter-spacing:.5px}
 .pohero .cd.hurry{background:#c0392b;animation:hurry 1.2s ease-in-out infinite}
 @keyframes hurry{50%{background:#e04b3a}}
+.pohero.soon .pill i{background:#facc15;animation:none}.pohero.soon{background:linear-gradient(135deg,color-mix(in srgb,var(--jade) 60%,#334),color-mix(in srgb,var(--jade) 40%,#000))}
 .pohero.off{background:var(--surface);color:var(--fg);border:2px solid var(--chili);box-shadow:none}
 .pohero.off::after{display:none}.pohero.off .pill{background:var(--chili);color:#fff}.pohero.off .pill i{background:#fff;animation:none}
 @media (prefers-reduced-motion:reduce){.pohero .pill i,.pohero .cd.hurry{animation:none}}
@@ -425,7 +426,7 @@ function rpcErr(e){const m=String(e&&e.message||'');
   return 'เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง';}
 function stateLine(st){if(!st)return '';
   if(st.open)return `สั่งได้ถึง ${esc(closeTxt(st))} · ได้รับ${esc((thDate(st.deliverDate)+tmW(st.deliverDate)))}`;
-  if(st.reason==='before')return `เปิดรับออร์เดอร์วันนี้ ${esc(st.openFrom)} น.`;
+  if(st.reason==='before')return st.openDate?`เปิดรับออร์เดอร์ ${esc(thDate(st.openDate))} เวลา ${esc(st.openFrom)} น.`:`เปิดรับออร์เดอร์วันนี้ ${esc(st.openFrom)} น.`;
   if(st.reason==='after')return `ปิดรับออร์เดอร์รอบนี้แล้ว (ส่ง${esc((thDate(st.deliverDate)+tmW(st.deliverDate)))})`;
   return 'ร้านปิดรับพรีออเดอร์ชั่วคราว';}
 
@@ -517,13 +518,20 @@ function menuGrid(empty){const list=S.menu.filter(m=>S.cat==='all'||m.cat===S.ca
 // การ์ดแจ้งรอบส่ง (เด่น) + นับถอยหลังปิดรับ
 const cutAt=st=>{const d=st.closeDate||st.today||new Date(Date.now()+7*3600e3).toISOString().slice(0,10);const t=/^\d\d:\d\d$/.test(st.cutoff||'')?st.cutoff:'20:00';return Date.parse(d+'T'+t+':00+07:00')};
 const cdTxt=ms=>{if(!(ms>0))return 'ปิดรับแล้ว';const s=Math.floor(ms/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>String(n).padStart(2,'0');return (d?d+' วัน ':'')+p(h)+':'+p(m)+':'+p(x)};
+const openAt=st=>Date.parse((st.openDate||st.today||new Date(Date.now()+7*3600e3).toISOString().slice(0,10))+'T'+(st.openFrom||'00:00')+':00+07:00');
 function poHero(st){
+  if(st.reason==='before'){const ms=openAt(st)-Date.now(),w=(S.cfg&&(S.cfg.window||st.window))||'';
+    return `<div class="pohero soon"><span class="pill"><i></i>ยังไม่เปิดรับออร์เดอร์</span>
+     <div><div class="lb">🚚 รอบส่ง</div><div class="big">${esc(thDate(st.deliverDate))}</div>${w?`<div class="wtime">เวลา ${esc(w)}</div>`:''}</div>
+     <div class="cd" id="poCd" data-mode="open"><div><small>⏳ เปิดรับออร์เดอร์ใน</small><small>${esc(st.openDate?thDate(st.openDate):'วันนี้')} เวลา ${esc(st.openFrom)} น.</small></div><b id="poCdT">${cdTxt(ms)}</b></div></div>`}
   if(!st.open)return `<div class="pohero off"><span class="pill"><i></i>ปิดรับออร์เดอร์</span><div class="lb">${stateLine(st)}</div></div>`;
   const w=(S.cfg&&(S.cfg.window||st.window))||'',ms=cutAt(st)-Date.now();
   return `<div class="pohero"><span class="pill"><i></i>เปิดรับพรีออเดอร์</span>
    <div><div class="lb">🚚 ได้รับอาหาร</div><div class="big">${esc(thDate(st.deliverDate))}</div>${w?`<div class="wtime">เวลา ${esc(w)}</div>`:''}</div>
    <div class="cd${ms>0&&ms<2*3600e3?' hurry':''}" id="poCd"><div><small>${ms>0&&ms<2*3600e3?'⚡ ใกล้ปิดรับแล้ว! รีบสั่งเลย':'⏰ ปิดรับออร์เดอร์ใน'}</small><small>${esc(closeTxt(st))}</small></div><b id="poCdT">${cdTxt(ms)}</b></div></div>`}
-setInterval(()=>{const el=document.getElementById('poCdT');if(!el||!S.cfg||!S.cfg.state)return;const ms=cutAt(S.cfg.state)-Date.now();el.textContent=cdTxt(ms);
+setInterval(()=>{const el=document.getElementById('poCdT');if(!el||!S.cfg||!S.cfg.state)return;
+  if(document.getElementById('poCd').dataset.mode==='open'){const mo=openAt(S.cfg.state)-Date.now();el.textContent=mo>0?cdTxt(mo):'กำลังเปิด…';if(mo<=0&&mo>-1500)loadShop().then(()=>S.view==='menu'&&render());return}
+  const ms=cutAt(S.cfg.state)-Date.now();el.textContent=cdTxt(ms);
   const box=document.getElementById('poCd'),hu=ms>0&&ms<2*3600e3;if(box&&box.classList.contains('hurry')!==hu){box.classList.toggle('hurry',hu);box.querySelector('small').textContent=hu?'⚡ ใกล้ปิดรับแล้ว! รีบสั่งเลย':'⏰ ปิดรับออร์เดอร์ใน'}
   if(ms<=0&&ms>-1500)loadShop().then(()=>S.view==='menu'&&render())},1000);
 function render(){
@@ -538,7 +546,7 @@ function render(){
     ${mine.length?`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน (${mine.length})</button>`:''}
     ${S.cats.length>1?`<div class="chips">${['all',...S.cats].map(x=>`<button class="chip" aria-pressed="${S.cat===x}" data-a="cat" data-v="${esc(x)}" type="button">${x==='all'?'ทั้งหมด':esc(x)}</button>`).join('')}</div>`:''}
     ${menuGrid('<p class="muted">ยังไม่มีเมนู</p>')}`;
-    ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()&&canOrder()?'':'disabled'} type="button">${canOrder()?'ถัดไป':'ปิดรับแล้ว'}</button>`;
+    ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()&&canOrder()?'':'disabled'} type="button">${canOrder()?'ถัดไป':st.reason==='before'?'ยังไม่เปิดรับ':'ปิดรับแล้ว'}</button>`;
   }else if(S.view==='cart'){
     const me=lsGet(ME_KEY,{})||{};const pts=c.points||[];
     if(!S.method)S.method=c.pickup||!pts.length?'pickup':'point';
