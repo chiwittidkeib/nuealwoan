@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1530">
+<meta name="app-version" content="2026.10.17-1630">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1397,7 +1397,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({lmBook:sheetLmBook,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({lmBook:sheetLmBook,poRound:sheetPoRound,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2420,10 +2420,14 @@ const poCfg=()=>({...PO_DEF,...(S.po||{})});
 const canPo=()=>['owner','chef'].includes(roleKey(effRole()));
 const bkkDay=(add=0)=>new Date(Date.now()+7*3600e3+add*DAY).toISOString().slice(0,10);
 const bkkHM=()=>new Date(Date.now()+7*3600e3).toISOString().slice(11,16);
-function poState(){const c=poCfg(),t=bkkHM();let r='';if(!c.open)r='off';else if(c.openFrom&&t<c.openFrom)r='before';else if(t>=(c.cutoff||'20:00'))r='after';
-  return {open:!r,reason:r,deliverDate:bkkDay(Math.max(0,Math.min(7,+c.leadDays||0)))}}
+// รอบส่ง: ถ้าแอดมิน/แม่ครัวกำหนดวันส่ง (roundDate) ใช้อันนั้น · ไม่งั้นวันนี้ + leadDays (ตรงกับ _po_state ใน SQL)
+function poState(){const c=poCfg(),t=bkkHM(),today=bkkDay(0);let rd=/^\d{4}-\d\d-\d\d$/.test(c.roundDate||'')&&c.roundDate>=today?c.roundDate:'',dd,cd;
+  if(rd){dd=rd;cd=/^\d{4}-\d\d-\d\d$/.test(c.closeDate||'')?c.closeDate:poShift(rd,-1);if(cd>rd)cd=rd}else{dd=bkkDay(Math.max(0,Math.min(7,+c.leadDays||0)));cd=today}
+  let r='';if(!c.open)r='off';else if(c.openFrom&&t<c.openFrom&&(!rd||today===cd))r='before';else if(today>cd||(today===cd&&t>=(c.cutoff||'20:00')))r='after';
+  return {open:!r,reason:r,deliverDate:dd,closeDate:cd,round:!!rd}}
+const poShift=(d,n)=>new Date(new Date(d+'T00:00:00Z').getTime()+n*DAY).toISOString().slice(0,10);
 const poDate=d=>{try{return new Date(d+'T00:00:00+07:00').toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Bangkok'})}catch(e){return d}};
-const poDayName=d=>d===bkkDay(0)?'วันนี้':d===bkkDay(1)?'พรุ่งนี้':d===bkkDay(-1)?'เมื่อวาน':poDate(d);
+const poDayName=d=>d===bkkDay(0)?'วันนี้':d===bkkDay(1)?'พรุ่งนี้':d===bkkDay(-1)?'เมื่อวาน':' '+poDate(d);
 const PO_ST={new:['รอยืนยัน','warn'],confirmed:['ยืนยันแล้ว','info'],ready:['พร้อมส่ง/รับ','ok'],done:['เสร็จแล้ว','mute'],cancelled:['ยกเลิก','bad']};
 const PO_NEXT={new:['confirmed','ยืนยันออร์เดอร์'],confirmed:['ready','ทำเสร็จ พร้อมส่ง'],ready:['done','ส่งแล้ว / รับแล้ว']};
 const PO_PREV={confirmed:'new',ready:'confirmed',done:'ready',cancelled:'new'};
@@ -2452,12 +2456,22 @@ function poPickDay(){const days=poDays();if(S.poDay&&days.includes(S.poDay))retu
   const act=(S.poOrders||[]).filter(o=>['new','confirmed','ready'].includes(o.status)&&o.deliverDate>=bkkDay(0)).map(o=>o.deliverDate).sort()[0];
   return S.poDay=act||poState().deliverDate}
 function poDayChips(day){return `<div class="chips">${poDays().map(d=>{const n=(S.poOrders||[]).filter(o=>o.deliverDate===d&&poLive(o)).length;return `<button class="chip" aria-pressed="${d===day}" data-act="poDay" data-v="${d}" type="button">ส่ง${poDayName(d)}${d!==bkkDay(0)&&d!==bkkDay(1)&&d!==bkkDay(-1)?'':' · '+poDate(d)}${n?' ('+n+')':''}</button>`}).join('')}</div>`}
+function sheetPoRound(){const c=poCfg(),st=poState(),t=bkkDay(0);
+  $('#panel').innerHTML=head('📅 กำหนดรอบส่ง','สั่งล่วงหน้าหลายวันได้ · แอดมิน / แม่ครัว')+`<form class="sh-body" onsubmit="return false">
+   <div class="field"><label for="prD">วันส่ง (ลูกค้าได้รับ)</label><input id="prD" type="date" min="${t}" value="${esc(st.round?st.deliverDate:'')}"><span class="help">เว้นว่าง = อัตโนมัติ (สั่งวันนี้ ส่งอีก ${+c.leadDays||0} วัน · ปิดรับทุกวัน)</span></div>
+   <div class="grid2"><div class="field"><label for="prC">ปิดรับวันที่</label><input id="prC" type="date" min="${t}" value="${esc(st.round&&c.closeDate?c.closeDate:'')}"><span class="help">ว่าง = วันก่อนวันส่ง</span></div>
+   <div class="field"><label for="prT">ปิดรับเวลา</label><input id="prT" type="time" value="${esc(c.cutoff||'20:00')}"></div></div>
+   <p class="help" style="margin:0">ตัวอย่าง: วันนี้ ${esc(poDate(t))} เปิดให้สั่ง ส่ง ${esc(poDate(poShift(t,3)))} → วันส่ง = ${esc(poDate(poShift(t,3)))} · ปิดรับ = ${esc(poDate(poShift(t,2)))} 20:00</p>
+   <p class="err" id="prErr" role="alert"></p></form>
+   <div class="sh-foot"><button class="btn" data-act="poRoundClear" type="button">ใช้แบบอัตโนมัติ</button><button class="btn pri wide" data-act="poRoundSave" type="button">บันทึกรอบส่ง</button></div>`}
 function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
-  const why=st.open?`รับออร์เดอร์ถึง ${esc(c.cutoff)} น. · ส่ง${poDayName(st.deliverDate)} ${esc(poDate(st.deliverDate))}${c.window?' · '+esc(c.window):''}`
-    :st.reason==='after'?`เลยเวลาปิดรับ ${esc(c.cutoff)} น. ของวันนี้แล้ว · เปิดรับอัตโนมัติพรุ่งนี้${c.openFrom?' '+esc(c.openFrom)+' น.':''}`
+  const why=st.open?`รับออร์เดอร์ถึง ${st.closeDate!==bkkDay(0)?esc(poDate(st.closeDate))+' ':''}${esc(c.cutoff)} น. · ส่ง${[bkkDay(0),bkkDay(1)].includes(st.deliverDate)?poDayName(st.deliverDate)+' '+esc(poDate(st.deliverDate)):' '+esc(poDate(st.deliverDate))}${c.window?' · '+esc(c.window):''}`
+    :st.reason==='after'?(st.round?`ปิดรับรอบส่ง ${esc(poDate(st.deliverDate))} แล้ว · กด "กำหนดรอบส่ง" เพื่อเปิดรอบใหม่`:`เลยเวลาปิดรับ ${esc(c.cutoff)} น. ของวันนี้แล้ว · เปิดรับอัตโนมัติพรุ่งนี้${c.openFrom?' '+esc(c.openFrom)+' น.':''}`)
     :st.reason==='before'?`จะเปิดรับเวลา ${esc(c.openFrom)} น.`:'ลูกค้าเข้ามาดูเมนูได้ แต่สั่งไม่ได้';
   return `<div class="card pohead ${st.open?'on':'off'}"><div class="pohead-r"><div class="grow"><b>${st.open?'● เปิดรับพรีออเดอร์':c.open?'● ปิดรับชั่วคราว (นอกเวลา)':'● ปิดรับออร์เดอร์'}</b><small>${why}</small></div>
     ${own?`<button class="btn ${c.open?'danger':'pri'}" data-act="poOpen" type="button">${c.open?'ปิดรับ':'เปิดรับออร์เดอร์'}</button>`:''}</div>
+    ${['owner','chef'].includes(S.role)?`<div class="inrow" style="gap:6px;flex-wrap:wrap;align-items:center"><button class="btn sm" data-act="poRound" type="button">📅 กำหนดรอบส่ง</button><span class="help" style="margin:0">${st.round?'รอบส่ง '+esc(poDate(st.deliverDate))+' · ปิดรับ '+esc(poDate(st.closeDate))+' '+esc(c.cutoff||'20:00')+' น.':'อัตโนมัติ: สั่งวันนี้ ส่ง'+(+c.leadDays?'อีก '+(+c.leadDays)+' วัน':'วันนี้')}</span></div>`:''}
+    ${st.reason==='after'&&['owner','chef'].includes(S.role)?`<div class="inrow" style="gap:6px;flex-wrap:wrap"><a class="btn pri sm" href="preorder.html?staff=1" target="_blank" rel="noopener">➕ สั่งเพิ่มให้ลูกค้า (หลังปิดรับ)</a><span class="help" style="margin:0">เฉพาะแม่ครัว / แอดมิน · รอบส่ง${poDayName(st.deliverDate)}</span></div>`:''}
     ${own?`<div class="inrow" style="gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="poQr" type="button">ลิงก์ / QR ให้ลูกค้า</button><button class="btn sm" data-act="poSet" type="button">ตั้งค่าร้านพรีออเดอร์</button></div>`:''}
     ${!S.po&&own?'<p class="help" style="margin:0">ยังไม่ได้ตั้งค่าร้าน กด "ตั้งค่าร้านพรีออเดอร์" เพื่อใส่เวลาปิดรับ จุดส่ง และพร้อมเพย์</p>':''}</div>`}
 function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=PO_PREV[o.status];
@@ -2524,7 +2538,7 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
     <label class="check"><input type="checkbox" id="pPB" ${c.payBefore?'checked':''}> โอนก่อน (แสดง QR พร้อมเพย์ + แนบสลิป)</label>
     <label class="check"><input type="checkbox" id="pPA" ${c.payAfter?'checked':''}> จ่ายตอนรับของ</label>
     <div class="field"><label for="pPP">พร้อมเพย์</label><input id="pPP" inputmode="numeric" value="${esc(c.promptpay||'')}" placeholder="${esc(S.settings.promptpay?'เว้นว่าง = ใช้ของร้านก๋วยเตี๋ยว ('+S.settings.promptpay+')':'เบอร์มือถือ หรือเลขบัตร 13 หลัก')}"></div></div>
-   <div class="grid2"><div class="field"><label for="pPhone">เบอร์ร้าน (ลูกค้ากดโทรได้)</label><input id="pPhone" inputmode="tel" maxlength="20" value="${esc(c.phone||'')}"></div><div></div></div>
+   <div class="grid2"><div class="field"><label for="pPhone">เบอร์ร้าน (ลูกค้ากดโทรได้)</label><input id="pPhone" inputmode="tel" maxlength="20" value="${esc(c.phone||'')}"></div><div class="field"><label for="pLine">ลิงก์ LINE ร้าน (ปุ่มส่งข้อความ)</label><input id="pLine" inputmode="url" maxlength="200" value="${esc(c.line||'')}" placeholder="https://lin.ee/… (เว้นว่าง = ส่ง SMS)"></div></div>
    <div class="card"><h3>โลโก้ร้าน & หัวใบเสร็จ (ร้านข้าวมันไก่)</h3>
     ${rcLogoField('poRcLogo',c.rcLogo||c.logo,'images/logo-po-t.png')}
     <div class="grid2"><div class="field"><label for="poRcName">ชื่อร้าน (ไทย)</label><input id="poRcName" maxlength="40" value="${esc(c.rcName??c.shopName??'ข้าวมันไก่')}"></div><div class="field"><label for="poRcNameEn">ชื่อร้าน (อังกฤษ)</label><input id="poRcNameEn" maxlength="40" value="${esc(c.rcNameEn??'KHAO MAN GAI')}"></div></div>
@@ -2542,7 +2556,7 @@ function poReadPts(){document.querySelectorAll('[data-pt]').forEach(e=>{const p=
 async function poSave(){if(S.role!=='owner')return deny();poReadPts();const d=S.sheet.d;
   const data={...(S.po||{}),open:$('#pOpen').checked,shopName:val('pShop')||'ข้าวมันไก่',openFrom:val('pFrom'),cutoff:val('pCut')||'20:00',leadDays:+val('pLead')||0,window:val('pWin'),
     pickup:$('#pPick').checked,pickupText:val('pPickT'),payBefore:$('#pPB').checked,payAfter:$('#pPA').checked,promptpay:val('pPP').replace(/\D/g,'')||String(S.settings.promptpay||'').replace(/\D/g,''),
-    phone:val('pPhone'),logo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),notice:val('pNotice'),rcLogo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),rcName:val('poRcName'),rcNameEn:val('poRcNameEn'),rcTag:val('poRcTag'),rcFb:val('poRcFb'),rcFbUrl:val('poRcFbUrl'),rcMap:val('poRcMap'),rcMapUrl:val('poRcMapUrl'),rcThanks:val('poRcThanks'),rcThanks2:val('poRcThanks2'),
+    phone:val('pPhone'),line:(v=>/^https?:\/\//i.test(v)?v:'')(val('pLine').trim()),logo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),notice:val('pNotice'),rcLogo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),rcName:val('poRcName'),rcNameEn:val('poRcNameEn'),rcTag:val('poRcTag'),rcFb:val('poRcFb'),rcFbUrl:val('poRcFbUrl'),rcMap:val('poRcMap'),rcMapUrl:val('poRcMapUrl'),rcThanks:val('poRcThanks'),rcThanks2:val('poRcThanks2'),
     points:d.points.filter(p=>p.name).map(p=>({id:p.id||('p'+uid()),name:p.name.slice(0,50),note:(p.note||'').slice(0,60)})),cats:(S.po&&S.po.cats)||[]};
   if(!data.payBefore&&!data.payAfter)return toast('เลือกวิธีชำระเงินอย่างน้อย 1 แบบ','bad');
   if(!data.pickup&&!data.points.length)return toast('ต้องมีจุดส่ง หรือเปิดให้มารับที่ร้าน','bad');
@@ -2556,6 +2570,14 @@ Object.assign(ACT,{
   shopSw:d=>{if(!canPo())return deny();S.shop=d.v==='po'?'po':'noodle';try{localStorage.setItem('nl_shop',S.shop)}catch(e){}S.menuCat='all';S.tab=homeTab(effRole());closeSheet();render();window.scrollTo(0,0)},
   poDay:d=>{S.poDay=d.v;render()},
   poF:d=>{S.poF=d.v;render()},
+  poRound:()=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poRound'})},
+  poRoundSave:async()=>{const d=val('prD'),cd=val('prC'),t=val('prT');const e=$('#prErr');
+    if(!d){if(e)e.textContent='เลือกวันส่ง หรือกด "ใช้แบบอัตโนมัติ"';return}if(cd&&cd>d){if(e)e.textContent='วันปิดรับต้องไม่หลังวันส่ง';return}
+    const {data,error}=await SB.rpc('po_set_round',{p_round:d,p_close:cd,p_cutoff:t});
+    if(error){if(e)e.textContent=/function|PGRST20/i.test(error.message)?'ยังไม่ได้รัน SQL ล่าสุด':/bad_date/.test(error.message)?'วันส่งต้องเป็นวันนี้หรือหลังจากนี้':'บันทึกไม่สำเร็จ: '+error.message;return}
+    S.po={...poCfg(),roundDate:d,closeDate:cd||'',cutoff:t||poCfg().cutoff};closeSheet();render();toast('📅 ตั้งรอบส่ง '+poDate(d)+' แล้ว')},
+  poRoundClear:async()=>{const {error}=await SB.rpc('po_set_round',{p_round:'',p_close:'',p_cutoff:''});if(error)return toast('ทำไม่สำเร็จ: '+error.message,'bad');
+    S.po={...poCfg(),roundDate:'',closeDate:''};closeSheet();render();toast('กลับไปใช้รอบส่งอัตโนมัติแล้ว')},
   poOpen:async()=>{if(S.role!=='owner')return deny();const on=!poCfg().open;if(on&&shopClosed('po'))return toast('🔒 ร้านข้าวมันไก่ปิดอยู่ · กด "เปิดร้าน" ด้านบนก่อน','bad');const ok=await write('config/po',r=>r.set({...poCfg(),open:on}));if(ok){S.po={...poCfg(),open:on};render();toast(on?'เปิดรับออร์เดอร์แล้ว':'ปิดรับออร์เดอร์แล้ว')}},
   poSet:()=>{if(S.role!=='owner')return deny();openSheet({type:'poSet'})},
   poQr:()=>openSheet({type:'poQr'}),

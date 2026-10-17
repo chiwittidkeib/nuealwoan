@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1530">
+<meta name="app-version" content="2026.10.17-1630">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -258,6 +258,10 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 .mcard.mc-po .mc-bot strong{color:#c8102e;text-shadow:0 2px 0 #f2c46d}
 .mcard.mc-po .mc-logos img{border-color:#d9a441}
 .mcard.mc-po>.mc-shine{background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%)}
+.brow{align-items:flex-start}.bpills{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.bslip{color:var(--accent,#a35709);font-weight:700;font-size:13px;white-space:nowrap}
+.steps li.st-ready.on::before{background:#1e88e5;border-color:#1e88e5;color:#fff}.steps li.st-ready.cur{color:#1565c0;font-weight:700}
+.steps li.st-done.on::before{background:#2e7d32;border-color:#2e7d32;color:#fff}.steps li.st-done.cur{color:#2e7d32;font-weight:700}
+.qcard b.qs-ready{color:#1565c0}.qcard b.qs-done{color:#2e7d32}
 </style>
 </head>
 <body>
@@ -367,7 +371,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const myOrders=()=>(lsGet(MY_KEY,[])||[]).filter(x=>x&&x.id&&Date.now()-x.ts<14*864e5);
 function rememberOrder(id,token,no,d){const a=myOrders().filter(x=>x.id!==id);a.unshift({id,token,no,d,ts:Date.now()});lsSet(MY_KEY,a.slice(0,20))}
 const thDate=d=>{if(!d)return '';try{return new Date(d+'T00:00:00+07:00').toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'short',timeZone:'Asia/Bangkok'})}catch(e){return d}};
-const STEPS=[['new','รอร้านยืนยัน'],['confirmed','ร้านรับออร์เดอร์แล้ว'],['ready','พร้อมส่ง / พร้อมรับ'],['done','ส่งแล้ว / รับแล้ว']];
+const STEPS=[['new','รอร้านยืนยัน'],['confirmed','ร้านรับออร์เดอร์แล้ว'],['ready','อยู่ระหว่างจัดส่ง'],['done','ส่งอาหารสำเร็จ']];
 const cartN=()=>Object.values(S.cart).reduce((a,e)=>a+e.qty,0);
 const eUnit=e=>{const m=S.menu.find(x=>x.id===e.menuId);return (+(m&&m.price)||0)+(e.opts||[]).reduce((s,o)=>s+(+o.p||0),0)};
 const cartT=()=>Object.values(S.cart).reduce((s,e)=>s+eUnit(e)*e.qty,0);
@@ -391,9 +395,9 @@ function rpcErr(e){const m=String(e&&e.message||'');
   if(/not_found/.test(m))return 'ไม่พบออร์เดอร์นี้';
   return 'เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง';}
 function stateLine(st){if(!st)return '';
-  if(st.open)return `สั่งได้ถึง ${esc(st.cutoff)} น. วันนี้ · ได้รับ${esc(thDate(st.deliverDate))}${st.window?' '+esc(st.window):''}`;
+  if(st.open)return `สั่งได้ถึง ${esc(closeTxt(st))} · ได้รับ${esc(thDate(st.deliverDate))}${st.window?' '+esc(st.window):''}`;
   if(st.reason==='before')return `เปิดรับออร์เดอร์วันนี้ ${esc(st.openFrom)} น.`;
-  if(st.reason==='after')return `ปิดรับออร์เดอร์ของวันนี้แล้ว (ปิด ${esc(st.cutoff)} น.)`;
+  if(st.reason==='after')return `ปิดรับออร์เดอร์รอบนี้แล้ว (ส่ง${esc(thDate(st.deliverDate))})`;
   return 'ร้านปิดรับพรีออเดอร์ชั่วคราว';}
 
 /* ---------- ย่อรูปสลิปก่อนส่ง (ไม่เกิน ~500KB) ---------- */
@@ -407,13 +411,42 @@ function shrink(file){return new Promise((ok,no)=>{const fr=new FileReader();fr.
 async function start(){
   const cfg=window.APP_CONFIG||{};
   if(!window.supabase||!cfg.SUPABASE_URL||!cfg.SUPABASE_KEY)return fail('ระบบยังไม่พร้อม','ติดต่อร้านได้เลย');
-  sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}});
+  const STAFF=P.get('staff')==='1';
+  sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:STAFF?{persistSession:true,autoRefreshToken:true}:{persistSession:false}});
+  if(STAFF){try{const {data}=await sb.rpc('my_role');if(['owner','chef'].includes(data))S.staff=data}catch(e){}}
   const ok=await loadShop(true);if(!ok)return;
+  if(!o0()&&S.cfg&&S.cfg.state&&S.cfg.state.reason==='after'&&!S.staff){S.view='board';loadBoard()}
   const o=(P.get('o')||'').replace(/[^0-9a-f-]/gi,'').slice(0,60),t=(P.get('t')||'').replace(/[^0-9a-f]/gi,'').slice(0,32);
   if(o&&t){S.view='status';S.cur={id:o,token:t};await loadOrder()}
   render();
-  setInterval(()=>{if(document.hidden)return;if(S.view==='status')loadOrder().then(render);else if(S.view==='menu')loadShop().then(()=>S.view==='menu'&&render())},20000);
+  setInterval(()=>{if(document.hidden)return;if(S.view==='status')loadOrder().then(render);else if(S.view==='board')loadBoard();else if(S.view==='menu')loadShop().then(()=>S.view==='menu'&&render())},20000);
 }
+const closeTxt=st=>st.closeDate&&st.today&&st.closeDate!==st.today?`${thDate(st.closeDate)} เวลา ${st.cutoff} น.`:`${st.cutoff} น. วันนี้`;
+const o0=()=>!!(P.get('o')&&P.get('t'));
+const canOrder=()=>{const st=(S.cfg&&S.cfg.state)||{};return !!(st.open||(S.staff&&st.reason==='after'))};
+/* ---------- กระดานสถานะออร์เดอร์ (หลังปิดรับ) ---------- */
+let BT=null;
+async function loadBoard(){const q=S.bq||'';try{const {data,error}=await sb.rpc('po_board',{p_q:q});if(error){S.board={err:true};}else S.board=data}catch(e){S.board={err:true}}if(S.view==='board'&&(S.bq||'')===q)renderBoard()}
+const BST=o=>o.status==='new'?['⏳ รอร้านยืนยัน','warn']:o.status==='done'?['📦 ส่งแล้ว / รับแล้ว','ok']:['✅ แม่ครัวยืนยันแล้ว','ok'];
+const BPAY=o=>o.payStatus==='paid'?['ชำระเงินแล้ว ✓','ok']:o.payStatus==='slip'?['⏳ รอตรวจสอบยอดชำระ','warn']:['ค้างชำระ','bad'];
+function renderBoard(){const box=$('#bList');if(!box)return;const b=S.board;
+  if(!b){box.innerHTML='<p class="muted">กำลังโหลด…</p>';return}if(b.err){box.innerHTML='<p class="muted">โหลดไม่ได้ ลองใหม่อีกครั้ง</p>';return}
+  const L=b.orders||[];if(!L.length){box.innerHTML=`<p class="muted" style="text-align:center">${S.bq?'ไม่พบออร์เดอร์ที่ค้นหา · ลองพิมพ์ชื่ออื่น หรือเบอร์ 4 ตัวท้าย':'ยังไม่มีออร์เดอร์รอบนี้'}</p>`;return}
+  const days=[...new Set(L.map(o=>o.deliverDate))];
+  box.innerHTML=days.map(d=>`<h3 class="cath">รับ${esc(thDate(d))}</h3><div class="list">${L.filter(o=>o.deliverDate===d).map(o=>{const s1=BST(o),s2=BPAY(o);
+    return `<button class="row rowb brow" data-a="bopen" data-id="${esc(o.id)}" type="button"><div class="g"><b>#${esc(o.no)} · ${esc(o.name||'')}</b><div class="tm">เบอร์ xxx-xxx-${esc(o.ph||'')} · ${baht(o.total)}</div>
+      <div class="bpills"><span class="pill ${s1[1]}">${s1[0]}</span><span class="pill ${s2[1]}">${s2[0]}</span></div></div><div class="r">${o.payStatus==='paid'?'':'<span class="bslip">แนบสลิป ›</span>'}</div></button>`}).join('')}</div>`).join('')}
+function boardView(){const c=S.cfg||{},st=c.state||{},b=S.board||{},ph=String(b.phone||c.phone||''),tel=ph.replace(/[^\d+]/g,''),line=b.line||c.line||'';
+  return `<div class="pobar off"><b>${st.reason==='after'?'ปิดรับออร์เดอร์รอบนี้แล้ว':'สถานะออร์เดอร์'}</b><span>เช็กสถานะออร์เดอร์ของคุณ แล้วโอนเงิน + แนบสลิปได้ที่นี่</span></div>
+    <div class="field"><label for="bq">ค้นหาจากชื่อ หรือเบอร์โทร (4 ตัวท้ายขึ้นไป)</label><input id="bq" type="search" autocomplete="off" placeholder="เช่น สมชาย หรือ 1234" value="${esc(S.bq||'')}"></div>
+    <div id="bList"></div>
+    ${tel||line?`<section class="box"><h3>ติดต่อเจ้าของร้าน</h3><div class="seg">${tel?`<a class="btn" href="tel:${esc(tel)}">📞 โทร ${esc(ph)}</a>`:''}${line?`<a class="btn" href="${esc(line)}" target="_blank" rel="noopener">💬 LINE</a>`:tel?`<a class="btn" href="sms:${esc(tel)}">💬 ส่งข้อความ</a>`:''}</div></section>`:''}`}
+function askPhone(id){const el=document.createElement('div');el.className='opop';el.innerHTML=`<div class="op-card" style="padding:18px 16px;gap:10px;display:flex;flex-direction:column"><h2 style="margin:0">ยืนยันเบอร์โทร</h2><p class="muted" style="margin:0">ใส่เบอร์ที่ใช้สั่งออร์เดอร์นี้ เพื่อเปิดดูรายละเอียดและแนบสลิป</p>
+  <input id="bph" type="tel" inputmode="tel" maxlength="12" placeholder="08x-xxx-xxxx" style="border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px"><p class="err" id="bphErr" style="margin:0"></p>
+  <div class="seg"><button class="btn" data-x="1" type="button">ยกเลิก</button><button class="btn pri" data-ok="1" type="button">เปิดออร์เดอร์</button></div></div>`;
+  document.body.appendChild(el);const inp=el.querySelector('#bph');const me=lsGet(ME_KEY,{})||{};if(me.phone)inp.value=me.phone;setTimeout(()=>inp.focus(),50);
+  const go=async()=>{const {data,error}=await sb.rpc('po_board_open',{p_id:id,p_phone:inp.value});if(error||!data||!data.token){el.querySelector('#bphErr').textContent='เบอร์ไม่ตรงกับออร์เดอร์นี้';return}el.remove();openOrder(id,data.token)};
+  el.addEventListener('click',e=>{if(e.target===el||e.target.closest('[data-x]'))el.remove();else if(e.target.closest('[data-ok]'))go()});inp.addEventListener('keydown',e=>{if(e.key==='Enter')go()})}
 async function loadShop(first){try{const {data,error}=await sb.rpc('po_public');
   if(error){if(first)fail('เปิดร้านไม่ได้',rpcErr(error));return false}
   if(!data||!data.shopName&&!(data.menu||[]).length){if(first)fail('ร้านยังไม่เปิดให้สั่ง','ร้านกำลังเตรียมเมนู ลองใหม่ภายหลัง');return false}
@@ -441,10 +474,12 @@ function render(){
     const mine=myOrders();
     h=`${c.notice?`<div class="notice">${esc(c.notice)}</div>`:''}
     <div class="pobar ${st.open?'on':'off'}"><b>${st.open?'เปิดรับพรีออเดอร์':'ปิดรับออร์เดอร์'}</b><span>${stateLine(st)}</span></div>
+    ${S.staff&&st.reason==='after'?`<div class="notice">👩‍🍳 โหมด${S.staff==='owner'?'แอดมิน':'แม่ครัว'}: สั่งเพิ่มให้ลูกค้าหลังปิดรับได้ (รอบส่ง${esc(thDate(st.deliverDate))})</div>`:''}
+    ${!st.open&&!S.staff?`<button class="btn pri" data-a="view" data-v="board" type="button">📋 เช็กสถานะออร์เดอร์ / โอนเงิน + แนบสลิป</button>`:''}
     ${mine.length?`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน (${mine.length})</button>`:''}
     ${S.cats.length>1?`<div class="chips">${['all',...S.cats].map(x=>`<button class="chip" aria-pressed="${S.cat===x}" data-a="cat" data-v="${esc(x)}" type="button">${x==='all'?'ทั้งหมด':esc(x)}</button>`).join('')}</div>`:''}
     ${menuGrid('<p class="muted">ยังไม่มีเมนู</p>')}`;
-    ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()&&st.open?'':'disabled'} type="button">${st.open?'ถัดไป':'ปิดรับแล้ว'}</button>`;
+    ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()&&canOrder()?'':'disabled'} type="button">${canOrder()?'ถัดไป':'ปิดรับแล้ว'}</button>`;
   }else if(S.view==='cart'){
     const me=lsGet(ME_KEY,{})||{};const pts=c.points||[];
     if(!S.method)S.method=c.pickup||!pts.length?'pickup':'point';
@@ -453,7 +488,7 @@ function render(){
     const rows=Object.entries(S.cart).map(([k,e])=>{const m=S.menu.find(x=>x.id===e.menuId);return m?`<div class="row">${m.img?`<div class="mini"><img src="${esc(m.img)}" alt=""></div>`:''}<div class="g">${esc(m.name)}${optLine(e)}${e.note?`<div class="who">${esc(e.note)}</div>`:''}</div><div class="stepper"><button data-a="qty" data-k="${esc(k)}" data-d="-1" type="button" aria-label="ลด">−</button><span>${e.qty}</span><button data-a="qty" data-k="${esc(k)}" data-d="1" type="button" aria-label="เพิ่ม">+</button></div><div class="r" style="min-width:60px;text-align:right">${baht(eUnit(e)*e.qty)}</div></div>`:''}).join('');
     const pp=String(c.promptpay||'').replace(/\D/g,'');
     h=`<h2>สรุปออร์เดอร์</h2>
-    <div class="pobar on"><b>ได้รับ${esc(thDate(st.deliverDate))}</b><span>${st.window?'ช่วงเวลา '+esc(st.window)+' · ':''}สั่งได้ถึง ${esc(st.cutoff)} น. วันนี้</span></div>
+    <div class="pobar on"><b>ได้รับ${esc(thDate(st.deliverDate))}</b><span>${st.window?'ช่วงเวลา '+esc(st.window)+' · ':''}สั่งได้ถึง ${esc(closeTxt(st))}</span></div>
     ${rows?`<div class="list">${rows}<div class="row"><div class="g"><b>รวม</b></div><div class="r"><b>${baht(cartT())}</b></div></div></div>`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}
     <section class="box"><h3>ผู้รับ</h3>
       <div class="field"><label for="pName">ชื่อ</label><input id="pName" maxlength="40" autocomplete="name" value="${esc(me.name||'')}" placeholder="กรุณากรอกชื่อลูกค้า"></div>
@@ -469,6 +504,8 @@ function render(){
     <div class="field"><label for="pNote">หมายเหตุถึงร้าน (ถ้ามี)</label><input id="pNote" maxlength="200" autocomplete="off" placeholder="เช่น แยกถุงให้ด้วย"></div>
     <p class="err" id="sendErr" role="alert">${esc(S.err||'')}</p>`;
     ft=`<button class="btn" data-a="view" data-v="menu" type="button">เลือกเพิ่ม</button><button class="btn pri wide" data-a="send" ${cartN()&&!S.sending?'':'disabled'} type="button">${S.sending?'กำลังส่ง…':'ยืนยันสั่ง '+baht(cartT())}</button>`;
+  }else if(S.view==='board'){
+    h=boardView();ft=`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน</button><button class="btn pri wide" data-a="view" data-v="menu" type="button">ดูเมนู</button>`;
   }else if(S.view==='mine'){
     const a=myOrders();
     h=`<h2>ออร์เดอร์ของฉัน</h2>${a.length?`<div class="list">${a.map(x=>`<button class="row rowb" data-a="open" data-id="${esc(x.id)}" data-t="${esc(x.token)}" type="button"><div class="g"><b>${esc(x.no||'ออร์เดอร์')}</b><div class="tm">รับ${esc(thDate(x.d))}</div></div><span class="muted">ดู ›</span></button>`).join('')}</div>`:'<p class="muted">ยังไม่มีออร์เดอร์บนเครื่องนี้</p>'}`;
@@ -481,8 +518,8 @@ function render(){
       const pay=o.payStatus==='paid'?'<span class="pill ok">ชำระแล้ว ✓</span>':o.payStatus==='slip'?'<span class="pill warn">⏳ รอตรวจสอบยอดชำระ</span>'
         :o.pay==='after'?'<span class="pill warn">โอนตอนรับของ · ยังไม่แนบสลิป</span>':'<span class="pill bad">ยังไม่ได้โอน</span>';
       h=`${S.justSent?`<div class="msg" style="padding:12px 8px 0"><h2>สั่งเรียบร้อย ขอบคุณครับ</h2><p class="muted" style="margin:0">บันทึกหน้านี้ไว้ หรือกลับมาดูได้ที่ "ออร์เดอร์ของฉัน"</p></div>`:''}
-      <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b>${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc(thDate(o.deliverDate))}${o.window?' · '+esc(o.window):''}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
-      ${cx?'':`<ol class="steps">${STEPS.map((s,i)=>`<li class="${i<=idx?'on':''}">${esc(s[1])}</li>`).join('')}</ol>`}
+      <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b class="qs-${cx?'cx':esc(o.status)}">${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc(thDate(o.deliverDate))}${o.window?' · '+esc(o.window):''}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
+      ${cx?'':`<ol class="steps">${STEPS.map((s,i)=>`<li class="st-${s[0]}${i<=idx?' on':''}${i===idx?' cur':''}">${esc(s[1])}</li>`).join('')}</ol>`}
       <div class="list">${(o.items||[]).map(l=>`<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:''}${l.note?`<div class="who">${esc(l.note)}</div>`:''}</div><div class="r">${baht(l.price*l.qty)}</div></div>`).join('')}
         <div class="row"><div class="g"><b>ยอดรวม</b></div><div class="r"><b>${baht(o.total)}</b></div></div>
         <div class="row"><div class="g">ชำระเงิน</div>${pay}</div>
@@ -499,6 +536,7 @@ function render(){
     ft=`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน</button><button class="btn pri wide" data-a="new" type="button">สั่งเพิ่ม</button>`;
   }
   v.innerHTML=h;f.innerHTML=ft;$('#foot').hidden=false;
+  if(S.view==='board'){renderBoard();const bi=$('#bq');if(bi)bi.addEventListener('input',()=>{S.bq=bi.value.trim();clearTimeout(BT);BT=setTimeout(()=>{S.board=null;renderBoard();loadBoard()},350)})}
   Object.entries(keep).forEach(([k,val])=>{const i=document.getElementById(k);if(i&&i.type!=='file')i.value=val});
 }
 async function send(){
@@ -520,16 +558,17 @@ async function send(){
 let armT=null;
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
   if(a==='cat'){S.cat=b.dataset.v;render()}
-  else if(a==='add'){const m=S.menu.find(x=>x.id===b.dataset.m);if(!m||m.soldOut)return;if(!(S.cfg.state||{}).open)return toast(stateLine(S.cfg.state).replace(/<[^>]+>/g,''));
+  else if(a==='add'){const m=S.menu.find(x=>x.id===b.dataset.m);if(!m||m.soldOut)return;if(!canOrder())return toast(stateLine(S.cfg.state).replace(/<[^>]+>/g,''));
     if(hasOpts(m))optPick(m,{addLabel:'ใส่ตะกร้า',onAdd:sel=>putCart(m,sel)});else{putCart(m,{opts:[],note:'',qty:1});toast('ใส่ตะกร้าแล้ว: '+m.name)}}
   else if(a==='qty'){const e2=S.cart[b.dataset.k];if(!e2)return;e2.qty+=+b.dataset.d;if(e2.qty<=0)delete S.cart[b.dataset.k];if(!cartN())S.view='menu';render()}
-  else if(a==='view'){S.view=b.dataset.v;S.err='';render();$('main').scrollTop=0}
+  else if(a==='view'){S.view=b.dataset.v;S.err='';if(S.view==='board'){S.board=null;loadBoard()}render();$('main').scrollTop=0}
   else if(a==='method'){S.method=b.dataset.v;render()}
   else if(a==='point'){S.point=b.dataset.v;render()}
   else if(a==='pay'){S.pay=b.dataset.v;render()}
   else if(a==='send')send();
   else if(a==='mine'){S.view='mine';S.justSent=false;render()}
   else if(a==='open')openOrder(b.dataset.id,b.dataset.t);
+  else if(a==='bopen')askPhone(b.dataset.id);
   else if(a==='new'){S.view='menu';S.justSent=false;try{const u=new URL(location.href);u.searchParams.delete('o');u.searchParams.delete('t');history.replaceState(null,'',u.href)}catch(e){}await loadShop();render()}
   else if(a==='cancel'){if(!b.dataset.armed){b.dataset.armed='1';const t=b.textContent;b.textContent=b.dataset.armtxt;clearTimeout(armT);armT=setTimeout(()=>{delete b.dataset.armed;b.textContent=t},3500);return}
     b.disabled=true;const {error}=await sb.rpc('po_order_cancel',{p_id:S.cur.id,p_token:S.cur.token});if(error)toast(rpcErr(error));else toast('ยกเลิกออร์เดอร์แล้ว');await loadOrder();render()}
