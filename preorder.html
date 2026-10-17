@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-2030">
+<meta name="app-version" content="2026.10.17-1430">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -376,6 +376,7 @@ function putCart(m,sel){const k=m.id+'|'+optKey(sel.opts)+'|'+sel.note;if(S.cart
 function fail(title,text){$('#view').innerHTML=`<div class="msg"><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p></div>`;$('#foot').hidden=true}
 function rpcErr(e){const m=String(e&&e.message||'');
   if(/po_closed/.test(m))return 'ร้านปิดรับพรีออเดอร์แล้ว';
+  if(/shop_closed/.test(m))return 'ร้านปิดให้บริการแล้ว ขอบคุณที่แวะมาค่ะ';
   {const so=m.match(/sold_out:([^:]+)(?::(\d+))?/);if(so)return so[1]+(so[2]&&+so[2]>0?' เหลือแค่ '+so[2]+' ที่ ลดจำนวนแล้วสั่งใหม่':' หมดแล้ว ลบออกจากตะกร้าก่อน')}
   if(/need_name/.test(m))return 'ใส่ชื่อผู้รับก่อน';
   if(/bad_phone/.test(m))return 'เบอร์โทรไม่ถูกต้อง (ตัวเลข 9–10 หลัก)';
