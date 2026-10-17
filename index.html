@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1840">
+<meta name="app-version" content="2026.10.17-1915">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -613,6 +613,7 @@ body.shop-po .top h1#shopName{font-family:'Kanit',var(--f-display);font-weight:8
 .tab .ic-c{width:32px;height:32px;stroke:none;fill:initial;stroke-width:initial;transition:transform .15s}
 .tab[aria-current="true"] .ic-c{transform:translateY(-2px) scale(1.12);filter:drop-shadow(0 3px 5px rgba(229,56,59,.35))}
 body.shop-po .tab .ic-c{display:none}
+body.shop-po .tab[data-v="back"] .ic-c{display:block;margin:0 auto}
 /* ชื่อร้านเนื้อล้วนๆ: ตัวหนาขาว เรืองแสงแดงแบบป้ายไฟ */
 body:not(.shop-po) .top h1#shopName{font-family:'Kanit',var(--f-display);font-weight:800;font-size:25px;line-height:1.1;letter-spacing:.2px;color:#fff;text-shadow:0 0 2px #ff4d4f,0 0 8px rgba(229,56,59,.9),0 0 18px rgba(229,56,59,.55)}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]) body:not(.shop-po) .top h1#shopName{color:#b3161b;text-shadow:0 1px 0 #fff,0 0 10px rgba(229,56,59,.35)}}
@@ -926,7 +927,7 @@ const effRole=()=>S.role==='owner'&&S.viewAs?S.viewAs:S.role;
 function can(k){const r=effRole();if(r==='owner')return true;const dp=DEFAULT_PERMS[roleKey(r)]||{},rp=(S.perms&&S.perms[roleKey(r)])||dp;return !!(k in rp?rp[k]:dp[k])}
 const isPo=()=>S.shop==='po';
 const homeTab=r=>r==='chef'?(isPo()?'poprep':'kitchen'):(isPo()?'po':'tables');
-const TAB_OK={tables:()=>!isPo()&&can('tables'),kitchen:()=>!isPo()&&can('kitchen'),po:()=>isPo(),poprep:()=>isPo(),menu:()=>true,back:()=>!isPo()&&(can('stock')||can('expenses')||can('members')),report:()=>!isPo()&&can('report'),poreport:()=>isPo()&&can('report')};
+const TAB_OK={tables:()=>!isPo()&&can('tables'),kitchen:()=>!isPo()&&can('kitchen'),po:()=>isPo(),poprep:()=>isPo(),menu:()=>true,back:()=>isPo()?can('stock'):(can('stock')||can('expenses')||can('members')),report:()=>!isPo()&&can('report'),poreport:()=>isPo()&&can('report')};
 const deny=()=>{toast('ตำแหน่งของคุณไม่มีสิทธิ์ใช้ส่วนนี้ ติดต่อแอดมิน','bad');return true};
 const S={shop:(()=>{try{return localStorage.getItem('nl_shop')==='po'?'po':'noodle'}catch(e){return 'noodle'}})(),nMenu:[],poMenu:[],po:null,poOrders:[],poDay:null,poF:'',floor:(()=>{try{return localStorage.getItem('nl_floor')||'tables'}catch(e){return 'tables'}})(),tab:'tables',perms:null,backTab:'stock',menuCat:'all',settings:{...DEFAULTS},
   stock:[],members:[],open:{},today:[],calls:[],voice:{},purch:[],exp:[],
@@ -1185,7 +1186,7 @@ function render(){
   if(S.state==='ready'&&!TAB_OK[S.tab]())S.tab=Object.keys(TAB_OK).find(k=>TAB_OK[k]())||'menu';
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-current',String(t.dataset.v===S.tab)));
   const pending=kOrders().reduce((s,o)=>s+(o.items||[]).filter(l=>!l.served).reduce((a,l)=>a+l.qty,0),0);
-  const low=S.stock.filter(isLow).length;
+  const low=stockList().filter(isLow).length;
   const bk=$('#bKitchen');bk.hidden=!pending;bk.textContent=pending;
   const bb=$('#bBack');bb.hidden=!low;bb.textContent=low;
   const v=$('#view');
@@ -1289,28 +1290,28 @@ function viewMenu(){
 }
 
 function viewBack(){
-  const BT={stock:can('stock'),purch:can('stock'),consign:can('stock'),exp:can('expenses'),inc:can('expenses'),mem:can('members')};
+  const BT=isPo()?{stock:can('stock'),purch:can('stock')}:{stock:can('stock'),purch:can('stock'),consign:can('stock'),exp:can('expenses'),inc:can('expenses'),mem:can('members')};
   if(!BT[S.backTab])S.backTab=Object.keys(BT).find(k=>BT[k])||'stock';
   const t=S.backTab;
-  let h=`<div class="subtabs" role="group">${BT.stock?`<button aria-pressed="${t==='stock'}" data-act="backTab" data-v="stock" type="button">สต็อกวัตถุดิบ</button><button aria-pressed="${t==='purch'}" data-act="backTab" data-v="purch" type="button">ซื้อของเข้า</button>`:''}${BT.exp?`<button aria-pressed="${t==='exp'}" data-act="backTab" data-v="exp" type="button">รายจ่ายร้าน</button>`:''}${BT.exp?`<button aria-pressed="${t==='inc'}" data-act="backTab" data-v="inc" type="button">รายรับอื่นๆ</button>`:''}${BT.stock?`<button aria-pressed="${t==='consign'}" data-act="backTab" data-v="consign" type="button">ฝากขาย</button>`:''}${BT.mem?`<button aria-pressed="${t==='mem'}" data-act="backTab" data-v="mem" type="button">สมาชิก</button>`:''}</div>`;
+  let h=`<div class="subtabs" role="group">${BT.stock?`<button aria-pressed="${t==='stock'}" data-act="backTab" data-v="stock" type="button">สต็อกวัตถุดิบ</button><button aria-pressed="${t==='purch'}" data-act="backTab" data-v="purch" type="button">ซื้อของเข้า</button>`:''}${BT.exp?`<button aria-pressed="${t==='exp'}" data-act="backTab" data-v="exp" type="button">รายจ่ายร้าน</button>`:''}${BT.exp?`<button aria-pressed="${t==='inc'}" data-act="backTab" data-v="inc" type="button">รายรับอื่นๆ</button>`:''}${BT.consign?`<button aria-pressed="${t==='consign'}" data-act="backTab" data-v="consign" type="button">ฝากขาย</button>`:''}${BT.mem?`<button aria-pressed="${t==='mem'}" data-act="backTab" data-v="mem" type="button">สมาชิก</button>`:''}</div>`;
   if(t==='consign')return h+viewConsign();
   if(t==='inc')return h+viewIncome();
   if(t==='mem')return h+viewMembers();
   if(t==='stock'){
-    const low=S.stock.filter(isLow);
+    const low=stockList().filter(isLow);
     h+=`<div class="sec-h"><h2>ของที่ต้องเติม</h2><span class="hint">คงเหลือต่ำกว่าหรือเท่าจุดสั่งซื้อ</span></div>`;
     h+=low.length?'<div class="list">'+low.map(s=>`<div class="row">${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)}</div><div class="s">เหลือ ${num(s.qty)} ${esc(s.unit)} · จุดสั่งซื้อ ${num(s.min)} ${esc(s.unit)}</div></div><button class="btn sm pri" data-act="purchase" data-id="${s.id}" type="button">ซื้อเติม</button></div>`).join('')+'</div>':`<div class="empty"><b>ของยังพอใช้ทุกรายการ</b>รายการที่ใกล้หมดจะขึ้นที่นี่ให้ซื้อเติมได้ทันที</div>`;
     h+=`<div class="sec-h"><h2>วัตถุดิบทั้งหมด</h2><button class="btn sm" data-act="stockEdit" type="button">+ เพิ่มวัตถุดิบ</button></div>`;
-    if(!S.stock.length)return h+`<div class="empty"><b>ยังไม่มีวัตถุดิบ</b>เพิ่มเส้น ลูกชิ้น เนื้อสัตว์ ผัก เพื่อติดตามของคงเหลือและต้นทุน</div>`;
-    h+='<div class="list">'+S.stock.map(s=>{const q=+s.qty||0,m=+s.min||0,pct=Math.min(100,m>0?q/(m*3)*100:100);
+    if(!stockList().length)return h+`<div class="empty"><b>ยังไม่มีวัตถุดิบ</b>${isPo()?"เพิ่มข้าวสาร ไก่ ซอส แตงกวา กล่อง":"เพิ่มเส้น ลูกชิ้น เนื้อสัตว์ ผัก"} เพื่อติดตามของคงเหลือและต้นทุน</div>`;
+    h+='<div class="list">'+stockList().map(s=>{const q=+s.qty||0,m=+s.min||0,pct=Math.min(100,m>0?q/(m*3)*100:100);
       return `<div class="row click" data-act="stockEdit" data-id="${s.id}">${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)} ${isLow(s)?'<span class="pill bad">ต้องเติม</span>':''}</div><div class="s">ทุนล่าสุด ${baht(s.unitCost||0)}/${esc(s.unit)}${s.buyPer&&s.buyUnit?` · 1 ${esc(s.buyUnit)} ≈ ${num(s.buyPer)} ${esc(s.unit)}`:''}</div><div class="meter ${isLow(s)?'low':''}"><i style="width:${Math.max(3,pct)}%"></i></div></div><div class="r"><b class="num">${num(q)}</b> <span class="muted">${esc(s.unit)}</span></div></div>`}).join('')+'</div>';
     return h;}
   if(t==='purch'){
-    const sum=S.purch.filter(p=>p.at>=sod()-29*DAY).reduce((s,p)=>s+(+p.amount||0),0);
+    const sum=purchList().filter(p=>p.at>=sod()-29*DAY).reduce((s,p)=>s+(+p.amount||0),0);
     h+=`<div class="sec-h"><h2>ซื้อของ 30 วันล่าสุด</h2><button class="btn pri sm" data-act="purchase" type="button">+ บันทึกการซื้อ</button></div>
     <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="money">${baht(sum)}</b><span>รวมค่าซื้อของ</span></div><div class="stat"><b class="num">${S.purch.length}</b><span>รายการ</span></div></div>`;
-    if(!S.purch.length)return h+`<div class="empty"><b>ยังไม่มีการซื้อของ</b>บันทึกทุกครั้งที่ไปตลาด ระบบจะเติมจำนวนในสต็อกและอัปเดตต้นทุนให้</div>`;
-    return h+'<div class="list">'+S.purch.map(p=>`<div class="row"><div class="grow"><div class="t">${esc(p.name)} <span class="muted">${p.buyQty?num(p.buyQty)+' '+esc(p.buyUnit||'')+' = ':''}${num(p.qty)} ${esc(p.unit||'')}</span></div><div class="s">${dshort(p.at)} ${hm(p.at)}${p.note?' · '+esc(p.note):''}</div></div><div class="r"><b>${baht(p.amount)}</b></div><button class="btn sm danger" data-act="delPurch" data-id="${p.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>';}
+    if(!purchList().length)return h+`<div class="empty"><b>ยังไม่มีการซื้อของ</b>บันทึกทุกครั้งที่ไปตลาด ระบบจะเติมจำนวนในสต็อกและอัปเดตต้นทุนให้</div>`;
+    return h+'<div class="list">'+purchList().map(p=>`<div class="row"><div class="grow"><div class="t">${esc(p.name)} <span class="muted">${p.buyQty?num(p.buyQty)+' '+esc(p.buyUnit||'')+' = ':''}${num(p.qty)} ${esc(p.unit||'')}</span></div><div class="s">${dshort(p.at)} ${hm(p.at)}${p.note?' · '+esc(p.note):''}</div></div><div class="r"><b>${baht(p.amount)}</b></div><button class="btn sm danger" data-act="delPurch" data-id="${p.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>';}
   const sum=S.exp.reduce((s,e)=>s+(+e.amount||0),0);
   h+=`<div class="sec-h"><h2>รายจ่าย 30 วันล่าสุด</h2><button class="btn pri sm" data-act="expense" type="button">+ บันทึกรายจ่าย</button></div>${catBar('expCats')}
   <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="money">${baht(sum)}</b><span>รวมรายจ่าย</span></div><div class="stat"><b class="num">${S.exp.length}</b><span>รายการ</span></div></div>`;
@@ -1681,9 +1682,15 @@ async function memRedeem(phone,pts,note){let short=false;
   const p=await S.db.doc('members/'+phone).transform(d=>{const r=memLots(d);if(r.points<pts){short=true;return null}const L=lotTake(r.L,pts);let h=d.hist;if(r.expired)h=histPush(h,{k:'expire',p:-r.expired});h=histPush(h,{k:'redeem',p:-pts,n:note});return {points:lotSum(L),lots:L,hist:h,lastAt:Date.now()}});
   if(short||!p)throw {code:'invalid_argument',message:'แต้มไม่พอ'};return p.points}
 function rwUsed(id){write('rewards/'+id,r=>r.transform(d=>({redeemed:(+d.redeemed||0)+1,...(typeof d.stock==='number'?{stock:Math.max(0,d.stock-1)}:{})})))}
-function deductStock(items){const need={};
-  (items||[]).forEach(l=>{const m=S.menu.find(x=>x.id===l.menuId);(m?.recipe||[]).forEach(g=>{if(g.stockId)need[g.stockId]=(need[g.stockId]||0)+(+g.qty||0)*l.qty})});
-  Object.entries(need).forEach(([sid,q])=>{const s=S.stock.find(x=>x.id===sid);if(!s)return;s.qty=r2((+s.qty||0)-q);write('stock/'+sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))});}
+// สต็อกแยกร้าน: วัตถุดิบ/ซื้อของของข้าวมันไก่มี shop:'po' · ไม่มี = เนื้อล้วนๆ
+const stockList=()=>S.stock.filter(x=>isPo()?x.shop==='po':x.shop!=='po');
+const purchList=()=>(S.purch||[]).filter(x=>isPo()?x.shop==='po':x.shop!=='po');
+const shopTag=()=>isPo()?{shop:'po'}:{};
+function deductStock(items,menus,sign){const need={},M=menus||S.menu,k=sign||1;
+  (items||[]).forEach(l=>{const m=M.find(x=>x.id===l.menuId);(m?.recipe||[]).forEach(g=>{if(g.stockId)need[g.stockId]=(need[g.stockId]||0)+(+g.qty||0)*(+l.qty||0)})});
+  Object.entries(need).forEach(([sid,q])=>{q*=k;const s=S.stock.find(x=>x.id===sid);if(!s)return;s.qty=r2((+s.qty||0)-q);write('stock/'+sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))});}
+// ข้าวมันไก่: ตัดสต็อกตอน "เริ่มจัดส่ง" (หรือส่งสำเร็จ) · ย้อนสถานะ/ยกเลิก = คืนสต็อก
+const poCutWant=st=>st==='ready'||st==='done';
 
 /* receipt */
 function qrDataUrl(text){try{const q=qrcode(0,'M');q.addData(text);q.make();return q.createDataURL(4,2)}catch(e){return ''}}
@@ -1806,9 +1813,9 @@ async function uploadMenuPhoto(menuId,file){
 const removePhoto=path=>{if(path)SB.storage.from('menu-photos').remove([path]).catch(()=>{})};
 function renderIng(){const box=$('#ingList');if(!box)return;const R=S.sheet.recipe;
   box.innerHTML=R.length?R.map((g,i)=>{const s=S.stock.find(x=>x.id===g.stockId);return `<div style="display:grid;grid-template-columns:1fr 92px auto;gap:6px;align-items:end;margin-top:8px">
-   <div class="field"><label for="ig${i}">วัตถุดิบ</label><select id="ig${i}" data-ing="${i}" data-k="stockId"><option value="">เลือก</option>${S.stock.map(s=>`<option value="${s.id}" ${s.id===g.stockId?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
+   <div class="field"><label for="ig${i}">วัตถุดิบ</label><select id="ig${i}" data-ing="${i}" data-k="stockId"><option value="">เลือก</option>${stockList().map(s=>`<option value="${s.id}" ${s.id===g.stockId?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
    <div class="field"><label for="iq${i}">ใช้ (${esc(s?.unit||'หน่วย')})</label><input id="iq${i}" data-ing="${i}" data-k="qty" inputmode="decimal" value="${g.qty??''}"></div>
-   <button class="btn sm ghost" data-act="delIng" data-i="${i}" type="button" aria-label="ลบ">×</button></div>`}).join(''):(S.stock.length?'':'<p class="help" style="margin:8px 0 0">ยังไม่มีวัตถุดิบในสต็อก เพิ่มได้ที่แท็บหลังบ้าน</p>');}
+   <button class="btn sm ghost" data-act="delIng" data-i="${i}" type="button" aria-label="ลบ">×</button></div>`}).join(''):(stockList().length?'':'<p class="help" style="margin:8px 0 0">ยังไม่มีวัตถุดิบในสต็อก เพิ่มได้ที่แท็บหลังบ้าน</p>');}
 const OPT_TPL={noodle:['เลือกเส้น','req1',['เส้นเล็ก','เส้นใหญ่','เส้นหมี่','บะหมี่','วุ้นเส้น','เกาเหลา (ไม่ใส่เส้น)']],soup:['น้ำซุป','req1',['น้ำใส','น้ำตก','ต้มยำ','แห้ง']],size:['ขนาด','req1',[['ธรรมดา',0],['พิเศษ',10]]],top:['เพิ่มท็อปปิ้ง','multi',[['เพิ่มเนื้อ',20],['เพิ่มลูกชิ้น',10],['ไข่ต้ม',10]]],spicy:['ความเผ็ด','opt1',['ไม่เผ็ด','เผ็ดน้อย','เผ็ดกลาง','เผ็ดมาก']]};
 const TYPE_TXT=t=>t==='req1'?'ต้องเลือก 1':t==='opt1'?'เลือกได้ 1':'เลือกได้หลายอย่าง';
 const myTpl=()=>Array.isArray(S.settings.optTpl)?S.settings.optTpl.filter(t=>t&&t.id&&t.name):[];
@@ -1931,7 +1938,7 @@ function renderSPhoto(){const ph=S.sheet.sphoto,box=$('#sPhotoBox');if(!box)retu
 async function saveStock(){const name=val('sName');if(!name)return toast('ใส่ชื่อวัตถุดิบก่อน','bad');
   const id=S.sheet.id||S.sheet.newId||(S.sheet.newId=S.db.collection('stock').doc().id);
   const old=S.stock.find(x=>x.id===id)||{};
-  const data={...old,name,unit:val('sUnit')||'หน่วย',qty:nval('sQty'),min:nval('sMin'),unitCost:nval('sCost')};delete data.id;
+  const data={...(S.sheet.id?{}:shopTag()),...old,name,unit:val('sUnit')||'หน่วย',qty:nval('sQty'),min:nval('sMin'),unitCost:nval('sCost')};delete data.id;
   const ph=S.sheet.sphoto||{};let drop='';
   if(ph.file){const b=$('[data-act=saveStock]');if(b){b.disabled=true;b.textContent='กำลังอัปโหลดรูป…'}
     try{const up=await uploadMenuPhoto('stock/'+id,ph.file);data.img=up.url;data.imgPath=up.path;drop=old.imgPath||''}
@@ -1942,7 +1949,7 @@ async function saveStock(){const name=val('sName');if(!name)return toast('ใส
 
 function sheetPurchase(){const sid=S.sheet.id||'';
   $('#panel').innerHTML=head('บันทึกการซื้อของ','ระบบจะเติมจำนวนเข้าสต็อกให้')+
-  `<form class="sh-body"><div class="field"><label for="pItem">ซื้ออะไร</label><select id="pItem">${S.stock.map(s=>`<option value="${s.id}" ${s.id===sid?'selected':''}>${esc(s.name)} (${esc(s.unit)})</option>`).join('')}<option value="__new" ${!S.stock.length?'selected':''}>+ ของใหม่ที่ยังไม่มีในสต็อก</option></select></div>
+  `<form class="sh-body"><div class="field"><label for="pItem">ซื้ออะไร</label><select id="pItem">${stockList().map(s=>`<option value="${s.id}" ${s.id===sid?'selected':''}>${esc(s.name)} (${esc(s.unit)})</option>`).join('')}<option value="__new" ${!S.stock.length?'selected':''}>+ ของใหม่ที่ยังไม่มีในสต็อก</option></select></div>
   <div class="grid2" id="pNew" hidden><div class="field"><label for="pName">ชื่อของใหม่</label><input id="pName" autocomplete="off"></div><div class="field"><label for="pUnit">หน่วย</label><input id="pUnit" value="กก."></div></div>
   <div class="grid2"><div class="field"><label for="pQty">จำนวนที่นับเข้าสต็อก (<span id="pQU">หน่วย</span>)</label><input id="pQty" inputmode="decimal" placeholder="เช่น 190"></div><div class="field"><label for="pAmt">ราคารวม (บาท)</label><input id="pAmt" inputmode="decimal"></div></div>
   <div class="field"><label for="pBuy">ซื้อมาเป็น (ไม่บังคับ)</label><div style="display:flex;gap:8px"><input id="pBuy" inputmode="decimal" placeholder="เช่น 3" style="flex:1"><input id="pBuyU" value="กก." placeholder="กก. / แพ็ค / ถุง" style="flex:1"></div></div>
@@ -1961,9 +1968,9 @@ async function savePurch(){let sid=val('pItem');const qty=nval('pQty'),amount=nv
   if(sid==='__new'){const name=val('pName');if(!name)return toast('ใส่ชื่อของใหม่','bad');sid=S.db.collection('stock').doc().id;s={name,unit:val('pUnit')||'หน่วย',qty:0,min:0,unitCost:0}}
   const uc=amount>0?r2(amount/qty):(+s.unitCost||0);const isNew=!S.stock.some(x=>x.id===sid);
   const bq=nval('pBuy'),bu=bq>0?(val('pBuyU')||''):'';const bx=bq>0&&bu?{buyUnit:bu,buyPer:r2(qty/bq)}:{};
-  const ok=await write('stock/'+sid,r=>isNew?r.set({name:s.name,unit:s.unit,qty,min:0,unitCost:uc,...bx}):r.transform(d=>({qty:r2((+d.qty||0)+qty),unitCost:uc,...bx})));if(!ok)return;
+  const ok=await write('stock/'+sid,r=>isNew?r.set({name:s.name,unit:s.unit,qty,min:0,unitCost:uc,...bx,...shopTag()}):r.transform(d=>({qty:r2((+d.qty||0)+qty),unitCost:uc,...bx})));if(!ok)return;
   const ref=S.db.collection('purchases').doc();
-  await write('purchases/'+ref.id,r=>r.set({stockId:sid,name:s.name,unit:s.unit,qty,amount,...(bq>0?{buyQty:bq,buyUnit:bu}:{}),note:val('pNote'),at:fromDateInput(val('pDate'))}));
+  await write('purchases/'+ref.id,r=>r.set({stockId:sid,name:s.name,unit:s.unit,qty,amount,...(bq>0?{buyQty:bq,buyUnit:bu}:{}),note:val('pNote'),at:fromDateInput(val('pDate')),...shopTag()}));
   closeSheet();toast(`เติม ${s.name} +${num(qty)} ${s.unit} แล้ว`);}
 
 function sheetExpense(){const cats=expCats(),D=S.sheet.draft||{};
@@ -2650,7 +2657,9 @@ async function poSave(){if(S.role!=='owner')return deny();poReadPts();const d=S.
   const ok=await write('config/po',r=>r.set(data));
   if(ok){S.po=data;S.sheet.d=JSON.parse(JSON.stringify(poCfg()));S.sheet.dirty=false;render();sheetPoSet();
     const b=document.querySelector('[data-act="poSave"]');if(b){b.textContent='✓ บันทึกแล้ว';b.classList.add('ok-flash');setTimeout(()=>{b.textContent='บันทึก';b.classList.remove('ok-flash')},2000)}toast('บันทึกการตั้งค่าแล้ว')}}
-async function poSet(id,patch,msg){const ok=await write('po_orders/'+id,r=>r.update(patch));if(ok){const o=S.poOrders.find(x=>x.id===id);if(o)Object.assign(o,patch);render();if(msg)toast(msg)}}
+async function poSet(id,patch,msg){const o0=S.poOrders.find(x=>x.id===id);let sc=0;
+  if(o0&&patch.status){const want=poCutWant(patch.status),had=!!o0.stockCut;if(want!==had){patch={...patch,stockCut:want};sc=want?1:-1}}
+  const ok=await write('po_orders/'+id,r=>r.update(patch));if(ok&&sc&&o0)deductStock(o0.items,S.poMenu,sc);if(ok){const o=S.poOrders.find(x=>x.id===id);if(o)Object.assign(o,patch);render();if(msg)toast(msg)}}
 Object.assign(ACT,{
   viewSlip:async d=>{const o=S.open[d.id];try{const s=await S.db.doc('slips/'+d.id).get();const x=s.exists?s.data():null;if(!x||!x.img)return toast('ลูกค้าลบสลิปแล้ว หรือยังไม่ได้แนบ','bad');viewImg(x.img,'สลิป · '+(o?tableLabel(o):(x.orderNo||''))+' · '+hm(x.at))}catch(e){toast('โหลดสลิปไม่ได้','bad')}},
   shopSw:d=>{if(!canPo())return deny();S.shop=d.v==='po'?'po':'noodle';try{localStorage.setItem('nl_shop',S.shop)}catch(e){}S.menuCat='all';S.tab=homeTab(effRole());closeSheet();render();window.scrollTo(0,0)},

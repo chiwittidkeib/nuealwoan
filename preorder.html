@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1900">
+<meta name="app-version" content="2026.10.17-1845">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -444,7 +444,7 @@ async function start(){
   const STAFF=P.get('staff')==='1';
   sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:STAFF?{persistSession:true,autoRefreshToken:true}:{persistSession:false}});
   if(STAFF){try{const {data}=await sb.rpc('my_role');if(['owner','chef'].includes(data))S.staff=data}catch(e){}}
-  const ok=await loadShop(true);if(!ok)return;
+  const ok=await loadShop(true);if(!ok)return;loadMy();
   if(!o0()&&S.cfg&&S.cfg.state&&S.cfg.state.reason==='after'&&!S.staff){S.view='board';loadBoard()}
   const o=(P.get('o')||'').replace(/[^0-9a-f-]/gi,'').slice(0,60),t=(P.get('t')||'').replace(/[^0-9a-f]/gi,'').slice(0,32);
   if(o&&t){S.view='status';S.cur={id:o,token:t};await loadOrder()}
@@ -457,7 +457,7 @@ const ppFmt=pp=>pp.length===10?pp.replace(/^(\d{3})(\d{3})(\d{4})$/,'$1-$2-$3'):
 const ppBox=(pp,amt,name)=>`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,amt))}<b>${baht(amt)}</b>
   <div class="ppinfo"><span>พร้อมเพย์ <b>${esc(ppFmt(pp))}</b></span>${name?`<span>ชื่อบัญชี <b>${esc(name)}</b></span>`:''}<button class="btn sm" data-a="ppCopy" data-v="${esc(pp)}" type="button">📋 คัดลอกเบอร์</button></div></div>`;
 const poDue=o=>Math.max(0,(+o.total||0)-(+o.paidAmt||0));
-async function loadMy(){const a=myOrders();if(!a.length||!sb)return;S.myBusy=true;try{const {data}=await sb.rpc('po_my',{p_list:a.slice(0,30).map(x=>({id:x.id,t:x.token}))});if(Array.isArray(data)){const M={};data.forEach(m=>M[m.id]=m);S.myStat=M}}catch(e){}S.myBusy=false;S.myAt=Date.now();if(S.view==='mine')render()}
+async function loadMy(){const a=myOrders();if(!a.length||!sb)return;S.myBusy=true;try{const {data}=await sb.rpc('po_my',{p_list:a.slice(0,30).map(x=>({id:x.id,t:x.token}))});if(Array.isArray(data)){const M={};data.forEach(m=>M[m.id]=m);S.myStat=M;const q=new Set(a.slice(0,30).map(x=>x.id));const keep=myOrders().filter(x=>!q.has(x.id)||M[x.id]);if(keep.length!==myOrders().length){lsSet(MY_KEY,keep);if(S.view==='menu')render()}}}catch(e){}S.myBusy=false;S.myAt=Date.now();if(S.view==='mine')render()}
 const CX_DEF=['สั่งผิด / เลือกเมนูผิด','เปลี่ยนใจ ไม่สะดวกรับของ','สั่งซ้ำ','อยากแก้รายการ จะสั่งใหม่','ไม่สะดวกโอนเงิน'];
 function askCancel(){const cr=S.cfg&&S.cfg.cxReasons;const rs=Array.isArray(cr)&&cr.length?cr:CX_DEF;let pick='';
   const el=document.createElement('div');el.className='opop';el.innerHTML=`<div class="op-card" style="padding:18px 16px;gap:10px;display:flex;flex-direction:column"><h2 style="margin:0">ยกเลิกออร์เดอร์?</h2><p class="muted" style="margin:0">เลือกเหตุผล เพื่อให้ร้านทราบ</p>
@@ -505,7 +505,7 @@ async function loadShop(first){try{const {data,error}=await sb.rpc('po_public');
   $('#shop').textContent=data.shopName||'สั่งล่วงหน้า';$('#sub').textContent=data.state&&data.state.open?'สั่งล่วงหน้า · รับ'+thDate(data.state.deliverDate):'สั่งล่วงหน้า รับวันถัดไป';
   return true}catch(e){if(first)fail('เชื่อมต่อไม่ได้','ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง');return false}}
 async function loadOrder(){if(!S.cur)return;try{const {data,error}=await sb.rpc('po_order_status',{p_id:S.cur.id,p_token:S.cur.token});
-  if(error){S.order={err:rpcErr(error)};return}S.order=data;rememberOrder(S.cur.id,S.cur.token,data.orderNo,data.deliverDate)}catch(e){}}
+  if(error){S.order={err:rpcErr(error)};if(/not_found/.test(error.message||''))lsSet(MY_KEY,myOrders().filter(x=>x.id!==S.cur.id));return}S.order=data;rememberOrder(S.cur.id,S.cur.token,data.orderNo,data.deliverDate)}catch(e){}}
 function openOrder(id,token){S.cur={id,token};S.order=null;S.view='status';try{const u=new URL(location.href);u.searchParams.set('o',id);u.searchParams.set('t',token);history.replaceState(null,'',u.href)}catch(e){}
   render();loadOrder().then(render)}
 
