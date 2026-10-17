@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1915">
+<meta name="app-version" content="2026.10.17-1930">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -927,7 +927,7 @@ const effRole=()=>S.role==='owner'&&S.viewAs?S.viewAs:S.role;
 function can(k){const r=effRole();if(r==='owner')return true;const dp=DEFAULT_PERMS[roleKey(r)]||{},rp=(S.perms&&S.perms[roleKey(r)])||dp;return !!(k in rp?rp[k]:dp[k])}
 const isPo=()=>S.shop==='po';
 const homeTab=r=>r==='chef'?(isPo()?'poprep':'kitchen'):(isPo()?'po':'tables');
-const TAB_OK={tables:()=>!isPo()&&can('tables'),kitchen:()=>!isPo()&&can('kitchen'),po:()=>isPo(),poprep:()=>isPo(),menu:()=>true,back:()=>isPo()?can('stock'):(can('stock')||can('expenses')||can('members')),report:()=>!isPo()&&can('report'),poreport:()=>isPo()&&can('report')};
+const TAB_OK={tables:()=>!isPo()&&can('tables'),kitchen:()=>!isPo()&&can('kitchen'),po:()=>isPo(),poprep:()=>isPo(),menu:()=>true,back:()=>isPo()?(can('stock')||can('expenses')):(can('stock')||can('expenses')||can('members')),report:()=>!isPo()&&can('report'),poreport:()=>isPo()&&can('report')};
 const deny=()=>{toast('ตำแหน่งของคุณไม่มีสิทธิ์ใช้ส่วนนี้ ติดต่อแอดมิน','bad');return true};
 const S={shop:(()=>{try{return localStorage.getItem('nl_shop')==='po'?'po':'noodle'}catch(e){return 'noodle'}})(),nMenu:[],poMenu:[],po:null,poOrders:[],poDay:null,poF:'',floor:(()=>{try{return localStorage.getItem('nl_floor')||'tables'}catch(e){return 'tables'}})(),tab:'tables',perms:null,backTab:'stock',menuCat:'all',settings:{...DEFAULTS},
   stock:[],members:[],open:{},today:[],calls:[],voice:{},purch:[],exp:[],
@@ -1290,7 +1290,7 @@ function viewMenu(){
 }
 
 function viewBack(){
-  const BT=isPo()?{stock:can('stock'),purch:can('stock')}:{stock:can('stock'),purch:can('stock'),consign:can('stock'),exp:can('expenses'),inc:can('expenses'),mem:can('members')};
+  const BT=isPo()?{stock:can('stock'),purch:can('stock'),exp:can('expenses'),inc:can('expenses')}:{stock:can('stock'),purch:can('stock'),consign:can('stock'),exp:can('expenses'),inc:can('expenses'),mem:can('members')};
   if(!BT[S.backTab])S.backTab=Object.keys(BT).find(k=>BT[k])||'stock';
   const t=S.backTab;
   let h=`<div class="subtabs" role="group">${BT.stock?`<button aria-pressed="${t==='stock'}" data-act="backTab" data-v="stock" type="button">สต็อกวัตถุดิบ</button><button aria-pressed="${t==='purch'}" data-act="backTab" data-v="purch" type="button">ซื้อของเข้า</button>`:''}${BT.exp?`<button aria-pressed="${t==='exp'}" data-act="backTab" data-v="exp" type="button">รายจ่ายร้าน</button>`:''}${BT.exp?`<button aria-pressed="${t==='inc'}" data-act="backTab" data-v="inc" type="button">รายรับอื่นๆ</button>`:''}${BT.consign?`<button aria-pressed="${t==='consign'}" data-act="backTab" data-v="consign" type="button">ฝากขาย</button>`:''}${BT.mem?`<button aria-pressed="${t==='mem'}" data-act="backTab" data-v="mem" type="button">สมาชิก</button>`:''}</div>`;
@@ -1312,11 +1312,11 @@ function viewBack(){
     <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="money">${baht(sum)}</b><span>รวมค่าซื้อของ</span></div><div class="stat"><b class="num">${S.purch.length}</b><span>รายการ</span></div></div>`;
     if(!purchList().length)return h+`<div class="empty"><b>ยังไม่มีการซื้อของ</b>บันทึกทุกครั้งที่ไปตลาด ระบบจะเติมจำนวนในสต็อกและอัปเดตต้นทุนให้</div>`;
     return h+'<div class="list">'+purchList().map(p=>`<div class="row"><div class="grow"><div class="t">${esc(p.name)} <span class="muted">${p.buyQty?num(p.buyQty)+' '+esc(p.buyUnit||'')+' = ':''}${num(p.qty)} ${esc(p.unit||'')}</span></div><div class="s">${dshort(p.at)} ${hm(p.at)}${p.note?' · '+esc(p.note):''}</div></div><div class="r"><b>${baht(p.amount)}</b></div><button class="btn sm danger" data-act="delPurch" data-id="${p.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>';}
-  const sum=S.exp.reduce((s,e)=>s+(+e.amount||0),0);
+  const sum=expList().reduce((s,e)=>s+(+e.amount||0),0);
   h+=`<div class="sec-h"><h2>รายจ่าย 30 วันล่าสุด</h2><button class="btn pri sm" data-act="expense" type="button">+ บันทึกรายจ่าย</button></div>${catBar('expCats')}
-  <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="money">${baht(sum)}</b><span>รวมรายจ่าย</span></div><div class="stat"><b class="num">${S.exp.length}</b><span>รายการ</span></div></div>`;
-  if(!S.exp.length)return h+`<div class="empty"><b>ยังไม่มีรายจ่าย</b>บันทึกค่าเช่า ค่าแรง ค่าไฟ ค่าแก๊ส เพื่อดูกำไรสุทธิที่แท้จริง</div>`;
-  return h+'<div class="list">'+S.exp.map(e=>`<div class="row"><div class="grow"><div class="t">${esc(e.cat)}</div><div class="s">${dshort(e.at)}${e.note?' · '+esc(e.note):''}</div></div><div class="r"><b>${baht(e.amount)}</b></div><button class="btn sm danger" data-act="delExp" data-id="${e.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>';
+  <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="money">${baht(sum)}</b><span>รวมรายจ่าย</span></div><div class="stat"><b class="num">${expList().length}</b><span>รายการ</span></div></div>`;
+  if(!expList().length)return h+`<div class="empty"><b>ยังไม่มีรายจ่าย</b>บันทึกค่าเช่า ค่าแรง ค่าไฟ ค่าแก๊ส เพื่อดูกำไรสุทธิที่แท้จริง</div>`;
+  return h+'<div class="list">'+expList().map(e=>`<div class="row"><div class="grow"><div class="t">${esc(e.cat)}</div><div class="s">${dshort(e.at)}${e.note?' · '+esc(e.note):''}</div></div><div class="r"><b>${baht(e.amount)}</b></div><button class="btn sm danger" data-act="delExp" data-id="${e.id}" data-confirm="1" type="button">ลบ</button></div>`).join('')+'</div>';
 }
 
 /* ---------- report ---------- */
@@ -1335,7 +1335,7 @@ async function loadReport(){
       S.db.collection('expenses').where('at','>=',a).get(),
       S.db.collection('incomes').where('at','>=',a).get().catch(()=>({docs:[]}))]);
     const f=(snap,k)=>snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x[k]<b);
-    if(S.report.range===key)S.report.data={key,a,b,orders:f(os,'paidAt').sort((x,y)=>y.paidAt-x.paidAt),purch:f(ps,'at'),exp:f(es,'at'),inc:f(is,'at')};
+    if(S.report.range===key)S.report.data={key,a,b,orders:f(os,'paidAt').sort((x,y)=>y.paidAt-x.paidAt),purch:f(ps,'at').filter(x=>x.shop!=='po'),exp:f(es,'at').filter(x=>x.shop!=='po'),inc:f(is,'at').filter(x=>x.shop!=='po')};
   }catch(e){toast(errMsg(e),'bad')}
   S.report.loading=false;render();}
 function viewReport(){
@@ -1685,6 +1685,8 @@ function rwUsed(id){write('rewards/'+id,r=>r.transform(d=>({redeemed:(+d.redeeme
 // สต็อกแยกร้าน: วัตถุดิบ/ซื้อของของข้าวมันไก่มี shop:'po' · ไม่มี = เนื้อล้วนๆ
 const stockList=()=>S.stock.filter(x=>isPo()?x.shop==='po':x.shop!=='po');
 const purchList=()=>(S.purch||[]).filter(x=>isPo()?x.shop==='po':x.shop!=='po');
+const expList=()=>(S.exp||[]).filter(x=>isPo()?x.shop==='po':x.shop!=='po');
+const incList=()=>(S.inc||[]).filter(x=>isPo()?x.shop==='po':x.shop!=='po');
 const shopTag=()=>isPo()?{shop:'po'}:{};
 function deductStock(items,menus,sign){const need={},M=menus||S.menu,k=sign||1;
   (items||[]).forEach(l=>{const m=M.find(x=>x.id===l.menuId);(m?.recipe||[]).forEach(g=>{if(g.stockId)need[g.stockId]=(need[g.stockId]||0)+(+g.qty||0)*(+l.qty||0)})});
@@ -1985,7 +1987,7 @@ function sheetExpense(){const cats=expCats(),D=S.sheet.draft||{};
 async function saveExp(){const amount=nval('eAmt');if(!(amount>0))return toast('ใส่จำนวนเงิน','bad');
   let cat=val('eCat');if(cat==='__new'){cat=val('eNew');if(!cat)return toast('ใส่ชื่อหมวด','bad');addListItem('expCats',cat)}
   const ref=S.db.collection('expenses').doc();
-  const ok=await write('expenses/'+ref.id,r=>r.set({cat,amount,note:val('eNote'),at:fromDateInput(val('eDate'))}));if(ok){closeSheet();toast('บันทึกรายจ่ายแล้ว')}}
+  const ok=await write('expenses/'+ref.id,r=>r.set({cat,amount,note:val('eNote'),at:fromDateInput(val('eDate')),...shopTag()}));if(ok){closeSheet();toast('บันทึกรายจ่ายแล้ว')}}
 
 const BG_KEY='nl_bg';
 const getBg=()=>{try{const v=localStorage.getItem(BG_KEY);return v===null?50:Math.max(0,Math.min(100,+v))}catch(e){return 50}};
@@ -2518,8 +2520,8 @@ document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('.dw
 document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('.dwrap'))dShow(e.target)},true);
 
 // ---------- รีเซตบิล (ช่วงทดลองระบบ) · เจ้าของร้าน · SQL reset_bills สำรองไว้ใน docs_trash ----------
-const RS_OPT={noodle:[['bills','บิล / ออร์เดอร์ทั้งหมด (รวมบิลที่เปิดค้าง) + เรียกพนักงาน + สลิป',['orders','calls','slips'],1],['delivery','งานเดลิเวอรี่ / คำขอส่ง / รูปส่งของ',['deliveries','dl_req','dl_proof'],1],['coupons','ประวัติการใช้/เก็บคูปอง (ตัวคูปองไม่ลบ)',['coupon_use','coupon_stats','coupon_wallet'],1],['seq','เริ่มเลขบิล / เลขออร์เดอร์ 0001 ใหม่',[],1],['points','ล้างแต้มสมาชิกเป็น 0 (ใช้ร่วม 2 ร้าน · สมาชิกไม่ถูกลบ)',['members'],0],['finance','รายรับ / รายจ่าย / ซื้อของเข้า',['expenses','purchases','incomes'],0],['consign','ประวัติของฝากขาย',['consign_log'],0]],
-  po:[['bills','ออร์เดอร์พรีออเดอร์ทั้งหมด + สลิปโอน',['po_orders','po_slips'],1],['seq','เริ่มเลขออร์เดอร์ 0001 ใหม่',[],1],['points','ล้างแต้มสมาชิกเป็น 0 (ใช้ร่วม 2 ร้าน · สมาชิกไม่ถูกลบ)',['members'],0]]};
+const RS_OPT={noodle:[['bills','บิล / ออร์เดอร์ทั้งหมด (รวมบิลที่เปิดค้าง) + เรียกพนักงาน + สลิป',['orders','calls','slips'],1],['delivery','งานเดลิเวอรี่ / คำขอส่ง / รูปส่งของ',['deliveries','dl_req','dl_proof'],1],['coupons','ประวัติการใช้/เก็บคูปอง (ตัวคูปองไม่ลบ)',['coupon_use','coupon_stats','coupon_wallet'],1],['seq','เริ่มเลขบิล / เลขออร์เดอร์ 0001 ใหม่ (เฉพาะเนื้อล้วนๆ)',[],1],['points','ล้างแต้มสมาชิกเป็น 0 (ใช้ร่วม 2 ร้าน · สมาชิกไม่ถูกลบ)',['members'],0],['finance','รายรับ / รายจ่าย / ซื้อของเข้า ของเนื้อล้วนๆ',[],0],['consign','ประวัติของฝากขาย',['consign_log'],0]],
+  po:[['bills','ออร์เดอร์พรีออเดอร์ทั้งหมด + สลิปโอน',['po_orders','po_slips'],1],['seq','เริ่มเลขออร์เดอร์ PR 0001 ใหม่',[],1],['finance','รายรับ / รายจ่าย / ซื้อของเข้า ของข้าวมันไก่',[],0],['points','ล้างแต้มสมาชิกเป็น 0 (ใช้ร่วม 2 ร้าน · สมาชิกไม่ถูกลบ)',['members'],0]]};
 function sheetReset(){const s=S.sheet,nm=s.shop==='po'?'ข้าวมันไก่':'เนื้อล้วนๆ',C=s.counts||{};
   const cnt=cols=>cols.length?` <span class="muted">(${cols.reduce((a,c)=>a+(+C[c]||0),0).toLocaleString()} รายการ)</span>`:'';
   $('#panel').innerHTML=head('🧹 รีเซตบิล · '+nm,'ช่วงทดลองระบบ · เจ้าของร้านเท่านั้น')+`<form class="sh-body" onsubmit="return false">
@@ -2607,8 +2609,17 @@ function viewPoReport(){const from=bkkDay(-29),rows={};let T={o:0,q:0,s:0,c:0,u:
   const ds=Object.keys(rows).sort().reverse();
   if(!ds.length)return h+'<div class="empty"><b>ยังไม่มียอด</b>เมื่อมีออร์เดอร์ ยอดแต่ละวันจะขึ้นที่นี่</div>';
   h+=`<div class="list">${ds.map(d=>{const r=rows[d];return `<div class="row"><div class="grow"><div class="t">ส่ง${poDayName(d)}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(d))?' · '+esc(poDate(d)):''}</div><div class="s">${r.o} ออร์เดอร์ · ${r.q} ชิ้น${r.u?' · ค้างจ่าย '+baht(r.u):''}</div></div><div style="text-align:right"><b>${baht(r.s)}</b><div class="s muted">กำไร ${baht(r.s-r.c)}</div></div></div>`}).join('')}</div>
+   ${poFinCard(T)}
    <div class="sec-h" style="margin-top:8px"><h2>ขายดี</h2></div><div class="list">${Object.entries(M).sort((a,b)=>b[1].q-a[1].q).map(([n,m])=>`<div class="row"><div class="grow"><div class="t">${esc(n)}</div></div><span class="muted">${m.q} ชิ้น</span><b style="min-width:80px;text-align:right">${baht(m.s)}</b></div>`).join('')}</div>`;
   return h}
+function poFinCard(T){if(!can('expenses'))return '';const t0=sod()-29*DAY,P=x=>x.shop==='po'&&x.at>=t0,sm=a=>a.reduce((s,x)=>s+(+x.amount||0),0);
+  const ex=sm((S.exp||[]).filter(P)),ic=sm((S.inc||[]).filter(P)),bu=sm((S.purch||[]).filter(P)),net=T.s-T.c+ic-ex;
+  return `<div class="card" style="margin-top:8px"><h3>การเงินข้าวมันไก่ (30 วัน)</h3>
+   <div class="kv"><span>ยอดขาย</span><b>${baht(T.s)}</b></div><div class="kv"><span>ต้นทุนอาหาร (ตามสูตร)</span><b>−${baht(T.c)}</b></div>
+   <div class="kv"><span>รายรับอื่นๆ</span><b>+${baht(ic)}</b></div><div class="kv"><span>รายจ่ายร้าน</span><b>−${baht(ex)}</b></div>
+   <div class="kv" style="border-top:1px solid var(--line);padding-top:6px"><span><b>กำไรสุทธิ</b></span><b style="color:${net>=0?'var(--ok,#2e7d32)':'var(--chili)'}">${baht(net)}</b></div>
+   <div class="kv"><span class="muted">ซื้อของเข้า (เงินสดจ่ายจริง)</span><span class="muted">${baht(bu)}</span></div>
+   <p class="help" style="margin:4px 0 0">บันทึกรายจ่าย/รายรับ/ซื้อของได้ที่แท็บ "สต็อกสินค้า" · แยกจากร้านเนื้อล้วนๆ</p></div>`}
 const poUrl=()=>{const u=new URL('preorder.html',location.href);return u.origin+u.pathname};
 function sheetPoQr(){const c=poCfg(),url=poUrl();const card=`<div class="pq"><small style="font-weight:600">${esc(c.shopName)}</small>${qrSvg(url)}<b>สั่งล่วงหน้า</b><small>สแกนเพื่อดูเมนูและสั่ง · ${c.cutoff?'ปิดรับ '+esc(c.cutoff)+' น. ':''}${c.window?'· ส่ง '+esc(c.window):''}</small></div>`;
   $('#printArea').className='qrs one';$('#printArea').innerHTML=card;
@@ -2851,7 +2862,7 @@ Object.assign(ACT,{
 const INC_CATS=['ค่าเช่าที่ขายของ','ค่าเช่าอุปกรณ์/พื้นที่','ค่าคอมมิชชั่น / ค่าฝากขาย','ขายของเหลือใช้','เงินสนับสนุน / สปอนเซอร์','อื่นๆ'];
 const incCats=()=>{const l=S.lists&&S.lists.incCats&&S.lists.incCats.items;return Array.isArray(l)?l:[...new Set([...(S.settings.incCats||[]),...INC_CATS])]};
 const expCats=()=>{const l=S.lists&&S.lists.expCats&&S.lists.expCats.items;return Array.isArray(l)?l:(S.settings.expCats||DEFAULTS.expCats)};
-function viewIncome(){const L=S.inc||[];const sum=L.reduce((s,e)=>s+(+e.amount||0),0);
+function viewIncome(){const L=incList();const sum=L.reduce((s,e)=>s+(+e.amount||0),0);
   let h=`<div class="sec-h"><h2>รายรับอื่นๆ 30 วันล่าสุด</h2><button class="btn pri sm" data-act="income" type="button">+ บันทึกรายรับ</button></div>${catBar('incCats')}
   <p class="help" style="margin:0">รายรับที่ไม่ได้มาจากการขายอาหาร เช่น ให้เช่าที่ขายของ เก็บเป็นครั้งๆ · นับรวมในกำไรสุทธิที่หน้า "สรุปเงิน"</p>
   <div class="strip" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat"><b class="money">${baht(sum)}</b><span>รวมรายรับอื่นๆ</span></div><div class="stat"><b class="num">${L.length}</b><span>ครั้ง</span></div></div>`;
@@ -2895,7 +2906,7 @@ Object.assign(ACT,{
   income:()=>{if(!can('expenses'))return deny();openSheet({type:'income'})},
   saveInc:async()=>{const amount=nval('iAmt');if(!(amount>0))return toast('ใส่จำนวนเงิน','bad');let cat=val('iCat');if(cat==='__new'){cat=val('iNew');if(!cat)return toast('ใส่ชื่อประเภท','bad');addListItem('incCats',cat)}
     const note=[val('iNote'),val('iWho')?'จาก '+val('iWho'):''].filter(Boolean).join(' · ');
-    const ok=await write('incomes/'+uid(),r=>r.set({cat:cat.slice(0,40),amount:r2(amount),note,at:fromDateInput(val('iDate')),by:S.me||''}));
+    const ok=await write('incomes/'+uid(),r=>r.set({cat:cat.slice(0,40),amount:r2(amount),note,at:fromDateInput(val('iDate')),by:S.me||'',...shopTag()}));
     if(ok){closeSheet();toast('บันทึกรายรับ '+baht(amount)+' แล้ว');S.report.data=null}},
   delInc:d=>write('incomes/'+d.id,r=>r.delete()).then(ok=>{if(ok){toast('ลบรายรับแล้ว');S.report.data=null}})
 });
