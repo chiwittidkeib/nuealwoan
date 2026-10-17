@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1630">
+<meta name="app-version" content="2026.10.17-1745">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -440,6 +440,18 @@ const ppBox=(pp,amt,name)=>`<div class="payqr"><small>สแกนจ่าย�
   <div class="ppinfo"><span>พร้อมเพย์ <b>${esc(ppFmt(pp))}</b></span>${name?`<span>ชื่อบัญชี <b>${esc(name)}</b></span>`:''}<button class="btn sm" data-a="ppCopy" data-v="${esc(pp)}" type="button">📋 คัดลอกเบอร์</button></div></div>`;
 const poDue=o=>Math.max(0,(+o.total||0)-(+o.paidAmt||0));
 async function loadMy(){const a=myOrders();if(!a.length||!sb)return;S.myBusy=true;try{const {data}=await sb.rpc('po_my',{p_list:a.slice(0,30).map(x=>({id:x.id,t:x.token}))});if(Array.isArray(data)){const M={};data.forEach(m=>M[m.id]=m);S.myStat=M}}catch(e){}S.myBusy=false;S.myAt=Date.now();if(S.view==='mine')render()}
+const CX_DEF=['สั่งผิด / เลือกเมนูผิด','เปลี่ยนใจ ไม่สะดวกรับของ','สั่งซ้ำ','อยากแก้รายการ จะสั่งใหม่','ไม่สะดวกโอนเงิน'];
+function askCancel(){const cr=S.cfg&&S.cfg.cxReasons;const rs=Array.isArray(cr)&&cr.length?cr:CX_DEF;let pick='';
+  const el=document.createElement('div');el.className='opop';el.innerHTML=`<div class="op-card" style="padding:18px 16px;gap:10px;display:flex;flex-direction:column"><h2 style="margin:0">ยกเลิกออร์เดอร์?</h2><p class="muted" style="margin:0">เลือกเหตุผล เพื่อให้ร้านทราบ</p>
+  <div class="opts">${rs.map(r=>`<button type="button" class="op-c" data-r="${esc(r)}"><i class="rd"></i><span>${esc(r)}</span></button>`).join('')}<button type="button" class="op-c" data-r="อื่นๆ"><i class="rd"></i><span>อื่นๆ (พิมพ์เอง)</span></button></div>
+  <input id="cxOther" maxlength="150" placeholder="ระบุเหตุผล" hidden style="border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;font-size:16px"><p class="err" id="cxErr" style="margin:0"></p>
+  <div class="seg"><button class="btn" data-x="1" type="button">ไม่ยกเลิก</button><button class="btn danger" data-ok="1" type="button">ยืนยันยกเลิก</button></div></div>`;
+  document.body.appendChild(el);const oth=el.querySelector('#cxOther');
+  const go=async ok=>{const r=pick==='อื่นๆ'?oth.value.trim():pick;if(!r){el.querySelector('#cxErr').textContent=pick==='อื่นๆ'?'พิมพ์เหตุผลก่อน':'เลือกเหตุผลก่อน';return}ok.disabled=true;
+    const {error}=await sb.rpc('po_order_cancel',{p_id:S.cur.id,p_token:S.cur.token,p_reason:r});if(error){ok.disabled=false;el.querySelector('#cxErr').textContent=rpcErr(error);return}
+    el.remove();toast('ยกเลิกออร์เดอร์แล้ว');await loadOrder();render()};
+  el.addEventListener('click',e=>{const c=e.target.closest('[data-r]');if(c){pick=c.dataset.r;el.querySelectorAll('[data-r]').forEach(x=>x.classList.toggle('on',x===c));oth.hidden=pick!=='อื่นๆ';if(!oth.hidden)oth.focus();return}
+    if(e.target===el||e.target.closest('[data-x]'))el.remove();else{const ok=e.target.closest('[data-ok]');if(ok)go(ok)}})}
 const o0=()=>!!(P.get('o')&&P.get('t'));
 const canOrder=()=>{const st=(S.cfg&&S.cfg.state)||{};return !!(st.open||(S.staff&&st.reason==='after'))};
 /* ---------- กระดานสถานะออร์เดอร์ (หลังปิดรับ) ---------- */
@@ -539,7 +551,7 @@ function render(){
       const pay=o.payStatus==='paid'?'<span class="pill ok">ชำระแล้ว ✓</span>':o.payStatus==='slip'?'<span class="pill warn">⏳ รอตรวจสอบยอดชำระ</span>':o.slipBad?'<span class="pill bad">❌ สลิปไม่ถูกต้อง</span>'
         :o.pay==='after'?'<span class="pill warn">โอนตอนรับของ · ยังไม่แนบสลิป</span>':'<span class="pill bad">ยังไม่ได้โอน</span>';
       h=`${S.justSent?`<div class="msg" style="padding:12px 8px 0"><h2>${S.justMerged?'เพิ่มรายการในออร์เดอร์เดิมแล้ว':'สั่งเรียบร้อย ขอบคุณครับ'}</h2>${S.justMerged?`<p class="muted" style="margin:0">รวมเป็นออร์เดอร์เดียว ยอดสรุปใหม่ด้านล่าง · ${poDue(o)>0?'โอนเพิ่ม '+baht(poDue(o))+' แล้วแนบสลิปเพิ่มได้':''}</p>`:''}<p class="muted" style="margin:0">บันทึกหน้านี้ไว้ หรือกลับมาดูได้ที่ "ออร์เดอร์ของฉัน"</p></div>`:''}
-      ${cx?`<div class="cxwrap"><span class="cxstamp"><b>ยกเลิกออร์เดอร์</b><i>Cancelled</i></span><p class="muted" style="margin:0">${o.cancelledBy==='customer'?'คุณยกเลิกออร์เดอร์นี้':'ร้านยกเลิกออร์เดอร์นี้'}${o.cancelledAt?' · '+esc(new Date(+o.cancelledAt).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p></div>`:''}
+      ${cx?`<div class="cxwrap"><span class="cxstamp"><b>ยกเลิกออร์เดอร์</b><i>Cancelled</i></span><p class="muted" style="margin:0">${o.cancelledBy==='customer'?'คุณยกเลิกออร์เดอร์นี้':'ร้านยกเลิกออร์เดอร์นี้'}${o.cancelReason?`<br><b style="color:var(--chili)">เหตุผล: ${esc(o.cancelReason)}</b>`:''}${o.cancelledAt?' · '+esc(new Date(+o.cancelledAt).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p></div>`:''}
       <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b class="qs-${cx?'cx':esc(o.status)}">${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc(thDate(o.deliverDate))}${o.window?' · '+esc(o.window):''}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
       ${cx?'':`<ol class="steps">${STEPS.map((s,i)=>`<li class="st-${s[0]}${i<=idx?' on':''}${i===idx?' cur':''}">${esc(s[1])}</li>`).join('')}</ol>`}
       <div class="list">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="row rnd"><div class="g">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div></div>`:''}<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:''}${l.note?`<div class="who">${esc(l.note)}</div>`:''}</div><div class="r">${baht(l.price*l.qty)}</div></div>`).join('')}
@@ -554,7 +566,7 @@ function render(){
           :`${o.hasSlip?`<div class="slipok"><span style="font-size:26px">📎</span><div><b>⏳ รอตรวจสอบยอดชำระ</b><small>ส่งสลิปแล้ว ร้านกำลังตรวจยอด · ถ้าแนบผิด แนบใหม่ได้</small></div></div>`:''}<label class="btn ${o.payStatus==='waiting'||o.payStatus==='cod'?'pri ':''}slipbtn" for="slipLate">${o.hasSlip?'📎 แนบสลิปเพิ่ม'+(+o.slipCount>0?' (แนบแล้ว '+o.slipCount+' ใบ)':''):'📎 โอนแล้ว แนบสลิป'}</label>`}`:''}
       ${!cx&&o.payStatus==='paid'?`<button class="btn pri" data-a="rcpt" type="button">🧾 ดู / บันทึกใบเสร็จ</button>`:''}
       ${o.shopPhone?`<a class="btn" href="tel:${esc(String(o.shopPhone).replace(/[^\d+]/g,''))}">โทรหาร้าน ${esc(o.shopPhone)}</a>`:''}
-      ${o.canCancel?`<button class="btn danger" data-a="cancel" type="button" data-armtxt="แตะอีกครั้งเพื่อยกเลิก">ยกเลิกออร์เดอร์</button><p class="tm" style="margin:-4px 0 0;text-align:center">ยกเลิกเองได้ถึง ${o.cancelUntil?esc(new Date(+o.cancelUntil).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p>`
+      ${o.canCancel?`<button class="btn danger" data-a="cancel" type="button">ยกเลิกออร์เดอร์</button><p class="tm" style="margin:-4px 0 0;text-align:center">ยกเลิกเองได้ถึง ${o.cancelUntil?esc(new Date(+o.cancelUntil).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p>`
         :['new','confirmed'].includes(o.status)?`<div class="cxinfo">ต้องการยกเลิกออร์เดอร์? เลยเวลายกเลิกเองแล้ว · ติดต่อร้านได้เลย${o.line?` <a class="btn sm" href="${esc(o.line)}" target="_blank" rel="noopener">💬 LINE</a>`:''}</div>`:''}
       <p class="tm" style="margin:0;text-align:center">อัปเดตสถานะอัตโนมัติ</p>`}
     ft=`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน</button><button class="btn pri wide" data-a="new" type="button">สั่งเพิ่ม</button>`;
@@ -596,8 +608,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   else if(a==='bopen')askPhone(b.dataset.id);
   else if(a==='ppCopy'){try{await navigator.clipboard.writeText(b.dataset.v);toast('คัดลอกเบอร์พร้อมเพย์แล้ว')}catch(e){prompt('คัดลอกเบอร์พร้อมเพย์',b.dataset.v)}}
   else if(a==='new'){S.view='menu';S.justSent=false;try{const u=new URL(location.href);u.searchParams.delete('o');u.searchParams.delete('t');history.replaceState(null,'',u.href)}catch(e){}await loadShop();render()}
-  else if(a==='cancel'){if(!b.dataset.armed){b.dataset.armed='1';const t=b.textContent;b.textContent=b.dataset.armtxt;clearTimeout(armT);armT=setTimeout(()=>{delete b.dataset.armed;b.textContent=t},3500);return}
-    b.disabled=true;const {error}=await sb.rpc('po_order_cancel',{p_id:S.cur.id,p_token:S.cur.token});if(error)toast(rpcErr(error));else toast('ยกเลิกออร์เดอร์แล้ว');await loadOrder();render()}
+  else if(a==='cancel')askCancel();
 });
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='pMem')S.memOn=e.target.checked});
 const focusEl=sel=>setTimeout(()=>{const el=document.querySelector(sel);if(el)el.scrollIntoView({block:'center',behavior:'smooth'})},80);

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1630">
+<meta name="app-version" content="2026.10.17-1745">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1400,7 +1400,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2452,7 +2452,7 @@ function poBoot(db){
     if(poSeen&&canPo()){const fresh=S.poOrders.filter(o=>!poSeen.has(o.id)&&o.status==='new'&&Date.now()-o.at<180000);
       if(fresh.length){toast('🛒 พรีออเดอร์ใหม่ '+fresh.map(o=>o.name).join(', '));try{Bell.ring('staff',null,'มีพรีออเดอร์ใหม่ค่ะ')}catch(e){}}}
     if(poSeen&&['owner','chef'].includes(S.role)){const cx=S.poOrders.filter(o=>o.status==='cancelled'&&o.cancelledBy==='customer'&&o.cancelSeen===false&&Date.now()-(+o.cancelledAt||0)<600000&&!(window.__cxSeen||(window.__cxSeen=new Set())).has(o.id));
-      if(cx.length){cx.forEach(o=>window.__cxSeen.add(o.id));toast('❌ ลูกค้ายกเลิกพรีออเดอร์ '+cx.map(o=>poShort(o)+' '+o.name).join(', '),'bad');try{Bell.ring('staff',null,'ลูกค้ายกเลิกพรีออเดอร์ค่ะ')}catch(e){}}}
+      if(cx.length){cx.forEach(o=>window.__cxSeen.add(o.id));toast('❌ ลูกค้ายกเลิกพรีออเดอร์ '+cx.map(o=>poShort(o)+' '+o.name+(o.cancelReason?' ('+o.cancelReason+')':'')).join(', '),'bad');try{Bell.ring('staff',null,'ลูกค้ายกเลิกพรีออเดอร์ค่ะ')}catch(e){}}}
     poSeen=ids;
     const b=$('#bPo');if(b){const n=S.poOrders.filter(o=>o.status==='new').length;b.hidden=!n;b.textContent=n}
     if(isPo())render()},onErr);
@@ -2462,15 +2462,20 @@ function poPickDay(){const days=poDays();if(S.poDay&&days.includes(S.poDay))retu
   const act=(S.poOrders||[]).filter(o=>['new','confirmed','ready'].includes(o.status)&&o.deliverDate>=bkkDay(0)).map(o=>o.deliverDate).sort()[0];
   return S.poDay=act||poState().deliverDate}
 function poDayChips(day){return `<div class="chips">${poDays().map(d=>{const n=(S.poOrders||[]).filter(o=>o.deliverDate===d&&poLive(o)).length;return `<button class="chip" aria-pressed="${d===day}" data-act="poDay" data-v="${d}" type="button">ส่ง${poDayName(d)}${d!==bkkDay(0)&&d!==bkkDay(1)&&d!==bkkDay(-1)?'':' · '+poDate(d)}${n?' ('+n+')':''}</button>`}).join('')}</div>`}
-async function poSaveCancel(){const x=$('#prX');if(!x)return;const v=Math.max(0,Math.round(+x.value||0));if(v===(poCfg().cancelMins??30))return;
+async function poSaveReasons(){const a=$('#prRc'),b=$('#prRs');if(!a||!b)return;const L=t=>t.value.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,12).map(x=>x.slice(0,60));
+  const ca=L(a),cb=L(b);if(JSON.stringify(ca)===JSON.stringify(poCxList('cust'))&&JSON.stringify(cb)===JSON.stringify(poCxList('shop')))return;
+  const {error}=await SB.rpc('po_set_reasons',{p_cust:ca,p_shop:cb});if(!error)S.po={...poCfg(),cxReasons:ca,cxReasonsShop:cb};else toast('บันทึกเหตุผลไม่สำเร็จ: '+error.message,'bad')}
+async function poSaveCancel(){await poSaveReasons();const x=$('#prX');if(!x)return;const v=Math.max(0,Math.round(+x.value||0));if(v===(poCfg().cancelMins??30))return;
   const {error}=await SB.rpc('po_set_cancel',{p_mins:v});if(!error)S.po={...poCfg(),cancelMins:v};else toast('ตั้งเวลายกเลิกไม่สำเร็จ: '+error.message,'bad')}
 function sheetPoRound(){const c=poCfg(),st=poState(),t=bkkDay(0);
-  $('#panel').innerHTML=head('📅 กำหนดรอบส่ง / เวลายกเลิก','สั่งล่วงหน้าหลายวันได้ · แอดมิน / แม่ครัว')+`<form class="sh-body" onsubmit="return false">
+  $('#panel').innerHTML=head('📅 กำหนดรอบส่ง / การยกเลิก','รอบส่ง · เวลายกเลิกเอง · เหตุผลยกเลิก · แอดมิน / แม่ครัว')+`<form class="sh-body" onsubmit="return false">
    <div class="field"><label for="prD">วันส่ง (ลูกค้าได้รับ)</label><input id="prD" type="date" min="${t}" value="${esc(st.round?st.deliverDate:'')}"><span class="help">เว้นว่าง = อัตโนมัติ (สั่งวันนี้ ส่งอีก ${+c.leadDays||0} วัน · ปิดรับทุกวัน)</span></div>
    <div class="grid2"><div class="field"><label for="prC">ปิดรับวันที่</label><input id="prC" type="date" min="${t}" value="${esc(st.round&&c.closeDate?c.closeDate:'')}"><span class="help">ว่าง = วันก่อนวันส่ง</span></div>
    <div class="field"><label for="prT">ปิดรับเวลา</label><input id="prT" type="time" value="${esc(c.cutoff||'20:00')}"></div></div>
    <p class="help" style="margin:0">ตัวอย่าง: วันนี้ ${esc(poDate(t))} เปิดให้สั่ง ส่ง ${esc(poDate(poShift(t,3)))} → วันส่ง = ${esc(poDate(poShift(t,3)))} · ปิดรับ = ${esc(poDate(poShift(t,2)))} 20:00</p>
    <div class="field"><label for="prX">ลูกค้ายกเลิกเองได้ภายใน (นาที หลังสั่ง)</label><input id="prX" type="number" min="0" max="10080" inputmode="numeric" value="${esc(String(c.cancelMins??30))}"><span class="help">0 = ลูกค้ายกเลิกเองไม่ได้ (ต้องติดต่อร้าน) · ต้องยังไม่เริ่มจัดส่ง · แม่ครัว/แอดมินยกเลิกให้ได้ทุกเวลา</span></div>
+   <div class="grid2"><div class="field"><label for="prRc">เหตุผลยกเลิกให้ลูกค้าเลือก (1 บรรทัด = 1 ข้อ)</label><textarea id="prRc" rows="6" maxlength="800" style="border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);color:var(--fg);font:inherit">${esc(poCxList('cust').join('\n'))}</textarea><span class="help">ลูกค้ามีตัวเลือก "อื่นๆ (พิมพ์เอง)" ให้เสมอ</span></div>
+   <div class="field"><label for="prRs">เหตุผลยกเลิกฝั่งร้าน (1 บรรทัด = 1 ข้อ)</label><textarea id="prRs" rows="6" maxlength="800" style="border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);color:var(--fg);font:inherit">${esc(poCxList('shop').join('\n'))}</textarea><span class="help">สูงสุด 12 ข้อ · ข้อละไม่เกิน 60 ตัวอักษร</span></div></div>
    <p class="err" id="prErr" role="alert"></p></form>
    <div class="sh-foot"><button class="btn" data-act="poRoundClear" type="button">ใช้แบบอัตโนมัติ</button><button class="btn pri wide" data-act="poRoundSave" type="button">บันทึกรอบส่ง</button></div>`}
 function sheetPoSlipBad(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(!o){closeSheet();return}
@@ -2485,6 +2490,18 @@ function sheetPoSlipBad(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id
 function sheetPoSlips(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id)||{};
   $('#panel').innerHTML=head('สลิป '+esc(poShort(o))+' · '+s.L.length+' ใบ','ยอดรวม '+baht(+o.total||0)+(+o.paidAmt>0?' · จ่ายแล้ว '+baht(o.paidAmt):''))+`<div class="sh-body">${s.L.map((x,i)=>`<div class="card"><b>ใบที่ ${i+1}${x.at?' · '+esc(poDate(new Date(x.at+7*3600e3).toISOString().slice(0,10)))+' '+hm(x.at):''}</b><img src="${esc(x.img)}" alt="สลิป" class="zoomable" data-act="imgv" data-src="${esc(x.img)}" data-cap="สลิปใบที่ ${i+1}" style="max-height:380px;max-width:100%;align-self:center;border-radius:10px"></div>`).join('')}</div>
    <div class="sh-foot"><button class="btn wide" data-act="close" type="button">ปิด</button></div>`}
+const CX_CUST=['สั่งผิด / เลือกเมนูผิด','เปลี่ยนใจ ไม่สะดวกรับของ','สั่งซ้ำ','อยากแก้รายการ จะสั่งใหม่','ไม่สะดวกโอนเงิน'];
+const CX_SHOP=['ลูกค้าขอยกเลิก (ติดต่อทางโทร/LINE)','ไม่ได้รับการชำระเงิน','ติดต่อลูกค้าไม่ได้','วัตถุดิบหมด / ทำไม่ทัน','สั่งซ้ำ','ร้านปิดรอบนี้'];
+const poCxList=k=>{const v=poCfg()[k==='shop'?'cxReasonsShop':'cxReasons'];return Array.isArray(v)&&v.length?v:(k==='shop'?CX_SHOP:CX_CUST)};
+function sheetPoCx(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(!o){closeSheet();return}
+  const rs=poCxList('shop');
+  $('#panel').innerHTML=head('ยกเลิกออร์เดอร์ '+esc(poShort(o)),'คุณ'+esc(o.name)+' · '+baht(+o.total||0))+`<form class="sh-body" onsubmit="return false">
+   <div class="chips" style="flex-wrap:wrap">${rs.map(r=>`<button class="chip" data-act="poCxRs" data-v="${esc(r)}" type="button">${esc(r)}</button>`).join('')}</div>
+   <button class="lnk" data-act="poRound" type="button" style="align-self:flex-start">⚙️ แก้รายการเหตุผล</button>
+   <div class="field"><label for="cxTxt">เหตุผลการยกเลิก (ลูกค้าเห็นข้อความนี้)</label><input id="cxTxt" maxlength="150" value="${esc(s.rs||'')}" placeholder="เช่น ไก่หมดรอบนี้ ขออภัยค่ะ"></div>
+   ${o.payStatus==='paid'||o.payStatus==='slip'?'<p class="pwreq" style="margin:0">⚠️ ลูกค้าโอนเงินแล้ว อย่าลืมคืนเงินให้ลูกค้า</p>':''}
+   ${o.phone?`<a class="btn" href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a>`:''}</form>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ไม่ยกเลิก</button><button class="btn danger wide" data-act="poCxGo" type="button">ยืนยันยกเลิกออร์เดอร์</button></div>`}
 function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
   const why=st.open?`รับออร์เดอร์ถึง ${st.closeDate!==bkkDay(0)?esc(poDate(st.closeDate))+' ':''}${esc(c.cutoff)} น. · ส่ง${[bkkDay(0),bkkDay(1)].includes(st.deliverDate)?poDayName(st.deliverDate)+' '+esc(poDate(st.deliverDate)):' '+esc(poDate(st.deliverDate))}${c.window?' · '+esc(c.window):''}`
     :st.reason==='after'?(st.round?`ปิดรับรอบส่ง ${esc(poDate(st.deliverDate))} แล้ว · กด "กำหนดรอบส่ง" เพื่อเปิดรอบใหม่`:`เลยเวลาปิดรับ ${esc(c.cutoff)} น. ของวันนี้แล้ว · เปิดรับอัตโนมัติพรุ่งนี้${c.openFrom?' '+esc(c.openFrom)+' น.':''}`)
@@ -2503,7 +2520,7 @@ function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=P
     ${o.note?`<div class="poc-note">📝 ${esc(o.note)}</div>`:''}
     ${o.slipBad&&o.payStatus!=='paid'&&o.payStatus!=='slip'?`<div class="poc-note" style="color:var(--chili)">❌ แจ้งลูกค้าแล้ว: ${esc(o.slipBad)} · <a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a></div>`:''}
     <div class="poc-f"><b>${baht(+o.total||0)}</b>${+o.paidAmt>0&&o.payStatus!=='paid'?`<small class="muted">จ่ายแล้ว ${baht(o.paidAmt)} · ค้าง <b style="color:var(--chili)">${baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0)))}</b></small>`:''}${poPayPill(o)}<span class="grow"></span>${(o.pay==='before'&&o.payStatus!=='waiting')||o.payStatus==='slip'?`<button class="btn sm" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button>`:''}${o.payStatus==='slip'&&['owner','chef'].includes(S.role)?`<button class="btn sm danger" data-act="poSlipBad" data-id="${esc(o.id)}" type="button">❌ สลิปไม่ถูกต้อง</button>`:''}${o.payStatus==='paid'&&poLive(o)?`<button class="btn sm" data-act="poRc" data-id="${esc(o.id)}" type="button">🧾 ใบเสร็จ</button>`:''}${o.payStatus!=='paid'&&poLive(o)?`<button class="btn sm" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">รับเงินแล้ว</button>`:''}</div>
-    ${o.status==='cancelled'?`<div class="poc-a"><span class="pocx">ยกเลิกออร์เดอร์<i>Cancelled</i></span><span class="muted grow">${o.cancelledBy==='customer'?'ลูกค้ายกเลิกเอง':'ร้านยกเลิก'}${o.cancelledAt?' '+hm(o.cancelledAt):''}</span>${o.cancelSeen===false?`<button class="btn sm" data-act="poCxSeen" data-id="${esc(o.id)}" type="button">รับทราบ</button>`:''}<button class="btn sm" data-act="poBack" data-id="${esc(o.id)}" type="button">กู้คืน</button></div>`
+    ${o.status==='cancelled'?`<div class="poc-a"><span class="pocx">ยกเลิกออร์เดอร์<i>Cancelled</i></span><span class="muted grow">${o.cancelledBy==='customer'?'ลูกค้ายกเลิกเอง':'ร้านยกเลิก'}${o.cancelledAt?' '+hm(o.cancelledAt):''}${o.cancelReason?`<br><b style="color:var(--chili)">เหตุผล: ${esc(o.cancelReason)}</b>`:''}</span>${o.cancelSeen===false?`<button class="btn sm" data-act="poCxSeen" data-id="${esc(o.id)}" type="button">รับทราบ</button>`:''}<button class="btn sm" data-act="poBack" data-id="${esc(o.id)}" type="button">กู้คืน</button></div>`
       :`<div class="poc-a">${pv?`<button class="btn sm ghost" data-act="poBack" data-id="${esc(o.id)}" type="button" aria-label="ย้อนสถานะ" title="ย้อนสถานะ">↩</button>`:''}${o.status!=='done'?`<button class="btn sm ghost" data-act="poCancel" data-id="${esc(o.id)}" data-confirm="1" type="button">ยกเลิก</button>`:''}<span class="grow"></span>${nx?`<button class="btn pri" data-act="poStep" data-id="${esc(o.id)}" type="button">${nx[1]}</button>`:''}</div>`}</div>`}
 function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliverDate===day),live=all.filter(poLive);
   // รอยืนยัน = ทุกวันส่ง (เห็นออร์เดอร์ใหม่ทันที แม้สั่งไว้ส่งวันอื่น) · ที่เหลือ = ตามวันส่งที่เลือก
@@ -2619,7 +2636,10 @@ Object.assign(ACT,{
   poSave:()=>poSave(),
   poStep:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;const nx=PO_NEXT[o.status];if(!nx)return;poSet(o.id,{status:nx[0],[nx[0]+'At']:Date.now(),by:S.me||''},PO_ST[nx[0]][0]+' · '+poShort(o))},
   poBack:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;const pv=PO_PREV[o.status];if(pv)poSet(o.id,{status:pv},'ย้อนเป็น '+PO_ST[pv][0])},
-  poCancel:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(o)poSet(o.id,{status:'cancelled',cancelledBy:'shop',cancelledAt:Date.now()},'ยกเลิก '+poShort(o)+' แล้ว')},
+  poCancel:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(o)openSheet({type:'poCx',id:o.id,rs:''})},
+  poCxRs:d=>{const i=$('#cxTxt');if(i){i.value=d.v;S.sheet.rs=d.v}},
+  poCxGo:()=>{const o=S.poOrders.find(x=>x.id===S.sheet.id);const t=(val('cxTxt')||'').trim().slice(0,150);if(!o)return closeSheet();if(!t)return toast('เลือกหรือพิมพ์เหตุผลการยกเลิกก่อน','bad');
+    closeSheet();poSet(o.id,{status:'cancelled',cancelledBy:'shop',cancelledAt:Date.now(),cancelReason:t,cancelSeen:true},'ยกเลิก '+poShort(o)+' แล้ว')},
   poPaid:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o||o.payStatus==='paid')return;
     const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='paid'?null:{payStatus:'paid',payAt:Date.now(),payBy:S.me||'',paidAmt:+x.total||0,slipBad:null}));if(!ok)return;
     Object.assign(o,{payStatus:'paid',payAt:Date.now(),paidAmt:+o.total||0});let msg='บันทึกรับเงิน '+poShort(o)+' แล้ว';
