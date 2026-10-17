@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1745">
+<meta name="app-version" content="2026.10.17-1820">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -380,6 +380,7 @@ const lsGet=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||'null')??d}ca
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const myOrders=()=>(lsGet(MY_KEY,[])||[]).filter(x=>x&&x.id&&Date.now()-x.ts<14*864e5);
 function rememberOrder(id,token,no,d){const a=myOrders().filter(x=>x.id!==id);a.unshift({id,token,no,d,ts:Date.now()});lsSet(MY_KEY,a.slice(0,20))}
+const tmW=d=>{const w=S.cfg&&(S.cfg.window||S.cfg.state&&S.cfg.state.window);return w&&d&&d>=new Date(Date.now()+7*3600e3).toISOString().slice(0,10)?' · เวลา '+w:''};
 const thDate=d=>{if(!d)return '';try{return new Date(d+'T00:00:00+07:00').toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'short',timeZone:'Asia/Bangkok'})}catch(e){return d}};
 const STEPS=[['new','รอร้านยืนยัน'],['confirmed','ร้านรับออร์เดอร์แล้ว'],['ready','อยู่ระหว่างจัดส่ง'],['done','ส่งอาหารสำเร็จ']];
 const cartN=()=>Object.values(S.cart).reduce((a,e)=>a+e.qty,0);
@@ -407,9 +408,9 @@ function rpcErr(e){const m=String(e&&e.message||'');
   if(/not_found/.test(m))return 'ไม่พบออร์เดอร์นี้';
   return 'เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง';}
 function stateLine(st){if(!st)return '';
-  if(st.open)return `สั่งได้ถึง ${esc(closeTxt(st))} · ได้รับ${esc(thDate(st.deliverDate))}${st.window?' '+esc(st.window):''}`;
+  if(st.open)return `สั่งได้ถึง ${esc(closeTxt(st))} · ได้รับ${esc((thDate(st.deliverDate)+tmW(st.deliverDate)))}${st.window?' '+esc(st.window):''}`;
   if(st.reason==='before')return `เปิดรับออร์เดอร์วันนี้ ${esc(st.openFrom)} น.`;
-  if(st.reason==='after')return `ปิดรับออร์เดอร์รอบนี้แล้ว (ส่ง${esc(thDate(st.deliverDate))})`;
+  if(st.reason==='after')return `ปิดรับออร์เดอร์รอบนี้แล้ว (ส่ง${esc((thDate(st.deliverDate)+tmW(st.deliverDate)))})`;
   return 'ร้านปิดรับพรีออเดอร์ชั่วคราว';}
 
 /* ---------- ย่อรูปสลิปก่อนส่ง (ไม่เกิน ~500KB) ---------- */
@@ -463,7 +464,7 @@ function renderBoard(){const box=$('#bList');if(!box)return;const b=S.board;
   if(!b){box.innerHTML='<p class="muted">กำลังโหลด…</p>';return}if(b.err){box.innerHTML='<p class="muted">โหลดไม่ได้ ลองใหม่อีกครั้ง</p>';return}
   const L=b.orders||[];if(!L.length){box.innerHTML=`<p class="muted" style="text-align:center">${S.bq?'ไม่พบออร์เดอร์ที่ค้นหา · ลองพิมพ์ชื่ออื่น หรือเบอร์ 4 ตัวท้าย':'ยังไม่มีออร์เดอร์รอบนี้'}</p>`;return}
   const days=[...new Set(L.map(o=>o.deliverDate))];
-  box.innerHTML=days.map(d=>`<h3 class="cath">รับ${esc(thDate(d))}</h3><div class="list">${L.filter(o=>o.deliverDate===d).map(o=>{const s1=BST(o),s2=BPAY(o);
+  box.innerHTML=days.map(d=>`<h3 class="cath">รับ${esc((thDate(d)+tmW(d)))}</h3><div class="list">${L.filter(o=>o.deliverDate===d).map(o=>{const s1=BST(o),s2=BPAY(o);
     return `<button class="row rowb brow" data-a="bopen" data-id="${esc(o.id)}" type="button"><div class="g"><b>#${esc(o.no)} · ${esc(o.name||'')}</b><div class="tm">เบอร์ xxx-xxx-${esc(o.ph||'')} · ${baht(o.total)}</div>
       <div class="bpills"><span class="pill ${s1[1]}">${s1[0]}</span><span class="pill ${s2[1]}">${s2[0]}</span></div></div><div class="r">${o.payStatus==='paid'?'':'<span class="bslip">แนบสลิป ›</span>'}</div></button>`}).join('')}</div>`).join('')}
 function boardView(){const c=S.cfg||{},st=c.state||{},b=S.board||{},ph=String(b.phone||c.phone||''),tel=ph.replace(/[^\d+]/g,''),line=b.line||c.line||'';
@@ -484,7 +485,7 @@ async function loadShop(first){try{const {data,error}=await sb.rpc('po_public');
   S.menu.filter(m=>m.cat&&!S.cats.includes(m.cat)).forEach(m=>S.cats.push(m.cat));
   document.title=(data.shopName||'สั่งล่วงหน้า')+' · พรีออเดอร์';
   $('#logo').src=data.logo||'images/logo-po.png';$('#logo').hidden=false;
-  $('#shop').textContent=data.shopName||'สั่งล่วงหน้า';$('#sub').textContent=data.state&&data.state.open?'สั่งล่วงหน้า · รับ'+thDate(data.state.deliverDate):'สั่งล่วงหน้า รับวันถัดไป';
+  $('#shop').textContent=data.shopName||'สั่งล่วงหน้า';$('#sub').textContent=data.state&&data.state.open?'สั่งล่วงหน้า · รับ'+(thDate(data.state.deliverDate)+tmW(data.state.deliverDate)):'สั่งล่วงหน้า รับวันถัดไป';
   return true}catch(e){if(first)fail('เชื่อมต่อไม่ได้','ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง');return false}}
 async function loadOrder(){if(!S.cur)return;try{const {data,error}=await sb.rpc('po_order_status',{p_id:S.cur.id,p_token:S.cur.token});
   if(error){S.order={err:rpcErr(error)};return}S.order=data;rememberOrder(S.cur.id,S.cur.token,data.orderNo,data.deliverDate)}catch(e){}}
@@ -504,7 +505,7 @@ function render(){
     const mine=myOrders();
     h=`${c.notice?`<div class="notice">${esc(c.notice)}</div>`:''}
     <div class="pobar ${st.open?'on':'off'}"><b>${st.open?'เปิดรับพรีออเดอร์':'ปิดรับออร์เดอร์'}</b><span>${stateLine(st)}</span></div>
-    ${S.staff&&st.reason==='after'?`<div class="notice">👩‍🍳 โหมด${S.staff==='owner'?'แอดมิน':'แม่ครัว'}: สั่งเพิ่มให้ลูกค้าหลังปิดรับได้ (รอบส่ง${esc(thDate(st.deliverDate))})</div>`:''}
+    ${S.staff&&st.reason==='after'?`<div class="notice">👩‍🍳 โหมด${S.staff==='owner'?'แอดมิน':'แม่ครัว'}: สั่งเพิ่มให้ลูกค้าหลังปิดรับได้ (รอบส่ง${esc((thDate(st.deliverDate)+tmW(st.deliverDate)))})</div>`:''}
     ${!st.open&&!S.staff?`<button class="btn pri" data-a="view" data-v="board" type="button">📋 เช็กสถานะออร์เดอร์ / โอนเงิน + แนบสลิป</button>`:''}
     ${mine.length?`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน (${mine.length})</button>`:''}
     ${S.cats.length>1?`<div class="chips">${['all',...S.cats].map(x=>`<button class="chip" aria-pressed="${S.cat===x}" data-a="cat" data-v="${esc(x)}" type="button">${x==='all'?'ทั้งหมด':esc(x)}</button>`).join('')}</div>`:''}
@@ -519,7 +520,7 @@ function render(){
     const pp=String(c.promptpay||'').replace(/\D/g,'');
     h=`<h2>สรุปออร์เดอร์</h2>
     ${(()=>{const ex=myOrders().find(x=>x.d===st.deliverDate);return ex?`<div class="notice">➕ คุณมีออร์เดอร์รอบนี้แล้ว (${esc(ex.no||'')}) · สั่งด้วยเบอร์เดิม รายการจะรวมเข้าออร์เดอร์เดิมและสรุปยอดใหม่ให้</div>`:''})()}
-    <div class="pobar on"><b>ได้รับ${esc(thDate(st.deliverDate))}</b><span>${st.window?'ช่วงเวลา '+esc(st.window)+' · ':''}สั่งได้ถึง ${esc(closeTxt(st))}</span></div>
+    <div class="pobar on"><b>ได้รับ${esc((thDate(st.deliverDate)+tmW(st.deliverDate)))}</b><span>สั่งได้ถึง ${esc(closeTxt(st))}</span></div>
     ${rows?`<div class="list">${rows}<div class="row"><div class="g"><b>รวม</b></div><div class="r"><b>${baht(cartT())}</b></div></div></div>`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}
     <section class="box"><h3>ผู้รับ</h3>
       <div class="field"><label for="pName">ชื่อ</label><input id="pName" maxlength="40" autocomplete="name" value="${esc(me.name||'')}" placeholder="กรุณากรอกชื่อลูกค้า"></div>
@@ -527,7 +528,7 @@ function render(){
     <section class="box"><h3>ชำระเงิน</h3><div class="seg">
       ${c.payBefore?`<button type="button" class="segb" data-a="pay" data-v="before" aria-pressed="${S.pay==='before'}">โอนก่อน</button>`:''}
       ${c.payAfter?`<button type="button" class="segb" data-a="pay" data-v="after" aria-pressed="${S.pay==='after'}">จ่ายตอนรับของ</button>`:''}</div>
-      ${S.pay==='before'?`${pp&&cartT()>0?ppBox(pp,cartT(),c.ppName):''}
+      ${S.pay==='before'?`${pp&&cartT()>0?ppBox(pp,cartT(),c.ppName):pp?'':`<p class="err" style="margin:0;font-size:13px">ร้านยังไม่ได้ตั้งเบอร์พร้อมเพย์ · ติดต่อร้าน${c.phone?' '+esc(c.phone):''} เพื่อขอเลขบัญชี</p>`}
         <label class="btn slipbtn" for="slipIn">${S.slip?'เปลี่ยนรูปสลิป':'📎 แนบสลิปโอนเงิน'}</label>${S.slip?'<button class="btn" data-a="slipClear" type="button">ลบสลิปนี้</button>':''}
         ${S.slip?`<div class="slipok"><img class="slipprev" src="${S.slip}" alt="สลิป" data-a="slipView"><div><b>✓ แนบสลิปแล้ว</b><small>ตรวจรูปให้ถูก สลิปจะส่งพร้อมกด "ยืนยันสั่ง"</small></div></div>`:'<p class="err" style="margin:0;font-size:13px">⚠️ ต้องแนบสลิปโอนเงินก่อน ถึงจะกด "ยืนยันสั่ง" ได้</p>'}`
         :'<p class="muted" style="margin:0">โอนเงินตอนรับของเท่านั้น (ไม่รับเงินสด) · ได้รับของแล้วโอน แล้วแนบสลิปในหน้าติดตามออร์เดอร์</p>'}</section>
@@ -541,7 +542,7 @@ function render(){
     const a=myOrders(),M=S.myStat||{};if(!S.myBusy&&(!S.myAt||Date.now()-S.myAt>15000))loadMy();
     const MST=x=>{const m=M[x.id];if(!m)return '';if(m.status==='cancelled')return '';const t={new:['รอร้านยืนยัน','warn'],confirmed:['ร้านรับออร์เดอร์แล้ว','ok'],ready:['อยู่ระหว่างจัดส่ง','info'],done:['ส่งอาหารสำเร็จ','ok']}[m.status]||['',''];
       return `<span class="pill ${t[1]}">${t[0]}</span>${m.payStatus==='paid'?' <span class="pill ok">ชำระแล้ว</span>':m.payStatus==='slip'?' <span class="pill warn">รอตรวจสอบยอด</span>':' <span class="pill bad">ค้างชำระ</span>'}`};
-    h=`<h2>ออร์เดอร์ของฉัน</h2>${a.length?`<div class="list">${a.map(x=>{const cx=M[x.id]&&M[x.id].status==='cancelled';return `<button class="row rowb myrow${cx?' cx':''}" data-a="open" data-id="${esc(x.id)}" data-t="${esc(x.token)}" type="button"><div class="g"><b>${esc(x.no||'ออร์เดอร์')}</b><div class="tm">รับ${esc(thDate(x.d))}${M[x.id]?' · '+baht(M[x.id].total):''}</div><div class="bpills">${MST(x)}</div></div>${cx?'<span class="cxstamp sm"><b>ยกเลิก</b><i>Cancelled</i></span>':'<span class="muted">ดู ›</span>'}</button>`}).join('')}</div>`:'<p class="muted">ยังไม่มีออร์เดอร์บนเครื่องนี้</p>'}`;
+    h=`<h2>ออร์เดอร์ของฉัน</h2>${a.length?`<div class="list">${a.map(x=>{const cx=M[x.id]&&M[x.id].status==='cancelled';return `<button class="row rowb myrow${cx?' cx':''}" data-a="open" data-id="${esc(x.id)}" data-t="${esc(x.token)}" type="button"><div class="g"><b>${esc(x.no||'ออร์เดอร์')}</b><div class="tm">รับ${esc((thDate(x.d)+tmW(x.d)))}${M[x.id]?' · '+baht(M[x.id].total):''}</div><div class="bpills">${MST(x)}</div></div>${cx?'<span class="cxstamp sm"><b>ยกเลิก</b><i>Cancelled</i></span>':'<span class="muted">ดู ›</span>'}</button>`}).join('')}</div>`:'<p class="muted">ยังไม่มีออร์เดอร์บนเครื่องนี้</p>'}`;
     ft=`<button class="btn pri wide" data-a="view" data-v="menu" type="button">กลับไปหน้าเมนู</button>`;
   }else{
     const o=S.order;
@@ -552,7 +553,7 @@ function render(){
         :o.pay==='after'?'<span class="pill warn">โอนตอนรับของ · ยังไม่แนบสลิป</span>':'<span class="pill bad">ยังไม่ได้โอน</span>';
       h=`${S.justSent?`<div class="msg" style="padding:12px 8px 0"><h2>${S.justMerged?'เพิ่มรายการในออร์เดอร์เดิมแล้ว':'สั่งเรียบร้อย ขอบคุณครับ'}</h2>${S.justMerged?`<p class="muted" style="margin:0">รวมเป็นออร์เดอร์เดียว ยอดสรุปใหม่ด้านล่าง · ${poDue(o)>0?'โอนเพิ่ม '+baht(poDue(o))+' แล้วแนบสลิปเพิ่มได้':''}</p>`:''}<p class="muted" style="margin:0">บันทึกหน้านี้ไว้ หรือกลับมาดูได้ที่ "ออร์เดอร์ของฉัน"</p></div>`:''}
       ${cx?`<div class="cxwrap"><span class="cxstamp"><b>ยกเลิกออร์เดอร์</b><i>Cancelled</i></span><p class="muted" style="margin:0">${o.cancelledBy==='customer'?'คุณยกเลิกออร์เดอร์นี้':'ร้านยกเลิกออร์เดอร์นี้'}${o.cancelReason?`<br><b style="color:var(--chili)">เหตุผล: ${esc(o.cancelReason)}</b>`:''}${o.cancelledAt?' · '+esc(new Date(+o.cancelledAt).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p></div>`:''}
-      <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b class="qs-${cx?'cx':esc(o.status)}">${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc(thDate(o.deliverDate))}${o.window?' · '+esc(o.window):''}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
+      <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b class="qs-${cx?'cx':esc(o.status)}">${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc((thDate(o.deliverDate)+tmW(o.deliverDate)))}${o.window?' · '+esc(o.window):''}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
       ${cx?'':`<ol class="steps">${STEPS.map((s,i)=>`<li class="st-${s[0]}${i<=idx?' on':''}${i===idx?' cur':''}">${esc(s[1])}</li>`).join('')}</ol>`}
       <div class="list">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="row rnd"><div class="g">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div></div>`:''}<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:''}${l.note?`<div class="who">${esc(l.note)}</div>`:''}</div><div class="r">${baht(l.price*l.qty)}</div></div>`).join('')}
         <div class="row"><div class="g"><b>ยอดรวม${(o.rounds||1)>1?' (รวมที่สั่งเพิ่ม)':''}</b></div><div class="r"><b>${baht(o.total)}</b></div></div>
