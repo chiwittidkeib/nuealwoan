@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1745">
+<meta name="app-version" content="2026.10.17-1750">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1272,7 +1272,7 @@ function viewMenu(){
   let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
   <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div><div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
   const list=S.menu.filter(m=>S.menuCat==='all'||m.cat===S.menuCat);
-  if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุนต่อจาน</div>`;
+  if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุน</div>`;
   const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':' offsale'}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิดการขาย'}</button>`:'';
   if(S.menuLay==='grid'){h+='<div class="mtgrid">';
     list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
@@ -1370,7 +1370,7 @@ function viewReport(){
     <div class="kv"><span>จ่ายซื้อของ</span><span>${baht(-buy)}</span></div>
     <div class="kv"><span>จ่ายรายจ่ายร้าน</span><span>${baht(-exp)}</span></div>
     <div class="kv tot"><span>เงินคงเหลือสุทธิ</span><span style="color:var(${flow<0?'--chili':'--jade'})">${baht(flow)}</span></div>
-    <p class="help" style="margin:0">กำไรสุทธิคิดต้นทุนจาก "ต้นทุนต่อจาน" ของเมนูที่ขายได้ ส่วนเงินคงเหลือนับค่าซื้อของที่จ่ายจริงในช่วงนี้ ของที่ซื้อตุนไว้จึงทำให้สองตัวเลขต่างกัน</p></div>`;
+    <p class="help" style="margin:0">กำไรสุทธิคิดต้นทุนจาก "ต้นทุน" ของเมนูที่ขายได้ ส่วนเงินคงเหลือนับค่าซื้อของที่จ่ายจริงในช่วงนี้ ของที่ซื้อตุนไว้จึงทำให้สองตัวเลขต่างกัน</p></div>`;
   // by channel
   const chs=['dinein','walkin','takeaway',...DELIV].map(c=>{const os=D.orders.filter(o=>chOf(o)===c);return [c,os.length,os.reduce((s,o)=>s+(+o.total||0),0),os.reduce((s,o)=>s+(+o.gp||0),0)]}).filter(x=>x[1]);
   if(chs.length)h=h.replace('<div class="two">',`<div class="two"><div class="card"><h3>ยอดขายแยกช่องทาง</h3>${chs.map(([c,n,v,g])=>`<div class="kv"><span><span class="chip-ch" style="--chc:${CH[c].c}">${CH[c].n}</span> ${n} บิล</span><span>${baht(v)}${g?` <small class="muted">GP ${baht(g)}</small>`:''}</span></div>`).join('')}</div>`);
@@ -1764,7 +1764,7 @@ function sheetMenu(){const m=S.menu.find(x=>x.id===S.sheet.id)||{name:'',cat:cur
    <div class="field"><label for="mDesc">คำอธิบายสั้นๆ (ลูกค้าเห็น)</label><input id="mDesc" maxlength="80" value="${esc(m.desc||'')}" placeholder="เช่น น้ำซุปกระดูกหมูเคี่ยว 8 ชั่วโมง" autocomplete="off"></div>
    <div class="field"><label for="mCat">หมวด</label><select id="mCat">${cats.map(c=>`<option ${c===m.cat?'selected':''}>${esc(c)}</option>`).join('')}${m.cat&&!cats.includes(m.cat)?`<option selected>${esc(m.cat)}</option>`:''}${S.role==='owner'?'<option value="__new">+ เพิ่มหมวดใหม่…</option>':''}</select></div>
    <div class="grid2"><div class="field"><label for="mPrice">ราคาขาย (บาท)</label><input id="mPrice" inputmode="decimal" required value="${m.price??''}"></div>
-   <div class="field"><label for="mCost">ต้นทุนต่อจาน (บาท)</label><input id="mCost" inputmode="decimal" value="${m.cost??''}"></div></div>
+   <div class="field"><label for="mCost">ต้นทุน (บาท)</label><input id="mCost" inputmode="decimal" value="${m.cost??''}"></div></div>
    <div class="grid2"><div class="field"><label for="mLimit">ขายได้ต่อวัน (ที่)</label><input id="mLimit" inputmode="numeric" value="${typeof m.dailyLimit==='number'?m.dailyLimit:''}" placeholder="∞ ไม่จำกัด"></div>
    <div class="field"><label>วันนี้</label><div class="help" style="padding-top:10px">${S.sheet.id?'สั่งไปแล้ว '+soldToday(S.sheet.id)+' ที่'+(typeof m.dailyLimit==='number'?' · เหลือ '+menuLeft(m):''):'—'}</div></div></div>
    <p class="help" style="margin:-6px 0 0">เว้นว่าง = ไม่จำกัด (∞) · ใส่ตัวเลข เช่น 20 ระบบนับจากที่สั่งวันนี้ ครบแล้วขึ้น "หมดแล้ว" เอง · เริ่มนับใหม่ทุกวัน</p>
