@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.18-1945">
+<meta name="app-version" content="2026.10.18-1950">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -745,9 +745,11 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .dwrap input:focus{color:var(--fg)!important}.dwrap input:focus::-webkit-datetime-edit{color:var(--fg)}.dwrap input:focus+.dshow{display:none}
 .t24w{position:relative}.t24w input{width:100%;padding-right:40px;font-variant-numeric:tabular-nums}.t24w span{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}.t24w input.bad{border-color:var(--chili)}
 .poc{position:relative}
-.pocpaid{position:absolute;top:10px;right:12px;z-index:2;pointer-events:none;width:100px;height:100px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.05;text-align:center;
-  border:3px solid #d32f2f;box-shadow:inset 0 0 0 3px rgba(255,255,255,.9),inset 0 0 0 4.5px #d32f2f;background:rgba(240,253,250,.9);color:#0f9488;transform:rotate(-14deg);font-weight:800;font-size:13.5px;letter-spacing:0}
-.pocpaid i{font-style:normal;font-size:11px;letter-spacing:3px;border-top:1.5px solid #0f9488;padding-top:2px;margin-top:1px}
+.poc.paid .poc-h,.poc.paid .poc-who{padding-right:76px}
+.poc.paid .poc-h{flex-wrap:wrap;row-gap:2px}
+.pocpaid{position:absolute;top:6px;right:8px;z-index:2;pointer-events:none;width:80px;height:80px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.05;text-align:center;
+  border:3px solid #d32f2f;box-shadow:inset 0 0 0 3px rgba(255,255,255,.9),inset 0 0 0 4.5px #d32f2f;background:rgba(240,253,250,.72);color:#0f9488;transform:rotate(-14deg);font-weight:800;font-size:10.5px;letter-spacing:0}
+.pocpaid i{font-style:normal;font-size:10px;letter-spacing:3px;border-top:1.5px solid #0f9488;padding-top:2px;margin-top:1px}
 @media (prefers-color-scheme:dark){.pocpaid{background:rgba(4,47,46,.88);color:#5eead4;box-shadow:inset 0 0 0 3px rgba(4,47,46,.9),inset 0 0 0 4.5px #ef5350;border-color:#ef5350}.pocpaid i{border-color:#5eead4}}
 </style>
 </head>
@@ -2605,7 +2607,7 @@ function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
     ${!S.po&&own?'<p class="help" style="margin:0">ยังไม่ได้ตั้งค่าร้าน กด "ตั้งค่าร้านพรีออเดอร์" เพื่อใส่เวลาปิดรับ จุดส่ง และพร้อมเพย์</p>':''}</div>`}
 function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=PO_PREV[o.status];
   const ed=['owner','chef'].includes(S.role)&&poLive(o);
-  return `<div class="card poc st-${esc(o.status)}">${o.payStatus==='paid'&&poLive(o)?'<span class="pocpaid" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></span>':''}<div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${st[1]}">${st[0]}</span><span class="grow"></span><small class="muted">สั่ง ${hm(o.at)}${o.at<sod()?' · '+esc(poDate(new Date(o.at+7*3600e3).toISOString().slice(0,10))):''}</small></div>
+  return `<div class="card poc st-${esc(o.status)}${o.payStatus==='paid'&&poLive(o)?' paid':''}">${o.payStatus==='paid'&&poLive(o)?'<span class="pocpaid" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></span>':''}<div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${st[1]}">${st[0]}</span><span class="grow"></span><small class="muted">สั่ง ${hm(o.at)}${o.at<sod()?' · '+esc(poDate(new Date(o.at+7*3600e3).toISOString().slice(0,10))):''}</small></div>
     <div class="poc-who"><b>${esc(o.name)}</b>${o.memberPhone?` <span class="pill ok" title="สมาชิกสะสมแต้ม">⭐${+o.ptsEarned?' +'+o.ptsEarned:''}</span>`:''} · <a href="tel:${esc(o.phone)}">${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a></div>
     ${(o.rounds||1)>1&&!o.addSeen?`<div class="poc-note" style="color:#1565c0;font-weight:700">➕ ลูกค้าสั่งเพิ่ม (ครั้งที่ ${o.rounds-1}) ${o.addedAt?hm(o.addedAt):''} <button class="btn sm" data-act="poAddSeen" data-id="${esc(o.id)}" type="button">รับทราบ</button></div>`:''}
     <div class="poc-items">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="muted" style="font-size:12px;font-weight:700;margin-top:4px">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div>`:''}<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
