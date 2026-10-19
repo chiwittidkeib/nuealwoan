@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1200">
+<meta name="app-version" content="2026.10.19-1200b">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1324,7 +1324,7 @@ function poLivePromoIds(){const ids=new Set();if(isPo())poPromos().filter(p=>poP
 function viewMenu(){
   const cats=curCats(),pIds=poLivePromoIds(),pN=S.menu.filter(m=>pIds.has(m.id)).length;
   if(S.menuCat==='__promo'&&!pN)S.menuCat='all';
-  let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+(isPo()?(['owner','chef'].includes(S.role)?'<button class="btn sm combob" data-act="poPromos" type="button">🎁 โปรคละรส</button>':''):'<button class="btn sm combob" data-act="combos" type="button">🎁 Combo เซ็ต</button>')+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
+  let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+(isPo()?(['owner','chef'].includes(S.role)?'<button class="btn sm combob" data-act="poPromos" type="button">🎁 โปรโมชั่น</button>':''):'<button class="btn sm combob" data-act="combos" type="button">🎁 Combo เซ็ต</button>')+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
   <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${pN?`<button class="chip chip-promo" aria-pressed="${S.menuCat==='__promo'}" data-act="menuCat" data-v="__promo" type="button">📢 ${esc(poPromoTab())} (${pN})</button>`:''}${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div><div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
   const list=S.menu.filter(m=>S.menuCat==='__promo'?pIds.has(m.id):S.menuCat==='all'||m.cat===S.menuCat);
   if(pIds.size){const ci=c=>{const i=cats.indexOf(c);return i<0?999:i};list.sort((a,b)=>(S.menuCat==='all'?ci(a.cat)-ci(b.cat):0)||(pIds.has(b.id)-pIds.has(a.id)))}
@@ -2650,7 +2650,7 @@ const poPromos=()=>Array.isArray(poCfg().promos)?poCfg().promos:[];
 function poPromoState(p){const t=bkkDay(0);return p.on===false?'ปิดอยู่':p.start&&p.start>t?'ยังไม่เริ่ม':p.end&&p.end<t?'หมดเขต':'กำลังใช้'}
 function poPromoReg(p){const ids=p.items||[],pr=(S.poMenu||[]).filter(m=>ids.includes(m.id)).map(m=>+m.price||0);return pr.length?Math.max(...pr)*(+p.n||0):0}
 function sheetPoPromos(){const L=poPromos(),nm=id=>((S.poMenu||[]).find(m=>m.id===id)||{}).name;
-  $('#panel').innerHTML=head('🎁 โปรคละรส','เช่น เครื่องดื่ม 3 ขวด 100 · ลูกค้าเลือกคละรสได้ ครบจำนวนลดให้อัตโนมัติ')+`<div class="sh-body">
+  $('#panel').innerHTML=head('🎁 โปรโมชั่น','เช่น เครื่องดื่ม 3 ขวด 100 · ลูกค้าเลือกคละรสได้ ครบจำนวนลดให้อัตโนมัติ')+`<div class="sh-body">
    ${L.length?`<div class="list">${L.map((p,i)=>{const st=poPromoState(p),reg=poPromoReg(p);return `<div class="row click" data-act="poPromoEdit" data-v="${i}"><div class="grow"><div class="t">${esc(p.name)} <span class="pill ${st==='กำลังใช้'?'ok':st==='ยังไม่เริ่ม'?'info':'mute'}">${st}</span></div><div class="s">ครบ ${+p.n} ชิ้น = ${baht(+p.price)}${reg>+p.price?` · ปกติ ${baht(reg)}`:''}</div><div class="s">${esc((p.items||[]).map(nm).filter(Boolean).join(' · '))}</div>${p.start||p.end?`<div class="s">🗓 ${p.start?esc(poDate(p.start)):'ตอนนี้'} – ${p.end?esc(poDate(p.end)):'ไม่มีกำหนด'}</div>`:''}</div></div>`}).join('')}</div>`
      :'<div class="empty"><b>ยังไม่มีโปร</b>กด "+ สร้างโปรใหม่" เลือกเมนูที่ร่วมโปร ตั้งจำนวนชิ้นและราคา</div>'}
    <div class="field" style="margin:0"><label for="ppTab">ชื่อแท็บโปร (ขึ้นเฉพาะตอนมีโปรที่ใช้ได้)</label><div class="inrow" style="gap:6px"><span style="font-size:20px">📢</span><input id="ppTab" maxlength="40" value="${esc(poCfg().promoTab||'')}" placeholder="${esc(PROMO_TAB_DEF)}" style="flex:1"><button class="btn sm" data-act="ppTabSave" type="button">บันทึกชื่อ</button></div></div>
