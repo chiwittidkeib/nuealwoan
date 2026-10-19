@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.18-2105">
+<meta name="app-version" content="2026.10.19-1000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -290,6 +290,11 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 .cxinfo{background:var(--sunk);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--muted);text-align:center}
 .pill.info{background:#e3f0fd;color:#1565c0}
 .shr{display:flex;gap:8px}.shr .btn{min-width:0;white-space:nowrap}.shr .btn:last-child{flex:none;padding-left:12px;padding-right:12px}.shr .lineshr{flex:1;background:#06c755;border-color:#06c755;color:#fff;font-weight:700}.shr .lineshr b{background:#fff;color:#06c755;border-radius:6px;padding:0 6px;margin-right:6px;font-size:13px}
+.pickbox{background:var(--surface);border:2px solid var(--jade);border-radius:18px;padding:12px 12px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
+.pickbox small{color:var(--muted);font-size:12.5px}.pickbox .kmk{font-size:48px;font-weight:900;letter-spacing:2px;line-height:1.05;color:var(--jade);font-family:var(--f-display)}
+.pickbox .pst{font-weight:700;font-size:15px}.pickbox .pst.ok{color:#0f9488}.pickbox .pst.chk{color:#0277bd}.pickbox .pst.due{color:#d32f2f}
+.pqbtn{margin-top:8px;border:1px dashed var(--jade);background:none;color:var(--jade);border-radius:12px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer}
+.pickbox .pq{margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:4px}.pickbox .pq svg{width:200px;height:200px;background:#fff;padding:6px;border-radius:12px}.pickbox .pq span{font-size:12.5px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -590,6 +595,8 @@ function render(){
         :o.pay==='after'?'<span class="pill warn">โอนตอนรับของ · ยังไม่แนบสลิป</span>':'<span class="pill bad">ยังไม่ได้โอน</span>';
       h=`${S.justSent?`<div class="msg" style="padding:12px 8px 0"><h2>${S.justMerged?'เพิ่มรายการในออร์เดอร์เดิมแล้ว':'สั่งเรียบร้อย ขอบคุณครับ'}</h2>${S.justMerged?`<p class="muted" style="margin:0">รวมเป็นออร์เดอร์เดียว ยอดสรุปใหม่ด้านล่าง · ${poDue(o)>0?'โอนเพิ่ม '+baht(poDue(o))+' แล้วแนบสลิปเพิ่มได้':''}</p>`:''}<p class="muted" style="margin:0">บันทึกหน้านี้ไว้ หรือกลับมาดูได้ที่ "ออร์เดอร์ของฉัน"</p></div>`:''}
       ${cx?`<div class="cxwrap"><span class="cxstamp"><b>ยกเลิกออร์เดอร์</b><i>Cancelled</i></span><p class="muted" style="margin:0">${o.cancelledBy==='customer'?'คุณยกเลิกออร์เดอร์นี้':'ร้านยกเลิกออร์เดอร์นี้'}${o.cancelReason?`<br><b style="color:var(--chili)">เหตุผล: ${esc(o.cancelReason)}</b>`:''}${o.cancelledAt?' · '+esc(new Date(+o.cancelledAt).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p></div>`:''}
+      ${!cx&&o.status!=='done'?`<div class="pickbox"><small>แสดงหน้านี้ตอนรับของ</small><div class="kmk">KMK ${esc(String(o.orderNo||'').slice(-4))}</div><div class="pst ${o.payStatus==='paid'?'ok':o.payStatus==='slip'?'chk':'due'}">${o.payStatus==='paid'?'✓ ชำระแล้ว':o.payStatus==='slip'?'⏳ รอร้านตรวจสลิป':'ค้างชำระ '+baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0)))+' · จ่ายตอนรับได้ (เงินสด / สแกน)'}</div>
+        <button class="pqbtn" data-a="pickQr" type="button">📲 แสดง QR รับของ</button><div class="pq" id="pickQr" hidden>${qrSvg(location.origin+location.pathname+'?o='+encodeURIComponent(S.cur.id)+'&t='+encodeURIComponent(S.cur.token))}<span>ให้พนักงานสแกน</span></div></div>`:''}
       <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b class="qs-${cx?'cx':esc(o.status)}">${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc(thDate(o.deliverDate)+(o.window?' · เวลา '+o.window:tmW(o.deliverDate)))}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
       ${cx?'':`<div class="shr"><button class="btn lineshr" data-a="shareLine" type="button"><b>LINE</b> แชร์ลิงก์ไว้เช็กสถานะ</button><button class="btn" data-a="copyLink" type="button" aria-label="คัดลอกลิงก์">📋 คัดลอก</button></div><p class="muted" style="margin:-4px 0 0;font-size:12.5px;text-align:center">ส่งเข้า Keep memo หรือแชทตัวเอง · เปิดเช็กสถานะ แนบสลิป ดูใบเสร็จ ได้จากทุกเครื่อง</p>`}
       ${cx?'':`<ol class="steps">${STEPS.map((s,i)=>`<li class="st-${s[0]}${i<=idx?' on':''}${i===idx?' cur':''}">${esc(s[1])}</li>`).join('')}</ol>`}
@@ -659,6 +666,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   if(a==='poCard'||a==='poMemOn'){b.disabled=true;try{const {data,error}=await sb.rpc('po_member',{p_id:S.cur.id,p_token:S.cur.token,p_on:true});b.disabled=false;
       if(error){const m=String(error.message||'');return toast(/points_off/.test(m)?'ร้านปิดระบบสะสมแต้มอยู่':/po_member|function|PGRST20/i.test(m)?'ร้านยังไม่ได้เปิดระบบสมาชิก':'ทำรายการไม่สำเร็จ ลองอีกครั้ง')}
       showMemberCard({...data,note:data.paid?(+data.earned?`ได้รับ +${+data.earned} แต้มจากออร์เดอร์นี้ 🎉`:''):'แต้มจะเข้าเมื่อร้านยืนยันรับเงิน · ใช้ได้ทั้ง 2 ร้าน'});await loadOrder();render()}catch(x){b.disabled=false;toast('เชื่อมต่อไม่ได้ ลองอีกครั้ง')}return}
+  if(a==='pickQr'){const q=$('#pickQr');if(q){q.hidden=!q.hidden;b.textContent=q.hidden?'📲 แสดง QR รับของ':'ซ่อน QR'}return}
   if(a==='shareLine'||a==='copyLink'){const o=S.order||{},c=S.cfg||{};const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('o',S.cur.id);u.searchParams.set('t',S.cur.token);const link=u.href;
     if(a==='copyLink'){try{await navigator.clipboard.writeText(link);toast('คัดลอกลิงก์แล้ว')}catch(x){window.prompt('คัดลอกลิงก์นี้',link)}return}
     const txt=[`🍗 ออร์เดอร์${c.shopName||'ข้าวมันไก่'} ${o.orderNo||''}`,`รับ${thDate(o.deliverDate)}${o.window?' · เวลา '+o.window:''}`,`ยอด ${baht(+o.total||0)}`,`เช็กสถานะ / แนบสลิป / ใบเสร็จ:`,link].join('\n');

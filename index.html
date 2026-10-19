@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-0850">
+<meta name="app-version" content="2026.10.19-1000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -766,6 +766,16 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .pocpaid.chk{border-color:#0277bd;color:#0277bd;background:rgba(225,243,252,.78);box-shadow:inset 0 0 0 3px rgba(255,255,255,.9),inset 0 0 0 4.5px #0277bd;font-size:11px;line-height:1.1}
 .pocpaid.chk i{border-top-color:#0277bd;letter-spacing:.6px;font-size:8.5px}
 @media (prefers-color-scheme:dark){.pocpaid.chk{background:rgba(3,40,60,.85);color:#4fc3f7;border-color:#4fc3f7;box-shadow:inset 0 0 0 3px rgba(3,40,60,.9),inset 0 0 0 4.5px #4fc3f7}.pocpaid.chk i{border-color:#4fc3f7}}
+.posrch{display:flex;gap:8px;margin:0 0 10px}.posrch input{flex:1;min-width:0;border:2px solid #c8102e;border-radius:14px;padding:11px 14px;font:inherit;font-size:16px;background:var(--surface);color:var(--fg)}.posrch .btn{white-space:nowrap}
+.pocpaid.due{border-color:#d32f2f;color:#d32f2f;background:rgba(255,235,235,.85);box-shadow:inset 0 0 0 3px rgba(255,255,255,.9),inset 0 0 0 4.5px #d32f2f;font-size:12px}.pocpaid.due i{border-top-color:#d32f2f;letter-spacing:1.5px}
+@media (prefers-color-scheme:dark){.pocpaid.due{background:rgba(60,8,8,.85);color:#ff8a80;border-color:#ff8a80;box-shadow:inset 0 0 0 3px rgba(60,8,8,.9),inset 0 0 0 4.5px #ff8a80}.pocpaid.due i{border-color:#ff8a80}}
+.poc.pick mark{background:#fff3a6;color:inherit;border-radius:4px;padding:0 2px}
+.pickpay{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 8px;padding:10px;border-radius:12px;background:var(--sunk,#f4efe8)}
+.pickpay>div{flex:1 1 100%}.pickpay>.btn{flex:1 1 0;min-width:0;min-height:48px;font-size:16px}.pickpay small{display:block;color:var(--muted);font-size:12.5px}.pickpay b{font-size:24px}.pickpay b.due{color:#d32f2f}
+.pickpay .btn.cash{background:#fff7e0;border-color:#e0b04a;color:#7a5200;font-weight:700}.pickpay .btn.scan{background:#e3f2fd;border-color:#64b5f6;color:#0d47a1;font-weight:700}
+.pickdone{width:100%;font-size:17px;padding:12px}
+.scanbox{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:1;border-radius:18px;overflow:hidden;background:#000}.scanbox video{width:100%;height:100%;object-fit:cover}
+.scfr{position:absolute;inset:16%;border:4px solid #4ade80;border-radius:18px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -1240,7 +1250,9 @@ function render(){
     $('#lgForm').addEventListener('submit',e=>{e.preventDefault();login()});(last?$('#lgPw'):$('#lgUser')).focus();return}
   if(S.state==='loading'){v.innerHTML=S.loadErr?`<div class="empty"><b>ยังเชื่อมต่อไม่ได้</b>${esc(S.loadErr)} · กำลังลองใหม่อัตโนมัติ…<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn pri" type="button" onclick="location.reload()">โหลดหน้าใหม่</button><button class="btn" type="button" data-act="logout">ออกจากระบบ</button></div></div>`:`<div class="empty"><b>กำลังโหลดข้อมูลร้าน…</b>โต๊ะ เมนู และยอดขายวันนี้จะขึ้นในไม่กี่วินาที<br><small class="muted">${esc(S.loadStep||'')}</small><div style="margin-top:14px"><button class="btn sm ghost" type="button" data-act="logout">ค้างนาน? เข้าสู่ระบบใหม่</button></div></div>`;return}
   const fqF=document.activeElement&&document.activeElement.id==='fq';
+  const qf=document.activeElement&&document.activeElement.id==='poQ'?document.activeElement.selectionStart:null;
   v.innerHTML=((S.tab==='po'||S.tab==='poprep')?pushNag():'')+({tables:viewTables,kitchen:viewKitchen,menu:viewMenu,back:viewBack,report:viewReport,po:viewPo,poprep:viewPoPrep,poreport:viewPoReport}[S.tab])();
+  if(qf!==null){const q=document.getElementById('poQ');if(q){q.focus();try{q.setSelectionRange(qf,qf)}catch(e){}}}
   if(fqF){const q=$('#fq');if(q){q.focus();const n=q.value.length;try{q.setSelectionRange(n,n)}catch(e){}}}
 }
 const isLow=s=>(+s.qty||0)<=(+s.min||0);
@@ -1430,13 +1442,13 @@ function viewReport(){
 
 /* ---------- sheets ---------- */
 function openSheet(s){S.sheet=s;renderSheet();$('#sheet').hidden=false;document.body.classList.add('sheet-on')}
-function closeSheet(){try{for(const k in RCLOGO)delete RCLOGO[k]}catch(e){}S.sheet=null;$('#sheet').hidden=true;$('#panel').innerHTML='';document.body.classList.remove('sheet-on')}
+function closeSheet(){try{stopScan()}catch(e){}try{for(const k in RCLOGO)delete RCLOGO[k]}catch(e){}S.sheet=null;$('#sheet').hidden=true;$('#panel').innerHTML='';document.body.classList.remove('sheet-on')}
 function refreshSheet(kind){const s=S.sheet;if(!s)return;
   if((s.type==='order'||s.type==='pay')&&kind!=='menu'){if(!S.open[s.id]){closeSheet();return}
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2491,6 +2503,7 @@ const ACT={
   bill:d=>openSheet({type:'bill',id:d.id}),
   voidPaid:async d=>{if(!can('void'))return deny();const ok=await write('orders/'+d.id,r=>r.update({status:'void',voidedAt:Date.now()}));if(ok){closeSheet();S.report.data=null;loadReport();toast('ยกเลิกบิลแล้ว')}},
 };
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='poQ'){S.poQ=e.target.value;const r=$('#poRes');if(r)r.innerHTML=poResHtml()}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
   if(b.closest('form')&&b.tagName==='BUTTON')e.preventDefault();
   if(b.dataset.confirm&&!b.dataset.armed){b.dataset.armed='1';b.dataset.label=b.textContent;b.textContent='แตะอีกครั้งเพื่อยืนยัน';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent=b.dataset.label}},3500);return}
@@ -2659,6 +2672,57 @@ async function comboSave(){const s=S.sheet;comboKeep();const e=$('#cbErr');const
   {const L=S.nMenu||(S.nMenu=[]),k=L.findIndex(x=>x.id===id),row={id,...data};if(k>=0)L[k]=row;else L.push(row)}
   const cats=S.settings.cats||[];if(!cats.includes(COMBO_CAT))await write('config/settings',r=>r.update({cats:[COMBO_CAT,...cats]})).then(k=>{if(k)S.settings={...S.settings,cats:[COMBO_CAT,...cats]}});
   toast('🎁 บันทึกเซ็ตแล้ว');openSheet({type:'combos'})}
+
+// ---------- รับของ / ส่งของ: ค้นหาด่วน · สแกน QR · รับเงินสด / สแกนจ่าย ----------
+const poDue=o=>Math.max(0,(+o.total||0)-(o.payStatus==='paid'?(+o.total||0):(+o.paidAmt||0)));
+function poMatch(q){q=String(q||'').trim().toLowerCase().replace(/^kmk\s*/,'');if(!q)return [];
+  return (S.poOrders||[]).filter(o=>poLive(o)&&o.status!=='done').filter(o=>{const ph=String(o.phone||'').replace(/\D/g,''),no=String(o.orderNo||'').slice(-4);
+    if(/^\d+$/.test(q))return (q.length>=3&&ph.endsWith(q))||(q.length<=4&&+no===+q);return String(o.name||'').toLowerCase().includes(q)})
+   .sort((a,b)=>(a.deliverDate||'').localeCompare(b.deliverDate||'')||a.at-b.at)}
+function poSearchBox(){return `<div class="posrch"><input id="poQ" type="search" autocomplete="off" enterkeyhint="search" placeholder="🔍 ค้นหาเพื่อส่งของ · เบอร์ 4 ตัวท้าย / KMK / ชื่อ" value="${esc(S.poQ||'')}"><button class="btn" data-act="poScan" type="button">📷 สแกนรับของ</button></div><div id="poRes">${poResHtml()}</div>`}
+function poResHtml(){const q=(S.poQ||'').trim();if(!q)return '';const L=poMatch(q);
+  return `<div class="sec-h" style="margin-top:4px"><h2>ผลค้นหา "${esc(q)}"</h2><span class="hint">${L.length?'พบ '+L.length+' ออร์เดอร์':'ไม่พบ'} · ไม่รวมที่ส่งแล้ว/ยกเลิก</span></div>${L.length?`<div class="pogrid">${L.map(o=>poPickCard(o,q)).join('')}</div>`:'<div class="empty"><b>ไม่พบออร์เดอร์</b>ลองพิมพ์เบอร์ 4 ตัวท้าย หรือเลข KMK</div>'}`}
+function poPickCard(o,q){const due=poDue(o),paid=o.payStatus==='paid',slip=o.payStatus==='slip',hl=s=>{const d=String(q||'').replace(/\D/g,'');return d.length>=3&&String(s).replace(/\D/g,'').endsWith(d)?esc(String(s).slice(0,-d.length))+'<mark>'+esc(String(s).slice(-d.length))+'</mark>':esc(s)};
+  const stamp=paid?'<span class="pocpaid" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></span>':slip?'<span class="pocpaid chk">รอตรวจ<br>สอบยอด<i>CHECKING</i></span>':'<span class="pocpaid due" aria-label="ค้างชำระ">ค้างชำระ<i>UNPAID</i></span>';
+  return `<div class="card poc pick paid">${stamp}<div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${(PO_ST[o.status]||PO_ST.new)[1]}">${(PO_ST[o.status]||PO_ST.new)[0]}</span></div>
+   <div class="poc-who"><b>${esc(o.name)}</b> · ${hl(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</div>
+   <div class="muted" style="font-size:13px">ส่ง${esc(poDayName(o.deliverDate))}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(o.deliverDate))?' '+esc(poDate(o.deliverDate)):''} · ${esc(o.method==='pickup'?'มารับที่ร้าน':(o.pointName||''))}</div>
+   <div class="poc-items">${(o.items||[]).map(l=>`<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
+   ${o.note?`<div class="poc-note">📝 ${esc(o.note)}</div>`:''}
+   <div class="pickpay"><div><small>${paid?'ชำระแล้ว':'ยอดที่ต้องเก็บ'}</small><b class="${paid?'':'due'}">${baht(paid?+o.total||0:due)}</b></div>
+    ${paid?'':slip?`<button class="btn" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button><button class="btn" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">✓ สลิปถูกต้อง · รับเงินแล้ว</button>`
+      :`<button class="btn cash" data-act="poCash" data-id="${esc(o.id)}" data-confirm="1" type="button">💵 รับเงินสด</button><button class="btn scan" data-act="poPayQr" data-id="${esc(o.id)}" type="button">📱 สแกนจ่าย</button>`}</div>
+   <button class="btn pri wide pickdone" data-act="poDeliver" data-id="${esc(o.id)}" type="button">✅ ส่งอาหารสำเร็จ</button></div>`}
+function poPickRefresh(){const s=S.sheet;if(s&&s.type==='poPick'){sheetPoPick();return}const r=$('#poRes');if(r)r.innerHTML=poResHtml()}
+function sheetPoPick(){const o=(S.poOrders||[]).find(x=>x.id===S.sheet.id);if(!o){closeSheet();return toast('ไม่พบออร์เดอร์นี้','bad')}
+  $('#panel').innerHTML=head('📦 รับของ · '+esc(poShort(o)),o.status==='done'?'ออร์เดอร์นี้ส่งสำเร็จแล้ว':'ตรวจรายการ เก็บเงิน แล้วกดส่งอาหารสำเร็จ')+`<div class="sh-body">${o.status==='done'?'<div class="notice">✅ ส่งอาหารสำเร็จไปแล้ว</div>':''}${poPickCard(o,'')}</div>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn wide" data-act="poScan" type="button">📷 สแกนคนถัดไป</button></div>`}
+function sheetPoPayQr(){const o=(S.poOrders||[]).find(x=>x.id===S.sheet.id);if(!o)return closeSheet();const pp=String(poCfg().promptpay||S.settings.promptpay||'').replace(/\D/g,''),due=poDue(o);
+  $('#panel').innerHTML=head('📱 สแกนจ่าย · '+esc(poShort(o)),'คุณ'+esc(o.name))+`<div class="sh-body" style="align-items:center;text-align:center">
+   ${ppValid(pp)?`<div class="qrbig" style="max-width:300px;margin:0 auto">${qrSvg(ppPayload(pp,due))}</div><b style="font-size:30px">${baht(due)}</b><div class="muted">พร้อมเพย์ ${esc(pp.replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}${poCfg().ppName?' · '+esc(poCfg().ppName):''}</div>`
+     :'<div class="notice">ยังไม่ได้ตั้งเบอร์พร้อมเพย์ · ตั้งที่ "ตั้งค่าร้านพรีออเดอร์"</div>'}
+   <p class="help" style="margin:0">ให้ลูกค้าสแกนด้วยแอปธนาคาร · เห็นเงินเข้าแล้วกด "ได้รับเงินแล้ว"</p></div>
+   <div class="sh-foot"><button class="btn" data-act="poPickBack" data-id="${esc(o.id)}" type="button">ย้อนกลับ</button><button class="btn pri wide" data-act="poPaidQr" data-id="${esc(o.id)}" data-confirm="1" type="button">✓ ได้รับเงินแล้ว</button></div>`}
+// สแกน QR รับของ (กล้องหลัง) · ใช้ BarcodeDetector ถ้ามี ไม่งั้นใช้ jsQR
+let SCAN=null;
+function stopScan(){if(!SCAN)return;SCAN.stop=true;try{SCAN.stream&&SCAN.stream.getTracks().forEach(t=>t.stop())}catch(e){}SCAN=null}
+function scanFound(txt){let id='';try{const u=new URL(txt);id=u.searchParams.get('o')||''}catch(e){const m=String(txt).match(/[?&]o=([^&]+)/);if(m)id=decodeURIComponent(m[1])}
+  const o=id&&(S.poOrders||[]).find(x=>x.id===id);if(!o){toast('QR นี้ไม่ใช่ออร์เดอร์ข้าวมันไก่ หรือไม่อยู่ในรายการ','bad');return false}
+  try{navigator.vibrate&&navigator.vibrate(80)}catch(e){}stopScan();openSheet({type:'poPick',id:o.id});return true}
+async function sheetPoScan(){$('#panel').innerHTML=head('📷 สแกน QR รับของ','ส่องที่ QR ในหน้าออร์เดอร์บนมือถือลูกค้า')+`<div class="sh-body"><div class="scanbox"><video id="scV" playsinline muted autoplay></video><span class="scfr"></span></div><p class="help" id="scMsg" style="margin:0;text-align:center">กำลังเปิดกล้อง…</p>
+   <div class="field"><label for="scTxt">หรือพิมพ์เลข KMK / เบอร์ 4 ตัวท้าย</label><input id="scTxt" inputmode="numeric" placeholder="เช่น 6 หรือ 0755"></div></div>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="scGo" type="button">ค้นหา</button></div>`;
+  stopScan();const me=SCAN={stop:false};const msg=t=>{const e=$('#scMsg');if(e)e.textContent=t};
+  try{me.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})}catch(e){msg('เปิดกล้องไม่ได้ · อนุญาตกล้องในตั้งค่า หรือพิมพ์เลขด้านล่างแทน');return}
+  if(me.stop){me.stream.getTracks().forEach(t=>t.stop());return}
+  const v=$('#scV');if(!v)return stopScan();v.srcObject=me.stream;try{await v.play()}catch(e){}msg('ส่องให้ QR อยู่ในกรอบ');
+  let det=null;if('BarcodeDetector' in window){try{det=new BarcodeDetector({formats:['qr_code']})}catch(e){det=null}}
+  if(!det&&!window.jsQR){try{await loadScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js')}catch(e){msg('โหลดตัวอ่าน QR ไม่ได้ · พิมพ์เลขด้านล่างแทน');return}}
+  const cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
+  const tick=async()=>{if(me.stop||!v.isConnected)return;try{if(v.readyState>=2){let txt='';
+      if(det){const r=await det.detect(v);if(r&&r[0])txt=r[0].rawValue}
+      else{const w=Math.min(640,v.videoWidth),h=Math.round(v.videoHeight*w/v.videoWidth);cv.width=w;cv.height=h;cx.drawImage(v,0,0,w,h);const r=window.jsQR(cx.getImageData(0,0,w,h).data,w,h,{inversionAttempts:'dontInvert'});if(r)txt=r.data}
+      if(txt&&scanFound(txt))return}}catch(e){}setTimeout(()=>requestAnimationFrame(tick),120)};tick()}
 function sheetPoNote(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(!o){closeSheet();return}
   $('#panel').innerHTML=head('✏️ โน้ตออร์เดอร์ · '+esc(poShort(o)),'คุณ'+esc(o.name)+' · แอดมิน / แม่ครัว')+`<form class="sh-body" onsubmit="return false">
    ${o.note0&&o.note0!==o.note?`<p class="help" style="margin:0">โน้ตเดิมของลูกค้า: ${esc(o.note0)}</p>`:''}
@@ -2715,7 +2779,7 @@ function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliver
   const F={new:['รอยืนยัน',null],confirmed:['ยืนยันแล้ว',o=>['confirmed','ready'].includes(o.status)],paid:['ชำระเงินแล้ว',o=>poLive(o)&&o.payStatus==='paid'],unpaid:['ค้างชำระเงิน',o=>poLive(o)&&o.status!=='new'&&o.payStatus!=='paid'],all:['ทั้งหมด',()=>true]};
   const pf=F[S.poF]?S.poF:(pend.length?'new':'confirmed');const list=pf==='new'?pend:all.filter(F[pf][1]);
   const unpaid=live.filter(o=>o.payStatus!=='paid').reduce((a,o)=>a+(+o.total||0),0);
-  let h=closedCard()+poHeadCard()+poDayChips(day)+`<div class="strip"><div class="stat"><b class="num">${live.length}</b><span>ออร์เดอร์</span></div><div class="stat"><b class="num">${live.reduce((a,o)=>a+poQty(o),0)}</b><span>กล่อง/ชิ้น</span></div><div class="stat"><b class="num">${baht(live.reduce((a,o)=>a+(+o.total||0),0))}</b><span>ยอดขาย</span></div><div class="stat"><b class="num">${baht(unpaid)}</b><span>ยังไม่ได้เงิน</span></div></div>
+  let h=closedCard()+poHeadCard()+poSearchBox()+poDayChips(day)+`<div class="strip"><div class="stat"><b class="num">${live.length}</b><span>ออร์เดอร์</span></div><div class="stat"><b class="num">${live.reduce((a,o)=>a+poQty(o),0)}</b><span>กล่อง/ชิ้น</span></div><div class="stat"><b class="num">${baht(live.reduce((a,o)=>a+(+o.total||0),0))}</b><span>ยอดขาย</span></div><div class="stat"><b class="num">${baht(unpaid)}</b><span>ยังไม่ได้เงิน</span></div></div>
     <div class="chips">${Object.entries(F).map(([k,f])=>{const n=k==='new'?pend.length:all.filter(f[1]).length;return `<button class="chip pof-${k}${k==='new'&&n?' hot':''}" aria-pressed="${pf===k}" data-act="poF" data-v="${k}" type="button">${k==='new'&&n?'<i class="livedot"></i>':''}${f[0]}${n?` <b class="pofn">${n}</b>`:''}</button>`}).join('')}</div>
     ${pf==='new'&&pend.length?`<p class="help" style="margin:0;align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:3px 12px">🔴 อัปเดตทันทีเมื่อลูกค้าสั่ง · รวมทุกวันส่ง</p>`:''}`;
   if(!list.length)return h+`<div class="empty"><b>${pf==='new'?'ไม่มีออร์เดอร์รอยืนยัน 👍':all.length?'ไม่มีออร์เดอร์ในสถานะนี้':'ยังไม่มีออร์เดอร์ส่ง'+poDayName(day)}</b>${all.length?'':'ลูกค้าสั่งผ่านลิงก์ / QR ของร้าน ออร์เดอร์จะขึ้นที่นี่ทันที'}</div>`;
@@ -2882,6 +2946,15 @@ Object.assign(ACT,{
   cbQ:d=>{comboKeep();const s=S.sheet;s.q[d.id]=Math.max(0,Math.min(20,(+s.q[d.id]||0)+(+d.d)));const y=$('#panel .sh-body')?.scrollTop||0;sheetComboEdit();const b=$('#panel .sh-body');if(b)b.scrollTop=y},
   comboSave:()=>comboSave(),
   comboDel:async()=>{const s=S.sheet;if(!s.id)return;const ok=await write('menu/'+s.id,r=>r.delete());if(ok){S.nMenu=(S.nMenu||[]).filter(x=>x.id!==s.id);toast('ลบเซ็ตแล้ว');openSheet({type:'combos'})}},
+  poScan:()=>{if(!canPo())return deny();openSheet({type:'poScan'})},
+  scGo:()=>{const q=val('scTxt');const L=poMatch(q);if(L.length===1){stopScan();openSheet({type:'poPick',id:L[0].id})}else if(!L.length)toast('ไม่พบออร์เดอร์','bad');else{closeSheet();S.poQ=q;S.tab='po';render();toast('พบ '+L.length+' ออร์เดอร์ · เลือกจากรายการ')}},
+  poCash:d=>ACT.poPaid({id:d.id,m:'cash'}),
+  poPayQr:d=>openSheet({type:'poPayQr',id:d.id}),
+  poPaidQr:async d=>{await ACT.poPaid({id:d.id,m:'promptpay'});openSheet({type:'poPick',id:d.id})},
+  poPickBack:d=>openSheet({type:'poPick',id:d.id}),
+  poDeliver:async d=>{const o=(S.poOrders||[]).find(x=>x.id===d.id);if(!o)return;if(o.status==='done')return toast('ส่งสำเร็จไปแล้ว');
+    if(o.payStatus!=='paid'&&!confirm('ออร์เดอร์นี้ยังค้างชำระ '+baht(poDue(o))+'\nยืนยันส่งอาหารโดยยังไม่รับเงิน?'))return;
+    await poSet(o.id,{status:'done',doneAt:Date.now(),by:S.me||''},'✅ ส่งอาหารสำเร็จ · '+poShort(o));poPickRefresh()},
   poRound:()=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poRound'})},
   poRoundSave:async()=>{const d=val('prD'),cd=val('prC'),t=val('prT');const e=$('#prErr');await poSaveCancel();
     const w=poWinArg(),od=val('prO'),of=val('prOT');if(!d){if(!poState().round){if(w!==null||of!==(poCfg().openFrom||'')){const {error}=await SB.rpc('po_set_round',{p_round:'',p_close:'',p_cutoff:t,p_window:w,p_open_date:'',p_open_from:of});if(error)return toast('บันทึกเวลาส่งไม่สำเร็จ: '+error.message,'bad');S.po={...poCfg(),...(w!==null?{window:w}:{}),openFrom:of,openDate:''}}closeSheet();render();return toast('บันทึกแล้ว')}if(e)e.textContent='เลือกวันส่ง หรือกด "ใช้แบบอัตโนมัติ"';return}if(cd&&cd>d){if(e)e.textContent='วันปิดรับต้องไม่หลังวันส่ง';return}if(od&&od>(cd||poShift(d,-1))){if(e)e.textContent='วันเปิดรับต้องไม่หลังวันปิดรับ';return}
@@ -2905,12 +2978,12 @@ Object.assign(ACT,{
   poCxGo:()=>{const o=S.poOrders.find(x=>x.id===S.sheet.id);const t=(val('cxTxt')||'').trim().slice(0,150);if(!o)return closeSheet();if(!t)return toast('เลือกหรือพิมพ์เหตุผลการยกเลิกก่อน','bad');
     closeSheet();poSet(o.id,{status:'cancelled',cancelledBy:'shop',cancelledAt:Date.now(),cancelReason:t,cancelSeen:true},'ยกเลิก '+poShort(o)+' แล้ว')},
   poPaid:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o||o.payStatus==='paid')return;
-    const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='paid'?null:{payStatus:'paid',payAt:Date.now(),payBy:S.me||'',paidAmt:+x.total||0,slipBad:null}));if(!ok)return;
+    const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='paid'?null:{payStatus:'paid',payAt:Date.now(),payBy:S.me||'',paidAmt:+x.total||0,slipBad:null,...(d.m?{payMethod:d.m}:{})}));if(!ok)return;
     Object.assign(o,{payStatus:'paid',payAt:Date.now(),paidAmt:+o.total||0});let msg='บันทึกรับเงิน '+poShort(o)+' แล้ว';
     if(o.memberPhone&&S.settings.pointsOn&&!o.ptsDone){const earn=Math.floor((+o.total||0)/Math.max(1,+S.settings.pointsPer||50));
       try{const bal=await applyPoints(o.memberPhone,o.name||'',0,earn,+o.total||0);const pex=LAST_LOTS?memExpSoon(LAST_LOTS):null;await write('po_orders/'+o.id,r=>r.update({ptsEarned:earn,ptsBalance:bal,ptsDone:true,...(pex?{ptsExp:pex}:{})}));Object.assign(o,{ptsEarned:earn,ptsBalance:bal,ptsDone:true});msg+=' · สมาชิก +'+earn+' แต้ม (รวม '+bal+')'}
       catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
-    render();toast(msg)},
+    render();poPickRefresh();toast(msg)},
   poSlip:async d=>{const o=S.poOrders.find(x=>x.id===d.id);const ids=[...new Set([d.id,...((o&&o.slipIds)||[])])];const L=[];
     try{for(const id of ids){const g=await S.db.doc('po_slips/'+id).get();if(g.exists&&g.data().img)L.push(g.data())}}catch(e){return toast('โหลดสลิปไม่ได้','bad')}
     if(!L.length)return toast('ไม่พบรูปสลิป','bad');L.sort((a,b)=>(a.at||0)-(b.at||0));
