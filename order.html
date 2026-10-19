@@ -255,6 +255,10 @@ label.btn{display:flex;align-items:center;justify-content:center;text-align:cent
 .cstamp b{color:#5ec59c;font-size:24px;font-weight:800;line-height:1.15;padding-bottom:4px;border-bottom:2px solid #5ec59c;font-family:var(--f-body)}
 .cstamp i{color:#5ec59c;font-style:normal;font-weight:800;font-size:16px;letter-spacing:3px;text-transform:uppercase}
 .cbsv{display:block;font-size:12px;font-weight:700;color:#0f9488}.cbsv s{color:#9a9a9a;font-weight:400;margin-right:4px}
+.pseal{position:absolute;left:4px;top:2px;width:48px;height:60px;z-index:3;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));transform:rotate(-8deg)}
+.chip.chip-promo{border-color:#e65100;color:#bf360c;background:#fff3e0;font-weight:700}.chip.chip-promo[aria-pressed="true"]{background:#e65100;color:#fff;border-color:#e65100}
+.probanner{display:flex;flex-direction:column;gap:6px}.probanner>div{background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:1.5px dashed #e65100;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.probanner b{color:#bf360c;font-size:16px}.probanner span{font-size:13px;color:#6d4c41}.prodisc{color:#e65100;font-weight:700}
 </style>
 </head>
 <body>
@@ -431,7 +435,7 @@ async function start(){
   if(error){if(lastOid()&&await tryReceipt())return;const [a,b]=rpcErr(error);return fail(a,b)}
   if(!WALK&&(+T<1||+T>data.tables))return fail('ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน');
   if(data.shopClosed){if(data.logo){$('#logo').src=data.logo;$('#logo').hidden=false}return shopClosedView(data)}
-  S.menu=data.menu||[];S.callOpts=data.callOptions||null;S.cats=(data.cats||[]).filter(c=>S.menu.some(m=>m.cat===c));
+  S.pub=data;S.menu=data.menu||[];S.callOpts=data.callOptions||null;S.cats=(data.cats||[]).filter(c=>S.menu.some(m=>m.cat===c));
   document.title=(data.shopName||'NueaLwoan')+(WALK?' · สั่งอาหาร':' · โต๊ะ '+T);
   if(data.logo){$('#logo').src=data.logo;$('#logo').hidden=false}
   $('#shop').textContent=data.shopName||'สั่งอาหาร';$('#tnum').textContent=WALK?'':T;$('#tno').hidden=WALK;
@@ -450,7 +454,7 @@ async function start(){
   setInterval(()=>{if(S.view==='status'&&!document.hidden)loadStatus()},15000);
 }
 let lastSig='';
-async function loadMenu(){try{const {data,error}=await sb.rpc('public_menu',{p_key:K});if(error||!data)return;S.menu=data.menu||[];if(S.view==='menu')render()}catch(e){}}
+async function loadMenu(){try{const {data,error}=await sb.rpc('public_menu',{p_key:K});if(error||!data)return;S.pub=data;S.menu=data.menu||[];if(S.view==='menu')render()}catch(e){}}
 setInterval(()=>{if(sb&&!document.hidden&&(S.view==='menu'||S.view==='cart'))loadMenu()},30000);
 async function loadStatus(force){const {data,error}=await sb.rpc('customer_status',{p_key:K,p_table:T,p_order:myOrder()});if(error){if(lastOid())tryReceipt();return}
   if(data.open&&(data.items||[]).length){const oid=WALK?getWO():(data.orderId||S.myOrder);if(oid)setLast(oid)}else if(!data.open&&!data.moved&&lastOid()){tryReceipt();}
@@ -506,13 +510,28 @@ function callAsk(){const o=document.querySelector('.callpop');if(o)o.remove();co
 
 const eUnit=e=>(+(S.menu.find(m=>m.id===e.menuId)||{}).price||0)+(e.opts||[]).reduce((a,o)=>a+(+o.p||0),0);
 const cartN=()=>Object.values(S.cart).reduce((a,e)=>a+e.qty,0);
+const PSEAL='<svg class="pseal" viewBox="0 0 100 124" aria-label="โปรโมชั่น" role="img"><defs><linearGradient id="sgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".35" stop-color="#f2c94c"/><stop offset=".7" stop-color="#c9952b"/><stop offset="1" stop-color="#f7dc7a"/></linearGradient><linearGradient id="sgR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0ac3a"/><stop offset="1" stop-color="#a8761c"/></linearGradient><radialGradient id="sgC" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".6" stop-color="#e2b246"/><stop offset="1" stop-color="#b8862a"/></radialGradient></defs><path d="M30 78 L18 120 L30 112 L38 122 L46 84Z" fill="url(#sgR)"/><path d="M70 78 L82 120 L70 112 L62 122 L54 84Z" fill="url(#sgR)"/><polygon points="50.0,2.0 55.7,6.9 62.4,3.6 66.6,9.8 74.0,8.4 76.5,15.5 83.9,16.1 84.5,23.5 91.6,26.0 90.2,33.4 96.4,37.6 93.1,44.3 98.0,50.0 93.1,55.7 96.4,62.4 90.2,66.6 91.6,74.0 84.5,76.5 83.9,83.9 76.5,84.5 74.0,91.6 66.6,90.2 62.4,96.4 55.7,93.1 50.0,98.0 44.3,93.1 37.6,96.4 33.4,90.2 26.0,91.6 23.5,84.5 16.1,83.9 15.5,76.5 8.4,74.0 9.8,66.6 3.6,62.4 6.9,55.7 2.0,50.0 6.9,44.3 3.6,37.6 9.8,33.4 8.4,26.0 15.5,23.5 16.1,16.1 23.5,15.5 26.0,8.4 33.4,9.8 37.6,3.6 44.3,6.9" fill="url(#sgG)" stroke="#9c6d17" stroke-width="1"/><circle cx="50" cy="50" r="36" fill="url(#sgC)" stroke="#fff6c8" stroke-width="2"/><circle cx="50" cy="50" r="31" fill="none" stroke="#9c6d17" stroke-width="1.2" stroke-dasharray="2 2.2"/><text x="50" y="53" text-anchor="middle" font-family="Kanit,Prompt,sans-serif" font-weight="800" font-size="13.5" textLength="58" lengthAdjust="spacingAndGlyphs" fill="#7a1010">โปรโมชั่น</text><text x="50" y="67" text-anchor="middle" font-family="Kanit,sans-serif" font-weight="700" font-size="7.5" letter-spacing=".6" textLength="48" lengthAdjust="spacingAndGlyphs" fill="#7a1010">PROMOTION</text></svg>';
+const promoTab=()=>(S.pub&&S.pub.promoTab)||'โปรโมชั่น ComBo Set';
+const promoList=()=>(S.pub&&S.pub.promos)||[];
+const promoIds=()=>new Set(promoList().flatMap(p=>p.items||[]));
+const promoOf=id=>promoList().find(p=>(p.items||[]).includes(id));
+// โปรคละรส: ต้องคิดแบบเดียวกับแอปร้าน (promoCalcJS) และ SQL
+function promoCalc(items){const used=new Set();let disc=0;const list=[];
+  promoList().forEach(p=>{const n=+p.n,pr=+p.price;if(!(n>=2))return;const u=[];items.forEach((l,i)=>{if(l.menuId&&(p.items||[]).includes(l.menuId))for(let g=1;g<=Math.min(+l.qty||0,200);g++){const k=(i+1)+':'+g;if(!used.has(k))u.push([k,+l.price||0])}});
+    u.sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:a[0]>b[0]?1:0));const sets=Math.floor(u.length/n);let pd=0;
+    for(let k=0;k<sets;k++){let grp=0;for(let i=0;i<n;i++){grp+=u[k*n+i][1];used.add(u[k*n+i][0])}pd+=Math.max(grp-pr,0)}
+    const left=u.length%n;list.push({p,sets,disc:r2(pd),need:left?n-left:0,cnt:u.length});disc+=pd});
+  return {disc:r2(disc),list}}
+function billPromo(st){const byName={};S.menu.forEach(m=>{if(!(m.name in byName))byName[m.name]=m.id});
+  return promoCalc((st.items||[]).map(l=>({menuId:byName[l.name],qty:+l.qty||0,price:(+l.qty?(+l.amount||0)/(+l.qty):0)})))}
 const cartT=()=>Object.values(S.cart).reduce((s,e)=>s+eUnit(e)*e.qty,0);
 const inCart=id=>Object.values(S.cart).reduce((a,e)=>a+(e.menuId===id?e.qty:0),0);
 function putCart(m,sel){const k=m.id+'|'+optKey(sel.opts)+'|'+sel.note;if(S.cart[k])S.cart[k].qty+=sel.qty;else S.cart[k]={menuId:m.id,opts:sel.opts,note:sel.note,qty:sel.qty};render()}
 
 const MENU_PH='images/menu-ph.jpg?v=20261016b';
-function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph"><img src="${esc(m.img||MENU_PH)}" alt="${esc(m.name)}" loading="lazy"${m.img?'':' class="noimg"'}></div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${m.combo&&+m.combo.regular>(+m.price||0)?`<span class="cbsv"><s>${baht(m.combo.regular)}</s> ประหยัด ${baht(m.combo.regular-(+m.price||0))}</span>`:''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
-function menuGrid(empty){const list=S.menu.filter(m=>S.cat==='all'||m.cat===S.cat);if(!list.length)return empty;
+function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}${promoOf(m.id)?PSEAL:''}<div class="ph"><img src="${esc(m.img||MENU_PH)}" alt="${esc(m.name)}" loading="lazy"${m.img?'':' class="noimg"'}></div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${m.combo&&+m.combo.regular>(+m.price||0)?`<span class="cbsv"><s>${baht(m.combo.regular)}</s> ประหยัด ${baht(m.combo.regular-(+m.price||0))}</span>`:''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
+function menuGrid(empty){const P=promoIds();if(S.cat==='__promo'&&!S.menu.some(m=>P.has(m.id)))S.cat='all';
+  const list=S.menu.filter(m=>S.cat==='__promo'?P.has(m.id):S.cat==='all'||m.cat===S.cat).sort((a,b)=>P.has(b.id)-P.has(a.id));if(!list.length)return empty;
   if(S.cat!=='all')return `<div class="grid">${list.map(menuCard).join('')}</div>`;
   const order=[...S.cats,...new Set(list.map(m=>m.cat||'').filter(c=>!S.cats.includes(c)))];
   return order.map(c=>{const g=list.filter(m=>(m.cat||'')===c);return g.length?`${c?`<h3 class="cath">${esc(c)}</h3>`:''}<div class="grid">${g.map(menuCard).join('')}</div>`:''}).join('')}
@@ -543,7 +562,7 @@ function render(){
     setTimeout(()=>$('#nm')?.focus(),50);return;
   }
   if(S.view==='menu'){
-    h=`<div class="chips">${['all',...S.cats].map(c=>`<button class="chip" aria-pressed="${S.cat===c}" data-a="cat" data-v="${esc(c)}" type="button">${c==='all'?'ทั้งหมด':esc(c)}</button>`).join('')}</div>
+    h=`${promoList().length?`<div class="probanner">${promoList().map(p=>`<div><b>🎁 ${esc(p.name)}</b><span>เลือกคละได้ ${(p.items||[]).map(id=>(S.menu.find(m=>m.id===id)||{}).name).filter(Boolean).map(esc).join(' · ')} · ลดให้ตอนชำระเงิน</span></div>`).join('')}</div>`:''}<div class="chips">${['all',...(S.menu.some(m=>promoIds().has(m.id))?['__promo']:[]),...S.cats].map(c=>`<button class="chip${c==='__promo'?' chip-promo':''}" aria-pressed="${S.cat===c}" data-a="cat" data-v="${esc(c)}" type="button">${c==='all'?'ทั้งหมด':c==='__promo'?'📢 '+esc(promoTab()):esc(c)}</button>`).join('')}</div>
     ${menuGrid('<p class="muted">ยังไม่มีเมนูเปิดขาย</p>')}
     ${S.status&&S.status.items.length?`<button class="btn" data-a="view" data-v="status" type="button">ดูรายการที่สั่งแล้ว · ${baht(S.status.total)}</button>`:''}`;
     ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()?'':'disabled'} type="button">ดูตะกร้า</button>`;
@@ -555,9 +574,10 @@ function render(){
     <p class="err" id="sendErr" role="alert"></p>`;
     ft=`<button class="btn" data-a="view" data-v="menu" type="button">เลือกเพิ่ม</button><button class="btn pri wide" data-a="send" ${cartN()&&!S.sending?'':'disabled'} type="button">${S.sending?'กำลังส่ง…':'ส่งรายการ '+baht(cartT())}</button>`;
   }else if(S.view==='bill'){
-    const st=S.status||{items:[],total:0},bc=billCalc(st),pp=String(st.promptpay||'').replace(/\D/g,'');slipLoad();
+    const st0=S.status||{items:[],total:0},bp=billPromo(st0),st=bp.disc?{...st0,total:r2((+st0.total||0)-bp.disc)}:st0,bc=billCalc(st),pp=String(st.promptpay||'').replace(/\D/g,'');slipLoad();
     h=`<h2>ตรวจสอบยอด${where()}</h2>${st.orderNo?`<p class="muted" style="margin:0">เลขที่ ${esc(st.orderNo)}</p>`:''}`+
       (st.items.length?`<div class="list bill">${st.items.map(l=>`<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opt?`<div class="optx">${esc(l.opt)}</div>`:''}</div><div class="r">${baht(l.amount)}</div></div>`).join('')}
+        ${bp.disc?`<div class="row"><div class="g muted">รวมก่อนลด</div><div class="r">${baht(st0.total)}</div></div>${bp.list.filter(x=>x.disc).map(x=>`<div class="row"><div class="g prodisc">🎁 ${esc(x.p.name)}${x.sets>1?' ×'+x.sets:''}</div><div class="r prodisc">−${baht(x.disc)}</div></div>`).join('')}`:''}
         ${bc.vat?`<div class="row"><div class="g muted">${bc.mode==='excl'?'รวมก่อนภาษี':'ยอดรวม'}</div><div class="r">${baht(bc.sub)}</div></div><div class="row"><div class="g muted">VAT ${bc.rate}%${bc.mode==='incl'?' (รวมในราคาแล้ว)':''}</div><div class="r">${baht(bc.vat)}</div></div>`:''}
         ${bc.round?`<div class="row"><div class="g muted">ส่วนลดปัดเศษ</div><div class="r" style="color:var(--chili)">−${baht(bc.round)}</div></div>`:''}<div class="row sum"><div class="g"><b>ยอดที่ต้องชำระ</b></div><div class="r"><b>${baht(bc.total)}</b></div></div></div>
         ${st.waiting?`<p class="muted" style="margin:0">ยังมี ${st.waiting} รายการที่กำลังทำ ยอดนี้รวมไว้แล้ว</p>`:''}

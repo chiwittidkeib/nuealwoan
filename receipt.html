@@ -185,13 +185,13 @@ function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bi
   const dd=po&&b.deliverDate?new Date(b.deliverDate+'T00:00:00+07:00').toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Bangkok'}):'';
   let items=b.items||[];
   // โปรคละรส (ข้าวมันไก่): รวมชิ้นที่เข้าโปรเป็นบรรทัด "โปร… n หน่วย" ราคาโปร แทนบรรทัดส่วนลด
-  if(po&&Array.isArray(b.promos)&&b.promos.some(p=>Array.isArray(p.groups)&&p.groups.length)){const used={},P={},src=items;
+  if(Array.isArray(b.promos)&&b.promos.some(p=>Array.isArray(p.groups)&&p.groups.length)){const used={},P={},src=items;
     b.promos.forEach(pr=>(pr.groups||[]).forEach(g=>{const en=Object.entries(g.c||{}).map(([o,c])=>[+o-1,+c]).filter(([o])=>src[o]);if(!en.length)return;
       en.forEach(([o,c])=>used[o]=(used[o]||0)+c);
       const lab=en.length===1?'โปร'+src[en[0][0]].name+' '+(+pr.n)+' '+(pr.unit||'ชิ้น'):'โปร '+en.map(([o,c])=>src[o].name+' ×'+c).join(' + ')+' ('+(+pr.n)+' '+(pr.unit||'ชิ้น')+')';
       const k=lab+'|'+pr.price;(P[k]=P[k]||{name:lab,qty:0,price:+pr.price||0,promo:true}).qty++}));
     items=src.map((l,i)=>({...l,qty:(+l.qty||0)-(used[i]||0)})).filter(l=>l.qty>0).concat(Object.values(P));
-    b.subtotal=b.total;b.discount=0;b.discLabel=''}
+    const pd=b.promos.reduce((t,p)=>t+(+p.disc||0),0);b.subtotal=Math.round(((+b.subtotal||+b.total||0)-pd)*100)/100;b.discount=Math.max(0,Math.round(((+b.discount||0)-pd)*100)/100);b.discLabel=''}
   const vat=+b.vat>0;const taxInv=vat&&s.taxId;
   const rows=items.map((l,i)=>{const opt=(l.opts||[]).map(o=>o.n).filter(Boolean).join(', ');return `<tr${l.promo?' class="prow"':''}><td class="n">${i+1}</td><td class="i">${l.promo?'🎁 ':''}${esc(l.name)}${opt?`<small>${esc(opt)}</small>`:''}${l.note?`<small>${esc(l.note)}</small>`:''}</td><td class="q">${+l.qty||0}</td><td class="p">${num(l.price)}</td><td class="t">${num((+l.price||0)*(+l.qty||0))}</td></tr>`}).join('');
   const pad=Array.from({length:Math.max(0,4-items.length)},()=>'<tr class="pad"><td></td><td></td><td></td><td></td><td></td></tr>').join('');
