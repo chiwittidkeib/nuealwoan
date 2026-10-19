@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1320">
+<meta name="app-version" content="2026.10.19-1400">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1841,6 +1841,7 @@ function sheetMenu(){const m=S.menu.find(x=>x.id===S.sheet.id)||{name:'',cat:cur
    <div class="field"><label>วันนี้</label><div class="help" style="padding-top:10px">${S.sheet.id?'สั่งไปแล้ว '+soldToday(S.sheet.id)+' ที่'+(typeof m.dailyLimit==='number'?' · เหลือ '+menuLeft(m):''):'—'}</div></div></div>
    <p class="help" style="margin:-6px 0 0">เว้นว่าง = ไม่จำกัด (∞) · ใส่ตัวเลข เช่น 20 ระบบนับจากที่สั่งวันนี้ ครบแล้วขึ้น "หมดแล้ว" เอง · เริ่มนับใหม่ทุกวัน</p>
    <label class="check"><input type="checkbox" id="mActive" ${m.active!==false?'checked':''}> เปิดขาย <small class="muted">(เอาติ๊กออก = ขึ้นตรา "หมดแล้ว")</small></label>
+   <label class="check"><input type="checkbox" id="mNote" ${m.noNote?'':'checked'}> ให้ลูกค้าเขียนหมายเหตุ (บอกครัว) ได้ <small class="muted">(ไม่ติ๊ก = ซ่อนช่องหมายเหตุ เช่น เครื่องดื่ม)</small></label>
    <label class="check"><input type="checkbox" id="mHidden" ${m.hidden?'checked':''}> สินค้า ยังไม่จำหน่าย <small class="muted">(ไม่แสดงในหน้าสั่งอาหารเลย)</small></label>
    <div class="card consigncard"><label class="check"><input type="checkbox" id="mConsign" ${m.consign||S.sheet.consign?'checked':''}> <b>📦 สินค้าฝากขาย</b> <small class="muted">(ของคนอื่นมาฝากร้านขาย)</small></label>
     <div class="field"><label for="mOwner">ผู้ฝากขาย</label><input id="mOwner" list="ownerList" maxlength="40" value="${esc((m.consign&&m.consign.owner)||S.sheet.owner||'')}" placeholder="เช่น ขนมป้าศรี, น้ำสมุนไพรลุงชัย" autocomplete="off"><datalist id="ownerList">${[...new Set(S.menu.filter(x=>x.consign&&x.consign.owner).map(x=>x.consign.owner))].map(o=>`<option value="${esc(o)}">`).join('')}</datalist></div>
@@ -1948,7 +1949,7 @@ const cleanOpts=O=>O.map(g=>({id:g.id,name:g.name,req:g.type==='req1',max:g.type
 function readIng(){document.querySelectorAll('[data-ing]').forEach(e=>{const g=S.sheet.recipe[+e.dataset.ing];if(!g)return;g[e.dataset.k]=e.dataset.k==='qty'?(parseFloat(e.value)||0):e.value})}
 async function saveMenu(){readIng();const name=val('mName');if(!name)return toast('ใส่ชื่อเมนูก่อน','bad');
   readOpts();const bad=S.sheet.opts.find(g=>!g.name&&g.choices.some(c=>c.name))||S.sheet.opts.find(g=>g.name&&!g.choices.some(c=>c.name));if(bad)return toast(bad.name?'กลุ่ม "'+bad.name+'" ยังไม่มีตัวเลือก':'ตั้งชื่อกลุ่มตัวเลือกก่อน','bad');
-  const data={name,desc:val('mDesc'),cat:val('mCat'),price:nval('mPrice'),cost:nval('mCost'),active:$('#mActive').checked,hidden:$('#mHidden').checked,dailyLimit:(v=>v===''?null:Math.max(0,Math.round(+v)||0))(val('mLimit').replace(/[^0-9]/g,'')),recipe:S.sheet.recipe.filter(g=>g.stockId&&g.qty>0),options:cleanOpts(S.sheet.opts)};if(isPo()||(S.menu.find(m=>m.id===S.sheet.id)||{}).shop==='po')data.shop='po';
+  const data={name,desc:val('mDesc'),cat:val('mCat'),price:nval('mPrice'),cost:nval('mCost'),active:$('#mActive').checked,hidden:$('#mHidden').checked,noNote:!$('#mNote').checked,dailyLimit:(v=>v===''?null:Math.max(0,Math.round(+v)||0))(val('mLimit').replace(/[^0-9]/g,'')),recipe:S.sheet.recipe.filter(g=>g.stockId&&g.qty>0),options:cleanOpts(S.sheet.opts)};if(isPo()||(S.menu.find(m=>m.id===S.sheet.id)||{}).shop==='po')data.shop='po';
   {const ex=S.menu.find(m=>m.id===S.sheet.id)||{};const cOn=$('#mConsign')&&$('#mConsign').checked;
    if(cOn){const owner=val('mOwner');if(!owner)return toast('ใส่ชื่อผู้ฝากขายก่อน','bad');data.consign={owner:owner.slice(0,40)}}
    ['consignIn','consignSold','consignRet','consignPaidQty'].forEach(k=>{if(ex[k]!=null)data[k]=ex[k]})}
@@ -2675,7 +2676,7 @@ function sheetPoPromos(){const L=poPromos(),nm=id=>(promoMenu().find(m=>m.id===i
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="poPromoEdit" data-v="-1" type="button">+ สร้างโปรใหม่</button></div>`}
 function sheetPoPromoEdit(){const s=S.sheet;if(!s.sel){const p=poPromos()[s.i]||{};s.p=p;s.sel=new Set(p.items||[])}
   const p=s.p||{},menu=promoMenu(),cats=[...new Set(menu.map(x=>x.cat||'อื่นๆ'))];
-  $('#panel').innerHTML=head(s.i>=0?'แก้ไขโปร':'สร้างโปรคละรส','เลือกเมนูที่ร่วมโปร (คละกันได้) · ครบกี่ชิ้น · ราคาเท่าไร')+`<form class="sh-body" onsubmit="return false">
+  $('#panel').innerHTML=head(s.i>=0?'แก้ไขโปรโมชั่น':'สร้างโปรโมชั่น','เลือกเมนูที่ร่วมโปร (คละกันได้) · ครบกี่ชิ้น · ราคาเท่าไร')+`<form class="sh-body" onsubmit="return false">
    <div class="field"><label for="ppName">ชื่อโปร (ลูกค้าเห็น)</label><input id="ppName" maxlength="60" value="${esc(s.name??p.name??'')}" placeholder="เช่น นมคละรส 3 ขวด 100"></div>
    <div class="grid2"><div class="field"><label for="ppN">ครบกี่ชิ้น</label><div class="inrow" style="gap:6px"><input id="ppN" type="number" min="2" max="20" inputmode="numeric" value="${esc(String(s.n??p.n??3))}" style="flex:1;min-width:0"><input id="ppU" maxlength="12" value="${esc(s.unit??p.unit??'')}" placeholder="ชิ้น" aria-label="หน่วยนับ" style="width:72px"></div><span class="help">หน่วยนับ เช่น ขวด / กล่อง (ขึ้นในใบเสร็จ)</span></div>
    <div class="field"><label for="ppP">ราคาโปรต่อชุด (บาท)</label><input id="ppP" inputmode="decimal" value="${esc(String(s.price??p.price??''))}" placeholder="เช่น 100"></div></div>

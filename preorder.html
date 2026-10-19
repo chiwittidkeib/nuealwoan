@@ -368,14 +368,14 @@ function optPick(m,cfg){cfg=cfg||{};const G=optGroups(m);const pick={};G.forEach
       <div class="op-hd"><div class="op-t"><h2>${esc(m.name)}</h2>${m.desc?`<p>${esc(m.desc)}</p>`:''}</div><b>${baht(mul(+m.price||0))}</b></div>
       ${G.map(g=>{const bad=warn&&miss.includes(g);return `<section class="op-g${bad?' bad':''}" data-g="${esc(g.id)}"><div class="op-gh"><b>${esc(g.name)}</b><span class="op-rule${g.req?' req':''}">${optRule(g)}</span></div>
         ${g.choices.map(c=>{const on=pick[g.id].includes(c.id);return `<button type="button" class="op-c${on?' on':''}" data-og="${esc(g.id)}" data-oc="${esc(c.id)}" aria-pressed="${on}"><i class="${+g.max===1?'rd':'ck'}"></i><span>${esc(c.name)}</span><em>${+c.price?'+'+baht(mul(+c.price)).replace('฿',''):''}</em></button>`}).join('')}</section>`}).join('')}
-      <section class="op-g"><div class="op-gh"><b>บอกครัว</b><span class="op-rule">ไม่บังคับ</span></div>
+      ${m.noNote?'':`<section class="op-g"><div class="op-gh"><b>บอกครัว</b><span class="op-rule">ไม่บังคับ</span></div>
         <input id="opNote" maxlength="80" placeholder="เช่น ไม่ใส่ผัก ไม่เผ็ด" autocomplete="off">
-        ${(cfg.notes||[]).length?`<div class="op-qn">${cfg.notes.map(n=>`<button type="button" class="chip" data-on="${esc(n)}">${esc(n)}</button>`).join('')}</div>`:''}</section>
+        ${(cfg.notes||[]).length?`<div class="op-qn">${cfg.notes.map(n=>`<button type="button" class="chip" data-on="${esc(n)}">${esc(n)}</button>`).join('')}</div>`:''}</section>`}
     </div>
     <div class="op-foot"><div class="stepper"><button type="button" data-oq="-1" aria-label="ลด">−</button><span>${qty}</span><button type="button" data-oq="1" aria-label="เพิ่ม">+</button></div>
       <button type="button" class="btn pri wide op-add" data-oadd="1">${miss.length&&warn?'ยังไม่ได้เลือก: '+esc(miss[0].name):(cfg.addLabel||'ใส่ตะกร้า')+' '+baht(unit()*qty)}</button></div>
     <button type="button" class="op-x" data-ox="1" aria-label="ปิด">×</button></div>`;
-    const n=el.querySelector('#opNote');n.value=keepNote!=null?keepNote:note;n.addEventListener('input',()=>note=n.value);
+    const n=el.querySelector('#opNote');if(n){n.value=keepNote!=null?keepNote:note;n.addEventListener('input',()=>note=n.value)}
     el.querySelector('.op-body').scrollTop=sc;}
   let downBg=false;el.addEventListener('pointerdown',e=>{downBg=e.target===el});
   el.addEventListener('click',e=>{if(e.target===el){if(downBg)close();return}if(e.target.closest('[data-oimg]'))return viewImg(m.img,m.name);const b=e.target.closest('button');if(!b)return;e.stopPropagation();
@@ -682,7 +682,7 @@ let armT=null;
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
   if(a==='cat'){S.cat=b.dataset.v;render()}
   else if(a==='add'){const m=S.menu.find(x=>x.id===b.dataset.m);if(!m||m.soldOut)return;if(!canOrder())return toast(stateLine(S.cfg.state).replace(/<[^>]+>/g,''));
-    if(hasOpts(m))optPick(m,{addLabel:'ใส่ตะกร้า',onAdd:sel=>putCart(m,sel)});else{putCart(m,{opts:[],note:'',qty:1});toast('ใส่ตะกร้าแล้ว: '+m.name)}}
+    optPick(m,{addLabel:'ใส่ตะกร้า',onAdd:sel=>{putCart(m,sel);toast('ใส่ตะกร้าแล้ว: '+m.name)}})}
   else if(a==='qty'){const e2=S.cart[b.dataset.k];if(!e2)return;e2.qty+=+b.dataset.d;if(e2.qty<=0)delete S.cart[b.dataset.k];if(!cartN())S.view='menu';render()}
   else if(a==='view'){S.view=b.dataset.v;S.err='';if(S.view==='board'){S.board=null;loadBoard()}render();$('main').scrollTop=0}
   else if(a==='method'){S.method=b.dataset.v;render()}
