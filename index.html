@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1200b">
+<meta name="app-version" content="2026.10.19-1230">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -304,6 +304,8 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 .mtile .ms{font-size:12px;color:var(--muted)}
 .mtile .mf{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:6px}
 .mtile .mf b{font-size:17px;margin-right:auto}
+.pseal{position:absolute;left:4px;top:2px;width:44px;height:55px;z-index:3;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));transform:rotate(-8deg)}
+.mtile.haspro .tags{left:52px}
 .mtile .tags{position:absolute;top:8px;left:8px;right:8px;display:flex;flex-wrap:wrap;gap:4px;pointer-events:none}
 @media (max-width:520px){.mtgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.mtile .mf{flex-wrap:wrap}.mtile .mf .btn{width:100%}}
 .thumb{width:52px;height:52px;border-radius:9px;overflow:hidden;flex:none;background:var(--sunk)}
@@ -1318,6 +1320,7 @@ function viewKitchen(){
   return h+'</div>';
 }
 
+const PSEAL='<svg class="pseal" viewBox="0 0 100 124" aria-label="โปรโมชั่น" role="img"><defs><linearGradient id="sgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".35" stop-color="#f2c94c"/><stop offset=".7" stop-color="#c9952b"/><stop offset="1" stop-color="#f7dc7a"/></linearGradient><linearGradient id="sgR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0ac3a"/><stop offset="1" stop-color="#a8761c"/></linearGradient><radialGradient id="sgC" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".6" stop-color="#e2b246"/><stop offset="1" stop-color="#b8862a"/></radialGradient></defs><path d="M30 78 L18 120 L30 112 L38 122 L46 84Z" fill="url(#sgR)"/><path d="M70 78 L82 120 L70 112 L62 122 L54 84Z" fill="url(#sgR)"/><polygon points="50.0,2.0 55.7,6.9 62.4,3.6 66.6,9.8 74.0,8.4 76.5,15.5 83.9,16.1 84.5,23.5 91.6,26.0 90.2,33.4 96.4,37.6 93.1,44.3 98.0,50.0 93.1,55.7 96.4,62.4 90.2,66.6 91.6,74.0 84.5,76.5 83.9,83.9 76.5,84.5 74.0,91.6 66.6,90.2 62.4,96.4 55.7,93.1 50.0,98.0 44.3,93.1 37.6,96.4 33.4,90.2 26.0,91.6 23.5,84.5 16.1,83.9 15.5,76.5 8.4,74.0 9.8,66.6 3.6,62.4 6.9,55.7 2.0,50.0 6.9,44.3 3.6,37.6 9.8,33.4 8.4,26.0 15.5,23.5 16.1,16.1 23.5,15.5 26.0,8.4 33.4,9.8 37.6,3.6 44.3,6.9" fill="url(#sgG)" stroke="#9c6d17" stroke-width="1"/><circle cx="50" cy="50" r="36" fill="url(#sgC)" stroke="#fff6c8" stroke-width="2"/><circle cx="50" cy="50" r="31" fill="none" stroke="#9c6d17" stroke-width="1.2" stroke-dasharray="2 2.2"/><text x="50" y="53" text-anchor="middle" font-family="Kanit,Prompt,sans-serif" font-weight="800" font-size="13.5" textLength="58" lengthAdjust="spacingAndGlyphs" fill="#7a1010">โปรโมชั่น</text><text x="50" y="67" text-anchor="middle" font-family="Kanit,sans-serif" font-weight="700" font-size="7.5" letter-spacing=".6" textLength="48" lengthAdjust="spacingAndGlyphs" fill="#7a1010">PROMOTION</text></svg>';
 const PROMO_TAB_DEF='โปรโมชั่น ComBo Set';
 function poPromoTab(){return poCfg().promoTab||PROMO_TAB_DEF}
 function poLivePromoIds(){const ids=new Set();if(isPo())poPromos().filter(p=>poPromoState(p)==='กำลังใช้').forEach(p=>(p.items||[]).forEach(id=>ids.add(id)));return ids}
@@ -1332,7 +1335,7 @@ function viewMenu(){
   const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':' offsale'}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิดการขาย'}</button>`:'';
   if(S.menuLay==='grid'){h+='<div class="mtgrid">';
     list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-      const so=isSoldOut(m),th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}" data-act="menuEdit" data-id="${m.id}">${so?th.replace(/<\/div>$/,stampHtml(false)+'</div>'):th}<div class="tags">${pIds.has(m.id)?'<span class="pill promo">📢 โปร</span>':''}${m.hidden?'<span class="pill mute">ซ่อน</span>':''}${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
+      const so=isSoldOut(m),th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}${pIds.has(m.id)?' haspro':''}" data-act="menuEdit" data-id="${m.id}">${pIds.has(m.id)?PSEAL:''}${so?th.replace(/<\/div>$/,stampHtml(false)+'</div>'):th}<div class="tags">${m.hidden?'<span class="pill mute">ซ่อน</span>':''}${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
        <div class="mb"><div class="mn">${esc(m.name)}</div><div class="ms">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%</div><div class="mf"><b>${baht(p)}</b>${tog(m)}</div></div></div>`});
     return h+'</div>';}
   h+='<div class="list">';
@@ -2660,7 +2663,7 @@ function sheetPoPromoEdit(){const s=S.sheet;if(!s.sel){const p=poPromos()[s.i]||
   const p=s.p||{},menu=(S.poMenu||[]),cats=[...new Set(menu.map(x=>x.cat||'อื่นๆ'))];
   $('#panel').innerHTML=head(s.i>=0?'แก้ไขโปร':'สร้างโปรคละรส','เลือกเมนูที่ร่วมโปร (คละกันได้) · ครบกี่ชิ้น · ราคาเท่าไร')+`<form class="sh-body" onsubmit="return false">
    <div class="field"><label for="ppName">ชื่อโปร (ลูกค้าเห็น)</label><input id="ppName" maxlength="60" value="${esc(s.name??p.name??'')}" placeholder="เช่น นมคละรส 3 ขวด 100"></div>
-   <div class="grid2"><div class="field"><label for="ppN">ครบกี่ชิ้น</label><input id="ppN" type="number" min="2" max="20" inputmode="numeric" value="${esc(String(s.n??p.n??3))}"></div>
+   <div class="grid2"><div class="field"><label for="ppN">ครบกี่ชิ้น</label><div class="inrow" style="gap:6px"><input id="ppN" type="number" min="2" max="20" inputmode="numeric" value="${esc(String(s.n??p.n??3))}" style="flex:1;min-width:0"><input id="ppU" maxlength="12" value="${esc(s.unit??p.unit??'')}" placeholder="ชิ้น" aria-label="หน่วยนับ" style="width:72px"></div><span class="help">หน่วยนับ เช่น ขวด / กล่อง (ขึ้นในใบเสร็จ)</span></div>
    <div class="field"><label for="ppP">ราคาโปรต่อชุด (บาท)</label><input id="ppP" inputmode="decimal" value="${esc(String(s.price??p.price??''))}" placeholder="เช่น 100"></div></div>
    <p class="help" id="ppSave" style="margin:-4px 0 0;color:#0f9488;font-weight:700"></p>
    <div class="card" style="padding:10px 12px"><h3 style="margin:0 0 6px">เมนูที่ร่วมโปร <small class="muted" id="ppCnt"></small></h3>${cats.map(ct=>{const g=menu.filter(x=>(x.cat||'อื่นๆ')===ct);return `<div class="inrow" style="justify-content:space-between;margin:8px 0 2px"><span class="muted" style="font-size:12.5px">${esc(ct)}</span><button class="lnk" data-act="ppCat" data-v="${esc(ct)}" type="button">เลือกทั้งหมวด</button></div>${g.map(x=>`<label class="check cbrow${s.sel.has(x.id)?' on':''}"><input type="checkbox" data-pp="${esc(x.id)}" ${s.sel.has(x.id)?'checked':''}> <span class="grow">${esc(x.name)}</span> <small class="muted">${baht(+x.price||0)}</small></label>`).join('')}`}).join('')||'<p class="help">ยังไม่มีเมนู</p>'}</div>
@@ -2673,7 +2676,7 @@ function sheetPoPromoEdit(){const s=S.sheet;if(!s.sel){const p=poPromos()[s.i]||
     if(!prs.length||!(n>=2)||!(pr>0)){$('#ppSave').textContent='';return}const lo=Math.min(...prs)*n,hi=Math.max(...prs)*n;
     $('#ppSave').textContent=hi<=pr?'⚠️ ราคาโปรไม่ถูกกว่าราคาปกติ':`ปกติ ${lo===hi?baht(hi):baht(lo)+'–'+baht(hi)} → ${baht(pr)} · ลูกค้าประหยัดสูงสุด ${baht(hi-pr)}`};
   const F=$('#panel form');F.addEventListener('input',upd);F.addEventListener('change',e=>{const id=e.target.dataset&&e.target.dataset.pp;if(id){e.target.checked?s.sel.add(id):s.sel.delete(id);e.target.closest('label').classList.toggle('on',e.target.checked);upd()}});upd()}
-function ppKeep(){const s=S.sheet;if(!s||s.type!=='poPromoEdit')return;s.name=val('ppName');s.n=val('ppN');s.price=val('ppP');s.start=val('ppS');s.end=val('ppE');s.on=$('#ppOn').checked}
+function ppKeep(){const s=S.sheet;if(!s||s.type!=='poPromoEdit')return;s.name=val('ppName');s.n=val('ppN');s.unit=val('ppU');s.price=val('ppP');s.start=val('ppS');s.end=val('ppE');s.on=$('#ppOn').checked}
 async function ppSaveList(L,msg){const {data,error}=await SB.rpc('po_set_promos',{p_promos:L});if(error){const e=$('#ppErr');const m=String(error.message||'');if(e)e.textContent=/not_allowed/.test(m)?'เฉพาะแอดมิน / แม่ครัว':'บันทึกไม่สำเร็จ: '+m;else toast('บันทึกไม่สำเร็จ: '+m,'bad');return false}
   S.po={...poCfg(),promos:(data&&data.promos)||L};toast(msg);openSheet({type:'poPromos'});return true}
 function sheetCombos(){const L=(S.nMenu||[]).filter(m=>m.combo);
@@ -3004,7 +3007,7 @@ Object.assign(ACT,{
   ppSave:async()=>{const s=S.sheet;ppKeep();const e=$('#ppErr');const n=Math.round(+s.n||0),pr=+s.price;
     if(!String(s.name||'').trim())return e.textContent='ใส่ชื่อโปร';if(!(n>=2&&n<=20))return e.textContent='จำนวนชิ้นต้อง 2–20';if(!(pr>=0)||s.price==='')return e.textContent='ใส่ราคาโปร';if(!s.sel.size)return e.textContent='เลือกเมนูที่ร่วมโปรอย่างน้อย 1 เมนู';
     if(s.start&&s.end&&s.end<s.start)return e.textContent='วันจบต้องไม่ก่อนวันเริ่ม';
-    const L=poPromos().slice(),it={id:(s.p&&s.p.id)||'',name:String(s.name).trim(),n,price:pr,items:[...s.sel],start:s.start||'',end:s.end||'',on:s.on!==false};
+    const L=poPromos().slice(),it={id:(s.p&&s.p.id)||'',name:String(s.name).trim(),n,price:pr,items:[...s.sel],unit:String(s.unit||'').trim()||'ชิ้น',start:s.start||'',end:s.end||'',on:s.on!==false};
     if(s.i>=0)L[s.i]=it;else L.push(it);await ppSaveList(L,'บันทึกโปรแล้ว')},
   ppTabSave:async()=>{const v=val('ppTab').trim();const {error}=await SB.rpc('po_set_promo_tab',{p_tab:v});if(error)return toast('บันทึกไม่สำเร็จ: '+error.message,'bad');S.po={...poCfg(),promoTab:v};toast('เปลี่ยนชื่อแท็บแล้ว');sheetPoPromos()},
   ppDel:async()=>{const s=S.sheet;const L=poPromos().filter((_,i)=>i!==s.i);await ppSaveList(L,'ลบโปรแล้ว')},

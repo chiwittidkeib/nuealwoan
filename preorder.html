@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1200">
+<meta name="app-version" content="2026.10.19-1230">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -293,6 +293,7 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 .chip.chip-promo{border-color:#e65100;color:#bf360c;font-weight:700;background:#fff3e0}.chip.chip-promo[aria-pressed="true"]{background:#e65100;color:#fff;border-color:#e65100}
 .probanner{display:flex;flex-direction:column;gap:6px}.probanner>div{background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:1.5px dashed #e65100;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
 .probanner b{color:#bf360c;font-size:16px}.probanner span{font-size:13px;color:#6d4c41}
+.pseal{position:absolute;left:4px;top:2px;width:48px;height:60px;z-index:3;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));transform:rotate(-8deg)}
 .probadge{position:absolute;left:6px;top:6px;z-index:2;background:#e65100;color:#fff;font-style:normal;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;max-width:calc(100% - 12px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 4px rgba(0,0,0,.25)}
 .prodisc{color:#e65100;font-weight:700}.pronudge{background:#fff3e0;color:#bf360c;border-radius:10px;padding:6px 10px;font-size:13.5px;text-align:center;margin-bottom:6px;width:100%;box-sizing:border-box}
 .recvbox{border-radius:18px;padding:14px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid #e0b04a;background:#fff8e1}
@@ -429,6 +430,7 @@ function promoCalc(items){const P=(S.cfg&&S.cfg.promos)||[];const used=new Set()
 const cartItems=()=>Object.values(S.cart).map(e=>({menuId:e.menuId,qty:e.qty,price:eUnit(e)}));
 const cartPromo=()=>promoCalc(cartItems());
 const cartT=()=>cartSub()-cartPromo().disc;
+const PSEAL='<svg class="pseal" viewBox="0 0 100 124" aria-label="โปรโมชั่น" role="img"><defs><linearGradient id="sgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".35" stop-color="#f2c94c"/><stop offset=".7" stop-color="#c9952b"/><stop offset="1" stop-color="#f7dc7a"/></linearGradient><linearGradient id="sgR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0ac3a"/><stop offset="1" stop-color="#a8761c"/></linearGradient><radialGradient id="sgC" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".6" stop-color="#e2b246"/><stop offset="1" stop-color="#b8862a"/></radialGradient></defs><path d="M30 78 L18 120 L30 112 L38 122 L46 84Z" fill="url(#sgR)"/><path d="M70 78 L82 120 L70 112 L62 122 L54 84Z" fill="url(#sgR)"/><polygon points="50.0,2.0 55.7,6.9 62.4,3.6 66.6,9.8 74.0,8.4 76.5,15.5 83.9,16.1 84.5,23.5 91.6,26.0 90.2,33.4 96.4,37.6 93.1,44.3 98.0,50.0 93.1,55.7 96.4,62.4 90.2,66.6 91.6,74.0 84.5,76.5 83.9,83.9 76.5,84.5 74.0,91.6 66.6,90.2 62.4,96.4 55.7,93.1 50.0,98.0 44.3,93.1 37.6,96.4 33.4,90.2 26.0,91.6 23.5,84.5 16.1,83.9 15.5,76.5 8.4,74.0 9.8,66.6 3.6,62.4 6.9,55.7 2.0,50.0 6.9,44.3 3.6,37.6 9.8,33.4 8.4,26.0 15.5,23.5 16.1,16.1 23.5,15.5 26.0,8.4 33.4,9.8 37.6,3.6 44.3,6.9" fill="url(#sgG)" stroke="#9c6d17" stroke-width="1"/><circle cx="50" cy="50" r="36" fill="url(#sgC)" stroke="#fff6c8" stroke-width="2"/><circle cx="50" cy="50" r="31" fill="none" stroke="#9c6d17" stroke-width="1.2" stroke-dasharray="2 2.2"/><text x="50" y="53" text-anchor="middle" font-family="Kanit,Prompt,sans-serif" font-weight="800" font-size="13.5" textLength="58" lengthAdjust="spacingAndGlyphs" fill="#7a1010">โปรโมชั่น</text><text x="50" y="67" text-anchor="middle" font-family="Kanit,sans-serif" font-weight="700" font-size="7.5" letter-spacing=".6" textLength="48" lengthAdjust="spacingAndGlyphs" fill="#7a1010">PROMOTION</text></svg>';
 const promoTab=()=>(S.cfg&&S.cfg.promoTab)||'โปรโมชั่น ComBo Set';
 const promoIds=()=>new Set(((S.cfg&&S.cfg.promos)||[]).flatMap(p=>p.items||[]));
 const promoOf=id=>((S.cfg&&S.cfg.promos)||[]).find(p=>(p.items||[]).includes(id));
@@ -549,7 +551,7 @@ async function loadOrder(){if(!S.cur)return;try{const {data,error}=await sb.rpc(
 function openOrder(id,token){S.cur={id,token};S.order=null;S.view='status';try{const u=new URL(location.href);u.searchParams.set('o',id);u.searchParams.set('t',token);history.replaceState(null,'',u.href)}catch(e){}
   render();loadOrder().then(render)}
 
-function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}${promoOf(m.id)?`<i class="probadge">🎁 ${esc(promoOf(m.id).name)}</i>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
+function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}${promoOf(m.id)?PSEAL:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
 function menuGrid(empty){const P=promoIds();if(S.cat==='__promo'&&!S.menu.some(m=>P.has(m.id)))S.cat='all';
   const list=S.menu.filter(m=>S.cat==='__promo'?P.has(m.id):S.cat==='all'||m.cat===S.cat).sort((a,b)=>P.has(b.id)-P.has(a.id));if(!list.length)return empty;
   if(S.cat!=='all')return `<div class="grid">${list.map(menuCard).join('')}</div>`;

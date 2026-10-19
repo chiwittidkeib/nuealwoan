@@ -48,6 +48,8 @@ td.n,td.q{text-align:center;width:1%;white-space:nowrap}td.p,td.t{text-align:rig
 td.i small{display:block;color:var(--muted);font-size:11.5px;line-height:1.3}
 tbody tr.pad td{height:26px}
 .sum{display:flex;gap:10px;margin-top:12px;align-items:flex-end}
+.tot .dlab{display:block!important;margin-top:-4px;font-size:11.5px;color:#e65100;text-align:left;border:0!important;padding-top:0!important}
+tr.prow td.i{color:#c2410c;font-weight:600}
 .sum .no{flex:1;font-size:12.5px;color:var(--muted);padding-bottom:4px}
 .sum .no b{display:block;color:var(--ink);font-weight:600;font-size:13px;word-break:break-all}
 .tot{flex:1.4;display:flex;flex-direction:column;gap:3px}
@@ -181,8 +183,17 @@ function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bi
   const po=s.theme==='po';document.body.classList.toggle('theme-po',po);
   const where=po?(b.place||'-'):b.table&&b.table!=='TA'?b.table:(b.label||'กลับบ้าน');
   const dd=po&&b.deliverDate?new Date(b.deliverDate+'T00:00:00+07:00').toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Bangkok'}):'';
-  const items=b.items||[];const vat=+b.vat>0;const taxInv=vat&&s.taxId;
-  const rows=items.map((l,i)=>{const opt=(l.opts||[]).map(o=>o.n).filter(Boolean).join(', ');return `<tr><td class="n">${i+1}</td><td class="i">${esc(l.name)}${opt?`<small>${esc(opt)}</small>`:''}${l.note?`<small>${esc(l.note)}</small>`:''}</td><td class="q">${+l.qty||0}</td><td class="p">${num(l.price)}</td><td class="t">${num((+l.price||0)*(+l.qty||0))}</td></tr>`}).join('');
+  let items=b.items||[];
+  // โปรคละรส (ข้าวมันไก่): รวมชิ้นที่เข้าโปรเป็นบรรทัด "โปร… n หน่วย" ราคาโปร แทนบรรทัดส่วนลด
+  if(po&&Array.isArray(b.promos)&&b.promos.some(p=>Array.isArray(p.groups)&&p.groups.length)){const used={},P={},src=items;
+    b.promos.forEach(pr=>(pr.groups||[]).forEach(g=>{const en=Object.entries(g.c||{}).map(([o,c])=>[+o-1,+c]).filter(([o])=>src[o]);if(!en.length)return;
+      en.forEach(([o,c])=>used[o]=(used[o]||0)+c);
+      const lab=en.length===1?'โปร'+src[en[0][0]].name+' '+(+pr.n)+' '+(pr.unit||'ชิ้น'):'โปร '+en.map(([o,c])=>src[o].name+' ×'+c).join(' + ')+' ('+(+pr.n)+' '+(pr.unit||'ชิ้น')+')';
+      const k=lab+'|'+pr.price;(P[k]=P[k]||{name:lab,qty:0,price:+pr.price||0,promo:true}).qty++}));
+    items=src.map((l,i)=>({...l,qty:(+l.qty||0)-(used[i]||0)})).filter(l=>l.qty>0).concat(Object.values(P));
+    b.subtotal=b.total;b.discount=0;b.discLabel=''}
+  const vat=+b.vat>0;const taxInv=vat&&s.taxId;
+  const rows=items.map((l,i)=>{const opt=(l.opts||[]).map(o=>o.n).filter(Boolean).join(', ');return `<tr${l.promo?' class="prow"':''}><td class="n">${i+1}</td><td class="i">${l.promo?'🎁 ':''}${esc(l.name)}${opt?`<small>${esc(opt)}</small>`:''}${l.note?`<small>${esc(l.note)}</small>`:''}</td><td class="q">${+l.qty||0}</td><td class="p">${num(l.price)}</td><td class="t">${num((+l.price||0)*(+l.qty||0))}</td></tr>`}).join('');
   const pad=Array.from({length:Math.max(0,4-items.length)},()=>'<tr class="pad"><td></td><td></td><td></td><td></td><td></td></tr>').join('');
   const disc=(+b.discount||0)+(+b.redeem||0);
   const fbHtml=s.fb?(safeUrl(s.fbUrl)?`<a href="${esc(safeUrl(s.fbUrl))}" target="_blank" rel="noopener">${IC.fb}${esc(s.fb)}</a>`:`<span>${IC.fb}${esc(s.fb)}</span>`):'';
@@ -198,7 +209,7 @@ function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bi
    <table><thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>ราคา</th><th>รวมเงิน</th></tr></thead><tbody>${rows}${pad}</tbody></table>
    <div class="sum"><div class="no"><div class="stamp" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></div></div><div class="tot">
      <div><span>รวมเงิน</span><span>${num(b.subtotal)}</span></div>
-     ${disc?`<div><span>ส่วนลด${b.discLabel?' ('+esc(b.discLabel)+')':''}${+b.redeem?` (ใช้ ${+b.ptsUsed||0} แต้ม)`:''}</span><span>-${num(disc)}</span></div>`:''}
+     ${disc?`<div><span>ส่วนลด${+b.redeem?` (ใช้ ${+b.ptsUsed||0} แต้ม)`:''}</span><span>-${num(disc)}</span></div>${b.discLabel?`<div class="dlab">🎁 ${esc(b.discLabel)}</div>`:''}`:''}
      ${vat&&b.vatMode==='excl'?`<div><span>ภาษีมูลค่าเพิ่ม ${+b.vatRate||0}%</span><span>${num(b.vat)}</span></div>`:''}
      ${+b.roundOff?`<div><span>ส่วนลดปัดเศษ</span><span>-${num(b.roundOff)}</span></div>`:''}
      <div class="net"><span>ยอดสุทธิ</span><span>${num(b.total)}</span></div>
