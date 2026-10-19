@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1300">
+<meta name="app-version" content="2026.10.19-1320">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -540,6 +540,8 @@ html,body{max-width:100%;overflow-x:clip}
 .zoomable{cursor:zoom-in}
 .soldwrap{position:relative}
 .stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);width:86px;height:86px;border:3px solid #e5383b;border-radius:50%;color:#ff4d4f;font-weight:800;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;text-align:center;background:rgba(25,6,6,.82);box-shadow:inset 0 0 0 3px rgba(229,56,59,.35),0 0 0 2px rgba(229,56,59,.25);pointer-events:none;z-index:2;letter-spacing:.5px}
+.stamp.na{width:96px;height:96px;border-color:#78909c;color:#eceff1;background:rgba(22,28,34,.86);box-shadow:inset 0 0 0 3px rgba(120,144,156,.4),0 0 0 2px rgba(120,144,156,.3);font-size:12.5px;line-height:1.15}
+.stamp.na b,.stamp.na i{color:#eceff1!important;font-family:var(--f-body)}.stamp.na i{color:#b0bec5!important}.pill.na{background:#546e7a;color:#fff}
 .stamp.sm{width:58px;height:58px;font-size:11px;border-width:2px;box-shadow:inset 0 0 0 2px rgba(229,56,59,.35)}
 .is-out img,.is-out .pimg{filter:grayscale(1);opacity:.45}
 .is-out b,.is-out span{opacity:.55}
@@ -940,6 +942,7 @@ const bkkNowMin=()=>new Date(Date.now()+7*3600e3).toISOString().slice(0,16);
 const comboOff=m=>!!(m&&m.combo&&((m.combo.start&&bkkNowMin()<m.combo.start)||(m.combo.end&&bkkNowMin()>m.combo.end)));
 const isSoldOut=m=>m.active===false||comboOff(m)||(typeof m.dailyLimit==='number'&&menuLeft(m)<=0);
 const stampHtml=(sm)=>`<span class="stamp${sm?' sm':''}"><b>หมดแล้ว</b><i>Sold Out</i></span>`;
+const naStampHtml=()=>`<span class="stamp na"><b>สินค้า<br>ยังไม่จำหน่าย</b><i>Not Available</i></span>`;
 const leftTag=m=>{const l=menuLeft(m);return l===null||isSoldOut(m)?'':`<span class="leftq${l<=3?' low':''}">เหลือ ${l}</span>`};
 const comboLine=l=>{const m=(S.nMenu||[]).find(x=>x.id===l.menuId);return m&&m.combo&&(m.combo.items||[]).length?`<div class="optx">🎁 ${esc(m.combo.items.map(c=>c.name+' ×'+c.qty).join(' · '))}</div>`:''};
 const optLine=l=>(l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:'')+comboLine(l);
@@ -1335,12 +1338,12 @@ function viewMenu(){
   const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':' offsale'}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิดการขาย'}</button>`:'';
   if(S.menuLay==='grid'){h+='<div class="mtgrid">';
     list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-      const so=isSoldOut(m),th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}${pIds.has(m.id)?' haspro':''}" data-act="menuEdit" data-id="${m.id}">${pIds.has(m.id)?PSEAL:''}${so?th.replace(/<\/div>$/,stampHtml(false)+'</div>'):th}<div class="tags">${m.hidden?'<span class="pill mute">ซ่อน</span>':''}${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
+      const so=isSoldOut(m)||m.hidden,th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}${pIds.has(m.id)?' haspro':''}" data-act="menuEdit" data-id="${m.id}">${pIds.has(m.id)?PSEAL:''}${so?th.replace(/<\/div>$/,(m.hidden?naStampHtml():stampHtml(false))+'</div>'):th}<div class="tags">${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
        <div class="mb"><div class="mn">${esc(m.name)}</div><div class="ms">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%</div><div class="mf"><b>${baht(p)}</b>${tog(m)}</div></div></div>`});
     return h+'</div>';}
   h+='<div class="list">';
   list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?' <span class="pill mute">ซ่อน</span>':''}${m.consign?` <span class="pill info">📦 ฝากขาย · เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?` <span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div>${(can('menu_edit')||can('menu_toggle'))?`${tog(m)}`:''}<div class="r"><b>${baht(p)}</b></div></div>`});
+    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?' <span class="pill na">สินค้ายังไม่จำหน่าย</span>':''}${m.consign?` <span class="pill info">📦 ฝากขาย · เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?` <span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div>${(can('menu_edit')||can('menu_toggle'))?`${tog(m)}`:''}<div class="r"><b>${baht(p)}</b></div></div>`});
   return h+'</div>';
 }
 
@@ -1838,7 +1841,7 @@ function sheetMenu(){const m=S.menu.find(x=>x.id===S.sheet.id)||{name:'',cat:cur
    <div class="field"><label>วันนี้</label><div class="help" style="padding-top:10px">${S.sheet.id?'สั่งไปแล้ว '+soldToday(S.sheet.id)+' ที่'+(typeof m.dailyLimit==='number'?' · เหลือ '+menuLeft(m):''):'—'}</div></div></div>
    <p class="help" style="margin:-6px 0 0">เว้นว่าง = ไม่จำกัด (∞) · ใส่ตัวเลข เช่น 20 ระบบนับจากที่สั่งวันนี้ ครบแล้วขึ้น "หมดแล้ว" เอง · เริ่มนับใหม่ทุกวัน</p>
    <label class="check"><input type="checkbox" id="mActive" ${m.active!==false?'checked':''}> เปิดขาย <small class="muted">(เอาติ๊กออก = ขึ้นตรา "หมดแล้ว")</small></label>
-   <label class="check"><input type="checkbox" id="mHidden" ${m.hidden?'checked':''}> ซ่อนเมนูนี้ <small class="muted">(ไม่แสดงในหน้าสั่งอาหารเลย)</small></label>
+   <label class="check"><input type="checkbox" id="mHidden" ${m.hidden?'checked':''}> สินค้า ยังไม่จำหน่าย <small class="muted">(ไม่แสดงในหน้าสั่งอาหารเลย)</small></label>
    <div class="card consigncard"><label class="check"><input type="checkbox" id="mConsign" ${m.consign||S.sheet.consign?'checked':''}> <b>📦 สินค้าฝากขาย</b> <small class="muted">(ของคนอื่นมาฝากร้านขาย)</small></label>
     <div class="field"><label for="mOwner">ผู้ฝากขาย</label><input id="mOwner" list="ownerList" maxlength="40" value="${esc((m.consign&&m.consign.owner)||S.sheet.owner||'')}" placeholder="เช่น ขนมป้าศรี, น้ำสมุนไพรลุงชัย" autocomplete="off"><datalist id="ownerList">${[...new Set(S.menu.filter(x=>x.consign&&x.consign.owner).map(x=>x.consign.owner))].map(o=>`<option value="${esc(o)}">`).join('')}</datalist></div>
     <p class="help" style="margin:0">"ต้นทุน" ด้านบน = ราคาที่ร้านต้องจ่ายคืนผู้ฝากต่อชิ้น · รับของเข้า / จ่ายเงินผู้ฝาก ทำได้ที่แท็บ "สต็อกสินค้า → ฝากขาย"</p></div>
