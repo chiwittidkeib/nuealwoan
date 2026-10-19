@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-0940">
+<meta name="app-version" content="2026.10.19-1200">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -770,6 +770,7 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .pocpaid.due{border-color:#d32f2f;color:#d32f2f;background:rgba(255,235,235,.85);box-shadow:inset 0 0 0 3px rgba(255,255,255,.9),inset 0 0 0 4.5px #d32f2f;font-size:12px}.pocpaid.due i{border-top-color:#d32f2f;letter-spacing:1.5px}
 @media (prefers-color-scheme:dark){.pocpaid.due{background:rgba(60,8,8,.85);color:#ff8a80;border-color:#ff8a80;box-shadow:inset 0 0 0 3px rgba(60,8,8,.9),inset 0 0 0 4.5px #ff8a80}.pocpaid.due i{border-color:#ff8a80}}
 .poc.pick mark{background:#fff3a6;color:inherit;border-radius:4px;padding:0 2px}
+.chip.chip-promo{border-color:#e65100;color:#bf360c;font-weight:700;background:#fff3e0}.chip.chip-promo[aria-pressed="true"]{background:#e65100;color:#fff}.pill.promo{background:#e65100;color:#fff}
 .porecv{margin:8px 0 2px;padding:8px 10px;border-radius:10px;font-size:13.5px;font-weight:600;display:flex;flex-direction:column;gap:1px}.porecv small{font-weight:400;color:var(--muted);font-size:12px}
 .porecv.wait{background:#fff8e1;color:#8a5a00;border:1px dashed #e0b04a}.porecv.ok{background:#e8f5ee;color:#1b6e3c}.porecv.bad{background:#fdecea;color:#b71c1c;border:1.5px solid #e57373}
 .pickpay{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 8px;padding:10px;border-radius:12px;background:var(--sunk,#f4efe8)}
@@ -1317,16 +1318,21 @@ function viewKitchen(){
   return h+'</div>';
 }
 
+const PROMO_TAB_DEF='โปรโมชั่น ComBo Set';
+function poPromoTab(){return poCfg().promoTab||PROMO_TAB_DEF}
+function poLivePromoIds(){const ids=new Set();if(isPo())poPromos().filter(p=>poPromoState(p)==='กำลังใช้').forEach(p=>(p.items||[]).forEach(id=>ids.add(id)));return ids}
 function viewMenu(){
-  const cats=curCats();
-  let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+(isPo()?'':'<button class="btn sm combob" data-act="combos" type="button">🎁 Combo เซ็ต</button>')+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
-  <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div><div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
-  const list=S.menu.filter(m=>S.menuCat==='all'||m.cat===S.menuCat);
+  const cats=curCats(),pIds=poLivePromoIds(),pN=S.menu.filter(m=>pIds.has(m.id)).length;
+  if(S.menuCat==='__promo'&&!pN)S.menuCat='all';
+  let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+(isPo()?(['owner','chef'].includes(S.role)?'<button class="btn sm combob" data-act="poPromos" type="button">🎁 โปรคละรส</button>':''):'<button class="btn sm combob" data-act="combos" type="button">🎁 Combo เซ็ต</button>')+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
+  <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${pN?`<button class="chip chip-promo" aria-pressed="${S.menuCat==='__promo'}" data-act="menuCat" data-v="__promo" type="button">📢 ${esc(poPromoTab())} (${pN})</button>`:''}${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div><div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
+  const list=S.menu.filter(m=>S.menuCat==='__promo'?pIds.has(m.id):S.menuCat==='all'||m.cat===S.menuCat);
+  if(pIds.size){const ci=c=>{const i=cats.indexOf(c);return i<0?999:i};list.sort((a,b)=>(S.menuCat==='all'?ci(a.cat)-ci(b.cat):0)||(pIds.has(b.id)-pIds.has(a.id)))}
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุน</div>`;
   const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':' offsale'}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิดการขาย'}</button>`:'';
   if(S.menuLay==='grid'){h+='<div class="mtgrid">';
     list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-      const so=isSoldOut(m),th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}" data-act="menuEdit" data-id="${m.id}">${so?th.replace(/<\/div>$/,stampHtml(false)+'</div>'):th}<div class="tags">${m.hidden?'<span class="pill mute">ซ่อน</span>':''}${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
+      const so=isSoldOut(m),th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}" data-act="menuEdit" data-id="${m.id}">${so?th.replace(/<\/div>$/,stampHtml(false)+'</div>'):th}<div class="tags">${pIds.has(m.id)?'<span class="pill promo">📢 โปร</span>':''}${m.hidden?'<span class="pill mute">ซ่อน</span>':''}${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
        <div class="mb"><div class="mn">${esc(m.name)}</div><div class="ms">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%</div><div class="mf"><b>${baht(p)}</b>${tog(m)}</div></div></div>`});
     return h+'</div>';}
   h+='<div class="list">';
@@ -1450,7 +1456,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2639,6 +2645,37 @@ function sheetReset(){const s=S.sheet,nm=s.shop==='po'?'ข้าวมันไ
 const COMBO_CAT='โปรโมชั่น';
 const comboState=m=>!m.combo?'':m.active===false?'ปิดขาย':(m.combo.start&&bkkNowMin()<m.combo.start)?'ยังไม่เริ่ม':(m.combo.end&&bkkNowMin()>m.combo.end)?'หมดเวลา':'กำลังขาย';
 const comboWhen=c=>{const f=x=>x?x.replace('T',' ').replace(/^(\d{4})-(\d\d)-(\d\d)/,(_,y,m,d)=>`${d}/${m}/${y}`):'';return c.start||c.end?`${f(c.start)||'ตอนนี้'} – ${f(c.end)||'ไม่กำหนด'}`:'ไม่จำกัดเวลา'};
+// ===== โปรคละรส (ข้าวมันไก่) · config/po.promos · ลดอัตโนมัติที่ฐานข้อมูล (trigger docs_po_promo)
+const poPromos=()=>Array.isArray(poCfg().promos)?poCfg().promos:[];
+function poPromoState(p){const t=bkkDay(0);return p.on===false?'ปิดอยู่':p.start&&p.start>t?'ยังไม่เริ่ม':p.end&&p.end<t?'หมดเขต':'กำลังใช้'}
+function poPromoReg(p){const ids=p.items||[],pr=(S.poMenu||[]).filter(m=>ids.includes(m.id)).map(m=>+m.price||0);return pr.length?Math.max(...pr)*(+p.n||0):0}
+function sheetPoPromos(){const L=poPromos(),nm=id=>((S.poMenu||[]).find(m=>m.id===id)||{}).name;
+  $('#panel').innerHTML=head('🎁 โปรคละรส','เช่น เครื่องดื่ม 3 ขวด 100 · ลูกค้าเลือกคละรสได้ ครบจำนวนลดให้อัตโนมัติ')+`<div class="sh-body">
+   ${L.length?`<div class="list">${L.map((p,i)=>{const st=poPromoState(p),reg=poPromoReg(p);return `<div class="row click" data-act="poPromoEdit" data-v="${i}"><div class="grow"><div class="t">${esc(p.name)} <span class="pill ${st==='กำลังใช้'?'ok':st==='ยังไม่เริ่ม'?'info':'mute'}">${st}</span></div><div class="s">ครบ ${+p.n} ชิ้น = ${baht(+p.price)}${reg>+p.price?` · ปกติ ${baht(reg)}`:''}</div><div class="s">${esc((p.items||[]).map(nm).filter(Boolean).join(' · '))}</div>${p.start||p.end?`<div class="s">🗓 ${p.start?esc(poDate(p.start)):'ตอนนี้'} – ${p.end?esc(poDate(p.end)):'ไม่มีกำหนด'}</div>`:''}</div></div>`}).join('')}</div>`
+     :'<div class="empty"><b>ยังไม่มีโปร</b>กด "+ สร้างโปรใหม่" เลือกเมนูที่ร่วมโปร ตั้งจำนวนชิ้นและราคา</div>'}
+   <div class="field" style="margin:0"><label for="ppTab">ชื่อแท็บโปร (ขึ้นเฉพาะตอนมีโปรที่ใช้ได้)</label><div class="inrow" style="gap:6px"><span style="font-size:20px">📢</span><input id="ppTab" maxlength="40" value="${esc(poCfg().promoTab||'')}" placeholder="${esc(PROMO_TAB_DEF)}" style="flex:1"><button class="btn sm" data-act="ppTabSave" type="button">บันทึกชื่อ</button></div></div>
+   <p class="help" style="margin:0">ลูกค้าเห็นแท็บ "📢 ${esc(poPromoTab())}" + ป้ายโปรบนเมนู + แถบโปรด้านบน · เมนูที่ร่วมโปรขึ้นเป็นอันดับแรกของแต่ละหมวด · ใส่ตะกร้าครบจำนวน ยอดลดเอง (คิดซ้ำได้ เช่น 6 ขวด = 2 ชุด) · ใช้กับออร์เดอร์ที่สั่งระหว่างช่วงโปร</p></div>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="poPromoEdit" data-v="-1" type="button">+ สร้างโปรใหม่</button></div>`}
+function sheetPoPromoEdit(){const s=S.sheet;if(!s.sel){const p=poPromos()[s.i]||{};s.p=p;s.sel=new Set(p.items||[])}
+  const p=s.p||{},menu=(S.poMenu||[]),cats=[...new Set(menu.map(x=>x.cat||'อื่นๆ'))];
+  $('#panel').innerHTML=head(s.i>=0?'แก้ไขโปร':'สร้างโปรคละรส','เลือกเมนูที่ร่วมโปร (คละกันได้) · ครบกี่ชิ้น · ราคาเท่าไร')+`<form class="sh-body" onsubmit="return false">
+   <div class="field"><label for="ppName">ชื่อโปร (ลูกค้าเห็น)</label><input id="ppName" maxlength="60" value="${esc(s.name??p.name??'')}" placeholder="เช่น นมคละรส 3 ขวด 100"></div>
+   <div class="grid2"><div class="field"><label for="ppN">ครบกี่ชิ้น</label><input id="ppN" type="number" min="2" max="20" inputmode="numeric" value="${esc(String(s.n??p.n??3))}"></div>
+   <div class="field"><label for="ppP">ราคาโปรต่อชุด (บาท)</label><input id="ppP" inputmode="decimal" value="${esc(String(s.price??p.price??''))}" placeholder="เช่น 100"></div></div>
+   <p class="help" id="ppSave" style="margin:-4px 0 0;color:#0f9488;font-weight:700"></p>
+   <div class="card" style="padding:10px 12px"><h3 style="margin:0 0 6px">เมนูที่ร่วมโปร <small class="muted" id="ppCnt"></small></h3>${cats.map(ct=>{const g=menu.filter(x=>(x.cat||'อื่นๆ')===ct);return `<div class="inrow" style="justify-content:space-between;margin:8px 0 2px"><span class="muted" style="font-size:12.5px">${esc(ct)}</span><button class="lnk" data-act="ppCat" data-v="${esc(ct)}" type="button">เลือกทั้งหมวด</button></div>${g.map(x=>`<label class="check cbrow${s.sel.has(x.id)?' on':''}"><input type="checkbox" data-pp="${esc(x.id)}" ${s.sel.has(x.id)?'checked':''}> <span class="grow">${esc(x.name)}</span> <small class="muted">${baht(+x.price||0)}</small></label>`).join('')}`}).join('')||'<p class="help">ยังไม่มีเมนู</p>'}</div>
+   <div class="grid2"><div class="field"><label for="ppS">เริ่มวันที่</label><input id="ppS" type="date" value="${esc(s.start??p.start??'')}"></div><div class="field"><label for="ppE">ถึงวันที่</label><input id="ppE" type="date" value="${esc(s.end??p.end??'')}"></div></div>
+   <span class="help" style="margin-top:-6px">เว้นว่าง = ใช้ได้ตลอด · นับตามวันที่ลูกค้าสั่ง</span>
+   <label class="check"><input type="checkbox" id="ppOn" ${(s.on??p.on)===false?'':'checked'}> เปิดใช้โปรนี้</label>
+   <p class="err" id="ppErr" role="alert"></p></form>
+   <div class="sh-foot">${s.i>=0?'<button class="btn danger" data-act="ppDel" data-confirm="1" type="button">ลบโปร</button>':'<button class="btn" data-act="poPromos" type="button">ย้อนกลับ</button>'}<button class="btn pri wide" data-act="ppSave" type="button">บันทึกโปร</button></div>`;
+  const upd=()=>{const n=Math.round(nval('ppN')),pr=nval('ppP'),ids=[...s.sel],prs=menu.filter(m=>ids.includes(m.id)).map(m=>+m.price||0);$('#ppCnt').textContent=ids.length?'('+ids.length+' เมนู)':'';
+    if(!prs.length||!(n>=2)||!(pr>0)){$('#ppSave').textContent='';return}const lo=Math.min(...prs)*n,hi=Math.max(...prs)*n;
+    $('#ppSave').textContent=hi<=pr?'⚠️ ราคาโปรไม่ถูกกว่าราคาปกติ':`ปกติ ${lo===hi?baht(hi):baht(lo)+'–'+baht(hi)} → ${baht(pr)} · ลูกค้าประหยัดสูงสุด ${baht(hi-pr)}`};
+  const F=$('#panel form');F.addEventListener('input',upd);F.addEventListener('change',e=>{const id=e.target.dataset&&e.target.dataset.pp;if(id){e.target.checked?s.sel.add(id):s.sel.delete(id);e.target.closest('label').classList.toggle('on',e.target.checked);upd()}});upd()}
+function ppKeep(){const s=S.sheet;if(!s||s.type!=='poPromoEdit')return;s.name=val('ppName');s.n=val('ppN');s.price=val('ppP');s.start=val('ppS');s.end=val('ppE');s.on=$('#ppOn').checked}
+async function ppSaveList(L,msg){const {data,error}=await SB.rpc('po_set_promos',{p_promos:L});if(error){const e=$('#ppErr');const m=String(error.message||'');if(e)e.textContent=/not_allowed/.test(m)?'เฉพาะแอดมิน / แม่ครัว':'บันทึกไม่สำเร็จ: '+m;else toast('บันทึกไม่สำเร็จ: '+m,'bad');return false}
+  S.po={...poCfg(),promos:(data&&data.promos)||L};toast(msg);openSheet({type:'poPromos'});return true}
 function sheetCombos(){const L=(S.nMenu||[]).filter(m=>m.combo);
   $('#panel').innerHTML=head('🎁 Combo เซ็ต','จับคู่เมนูเป็นเซ็ต ขายราคาพิเศษ · ขึ้นหน้าแรก E-book + หน้าสั่งอาหาร')+`<div class="sh-body">
    ${L.length?`<div class="list">${L.map(m=>{const st=comboState(m),sv=Math.max(0,(+m.combo.regular||0)-(+m.price||0));return `<div class="row click" data-act="comboEdit" data-id="${m.id}">${thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} <span class="pill ${st==='กำลังขาย'?'ok':st==='ยังไม่เริ่ม'?'info':'mute'}">${st}</span></div><div class="s">${esc((m.combo.items||[]).map(c=>c.name+' ×'+c.qty).join(' · '))}</div><div class="s">🕒 ${esc(comboWhen(m.combo))}</div></div><div style="text-align:right"><b>${baht(+m.price||0)}</b>${sv?`<div class="s" style="color:#0f9488">ประหยัด ${baht(sv)}</div>`:''}</div></div>`}).join('')}</div>`
@@ -2778,6 +2815,7 @@ function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=P
     <div class="poc-who"><b>${esc(o.name)}</b>${o.memberPhone?` <span class="pill ok" title="สมาชิกสะสมแต้ม">⭐${+o.ptsEarned?' +'+o.ptsEarned:''}</span>`:''} · <a href="tel:${esc(o.phone)}">${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a></div>
     ${(o.rounds||1)>1&&!o.addSeen?`<div class="poc-note" style="color:#1565c0;font-weight:700">➕ ลูกค้าสั่งเพิ่ม (ครั้งที่ ${o.rounds-1}) ${o.addedAt?hm(o.addedAt):''} <button class="btn sm" data-act="poAddSeen" data-id="${esc(o.id)}" type="button">รับทราบ</button></div>`:''}
     <div class="poc-items">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="muted" style="font-size:12px;font-weight:700;margin-top:4px">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div>`:''}<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
+    ${+o.promoDisc?`<div class="poc-note" style="color:#e65100;font-weight:700">🎁 ${(o.promos||[]).map(x=>esc(x.name)+(x.sets>1?' ×'+x.sets:'')).join(', ')} · ลด ${baht(o.promoDisc)} <small class="muted" style="font-weight:400">(ปกติ ${baht(o.subtotal)})</small></div>`:''}
     ${o.note||ed?`<div class="poc-note">${o.note?`📝 ${esc(o.note)}`:''}${ed?` <button class="lnk" data-act="poNote" data-id="${esc(o.id)}" type="button">✏️ ${o.note?'แก้ไขโน้ต':'เพิ่มโน้ต'}</button>`:''}${o.noteBy?` <small class="muted">(แก้โดย ${esc(o.noteBy)})</small>`:''}</div>`:''}
     ${o.slipBad&&o.payStatus!=='paid'&&o.payStatus!=='slip'?`<div class="poc-note" style="color:var(--chili)">❌ แจ้งลูกค้าแล้ว: ${esc(o.slipBad)} · <a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a></div>`:''}
     ${poRecvLine(o)}
@@ -2960,6 +2998,16 @@ Object.assign(ACT,{
   poSumPrint:d=>poSumPrint(d.v),
   poSumImg:(d,b)=>poSumImg(d.v,b),
   poSumCopy:async d=>{const t=poSumText(d.v);try{await navigator.clipboard.writeText(t);toast('คัดลอกสรุปแล้ว · วางในไลน์ได้เลย')}catch(e){window.prompt('คัดลอกข้อความนี้',t)}},
+  poPromos:()=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poPromos'})},
+  poPromoEdit:d=>{if(S.sheet&&S.sheet.type==='poPromoEdit')return;openSheet({type:'poPromoEdit',i:+d.v})},
+  ppCat:d=>{const s=S.sheet;ppKeep();const g=(S.poMenu||[]).filter(x=>(x.cat||'อื่นๆ')===d.v);const all=g.every(x=>s.sel.has(x.id));g.forEach(x=>all?s.sel.delete(x.id):s.sel.add(x.id));sheetPoPromoEdit()},
+  ppSave:async()=>{const s=S.sheet;ppKeep();const e=$('#ppErr');const n=Math.round(+s.n||0),pr=+s.price;
+    if(!String(s.name||'').trim())return e.textContent='ใส่ชื่อโปร';if(!(n>=2&&n<=20))return e.textContent='จำนวนชิ้นต้อง 2–20';if(!(pr>=0)||s.price==='')return e.textContent='ใส่ราคาโปร';if(!s.sel.size)return e.textContent='เลือกเมนูที่ร่วมโปรอย่างน้อย 1 เมนู';
+    if(s.start&&s.end&&s.end<s.start)return e.textContent='วันจบต้องไม่ก่อนวันเริ่ม';
+    const L=poPromos().slice(),it={id:(s.p&&s.p.id)||'',name:String(s.name).trim(),n,price:pr,items:[...s.sel],start:s.start||'',end:s.end||'',on:s.on!==false};
+    if(s.i>=0)L[s.i]=it;else L.push(it);await ppSaveList(L,'บันทึกโปรแล้ว')},
+  ppTabSave:async()=>{const v=val('ppTab').trim();const {error}=await SB.rpc('po_set_promo_tab',{p_tab:v});if(error)return toast('บันทึกไม่สำเร็จ: '+error.message,'bad');S.po={...poCfg(),promoTab:v};toast('เปลี่ยนชื่อแท็บแล้ว');sheetPoPromos()},
+  ppDel:async()=>{const s=S.sheet;const L=poPromos().filter((_,i)=>i!==s.i);await ppSaveList(L,'ลบโปรแล้ว')},
   combos:()=>{if(!can('menu_edit'))return deny();openSheet({type:'combos'})},
   comboEdit:d=>{if(!can('menu_edit'))return deny();openSheet({type:'comboEdit',id:d.id||''})},
   cbQ:d=>{comboKeep();const s=S.sheet;s.q[d.id]=Math.max(0,Math.min(20,(+s.q[d.id]||0)+(+d.d)));const y=$('#panel .sh-body')?.scrollTop||0;sheetComboEdit();const b=$('#panel .sh-body');if(b)b.scrollTop=y},

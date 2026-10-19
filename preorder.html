@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-0940">
+<meta name="app-version" content="2026.10.19-1200">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -73,7 +73,7 @@ main{flex:1;overflow-y:auto}
 .pill.ok{background:var(--jade-soft);color:var(--jade)}
 .pill.warn{background:var(--amber-soft);color:var(--amber)}
 footer{background:var(--surface);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
-footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:center}
+footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}footer .in .pronudge{flex:1 1 100%;margin:0}footer .in .tot{flex:1}
 .tot{flex:1;display:flex;flex-direction:column;min-width:0}
 .tot small{color:var(--muted);font-size:12.5px}
 .tot b{font-family:var(--f-display);font-weight:500;font-size:22px;font-variant-numeric:tabular-nums}
@@ -290,6 +290,11 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 .cxinfo{background:var(--sunk);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--muted);text-align:center}
 .pill.info{background:#e3f0fd;color:#1565c0}
 .shr{display:flex;gap:8px}.shr .btn{min-width:0;white-space:nowrap}.shr .btn:last-child{flex:none;padding-left:12px;padding-right:12px}.shr .lineshr{flex:1;background:#06c755;border-color:#06c755;color:#fff;font-weight:700}.shr .lineshr b{background:#fff;color:#06c755;border-radius:6px;padding:0 6px;margin-right:6px;font-size:13px}
+.chip.chip-promo{border-color:#e65100;color:#bf360c;font-weight:700;background:#fff3e0}.chip.chip-promo[aria-pressed="true"]{background:#e65100;color:#fff;border-color:#e65100}
+.probanner{display:flex;flex-direction:column;gap:6px}.probanner>div{background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:1.5px dashed #e65100;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.probanner b{color:#bf360c;font-size:16px}.probanner span{font-size:13px;color:#6d4c41}
+.probadge{position:absolute;left:6px;top:6px;z-index:2;background:#e65100;color:#fff;font-style:normal;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;max-width:calc(100% - 12px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.prodisc{color:#e65100;font-weight:700}.pronudge{background:#fff3e0;color:#bf360c;border-radius:10px;padding:6px 10px;font-size:13.5px;text-align:center;margin-bottom:6px;width:100%;box-sizing:border-box}
 .recvbox{border-radius:18px;padding:14px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid #e0b04a;background:#fff8e1}
 .recvbox .rt{font-size:19px}.recvbox span{color:var(--muted);font-size:14px}.recvbox small{color:var(--muted);font-size:12.5px}
 .recvbox .rok{width:100%;font-size:18px;padding:14px;margin-top:4px}.recvbox .lnk{background:none;border:0;color:#b71c1c;text-decoration:underline;font:inherit;font-size:14px;padding:4px;cursor:pointer}
@@ -413,7 +418,21 @@ const thDate=d=>{if(!d)return '';try{return new Date(d+'T00:00:00+07:00').toLoca
 const STEPS=[['new','รอร้านยืนยัน'],['confirmed','ร้านรับออร์เดอร์แล้ว'],['ready','อยู่ระหว่างจัดส่ง'],['done','ส่งอาหารสำเร็จ']];
 const cartN=()=>Object.values(S.cart).reduce((a,e)=>a+e.qty,0);
 const eUnit=e=>{const m=S.menu.find(x=>x.id===e.menuId);return (+(m&&m.price)||0)+(e.opts||[]).reduce((s,o)=>s+(+o.p||0),0)};
-const cartT=()=>Object.values(S.cart).reduce((s,e)=>s+eUnit(e)*e.qty,0);
+const cartSub=()=>Object.values(S.cart).reduce((s,e)=>s+eUnit(e)*e.qty,0);
+// โปรคละรส (ต้องคิดแบบเดียวกับ SQL _po_promo_calc)
+function promoCalc(items){const P=(S.cfg&&S.cfg.promos)||[];const used=new Set();let disc=0;const list=[];
+  P.forEach(p=>{const n=+p.n,pr=+p.price;if(!(n>=2))return;const u=[];items.forEach((l,i)=>{if((p.items||[]).includes(l.menuId))for(let g=1;g<=Math.min(+l.qty||0,200);g++){const k=i+':'+g;if(!used.has(k))u.push([k,+l.price||0])}});
+    u.sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:1));const sets=Math.floor(u.length/n);let pd=0;
+    for(let k=0;k<sets;k++){let grp=0;for(let i=0;i<n;i++){grp+=u[k*n+i][1];used.add(u[k*n+i][0])}pd+=Math.max(grp-pr,0)}
+    const left=u.length%n;list.push({p,sets,disc:pd,need:left?n-left:0,cnt:u.length});disc+=pd});
+  return {disc,list}}
+const cartItems=()=>Object.values(S.cart).map(e=>({menuId:e.menuId,qty:e.qty,price:eUnit(e)}));
+const cartPromo=()=>promoCalc(cartItems());
+const cartT=()=>cartSub()-cartPromo().disc;
+const promoTab=()=>(S.cfg&&S.cfg.promoTab)||'โปรโมชั่น ComBo Set';
+const promoIds=()=>new Set(((S.cfg&&S.cfg.promos)||[]).flatMap(p=>p.items||[]));
+const promoOf=id=>((S.cfg&&S.cfg.promos)||[]).find(p=>(p.items||[]).includes(id));
+function promoNudge(){const r=cartPromo();return r.list.filter(x=>x.need&&x.cnt>0).map(x=>`<div class="pronudge">🎁 เพิ่มอีก <b>${x.need}</b> ชิ้นจาก "${esc(x.p.name)}" ได้ราคาโปร</div>`).join('')}
 const inCart=id=>Object.values(S.cart).filter(e=>e.menuId===id).reduce((a,e)=>a+e.qty,0);
 function putCart(m,sel){const k=m.id+'|'+optKey(sel.opts)+'|'+sel.note;if(S.cart[k])S.cart[k].qty+=sel.qty;else S.cart[k]={menuId:m.id,opts:sel.opts,note:sel.note,qty:sel.qty};render()}
 function fail(title,text){$('#view').innerHTML=`<div class="msg"><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p></div>`;$('#foot').hidden=true}
@@ -530,8 +549,9 @@ async function loadOrder(){if(!S.cur)return;try{const {data,error}=await sb.rpc(
 function openOrder(id,token){S.cur={id,token};S.order=null;S.view='status';try{const u=new URL(location.href);u.searchParams.set('o',id);u.searchParams.set('t',token);history.replaceState(null,'',u.href)}catch(e){}
   render();loadOrder().then(render)}
 
-function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
-function menuGrid(empty){const list=S.menu.filter(m=>S.cat==='all'||m.cat===S.cat);if(!list.length)return empty;
+function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}${promoOf(m.id)?`<i class="probadge">🎁 ${esc(promoOf(m.id).name)}</i>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
+function menuGrid(empty){const P=promoIds();if(S.cat==='__promo'&&!S.menu.some(m=>P.has(m.id)))S.cat='all';
+  const list=S.menu.filter(m=>S.cat==='__promo'?P.has(m.id):S.cat==='all'||m.cat===S.cat).sort((a,b)=>P.has(b.id)-P.has(a.id));if(!list.length)return empty;
   if(S.cat!=='all')return `<div class="grid">${list.map(menuCard).join('')}</div>`;
   const order=[...S.cats,...new Set(list.map(m=>m.cat||'').filter(c=>!S.cats.includes(c)))];
   return order.map(c=>{const g=list.filter(m=>(m.cat||'')===c);return g.length?`${c?`<h3 class="cath">${esc(c)}</h3>`:''}<div class="grid">${g.map(menuCard).join('')}</div>`:''}).join('')}
@@ -565,9 +585,10 @@ function render(){
     ${S.staff&&st.reason==='after'?`<div class="notice">👩‍🍳 โหมด${S.staff==='owner'?'แอดมิน':'แม่ครัว'}: สั่งเพิ่มให้ลูกค้าหลังปิดรับได้ (รอบส่ง${esc((thDate(st.deliverDate)+tmW(st.deliverDate)))})</div>`:''}
     ${!st.open&&!S.staff?`<button class="btn pri" data-a="view" data-v="board" type="button">📋 เช็กสถานะออร์เดอร์ / โอนเงิน + แนบสลิป</button>`:''}
     ${mine.length?`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน (${mine.length})</button>`:''}
-    ${S.cats.length>1?`<div class="chips">${['all',...S.cats].map(x=>`<button class="chip" aria-pressed="${S.cat===x}" data-a="cat" data-v="${esc(x)}" type="button">${x==='all'?'ทั้งหมด':esc(x)}</button>`).join('')}</div>`:''}
+    ${((c.promos)||[]).length?`<div class="probanner">${c.promos.map(p=>`<div><b>🎁 ${esc(p.name)}</b><span>เลือกคละได้ ${(p.items||[]).map(id=>(S.menu.find(m=>m.id===id)||{}).name).filter(Boolean).map(esc).join(' · ')}${p.end?' · ถึง '+esc(thDate(p.end)):''}</span></div>`).join('')}</div>`:''}
+    ${(()=>{const pn=S.menu.filter(m=>promoIds().has(m.id)).length,ks=['all',...(pn?['__promo']:[]),...S.cats];return ks.length>2||(S.cats.length>1)?`<div class="chips">${ks.map(x=>`<button class="chip${x==='__promo'?' chip-promo':''}" aria-pressed="${S.cat===x}" data-a="cat" data-v="${esc(x)}" type="button">${x==='all'?'ทั้งหมด':x==='__promo'?'📢 '+esc(promoTab()):esc(x)}</button>`).join('')}</div>`:''})()}
     ${menuGrid('<p class="muted">ยังไม่มีเมนู</p>')}`;
-    ft=`<div class="tot"><small>ในตะกร้า ${cartN()} รายการ</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()&&canOrder()?'':'disabled'} type="button">${canOrder()?'ถัดไป':st.reason==='before'?'ยังไม่เปิดรับ':'ปิดรับแล้ว'}</button>`;
+    ft=`${promoNudge()}<div class="tot"><small>ในตะกร้า ${cartN()} รายการ${cartPromo().disc?` · <span class="prodisc">โปร −${baht(cartPromo().disc)}</span>`:''}</small><b>${baht(cartT())}</b></div><button class="btn pri" data-a="view" data-v="cart" ${cartN()&&canOrder()?'':'disabled'} type="button">${canOrder()?'ถัดไป':st.reason==='before'?'ยังไม่เปิดรับ':'ปิดรับแล้ว'}</button>`;
   }else if(S.view==='cart'){
     const me=lsGet(ME_KEY,{})||{};const pts=c.points||[];
     if(!S.method)S.method=c.pickup||!pts.length?'pickup':'point';
@@ -578,7 +599,7 @@ function render(){
     h=`<h2>สรุปออร์เดอร์</h2>
     ${(()=>{const ex=myOrders().find(x=>x.d===st.deliverDate);return ex?`<div class="notice">➕ คุณมีออร์เดอร์รอบนี้แล้ว (${esc(ex.no||'')}) · สั่งด้วยเบอร์เดิม รายการจะรวมเข้าออร์เดอร์เดิมและสรุปยอดใหม่ให้</div>`:''})()}
     <div class="pobar on"><b>ได้รับ${esc((thDate(st.deliverDate)+tmW(st.deliverDate)))}</b><span>สั่งได้ถึง ${esc(closeTxt(st))}</span></div>
-    ${rows?`<div class="list">${rows}<div class="row"><div class="g"><b>รวม</b></div><div class="r"><b>${baht(cartT())}</b></div></div></div>`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}
+    ${rows?`<div class="list">${rows}${cartPromo().disc?`<div class="row"><div class="g">รวมก่อนลด</div><div class="r">${baht(cartSub())}</div></div>${cartPromo().list.filter(x=>x.disc).map(x=>`<div class="row"><div class="g prodisc">🎁 ${esc(x.p.name)}${x.sets>1?' ×'+x.sets:''}</div><div class="r prodisc">−${baht(x.disc)}</div></div>`).join('')}`:''}<div class="row"><div class="g"><b>รวม</b></div><div class="r"><b>${baht(cartT())}</b></div></div></div>${promoNudge()}`:'<p class="muted">ยังไม่ได้เลือกเมนู</p>'}
     <section class="box"><h3>ผู้รับ</h3>
       <div class="field"><label for="pName">ชื่อ</label><input id="pName" maxlength="40" autocomplete="name" value="${esc(me.name||'')}" placeholder="กรุณากรอกชื่อลูกค้า"></div>
       <div class="field"><label for="pPhone">เบอร์โทร</label><input id="pPhone" type="tel" inputmode="tel" maxlength="12" autocomplete="tel" value="${esc(me.phone||'')}" placeholder="08x-xxx-xxxx"></div></section>
@@ -617,6 +638,7 @@ function render(){
       ${cx?'':`<div class="shr"><button class="btn lineshr" data-a="shareLine" type="button"><b>LINE</b> แชร์ลิงก์ไว้เช็กสถานะ</button><button class="btn" data-a="copyLink" type="button" aria-label="คัดลอกลิงก์">📋 คัดลอก</button></div><p class="muted" style="margin:-4px 0 0;font-size:12.5px;text-align:center">ส่งเข้า Keep memo หรือแชทตัวเอง · เปิดเช็กสถานะ แนบสลิป ดูใบเสร็จ ได้จากทุกเครื่อง</p>`}
       ${cx?'':`<ol class="steps">${STEPS.map((s,i)=>`<li class="st-${s[0]}${i<=idx?' on':''}${i===idx?' cur':''}">${esc(s[1])}</li>`).join('')}</ol>`}
       <div class="list">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="row rnd"><div class="g">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div></div>`:''}<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:''}${l.note?`<div class="who">${esc(l.note)}</div>`:''}</div><div class="r">${baht(l.price*l.qty)}</div></div>`).join('')}
+        ${+o.promoDisc?`<div class="row"><div class="g">รวมก่อนลด</div><div class="r">${baht(o.subtotal)}</div></div>${(o.promos||[]).map(x=>`<div class="row"><div class="g prodisc">🎁 ${esc(x.name)}${x.sets>1?' ×'+x.sets:''}</div><div class="r prodisc">−${baht(x.disc)}</div></div>`).join('')}`:''}
         <div class="row"><div class="g"><b>ยอดรวม${(o.rounds||1)>1?' (รวมที่สั่งเพิ่ม)':''}</b></div><div class="r"><b>${baht(o.total)}</b></div></div>
         ${+o.paidAmt>0&&o.payStatus!=='paid'?`<div class="row"><div class="g">ชำระแล้ว</div><div class="r">${baht(o.paidAmt)}</div></div><div class="row"><div class="g"><b>ค้างชำระ (ยอดที่สั่งเพิ่ม)</b></div><div class="r"><b style="color:var(--chili)">${baht(poDue(o))}</b></div></div>`:''}
         <div class="row"><div class="g">ชำระเงิน</div>${pay}</div>

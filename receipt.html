@@ -198,7 +198,7 @@ function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bi
    <table><thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>ราคา</th><th>รวมเงิน</th></tr></thead><tbody>${rows}${pad}</tbody></table>
    <div class="sum"><div class="no"><div class="stamp" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></div></div><div class="tot">
      <div><span>รวมเงิน</span><span>${num(b.subtotal)}</span></div>
-     ${disc?`<div><span>ส่วนลด${+b.redeem?` (ใช้ ${+b.ptsUsed||0} แต้ม)`:''}</span><span>-${num(disc)}</span></div>`:''}
+     ${disc?`<div><span>ส่วนลด${b.discLabel?' ('+esc(b.discLabel)+')':''}${+b.redeem?` (ใช้ ${+b.ptsUsed||0} แต้ม)`:''}</span><span>-${num(disc)}</span></div>`:''}
      ${vat&&b.vatMode==='excl'?`<div><span>ภาษีมูลค่าเพิ่ม ${+b.vatRate||0}%</span><span>${num(b.vat)}</span></div>`:''}
      ${+b.roundOff?`<div><span>ส่วนลดปัดเศษ</span><span>-${num(b.roundOff)}</span></div>`:''}
      <div class="net"><span>ยอดสุทธิ</span><span>${num(b.total)}</span></div>
