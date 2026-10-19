@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1230">
+<meta name="app-version" content="2026.10.19-1355">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -607,11 +607,11 @@ function render(){
       <div class="field"><label for="pPhone">เบอร์โทร</label><input id="pPhone" type="tel" inputmode="tel" maxlength="12" autocomplete="tel" value="${esc(me.phone||'')}" placeholder="08x-xxx-xxxx"></div></section>
     <section class="box"><h3>ชำระเงิน</h3><div class="seg">
       ${c.payBefore?`<button type="button" class="segb" data-a="pay" data-v="before" aria-pressed="${S.pay==='before'}">โอนก่อน</button>`:''}
-      ${c.payAfter?`<button type="button" class="segb" data-a="pay" data-v="after" aria-pressed="${S.pay==='after'}">จ่ายตอนรับของ</button>`:''}</div>
+      ${c.payAfter?`<button type="button" class="segb" data-a="pay" data-v="after" aria-pressed="${S.pay==='after'}">ชำระเงินตอนรับของ</button>`:''}</div>
       ${S.pay==='before'?`${pp&&cartT()>0?ppBox(pp,cartT(),c.ppName):pp?'':`<p class="err" style="margin:0;font-size:13px">ร้านยังไม่ได้ตั้งเบอร์พร้อมเพย์ · ติดต่อร้าน${c.phone?' '+esc(c.phone):''} เพื่อขอเลขบัญชี</p>`}
         <label class="btn slipbtn" for="slipIn">${S.slip?'เปลี่ยนรูปสลิป':'📎 แนบสลิปโอนเงิน'}</label>${S.slip?'<button class="btn" data-a="slipClear" type="button">ลบสลิปนี้</button>':''}
         ${S.slip?`<div class="slipok"><img class="slipprev" src="${S.slip}" alt="สลิป" data-a="slipView"><div><b>✓ แนบสลิปแล้ว</b><small>ตรวจรูปให้ถูก สลิปจะส่งพร้อมกด "ยืนยันสั่ง"</small></div></div>`:'<p class="err" style="margin:0;font-size:13px">⚠️ ต้องแนบสลิปโอนเงินก่อน ถึงจะกด "ยืนยันสั่ง" ได้</p>'}`
-        :'<p class="muted" style="margin:0">โอนเงินตอนรับของเท่านั้น (ไม่รับเงินสด) · ได้รับของแล้วโอน แล้วแนบสลิปในหน้าติดตามออร์เดอร์</p>'}</section>
+        :'<p class="muted" style="margin:0">ชำระเงินตอนรับของ (เงินสด หรือ สแกนจ่าย) · หรือโอนแล้วแนบสลิปในหน้าติดตามออร์เดอร์</p>'}</section>
     <label class="memchk"><input type="checkbox" id="pMem" ${S.memOn!==false?'checked':''}><span><b>⭐ สะสมแต้มสมาชิกด้วยเบอร์นี้</b><small>ใช้ร่วมกับร้านเนื้อล้วนๆ · ยังไม่เป็นสมาชิก สมัครให้ฟรีอัตโนมัติ</small></span></label>
     <div class="field"><label for="pNote">หมายเหตุถึงร้าน (ถ้ามี)</label><input id="pNote" maxlength="200" autocomplete="off" placeholder="เช่น แยกถุงให้ด้วย"></div>
     <p class="err" id="sendErr" role="alert">${esc(S.err||'')}</p>`;
@@ -630,7 +630,7 @@ function render(){
     else if(o.err)h=`<div class="msg"><h2>${esc(o.err)}</h2></div>`;
     else{const cx=o.status==='cancelled',idx=STEPS.findIndex(s=>s[0]===o.status),pp=String(o.promptpay||'').replace(/\D/g,'');
       const pay=o.payStatus==='paid'?'<span class="pill ok">ชำระแล้ว ✓</span>':o.payStatus==='slip'?'<span class="pill warn">⏳ รอตรวจสอบยอดชำระ</span>':o.slipBad?'<span class="pill bad">❌ สลิปไม่ถูกต้อง</span>'
-        :o.pay==='after'?'<span class="pill warn">โอนตอนรับของ · ยังไม่แนบสลิป</span>':'<span class="pill bad">ยังไม่ได้โอน</span>';
+        :o.pay==='after'?'<span class="pill warn">ชำระเงินตอนรับของ</span>':'<span class="pill bad">ยังไม่ได้โอน</span>';
       h=`${S.justSent?`<div class="msg" style="padding:12px 8px 0"><h2>${S.justMerged?'เพิ่มรายการในออร์เดอร์เดิมแล้ว':'สั่งเรียบร้อย ขอบคุณครับ'}</h2>${S.justMerged?`<p class="muted" style="margin:0">รวมเป็นออร์เดอร์เดียว ยอดสรุปใหม่ด้านล่าง · ${poDue(o)>0?'โอนเพิ่ม '+baht(poDue(o))+' แล้วแนบสลิปเพิ่มได้':''}</p>`:''}<p class="muted" style="margin:0">บันทึกหน้านี้ไว้ หรือกลับมาดูได้ที่ "ออร์เดอร์ของฉัน"</p></div>`:''}
       ${cx?`<div class="cxwrap"><span class="cxstamp"><b>ยกเลิกออร์เดอร์</b><i>Cancelled</i></span><p class="muted" style="margin:0">${o.cancelledBy==='customer'?'คุณยกเลิกออร์เดอร์นี้':'ร้านยกเลิกออร์เดอร์นี้'}${o.cancelReason?`<br><b style="color:var(--chili)">เหตุผล: ${esc(o.cancelReason)}</b>`:''}${o.cancelledAt?' · '+esc(new Date(+o.cancelledAt).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p></div>`:''}
       ${!cx&&o.status!=='done'?`<div class="pickbox"><small>แสดงหน้านี้ตอนรับของ</small><div class="kmk">KMK ${esc(String(o.orderNo||'').slice(-4))}</div><div class="pst ${o.payStatus==='paid'?'ok':o.payStatus==='slip'?'chk':'due'}">${o.payStatus==='paid'?'✓ ชำระแล้ว':o.payStatus==='slip'?'⏳ รอร้านตรวจสลิป':'ค้างชำระ '+baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0)))+' · จ่ายตอนรับได้ (เงินสด / สแกน)'}</div>
@@ -667,7 +667,7 @@ async function send(){
   const err=t=>{S.err=t;render();const e=$('#sendErr');if(e)e.scrollIntoView({block:'center',behavior:'smooth'})};
   if(!name)return err('ใส่ชื่อผู้รับก่อน');if(phone.length<9||phone.length>10)return err('เบอร์โทรไม่ถูกต้อง (ตัวเลข 9–10 หลัก)');
   if(S.method==='point'&&!S.point)return err('เลือกจุดรับของก่อน');
-  if(S.pay==='before'&&!S.slip)return err('โอนเงินแล้วแนบสลิปก่อน ถึงจะยืนยันสั่งได้ (หรือเลือก "จ่ายตอนรับของ")');
+  if(S.pay==='before'&&!S.slip)return err('โอนเงินแล้วแนบสลิปก่อน ถึงจะยืนยันสั่งได้ (หรือเลือก "ชำระเงินตอนรับของ")');
   S.err='';S.sending=true;render();
   lsSet(ME_KEY,{name,phone,method:S.method,point:S.point,pay:S.pay});
   const items=Object.values(S.cart).map(e=>({menuId:e.menuId,qty:e.qty,note:e.note||'',opts:(e.opts||[]).map(o=>o.cid)}));

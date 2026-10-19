@@ -177,7 +177,7 @@ function joinQr(){try{const q=qrcode(0,'M');q.addData(joinUrl());q.make();return
 const IC={fb:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-1.6 19.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 12 2z"/></svg>',
   tel:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.3 13.6-.7.8c-.4.4-1 .6-1.6.4-3.1-1-5.6-3.5-6.6-6.6-.2-.6 0-1.2.4-1.6l.8-.7c.4-.4 1-.3 1.3.1l1 1.5c.2.4.2.9-.1 1.2l-.5.5c.6 1.3 1.6 2.3 2.9 2.9l.5-.5c.3-.3.8-.4 1.2-.1l1.5 1c.4.3.5.9.1 1.3z"/></svg>',
   pin:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>'};
-const METHOD={cod:'ชำระตอนรับของ',cash:'เงินสด',promptpay:'โอน / พร้อมเพย์',lineman:'LINE MAN',grab:'Grab',shopee:'ShopeeFood'};
+const METHOD={cod:'ชำระเงินตอนรับของ',cash:'เงินสด',promptpay:'โอน / พร้อมเพย์',lineman:'LINE MAN',grab:'Grab',shopee:'ShopeeFood'};
 function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bill,dt=new Date(+b.paidAt||Date.now());
   const date=dt.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Bangkok'}),time=dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
   const po=s.theme==='po';document.body.classList.toggle('theme-po',po);

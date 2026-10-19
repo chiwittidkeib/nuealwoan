@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1400">
+<meta name="app-version" content="2026.10.19-1355">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -2564,7 +2564,7 @@ function poSold(mid){const d=poState().deliverDate;let n=0;(S.poOrders||[]).forE
 function poPayPill(o){if(o.payStatus==='paid')return '<span class="pill ok">จ่ายแล้ว ✓</span>';
   if(o.payStatus==='slip')return '<span class="pill warn">⏳ รอตรวจสอบยอดชำระ</span>';
   if(o.slipBad)return '<span class="pill bad" title="'+esc(o.slipBad)+'">❌ สลิปไม่ถูกต้อง · รอแนบใหม่</span>';
-  if(o.pay==='after')return '<span class="pill mute">โอนตอนรับของ</span>';
+  if(o.pay==='after')return '<span class="pill mute">ชำระเงินตอนรับของ</span>';
   return '<span class="pill bad">ยังไม่โอน</span>'}
 let poSeen=null;
 function poBoot(db){
@@ -2747,7 +2747,7 @@ function poPickCard(o,q){const due=poDue(o),paid=o.payStatus==='paid',slip=o.pay
   const stamp=paid?'<span class="pocpaid" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></span>':slip?'<span class="pocpaid chk">รอตรวจ<br>สอบยอด<i>CHECKING</i></span>':'<span class="pocpaid due" aria-label="ค้างชำระ">ค้างชำระ<i>UNPAID</i></span>';
   return `<div class="card poc pick paid">${stamp}<div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${(PO_ST[o.status]||PO_ST.new)[1]}">${(PO_ST[o.status]||PO_ST.new)[0]}</span></div>
    <div class="poc-who"><b>${esc(o.name)}</b> · ${hl(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</div>
-   <div class="muted" style="font-size:13px">ส่ง${esc(poDayName(o.deliverDate))}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(o.deliverDate))?' '+esc(poDate(o.deliverDate)):''} · ${esc(o.method==='pickup'?'มารับที่ร้าน':(o.pointName||''))}</div>
+   <div class="muted" style="font-size:13px">ส่ง${esc(poDayName(o.deliverDate))}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(o.deliverDate))?' '+esc(poDate(o.deliverDate)):''} · ${esc(o.method==='pickup'?'บริการจัดส่ง':(o.pointName||''))}</div>
    <div class="poc-items">${(o.items||[]).map(l=>`<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
    ${o.note?`<div class="poc-note">📝 ${esc(o.note)}</div>`:''}
    <div class="pickpay"><div><small>${paid?'ชำระแล้ว':'ยอดที่ต้องเก็บ'}</small><b class="${paid?'':'due'}">${baht(paid?+o.total||0:due)}</b></div>
@@ -2853,7 +2853,7 @@ function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliver
   const iss=(S.poOrders||[]).filter(o=>poRecvSt(o)==='issue').sort((a,b)=>(+b.issueAt||0)-(+a.issueAt||0));
   if(iss.length&&pf!=='recv')h+=`<div class="sec-h" style="margin-top:6px"><h2 style="color:var(--chili)">⚠️ ลูกค้าแจ้งยังไม่ได้รับของ</h2><span class="hint">${iss.length} ออร์เดอร์ · รวมทุกวันส่ง</span></div><div class="pogrid">${iss.map(poCard).join('')}</div>`;
   if(!list.length)return h+`<div class="empty"><b>${pf==='new'?'ไม่มีออร์เดอร์รอยืนยัน 👍':all.length?'ไม่มีออร์เดอร์ในสถานะนี้':'ยังไม่มีออร์เดอร์ส่ง'+poDayName(day)}</b>${all.length?'':'ลูกค้าสั่งผ่านลิงก์ / QR ของร้าน ออร์เดอร์จะขึ้นที่นี่ทันที'}</div>`;
-  const groups={};list.forEach(o=>{const k=o.method==='pickup'?'~มารับที่ร้าน':(o.pointName||'ไม่ระบุจุด');(groups[k]=groups[k]||[]).push(o)});
+  const groups={};list.forEach(o=>{const k=o.method==='pickup'?'~บริการจัดส่ง':(o.pointName||'ไม่ระบุจุด');(groups[k]=groups[k]||[]).push(o)});
   const pts=poCfg().points.map(p=>p.name);
   Object.keys(groups).sort((a,b)=>{const ia=pts.indexOf(a),ib=pts.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b,'th')}).forEach(k=>{const g=groups[k];
     h+=`<div class="sec-h" style="margin-top:6px"><h2>📍 ${esc(k.replace(/^~/,''))}</h2><span class="hint">${g.length} ออร์เดอร์ · ${g.reduce((a,o)=>a+poQty(o),0)} ชิ้น</span></div><div class="pogrid">${g.map(poCard).join('')}</div>`});
@@ -2864,14 +2864,14 @@ function viewPoPrep(){const day=poPickDay(),live=(S.poOrders||[]).filter(o=>o.de
   if(!live.length)return h+`<div class="empty"><b>ยังไม่มีออร์เดอร์</b>ยอดที่ต้องทำจะรวมให้ที่นี่ แยกตามเมนูและตัวเลือก</div>`;
   const M={};live.forEach(o=>(o.items||[]).forEach(l=>{const m=M[l.name]=M[l.name]||{n:0,v:{}};m.n+=+l.qty||0;const k=l.opts&&l.opts.length?optNames(l.opts):'ธรรมดา';m.v[k]=(m.v[k]||0)+(+l.qty||0)}));
   h+=`<div class="list">${Object.entries(M).sort((a,b)=>b[1].n-a[1].n).map(([n,m])=>`<div class="row" style="align-items:flex-start"><div class="grow"><div class="t">${esc(n)}</div>${Object.keys(m.v).length>1||!m.v['ธรรมดา']?`<div class="prepv">${Object.entries(m.v).sort((a,b)=>b[1]-a[1]).map(([k,q])=>`<span><b>${q}</b> ${esc(k)}</span>`).join('')}</div>`:''}</div><b class="prepn">${m.n}</b></div>`).join('')}</div>`;
-  const P={};live.forEach(o=>{const k=o.method==='pickup'?'มารับที่ร้าน':(o.pointName||'ไม่ระบุจุด');const p=P[k]=P[k]||{o:0,q:0,cod:0};p.o++;p.q+=poQty(o);if(o.payStatus!=='paid')p.cod+=+o.total||0});
+  const P={};live.forEach(o=>{const k=o.method==='pickup'?'บริการจัดส่ง':(o.pointName||'ไม่ระบุจุด');const p=P[k]=P[k]||{o:0,q:0,cod:0};p.o++;p.q+=poQty(o);if(o.payStatus!=='paid')p.cod+=+o.total||0});
   h+=`<div class="sec-h" style="margin-top:8px"><h2>แยกตามจุดส่ง</h2></div><div class="list">${Object.entries(P).map(([k,p])=>`<div class="row"><div class="grow"><div class="t">📍 ${esc(k)}</div><div class="s">${p.o} ออร์เดอร์ · ${p.q} ชิ้น</div></div>${p.cod?`<span class="pill warn">เก็บเงิน ${baht(p.cod)}</span>`:'<span class="pill ok">จ่ายครบ</span>'}</div>`).join('')}</div>`;
   h+=poSumList(live);
   return h}
 // ---------- สรุปออร์เดอร์รายวันส่ง (ดู / พิมพ์ / คัดลอกส่ง LINE) ----------
 const poPayShort=o=>o.payStatus==='paid'?'จ่ายแล้ว':o.payStatus==='slip'?'รอตรวจสลิป':+o.paidAmt>0?'ค้าง '+baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0))):o.pay==='after'?'โอนตอนรับ':'ยังไม่จ่าย';
 const poItemsTxt=o=>(o.items||[]).map(l=>`${l.qty}× ${l.name}${l.opts&&l.opts.length?' ('+optNames(l.opts)+')':''}${l.note?' – '+l.note:''}`);
-const poPlace=o=>o.method==='pickup'?'มารับที่ร้าน':(o.pointName||'ไม่ระบุจุด');
+const poPlace=o=>o.method==='pickup'?'บริการจัดส่ง':(o.pointName||'ไม่ระบุจุด');
 function poSumTot(L){const t={o:L.length,q:0,s:0,p:0,u:0};L.forEach(o=>{t.q+=poQty(o);t.s+=+o.total||0;if(o.payStatus==='paid')t.p+=+o.total||0;else t.u+=Math.max(0,(+o.total||0)-(+o.paidAmt||0))});return t}
 function poSumList(live){const L=[...live].sort((a,b)=>a.at-b.at),t=poSumTot(L);
   return `<div class="sec-h" style="margin-top:8px"><h2>📋 สรุปออร์เดอร์ (${t.o})</h2><span class="hint">${t.q} ชิ้น · ยอด ${baht(t.s)}</span></div>
@@ -2948,11 +2948,11 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
     <div class="grid2"><div class="field"><label for="pLead">ส่งของหลังวันสั่ง</label><select id="pLead">${[0,1,2,3].map(n=>`<option value="${n}" ${+c.leadDays===n?'selected':''}>${n===0?'วันเดียวกัน':n===1?'วันถัดไป (พรุ่งนี้)':'อีก '+n+' วัน'}</option>`).join('')}</select></div><div class="field"><label for="pWin">ช่วงเวลาส่ง / รับ</label><input id="pWin" maxlength="40" value="${esc(c.window||'')}" placeholder="เช่น 10:30–12:00 น."></div></div>
     <p class="help" style="margin:0">ตัวอย่าง: ปิดรับ 20:00 + ส่งวันถัดไป = ลูกค้าสั่งวันนี้ก่อน 2 ทุ่ม ได้ของพรุ่งนี้ตามช่วงเวลาที่ใส่</p></div>
    <div class="card"><h3>จุดส่งของ</h3><div id="pPts"></div><button class="lnk" style="align-self:flex-start" data-act="poPtAdd" type="button">+ เพิ่มจุดส่ง</button>
-    <label class="check"><input type="checkbox" id="pPick" ${c.pickup?'checked':''}> ลูกค้ามารับที่ร้านได้</label>
-    <div class="field"><label for="pPickT">ข้อความรับที่ร้าน</label><input id="pPickT" maxlength="120" value="${esc(c.pickupText||'')}" placeholder="เช่น รับหน้าร้าน ซอยวัด เวลา 10:00–13:00"></div></div>
+    <label class="check"><input type="checkbox" id="pPick" ${c.pickup?'checked':''}> เปิดบริการจัดส่ง</label>
+    <div class="field"><label for="pPickT">ข้อความบริการจัดส่ง</label><input id="pPickT" maxlength="120" value="${esc(c.pickupText||'')}" placeholder="เช่น รับหน้าร้าน ซอยวัด เวลา 10:00–13:00"></div></div>
    <div class="card"><h3>ชำระเงิน</h3>
     <label class="check"><input type="checkbox" id="pPB" ${c.payBefore?'checked':''}> โอนก่อน (แสดง QR พร้อมเพย์ + แนบสลิป)</label>
-    <label class="check"><input type="checkbox" id="pPA" ${c.payAfter?'checked':''}> จ่ายตอนรับของ</label>
+    <label class="check"><input type="checkbox" id="pPA" ${c.payAfter?'checked':''}> ชำระเงินตอนรับของ</label>
     <div class="field"><label for="pPP">พร้อมเพย์</label><input id="pPP" inputmode="numeric" value="${esc(c.promptpay||'')}" placeholder="${esc(S.settings.promptpay?'เว้นว่าง = ใช้ของร้านก๋วยเตี๋ยว ('+S.settings.promptpay+')':'เบอร์มือถือ หรือเลขบัตร 13 หลัก')}"></div><div class="field"><label for="pPPN">ชื่อ-นามสกุล เจ้าของพร้อมเพย์</label><input id="pPPN" maxlength="60" value="${esc(c.ppName||'')}" placeholder="แสดงให้ลูกค้าเห็นตอนโอน"></div></div>
    <div class="grid2"><div class="field"><label for="pPhone">เบอร์ร้าน (ลูกค้ากดโทรได้)</label><input id="pPhone" inputmode="tel" maxlength="20" value="${esc(c.phone||'')}"></div><div class="field"><label for="pLine">ลิงก์ LINE ร้าน (ปุ่มส่งข้อความ)</label><input id="pLine" inputmode="url" maxlength="200" value="${esc(c.line||'')}" placeholder="https://lin.ee/… (เว้นว่าง = ส่ง SMS)"></div></div>
    <div class="card"><h3>โลโก้ร้าน & หัวใบเสร็จ (ร้านข้าวมันไก่)</h3>
@@ -2967,7 +2967,7 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
    <p class="help" style="margin:0">เมนูของร้านนี้ แก้ที่แท็บ "เมนู" ตอนเลือกร้านข้าวมันไก่ (แยกจากเมนูร้านก๋วยเตี๋ยว) · จำกัดจำนวนต่อวัน = ต่อวันส่ง</p><section class="card" style="border:1px solid var(--chili);padding:12px;display:flex;flex-direction:column;gap:6px"><b style="color:var(--chili)">🧹 รีเซตบิล · ข้าวมันไก่</b><span class="help" style="margin:0">ช่วงทดลองระบบ: ล้างบิล/ออร์เดอร์ทดสอบ แล้วเริ่มเลขบิลใหม่ · เจ้าของร้านเท่านั้น · ต้องยืนยันก่อน</span><button class="btn danger" data-act="resetOpen" data-v="po" type="button">🧹 รีเซตบิลข้าวมันไก่…</button></section></form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="poSave" type="button">บันทึก</button></div>`;
   poRenderPts();$('#poForm').addEventListener('input',()=>{S.sheet.dirty=true});$('#poForm').addEventListener('submit',e=>e.preventDefault())}
-function poRenderPts(){const L=S.sheet.d.points;$('#pPts').innerHTML=L.map((p,i)=>`<div class="oc-row" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 40px;margin-bottom:8px"><input data-pt="${i}" data-k="name" value="${esc(p.name)}" maxlength="50" placeholder="ชื่อจุด เช่น ตึก A ล็อบบี้" aria-label="ชื่อจุดส่ง"><input data-pt="${i}" data-k="note" value="${esc(p.note||'')}" maxlength="60" placeholder="รายละเอียด (ถ้ามี)" aria-label="รายละเอียดจุดส่ง"><button class="btn sm ghost" data-act="poPtDel" data-i="${i}" type="button" aria-label="ลบ">×</button></div>`).join('')||'<p class="help" style="margin:0">ยังไม่มีจุดส่ง ถ้าไม่ใส่ ลูกค้าเลือกได้แค่มารับที่ร้าน</p>'}
+function poRenderPts(){const L=S.sheet.d.points;$('#pPts').innerHTML=L.map((p,i)=>`<div class="oc-row" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 40px;margin-bottom:8px"><input data-pt="${i}" data-k="name" value="${esc(p.name)}" maxlength="50" placeholder="ชื่อจุด เช่น ตึก A ล็อบบี้" aria-label="ชื่อจุดส่ง"><input data-pt="${i}" data-k="note" value="${esc(p.note||'')}" maxlength="60" placeholder="รายละเอียด (ถ้ามี)" aria-label="รายละเอียดจุดส่ง"><button class="btn sm ghost" data-act="poPtDel" data-i="${i}" type="button" aria-label="ลบ">×</button></div>`).join('')||'<p class="help" style="margin:0">ยังไม่มีจุดส่ง ถ้าไม่ใส่ ลูกค้าเลือกได้แค่บริการจัดส่ง</p>'}
 function poReadPts(){document.querySelectorAll('[data-pt]').forEach(e=>{const p=S.sheet.d.points[+e.dataset.pt];if(p)p[e.dataset.k]=e.value.trim()})}
 async function poSave(){if(S.role!=='owner')return deny();poReadPts();const d=S.sheet.d;
   const data={...(S.po||{}),open:$('#pOpen').checked,shopName:val('pShop')||'ข้าวมันไก่',openFrom:val('pFrom'),cutoff:val('pCut')||'20:00',leadDays:+val('pLead')||0,window:val('pWin'),
@@ -2975,7 +2975,7 @@ async function poSave(){if(S.role!=='owner')return deny();poReadPts();const d=S.
     phone:val('pPhone'),ppName:val('pPPN').trim().slice(0,60),line:(v=>/^https?:\/\//i.test(v)?v:'')(val('pLine').trim()),logo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),notice:val('pNotice'),rcLogo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),rcName:val('poRcName'),rcNameEn:val('poRcNameEn'),rcTag:val('poRcTag'),rcFb:val('poRcFb'),rcFbUrl:val('poRcFbUrl'),rcMap:val('poRcMap'),rcMapUrl:val('poRcMapUrl'),rcThanks:val('poRcThanks'),rcThanks2:val('poRcThanks2'),
     points:d.points.filter(p=>p.name).map(p=>({id:p.id||('p'+uid()),name:p.name.slice(0,50),note:(p.note||'').slice(0,60)})),cats:(S.po&&S.po.cats)||[]};
   if(!data.payBefore&&!data.payAfter)return toast('เลือกวิธีชำระเงินอย่างน้อย 1 แบบ','bad');
-  if(!data.pickup&&!data.points.length)return toast('ต้องมีจุดส่ง หรือเปิดให้มารับที่ร้าน','bad');
+  if(!data.pickup&&!data.points.length)return toast('ต้องมีจุดส่ง หรือเปิดบริการจัดส่ง','bad');
   if(data.openFrom&&data.openFrom>=data.cutoff)return toast('เวลาเปิดรับต้องก่อนเวลาปิดรับ','bad');
   const ok=await write('config/po',r=>r.set(data));
   if(ok){S.po=data;S.sheet.d=JSON.parse(JSON.stringify(poCfg()));S.sheet.dirty=false;render();sheetPoSet();
