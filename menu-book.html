@@ -2,13 +2,13 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-2030">
+<meta name="app-version" content="2026.10.18-2300">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0907">
 <title>เมนู · เนื้อล้วนๆ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chonburi&family=Kanit:wght@400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
 <style>
 /* เมนูแบบ E-book: เล่มสีดำทอง ปัดซ้าย-ขวาเปิดหน้า · ข้อมูลเมนูดึงจากระบบร้านเสมอ */
 :root{--bg:#0b0907;--page:#15110d;--page2:#1d1712;--gold:#d9a441;--gold2:#f2c46d;--goldd:#8a6420;--fg:#f6efe4;--muted:#b7a68f;--line:rgba(217,164,65,.28);--red:#e5383b;
@@ -21,7 +21,7 @@ button{font:inherit;color:inherit}
 h1,h2,h3{font-family:var(--f-d);margin:0;font-weight:600;line-height:1.2}
 body{display:flex;flex-direction:column;background:radial-gradient(120% 70% at 50% 0%,#2a1d12 0%,#0b0907 60%)}
 .top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;border-bottom:1px solid var(--line);background:rgba(11,9,7,.85);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);z-index:5}
-.top img{width:36px;height:36px;border-radius:9px;object-fit:contain;background:#000;border:1px solid var(--line)}
+.top img{width:44px;height:34px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(242,196,109,.35))}
 .top b{font-family:var(--f-d);font-size:17px;display:block;line-height:1.1}.top small{color:var(--gold);font-size:11px;letter-spacing:.18em}
 .top .sp{flex:1}
 .tbtn{border:1px solid var(--line);background:rgba(217,164,65,.08);color:var(--gold2);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer}
@@ -91,11 +91,117 @@ body{display:flex;flex-direction:column;background:radial-gradient(120% 70% at 5
 .msg{padding:40px 24px;text-align:center;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.sheet{transform:none!important}.hint{animation:none}}
 .it .ph img.noimg{object-fit:cover;background:#15120f}
+
+/* ===== ลูกเล่นเล่มเมนู ===== */
+.prog{height:2px;background:rgba(217,164,65,.12)}.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--goldd),var(--gold2));box-shadow:0 0 8px var(--gold);transition:width .35s ease}
+.tz{position:absolute;top:12%;bottom:12%;width:14%;z-index:3;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}.tz.l{left:0}.tz.r{right:0}
+.sheet{--sh:0}
+.sheet .flipsh{display:none}
+.sheet>.inner{transition:filter .2s}
+.pg .sheet::after{background:radial-gradient(80% 50% at 50% 0%,rgba(242,196,109,.07),transparent 70%),linear-gradient(90deg,rgba(0,0,0,calc(var(--sh)*.55)),transparent 40%)}
+.corners span{position:absolute;width:46px;height:46px;color:var(--gold);opacity:.75;z-index:0;pointer-events:none}
+.corners .cn{width:100%;height:100%;display:block}
+.c-tl{top:14px;left:14px}.c-tr{top:14px;right:14px;transform:scaleX(-1)}.c-bl{bottom:14px;left:14px;transform:scaleY(-1)}.c-br{bottom:14px;right:14px;transform:scale(-1,-1)}
+/* ปก */
+.cover{background:radial-gradient(70% 45% at 50% 32%,rgba(217,164,65,.18),transparent 70%),linear-gradient(90deg,#0d0a08 0%,var(--page) 4%,var(--page2) 50%,var(--page) 100%)}
+.lgw{position:relative;width:min(78%,300px);aspect-ratio:478/362;margin-bottom:4px}
+.lgw.sm{width:150px}
+.lgw .lg{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 18px rgba(242,196,109,.35));animation:glow 3.2s ease-in-out infinite}
+.lgw .shine{position:absolute;inset:0;pointer-events:none;-webkit-mask:url(images/logo-nl-t.png?v=20261016b) center/contain no-repeat;mask:url(images/logo-nl-t.png?v=20261016b) center/contain no-repeat;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,250,230,.95) 48%,transparent 60%) no-repeat;background-size:250% 100%;animation:shine 3.6s ease-in-out infinite;mix-blend-mode:screen}
+@keyframes shine{0%{background-position:150% 0}55%,100%{background-position:-60% 0}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 12px rgba(242,196,109,.25))}50%{filter:drop-shadow(0 0 26px rgba(242,196,109,.55))}}
+.cover .lg{aspect-ratio:auto}
+.gt{background:linear-gradient(100deg,#b8862e 0%,#fff3d6 20%,var(--gold2) 35%,#b8862e 50%,#fff3d6 70%,var(--gold2) 85%,#b8862e 100%)!important;background-size:200% 100%!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent;animation:tshine 6s linear infinite}
+@keyframes tshine{to{background-position:-200% 0}}
+.cover .menu{display:flex;gap:.55em;padding:8px 0 8px .2em;letter-spacing:0}
+.cover .menu span{display:inline-block;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.cover .menu span:nth-child(2){animation-delay:.08s}.cover .menu span:nth-child(3){animation-delay:.16s}.cover .menu span:nth-child(4){animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+button.hint{border:1px solid var(--line);background:rgba(217,164,65,.08);border-radius:999px;padding:8px 16px;cursor:pointer;font:inherit;font-size:13px;color:var(--gold2)}
+.embers{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.embers i{position:absolute;bottom:-10px;left:var(--x);width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(circle,#ffe2a3,rgba(242,160,60,.0) 70%);box-shadow:0 0 8px 2px rgba(242,180,80,.55);opacity:0;animation:ember var(--t) linear var(--d) infinite}
+@keyframes ember{0%{opacity:0;transform:translate(0,0)}10%{opacity:.9}70%{opacity:.6}100%{opacity:0;transform:translate(24px,-95vh)}}
+/* หน้าในเล่ม: รายการค่อยๆ ลอยขึ้นเมื่อเปิดถึงหน้า */
+.pg .it,.pg .toc li{opacity:0;transform:translateY(12px)}
+.pg.on .it,.pg.on .toc li{animation:rise .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k,0)*70ms + 120ms)}
+.cat h2,.toc h2{position:relative}
+.orn{margin-bottom:18px}
+.pg.on .orn::before,.pg.on .orn::after{animation:line .8s ease both .1s}
+@keyframes line{from{width:0}to{width:60px}}
+.toc li button{border-radius:10px;padding:12px 8px}
+.toc li button:hover,.toc li button:active{background:rgba(217,164,65,.08)}
+.toc .tn{font-style:normal;font-family:var(--f-d);font-size:13px;color:var(--goldd);min-width:22px}
+.it .ph{box-shadow:0 6px 18px rgba(0,0,0,.45);transition:transform .25s}
+.it .ph:active{transform:scale(.97)}
+.it .ph img{transition:transform .5s}.it:hover .ph img{transform:scale(1.06)}
+.rib{position:absolute;top:8px;left:-24px;transform:rotate(-40deg);background:linear-gradient(90deg,var(--gold),var(--gold2));color:#1d1307;font-size:10.5px;font-weight:800;padding:2px 26px;box-shadow:0 2px 6px rgba(0,0,0,.4);z-index:2;font-family:var(--f-d)}
+.it .nm em{display:inline-flex;align-items:baseline;gap:1px;background:rgba(217,164,65,.1);border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.it .nm em small{font-size:12px;font-weight:600}
+@media (prefers-reduced-motion:reduce){.lgw .lg,.lgw .shine,.gt,.embers i,.cover .menu span{animation:none!important}.pg .it,.pg .toc li{opacity:1;transform:none;animation:none!important}}
+
+/* ===== ธีมโต๊ะไม้ + กลิ่นอายจีน ===== */
+:root{--f-cn:"Chonburi","Kanit",serif;--cnred:#b3261e}
+.sheet{background:linear-gradient(180deg,rgba(12,8,5,.30),rgba(8,5,3,.55)),url(images/eb-wood.jpg?v=20261018b) center/cover,#1a120c!important}
+.sheet::before{border-color:rgba(217,164,65,.38)}
+.cover{background:radial-gradient(60% 38% at 50% 34%,rgba(242,196,109,.20),transparent 72%),linear-gradient(180deg,rgba(12,8,5,.15),rgba(8,5,3,.5)),url(images/eb-wood.jpg?v=20261018b) center/cover,#1a120c!important}
+.cover h1,.toc h2,.cat h2,.back h2{font-family:var(--f-cn)!important;font-weight:400!important;letter-spacing:.01em}
+.cover h1{font-size:42px;line-height:1.25;text-shadow:none}
+.toc h2,.cat h2{font-size:28px;color:var(--gold2);text-shadow:0 2px 12px rgba(0,0,0,.7)}
+.cover .en{font-family:var(--f-cn);letter-spacing:.4em}
+.top b{font-family:var(--f-cn);font-weight:400;font-size:17px}
+.orn{color:#e0574c}.orn::before,.orn::after{background:linear-gradient(90deg,transparent,#c9873a)}
+.it .nm b{text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.it p{color:#cdbb9f}
+.it+.it{border-top-color:rgba(217,164,65,.18)}
+.seal{position:absolute;top:31%;right:40px;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:54px;height:72px;border:2.5px solid var(--cnred);border-radius:6px;color:var(--cnred);background:rgba(179,38,30,.08);font-family:var(--f-cn);font-size:15px;line-height:1.15;transform:rotate(6deg);box-shadow:inset 0 0 0 2px rgba(179,38,30,.35);opacity:.92}
+.cover .menu{color:#f6efe4;border-color:rgba(201,135,58,.6)}
+.toc li button{text-shadow:0 1px 6px rgba(0,0,0,.8)}
+
+/* ===== จัดวางแบบจานบนโต๊ะ ===== */
+.en2{text-align:center;font-family:var(--f-cn);color:var(--fg);letter-spacing:.3em;font-size:13px;margin-top:2px}
+.spread{display:flex;flex-direction:column;gap:6px;padding:4px 0 10px}
+.dish{display:flex;align-items:center;gap:14px;position:relative}
+.dish+.dish{margin-top:-18px}
+.dish.r{flex-direction:row-reverse;text-align:right}
+.dish:not(.r){padding-left:2%}.dish.r{padding-right:2%}
+.plate{flex:none;width:var(--sz);aspect-ratio:1;border-radius:50%;padding:7%;position:relative;cursor:zoom-in;
+  background:radial-gradient(circle at 35% 30%,#fbf6ee,#e7dccb 55%,#c9b89c 100%);box-shadow:0 18px 30px rgba(0,0,0,.65),0 4px 8px rgba(0,0,0,.4),inset 0 -6px 12px rgba(0,0,0,.18)}
+.dish:nth-child(4n+2) .plate{background:radial-gradient(circle at 35% 30%,#3a2a20,#20150f 70%);box-shadow:0 18px 30px rgba(0,0,0,.7),inset 0 0 0 3px rgba(217,164,65,.35)}
+.dish:nth-child(4n+3) .plate{background:radial-gradient(circle at 35% 30%,#f4e3c4,#d9b880 60%,#a97e3f)}
+.plate .rim{width:100%;height:100%;border-radius:50%;overflow:hidden;box-shadow:inset 0 0 12px rgba(0,0,0,.35);background:#15120f}
+.plate img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s}
+.dish:hover .plate img{transform:scale(1.07) rotate(2deg)}
+.plate .stamp{z-index:3}
+.dish.off .plate img{filter:grayscale(1);opacity:.45}.dish.off .lbl{opacity:.6}
+.lbl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dish.r .lbl{align-items:flex-end}
+.lbl b{font-family:var(--f-d);font-weight:500;font-size:18px;line-height:1.25;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.9)}
+.lbl em{font-style:normal;font-family:var(--f-cn);font-size:20px;color:var(--gold2);text-shadow:0 2px 8px rgba(0,0,0,.9)}
+.lbl p{margin:0;color:#d8c7aa;font-size:12.5px;line-height:1.4;text-shadow:0 1px 6px rgba(0,0,0,.9)}
+.lbl .rtag{align-self:flex-start;font-size:10.5px;font-weight:800;color:#1d1307;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:999px;padding:0 8px}
+.dish.r .lbl .rtag{align-self:flex-end}
+.lbl .leftq{margin-top:2px}.dish.r .lbl .leftq{align-self:flex-end}
+.pg .dish{opacity:0;transform:translateY(16px) scale(.96)}
+.pg.on .dish{animation:dishin .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--k,0)*90ms + 120ms)}
+@keyframes dishin{to{opacity:1;transform:none}}
+.recp h2{font-size:30px}
+@media (prefers-reduced-motion:reduce){.pg .dish{opacity:1;transform:none;animation:none!important}}
+
+.promo h2{font-size:32px;color:#ffd77a}
+.promo .en2{color:#ff8a7a;letter-spacing:.35em}
+.promo .plate{width:calc(var(--sz) + 4%)}
+.ptag{align-self:flex-start;font-size:11px;font-weight:800;letter-spacing:.08em;color:#fff;background:linear-gradient(90deg,#b3261e,#e0574c);border-radius:6px;padding:1px 8px;box-shadow:0 2px 8px rgba(179,38,30,.5)}
+.dish.r .ptag{align-self:flex-end}
+.lbl s.reg{color:#a89a86;font-size:14px}
+.lbl .save{align-self:flex-start;font-size:12px;font-weight:800;color:#5ef0c8;text-shadow:0 1px 6px rgba(0,0,0,.9)}
+.dish.r .lbl .save{align-self:flex-end}
+.lbl .until{color:#ffb4a8!important;font-weight:600}
 </style>
 </head>
 <body>
-<header class="top"><img id="logo" src="images/logo-nl.png?v=20261016b" alt=""><div><b id="shop">เนื้อล้วนๆ</b><small>MENU · E-BOOK</small></div><span class="sp"></span><button class="tbtn" data-a="toc" type="button">☰ สารบัญ</button></header>
-<main class="stage"><div class="book" id="book" aria-live="polite"><div class="pg"><div class="sheet"><div class="inner msg">กำลังเปิดเล่มเมนู…</div></div></div></div></main>
+<header class="top"><img id="logo" src="images/logo-nl-t.png?v=20261016b" alt=""><div><b id="shop">ร้านเนื้อล้วนๆ</b><small>MENU · E-BOOK</small></div><span class="sp"></span><button class="tbtn" data-a="toc" type="button">☰ สารบัญ</button></header>
+<div class="prog"><i id="prog"></i></div><main class="stage"><button class="tz l" data-a="prev" type="button" aria-label="หน้าก่อน" tabindex="-1"></button><button class="tz r" data-a="next" type="button" aria-label="หน้าถัดไป" tabindex="-1"></button><div class="book" id="book" aria-live="polite"><div class="pg"><div class="sheet"><div class="inner msg">กำลังเปิดเล่มเมนู…</div></div></div></div></main>
 <nav class="nav"><button data-a="prev" type="button" aria-label="หน้าก่อน">‹</button><span class="cnt" id="cnt"></span><button data-a="next" type="button" aria-label="หน้าถัดไป">›</button></nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
@@ -106,21 +212,32 @@ body{display:flex;flex-direction:column;background:radial-gradient(120% 70% at 5
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const baht=n=>(Math.round((+n||0)*100)/100).toLocaleString('th-TH',{maximumFractionDigits:2});
-const PER=5; // รายการต่อหน้า
+const PER=4; // รายการต่อหน้า (จัดแบบจานวางบนโต๊ะ)
 let D=null,PAGES=[];
+const BOOK_NAME='ร้านเนื้อล้วนๆ',BOOK_EN='NUEA LWOAN';
+const LOGO='images/logo-nl-t.png?v=20261016b';
+const CORNERS='<div class="corners">'+['tl','tr','bl','br'].map(k=>`<span class="c-${k}"><svg class="cn" viewBox="0 0 60 60" aria-hidden="true"><path d="M2 58V20Q2 2 20 2h38" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 58V24Q8 8 24 8h34" fill="none" stroke="currentColor" stroke-width=".7" opacity=".6"/><circle cx="14" cy="14" r="2.2" fill="currentColor"/><path d="M20 14q8-10 16 0q-8 6-16 0z" fill="currentColor" opacity=".55"/><path d="M14 20q-10 8 0 16q6-8 0-16z" fill="currentColor" opacity=".55"/></svg></span>`).join('')+'</div>';
 const base=f=>new URL(f,location.href).href.split('?')[0];
-function build(d){D=d;PAGES=[];const menu=d.menu||[];
-  $('#shop').textContent=d.shopName||'เนื้อล้วนๆ';document.title='เมนู · '+(d.shopName||'เนื้อล้วนๆ');if(d.logo)$('#logo').src=d.logo;
+
+// จานอาหารวางบนโต๊ะ: สลับซ้าย-ขวา ขนาดต่างกันเล็กน้อย แบบเมนูนิตยสาร
+const SZ=[48,42,46,41];
+const cbEnd=e=>{try{const d=new Date(e+':00+07:00');return d.toLocaleDateString('th-TH',{day:'numeric',month:'short',timeZone:'Asia/Bangkok'})+' '+e.slice(11,16)+' น.'}catch(x){return e}};
+function dish(m,k){const r=k%2===1,sz=SZ[k%SZ.length];
+  return `<div class="dish${r?' r':''}${m.soldOut?' off':''}" style="--k:${k};--sz:${sz}%">
+    <div class="plate" data-a="zoom" data-id="${esc(m.id)}"><div class="rim"><img src="${esc(m.img||'images/menu-ph.jpg?v=20261016b')}" alt="" loading="lazy"${m.img?'':' class="noimg"'}></div>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}</div>
+    <div class="lbl">${m.combo?'<span class="ptag">🎁 COMBO</span>':''}<b>${esc(m.name)}</b>${m.rec?'<span class="rtag">★ แนะนำ</span>':''}${m.combo&&+m.combo.regular>(+m.price||0)?`<s class="reg">${baht(m.combo.regular)}.-</s>`:''}<em>${baht(m.price)}.-</em>${m.combo&&+m.combo.regular>(+m.price||0)?`<span class="save">ประหยัด ${baht(m.combo.regular-(+m.price||0))}.-</span>`:''}${m.desc?`<p>${esc(m.desc)}</p>`:''}${m.combo&&m.combo.end?`<p class="until">⏰ ถึง ${esc(cbEnd(m.combo.end))}</p>`:''}${m.opts?`<p class="op">${esc(m.opts)}</p>`:''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></div>`}
+function build(d){D=d;PAGES=[];const all=d.menu||[],combos=all.filter(m=>m.combo&&!m.soldOut),menu=all.filter(m=>!m.combo);
+  $('#shop').textContent=BOOK_NAME;document.title='เมนู · '+BOOK_NAME;
   const order=[...(d.cats||[]).filter(c=>menu.some(m=>m.cat===c)),...new Set(menu.map(m=>m.cat||'').filter(c=>!(d.cats||[]).includes(c)))];
   const catPages=[];order.forEach(c=>{const L=menu.filter(m=>(m.cat||'')===c).sort((a,b)=>(b.rec?1:0)-(a.rec?1:0));for(let i=0;i<L.length;i+=PER)catPages.push({c:c||'เมนูอื่นๆ',items:L.slice(i,i+PER),cont:i>0})});
-  PAGES.push({k:'cover'});PAGES.push({k:'toc'});catPages.forEach(p=>PAGES.push({k:'cat',...p}));PAGES.push({k:'back'});
-  const firstOf={};PAGES.forEach((p,i)=>{if(p.k==='cat'&&!(p.c in firstOf))firstOf[p.c]=i});
+  PAGES.push({k:'cover'});for(let i=0;i<combos.length;i+=3)PAGES.push({k:'cat',c:'โปรโมชั่น',en:'COMBO SET',items:combos.slice(i,i+3),promo:true,cont:i>0});PAGES.push({k:'toc'});{const R=menu.filter(m=>m.rec&&!m.soldOut).slice(0,4);if(R.length)PAGES.push({k:'cat',c:'เมนูแนะนำ',en:'RECOMMENDED',items:R,rec:true})}catPages.forEach(p=>PAGES.push({k:'cat',...p}));PAGES.push({k:'back'});
+  const firstOf={};PAGES.forEach((p,i)=>{if(p.k==='cat'&&!p.rec&&!(p.c in firstOf))firstOf[p.c]=i});
   const upd=new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Bangkok'});
   const html=PAGES.map((p,i)=>{let h='';
-    if(p.k==='cover')h=`<div class="sheet cover"><div class="inner"><img class="lg" src="${esc(d.logo||'images/logo-nl.png?v=20261016b')}" alt=""><h1>${esc(d.shopName||'เนื้อล้วนๆ')}</h1>${d.shopNameEn?`<div class="en">${esc(d.shopNameEn)}</div>`:''}<div class="menu">MENU</div>${d.tag?`<div class="tag">${esc(d.tag)}</div>`:''}<div class="hint">ปัดเพื่อเปิดเล่ม <span>›</span></div><small style="color:var(--goldd)">อัปเดต ${esc(upd)}</small></div></div>`;
-    else if(p.k==='toc')h=`<div class="sheet toc"><div class="inner"><h2>สารบัญ</h2><div class="orn">✦</div><ol>${Object.entries(firstOf).map(([c,ix])=>`<li><button data-a="go" data-i="${ix}" type="button">${esc(c)}<span>${ix+1}</span></button></li>`).join('')}</ol></div><div class="pno">${i+1}</div></div>`;
-    else if(p.k==='cat')h=`<div class="sheet cat"><div class="inner"><h2>${esc(p.c)}${p.cont?' <small style="font-size:14px;color:var(--muted)">(ต่อ)</small>':''}</h2><div class="orn">✦</div><div class="items">${p.items.map(m=>`<div class="it${m.soldOut?' off':''}"><div class="ph" data-a="zoom" data-id="${esc(m.id)}"><img src="${esc(m.img||'images/menu-ph.jpg?v=20261016b')}" alt="" loading="lazy"${m.img?'':' class="noimg"'}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}</div><div class="tx"><div class="nm"><b>${esc(m.name)}</b><em>${baht(m.price)}</em></div>${m.desc?`<p>${esc(m.desc)}</p>`:''}${m.opts?`<div class="op">${esc(m.opts)}</div>`:''}${m.rec?'<span class="badge rec">★ แนะนำ</span>':''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></div>`).join('')}</div></div><div class="pno">${i+1}</div></div>`;
-    else h=`<div class="sheet back"><div class="inner"><img src="${esc(d.logo||'images/logo-nl.png?v=20261016b')}" alt="" style="width:110px;height:110px;object-fit:contain"><h2>ขอบคุณที่แวะมาครับ</h2><div class="orn">✦</div>
+    if(p.k==='cover')h=`<div class="sheet cover">${CORNERS}<div class="seal" aria-hidden="true"><span>เนื้อ</span><span>ล้วน</span></div><div class="embers">${Array.from({length:16},(_,k)=>`<i style="--x:${(k*37+11)%100}%;--d:${(k*0.73)%6}s;--t:${5+(k*1.3)%5}s;--s:${2+(k%3)}px"></i>`).join('')}</div><div class="inner"><div class="lgw"><img class="lg" src="${LOGO}" alt=""><span class="shine"></span></div><h1 class="gt">${esc(BOOK_NAME)}</h1><div class="en">${esc(BOOK_EN)}</div><div class="menu"><span>M</span><span>E</span><span>N</span><span>U</span></div>${d.tag?`<div class="tag">${esc(d.tag)}</div>`:''}<button class="hint" data-a="next" type="button">แตะหรือปัดเพื่อเปิดเล่ม <span>›</span></button><small style="color:var(--goldd)">อัปเดต ${esc(upd)}</small></div></div>`;
+    else if(p.k==='toc')h=`<div class="sheet toc">${CORNERS}<div class="inner"><h2>สารบัญ</h2><div class="orn">✦</div><ol>${Object.entries(firstOf).map(([c,ix])=>`<li style="--k:${Object.keys(firstOf).indexOf(c)}"><button data-a="go" data-i="${ix}" type="button"><i class="tn">${String(Object.keys(firstOf).indexOf(c)+1).padStart(2,'0')}</i>${esc(c)}<span>${ix+1}</span></button></li>`).join('')}</ol></div><div class="pno">${i+1}</div></div>`;
+    else if(p.k==='cat')h=`<div class="sheet cat${p.rec?' recp':''}${p.promo?' promo':''}">${CORNERS}<div class="inner"><h2>${esc(p.c)}${p.cont?' <small style="font-size:14px;color:var(--muted)">(ต่อ)</small>':''}</h2>${p.en?`<div class="en2">${esc(p.en)}</div>`:''}<div class="orn">✦</div><div class="spread">${p.items.map((m,k)=>dish(m,k)).join('')}</div></div><div class="pno">${i+1}</div></div>`;
+    else h=`<div class="sheet back">${CORNERS}<div class="inner"><div class="lgw sm"><img class="lg" src="${LOGO}" alt=""><span class="shine"></span></div><h2>ขอบคุณที่แวะมาครับ</h2><div class="orn">✦</div>
       ${d.deliveryOn?`<a class="cta pri" href="${esc(base('delivery.html'))}">🛵 สั่งเดลิเวอรี่${d.open?'':' <small style="font-weight:400">(ตอนนี้ปิด)</small>'}</a>`:''}
       <a class="cta" href="${esc(base('card.html'))}">⭐ บัตรสะสมแต้ม / คูปอง</a>
       ${d.phone?`<a class="cta" href="tel:${esc(d.phone)}">📞 ${esc(d.phone)}</a>`:''}${d.map?`<a class="cta" href="${esc(d.map)}" target="_blank" rel="noopener">📍 แผนที่ร้าน</a>`:''}
@@ -131,7 +248,9 @@ function build(d){D=d;PAGES=[];const menu=d.menu||[];
 let cur=0;
 function flip(){const b=$('#book'),w=b.clientWidth||1;const x=b.scrollLeft/w;cur=Math.round(x);
   b.querySelectorAll('.pg').forEach((p,i)=>{const s=p.firstElementChild;if(!s)return;const o=i-x;const r=Math.max(-1,Math.min(1,o));
-    s.style.transform=Math.abs(o)<.001?'':`rotateY(${-r*28}deg) scale(${1-Math.abs(r)*.06})`;s.style.transformOrigin=o<0?'right center':'left center';s.style.opacity=String(1-Math.min(.5,Math.abs(r)*.5))});
+    s.style.transform=Math.abs(o)<.001?'':`rotateY(${-r*28}deg) scale(${1-Math.abs(r)*.06})`;s.style.transformOrigin=o<0?'right center':'left center';s.style.opacity=String(1-Math.min(.5,Math.abs(r)*.5));s.style.setProperty('--sh',String(Math.min(1,Math.abs(r)*1.4)))});
+  b.querySelectorAll('.pg').forEach((p,i)=>p.classList.toggle('on',i===cur));
+  {const pr=$('#prog');if(pr)pr.style.width=(PAGES.length>1?cur/(PAGES.length-1)*100:0)+'%'}
   $('#cnt').innerHTML=PAGES.length?`<b>${cur+1}</b> / ${PAGES.length}`:'';
   document.querySelector('[data-a=prev]').disabled=cur<=0;document.querySelector('[data-a=next]').disabled=cur>=PAGES.length-1;
   try{sessionStorage.setItem('nl_book_pg',String(cur))}catch(e){}}

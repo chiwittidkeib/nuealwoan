@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.17-1845">
+<meta name="app-version" content="2026.10.18-2105">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -177,7 +177,7 @@ body.welcome .callb{display:none}
 .stamp{flex-direction:column;gap:3px}
 .stamp b{display:block;font-weight:800;font-size:1em;line-height:1.15;padding-bottom:3px;border-bottom:2px solid currentColor;color:inherit;opacity:1;margin:0}
 .stamp i{display:block;font-style:normal;font-weight:800;font-size:.62em;letter-spacing:.6px;text-transform:uppercase;line-height:1;color:inherit;opacity:1}
-.stamp b,.stamp i{color:var(--jade)!important;opacity:1!important;font-family:var(--f-body)}
+.stamp b,.stamp i{color:#5ec59c!important;opacity:1!important;font-family:var(--f-body)}
 .item .stamp b{font-size:17px}
 
 /* ---- ร้านพรีออเดอร์: สีเหลืองข้าวมันไก่ ---- */
@@ -289,6 +289,7 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 .myrow.cx .g{opacity:.55}
 .cxinfo{background:var(--sunk);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--muted);text-align:center}
 .pill.info{background:#e3f0fd;color:#1565c0}
+.shr{display:flex;gap:8px}.shr .btn{min-width:0;white-space:nowrap}.shr .btn:last-child{flex:none;padding-left:12px;padding-right:12px}.shr .lineshr{flex:1;background:#06c755;border-color:#06c755;color:#fff;font-weight:700}.shr .lineshr b{background:#fff;color:#06c755;border-radius:6px;padding:0 6px;margin-right:6px;font-size:13px}
 </style>
 </head>
 <body>
@@ -589,7 +590,8 @@ function render(){
         :o.pay==='after'?'<span class="pill warn">โอนตอนรับของ · ยังไม่แนบสลิป</span>':'<span class="pill bad">ยังไม่ได้โอน</span>';
       h=`${S.justSent?`<div class="msg" style="padding:12px 8px 0"><h2>${S.justMerged?'เพิ่มรายการในออร์เดอร์เดิมแล้ว':'สั่งเรียบร้อย ขอบคุณครับ'}</h2>${S.justMerged?`<p class="muted" style="margin:0">รวมเป็นออร์เดอร์เดียว ยอดสรุปใหม่ด้านล่าง · ${poDue(o)>0?'โอนเพิ่ม '+baht(poDue(o))+' แล้วแนบสลิปเพิ่มได้':''}</p>`:''}<p class="muted" style="margin:0">บันทึกหน้านี้ไว้ หรือกลับมาดูได้ที่ "ออร์เดอร์ของฉัน"</p></div>`:''}
       ${cx?`<div class="cxwrap"><span class="cxstamp"><b>ยกเลิกออร์เดอร์</b><i>Cancelled</i></span><p class="muted" style="margin:0">${o.cancelledBy==='customer'?'คุณยกเลิกออร์เดอร์นี้':'ร้านยกเลิกออร์เดอร์นี้'}${o.cancelReason?`<br><b style="color:var(--chili)">เหตุผล: ${esc(o.cancelReason)}</b>`:''}${o.cancelledAt?' · '+esc(new Date(+o.cancelledAt).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p></div>`:''}
-      <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b class="qs-${cx?'cx':esc(o.status)}">${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc((thDate(o.deliverDate)+tmW(o.deliverDate)))}${o.window?' · '+esc(o.window):''}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
+      <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b class="qs-${cx?'cx':esc(o.status)}">${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc(thDate(o.deliverDate)+(o.window?' · เวลา '+o.window:tmW(o.deliverDate)))}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
+      ${cx?'':`<div class="shr"><button class="btn lineshr" data-a="shareLine" type="button"><b>LINE</b> แชร์ลิงก์ไว้เช็กสถานะ</button><button class="btn" data-a="copyLink" type="button" aria-label="คัดลอกลิงก์">📋 คัดลอก</button></div><p class="muted" style="margin:-4px 0 0;font-size:12.5px;text-align:center">ส่งเข้า Keep memo หรือแชทตัวเอง · เปิดเช็กสถานะ แนบสลิป ดูใบเสร็จ ได้จากทุกเครื่อง</p>`}
       ${cx?'':`<ol class="steps">${STEPS.map((s,i)=>`<li class="st-${s[0]}${i<=idx?' on':''}${i===idx?' cur':''}">${esc(s[1])}</li>`).join('')}</ol>`}
       <div class="list">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="row rnd"><div class="g">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div></div>`:''}<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:''}${l.note?`<div class="who">${esc(l.note)}</div>`:''}</div><div class="r">${baht(l.price*l.qty)}</div></div>`).join('')}
         <div class="row"><div class="g"><b>ยอดรวม${(o.rounds||1)>1?' (รวมที่สั่งเพิ่ม)':''}</b></div><div class="r"><b>${baht(o.total)}</b></div></div>
@@ -597,7 +599,7 @@ function render(){
         <div class="row"><div class="g">ชำระเงิน</div>${pay}</div>
         ${o.memberPhone?`<div class="row"><div class="g">⭐ สมาชิก</div><div class="r">${+o.ptsEarned?`<span class="pill ok">+${+o.ptsEarned} แต้ม</span> `:''}<button class="lnk-g" data-a="poCard" type="button">💳 ดูบัตรสมาชิก</button></div></div>`
           :(!cx&&o.payStatus!=='paid'?`<div class="row"><div class="g">⭐ สะสมแต้ม</div><div class="r"><button class="lnk-g" data-a="poMemOn" type="button">สะสมด้วยเบอร์นี้</button></div></div>`:'')}
-        <div class="row"><div class="g">ผู้รับ</div><div class="r">${esc(o.name)} · ${esc(o.phone)}</div></div></div>
+        <div class="row"><div class="g">ผู้รับ</div><div class="r">${esc(o.name)} · ${esc(o.phone)}</div></div>${o.note?`<div class="row"><div class="g">📝 โน้ต</div><div class="r" style="text-align:right;white-space:normal">${esc(o.note)}</div></div>`:''}</div>
       ${!cx&&o.payStatus!=='paid'&&(o.pay==='before'||o.status!=='new'||o.hasSlip||o.slipBad)?`${o.slipBad&&o.payStatus!=='slip'?`<div class="slipbad">❌ <b>ร้านแจ้งว่าสลิปไม่ถูกต้อง</b><span>${esc(o.slipBad)}</span><small>โอนให้ถูกต้องแล้วแนบสลิปใหม่ หรือโทรหาร้าน</small></div>`:''}${pp&&(o.payStatus==='waiting'||o.payStatus==='cod')?ppBox(pp,poDue(o),o.ppName):''}
         ${S.lateDraft?`<div class="slipbox"><b>ตรวจสลิปก่อนส่ง</b><img class="slipprev" src="${S.lateDraft}" alt="สลิป" data-a="slipView" data-v="late"><div class="seg"><button class="btn" data-a="lateClear" type="button">ลบ เลือกใหม่</button><button class="btn pri" data-a="lateSend" type="button" ${S.lateBusy?'disabled':''}>${S.lateBusy?'กำลังส่ง…':'ยืนยันส่งสลิป'}</button></div></div>`
           :`${o.hasSlip?`<div class="slipok"><span style="font-size:26px">📎</span><div><b>⏳ รอตรวจสอบยอดชำระ</b><small>ส่งสลิปแล้ว ร้านกำลังตรวจยอด · ถ้าแนบผิด แนบใหม่ได้</small></div></div>`:''}<label class="btn ${o.payStatus==='waiting'||o.payStatus==='cod'?'pri ':''}slipbtn" for="slipLate">${o.hasSlip?'📎 แนบสลิปเพิ่ม'+(+o.slipCount>0?' (แนบแล้ว '+o.slipCount+' ใบ)':''):'📎 โอนแล้ว แนบสลิป'}</label>`}`:''}
@@ -657,6 +659,10 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   if(a==='poCard'||a==='poMemOn'){b.disabled=true;try{const {data,error}=await sb.rpc('po_member',{p_id:S.cur.id,p_token:S.cur.token,p_on:true});b.disabled=false;
       if(error){const m=String(error.message||'');return toast(/points_off/.test(m)?'ร้านปิดระบบสะสมแต้มอยู่':/po_member|function|PGRST20/i.test(m)?'ร้านยังไม่ได้เปิดระบบสมาชิก':'ทำรายการไม่สำเร็จ ลองอีกครั้ง')}
       showMemberCard({...data,note:data.paid?(+data.earned?`ได้รับ +${+data.earned} แต้มจากออร์เดอร์นี้ 🎉`:''):'แต้มจะเข้าเมื่อร้านยืนยันรับเงิน · ใช้ได้ทั้ง 2 ร้าน'});await loadOrder();render()}catch(x){b.disabled=false;toast('เชื่อมต่อไม่ได้ ลองอีกครั้ง')}return}
+  if(a==='shareLine'||a==='copyLink'){const o=S.order||{},c=S.cfg||{};const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('o',S.cur.id);u.searchParams.set('t',S.cur.token);const link=u.href;
+    if(a==='copyLink'){try{await navigator.clipboard.writeText(link);toast('คัดลอกลิงก์แล้ว')}catch(x){window.prompt('คัดลอกลิงก์นี้',link)}return}
+    const txt=[`🍗 ออร์เดอร์${c.shopName||'ข้าวมันไก่'} ${o.orderNo||''}`,`รับ${thDate(o.deliverDate)}${o.window?' · เวลา '+o.window:''}`,`ยอด ${baht(+o.total||0)}`,`เช็กสถานะ / แนบสลิป / ใบเสร็จ:`,link].join('\n');
+    location.href='https://line.me/R/share?text='+encodeURIComponent(txt);return}
   if(a==='rcpt'){b.disabled=true;try{const {data,error}=await sb.rpc('po_receipt_link',{p_id:S.cur.id,p_token:S.cur.token});if(error||!data){b.disabled=false;return toast('ยังเปิดใบเสร็จไม่ได้ รอร้านยืนยันการชำระเงิน')}
     const u=new URL('receipt.html',location.href);location.href=u.origin+u.pathname+'?s=po&r='+encodeURIComponent(data.id)+'&t='+encodeURIComponent(data.tok)}catch(x){b.disabled=false;toast('เชื่อมต่อไม่ได้ ลองอีกครั้ง')}return}
   if(a==='slipView')return viewImg(b.getAttribute('src'),'สลิป');

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.18-1950">
+<meta name="app-version" content="2026.10.18-2305">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -551,7 +551,7 @@ html,body{max-width:100%;overflow-x:clip}
 .stamp{flex-direction:column;gap:3px}
 .stamp b{display:block;font-weight:800;font-size:1em;line-height:1.15;padding-bottom:3px;border-bottom:2px solid currentColor;color:inherit;opacity:1;margin:0}
 .stamp i{display:block;font-style:normal;font-weight:800;font-size:.62em;letter-spacing:.6px;text-transform:uppercase;line-height:1;color:inherit;opacity:1}
-.stamp b,.stamp i{color:var(--jade)!important;opacity:1!important;font-family:var(--f-body)}
+.stamp b,.stamp i{color:#5ec59c!important;opacity:1!important;font-family:var(--f-body)}
 .item .stamp b{font-size:17px}
 /* ปุ่มที่ต้องแตะซ้ำเพื่อยืนยัน: ตัวหนังสือทอง กรอบแดง */
 .btn[data-armed],button[data-armed]{color:#ffd58a!important;border:2px solid #e5383b!important;background:rgba(229,56,59,.12)!important;box-shadow:0 0 0 3px rgba(229,56,59,.22);font-weight:700;animation:armpulse 1s ease-in-out infinite}
@@ -751,6 +751,18 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
   border:3px solid #d32f2f;box-shadow:inset 0 0 0 3px rgba(255,255,255,.9),inset 0 0 0 4.5px #d32f2f;background:rgba(240,253,250,.72);color:#0f9488;transform:rotate(-14deg);font-weight:800;font-size:10.5px;letter-spacing:0}
 .pocpaid i{font-style:normal;font-size:10px;letter-spacing:3px;border-top:1.5px solid #0f9488;padding-top:2px;margin-top:1px}
 @media (prefers-color-scheme:dark){.pocpaid{background:rgba(4,47,46,.88);color:#5eead4;box-shadow:inset 0 0 0 3px rgba(4,47,46,.9),inset 0 0 0 4.5px #ef5350;border-color:#ef5350}.pocpaid i{border-color:#5eead4}}
+#instG{position:fixed;inset:0;z-index:9999;background:rgba(10,8,6,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px}
+#instG .instbox{background:var(--surface,#fff);color:var(--fg);width:min(520px,100%);max-height:92vh;overflow:auto;border-radius:20px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:10px}
+#instG .insth{display:flex;align-items:center;gap:12px}#instG .insth img{width:52px;height:52px;border-radius:12px}#instG .insth b{display:block;font-size:18px}#instG .insth small{color:var(--muted);font-size:13px}
+#instG .insx{margin-left:auto;border:0;background:var(--sunk,#eee);border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;color:var(--fg)}
+#instG .instl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}#instG .instl li{display:flex;gap:10px;align-items:flex-start}
+#instG .instn{flex:none;width:30px;height:30px;border-radius:50%;background:#c8102e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}
+#instG .instt{font-weight:600;line-height:1.4}#instG .instd{font-size:13px;color:var(--muted)}#instG .instw{margin:0;padding:10px 12px;border-radius:12px;background:#fff4e5;color:#8a4b00;font-size:14px}
+#instG .instok{text-align:center;font-size:20px;font-weight:700;color:#0f9488}#instG .instarrow{text-align:center;color:#0a84ff;font-weight:700;animation:instb 1.2s ease-in-out infinite}
+@keyframes instb{50%{transform:translateY(5px)}}#instG .instqr summary{cursor:pointer;font-size:14px;color:var(--muted)}#instG .instq{width:200px;margin:8px auto 4px;background:#fff;padding:6px;border-radius:10px}#instG .instqr small{display:block;text-align:center;word-break:break-all;font-size:11px;color:var(--muted)}
+.cbrow{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:10px}.cbrow.on{background:rgba(15,148,136,.10)}.cbrow .cbq{min-width:22px;text-align:center}
+.cbreg{min-height:46px;display:flex;align-items:center;font-size:20px;font-weight:700;color:var(--muted);text-decoration:line-through}
+.combob{border-color:#d9a441!important;color:#b7791f!important}
 </style>
 </head>
 <body>
@@ -906,10 +918,13 @@ const linesCount=items=>(items||[]).reduce((s,l)=>s+l.qty,0);
 const thumb=(m,cls)=>!m.img&&S.shop!=='po'?`<div class="${cls}"><img src="images/menu-ph.jpg?v=20261016b" alt="${esc(m.name)}" loading="lazy"></div>`:m.img?`<div class="${cls}"><img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy"></div>`:`<div class="${cls} none"><span>${esc(String(m.name||'?').trim().charAt(0))}</span></div>`;
 const soldToday=mid=>{if(S.shop==='po')return poSold(mid);const t0=sod();let n=0;const f=o=>(o.items||[]).forEach(l=>{if(l.menuId===mid&&(+l.at||0)>=t0)n+=+l.qty||0});Object.values(S.open).forEach(f);(S.today||[]).forEach(f);return n};
 const menuLeft=m=>typeof m.dailyLimit==='number'?Math.max(0,m.dailyLimit-soldToday(m.id)):null;
-const isSoldOut=m=>m.active===false||(typeof m.dailyLimit==='number'&&menuLeft(m)<=0);
+const bkkNowMin=()=>new Date(Date.now()+7*3600e3).toISOString().slice(0,16);
+const comboOff=m=>!!(m&&m.combo&&((m.combo.start&&bkkNowMin()<m.combo.start)||(m.combo.end&&bkkNowMin()>m.combo.end)));
+const isSoldOut=m=>m.active===false||comboOff(m)||(typeof m.dailyLimit==='number'&&menuLeft(m)<=0);
 const stampHtml=(sm)=>`<span class="stamp${sm?' sm':''}"><b>หมดแล้ว</b><i>Sold Out</i></span>`;
 const leftTag=m=>{const l=menuLeft(m);return l===null||isSoldOut(m)?'':`<span class="leftq${l<=3?' low':''}">เหลือ ${l}</span>`};
-const optLine=l=>l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:'';
+const comboLine=l=>{const m=(S.nMenu||[]).find(x=>x.id===l.menuId);return m&&m.combo&&(m.combo.items||[]).length?`<div class="optx">🎁 ${esc(m.combo.items.map(c=>c.name+' ×'+c.qty).join(' · '))}</div>`:''};
+const optLine=l=>(l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:'')+comboLine(l);
 const custTag=l=>l.by==='customer'?`<span class="pill mute">${l.cname?'คุณ'+esc(l.cname):'ลูกค้าสั่ง'}</span>`:'';
 function fqResults(){const q=(S.fq||'').trim().toLowerCase();if(!q)return '';
   const hits=Object.values(S.open).filter(o=>[...custNames(o),o.orderNo,o.ref,o.label,o.table!=='TA'?'โต๊ะ '+o.table:''].filter(Boolean).some(x=>String(x).toLowerCase().includes(q))).sort((a,b)=>a.openedAt-b.openedAt);
@@ -1216,6 +1231,7 @@ function render(){
     <button class="btn pri" id="lgBtn" type="submit">เข้าสู่ระบบ</button>
     <div class="lg-or"><span>หรือ</span></div>
     <button class="btn lineb" data-act="slLogin" type="button"><b>LINE</b> เข้าสู่ระบบด้วย LINE</button>
+    ${PUSH.standalone()?'':'<button class="btn" data-act="instOpen" type="button">📲 ติดตั้งแอปบนมือถือ (แจ้งเตือนแม้ล็อกจอ)</button>'}
     ${S.lineMsg?`<p class="err" role="alert" style="margin:0">${esc(S.lineMsg)}</p>`:''}
     <p class="help" style="margin:0">ครั้งแรกเข้าด้วยชื่อผู้ใช้/รหัสผ่านที่แอดมินให้ แล้วกด 👤 บัญชี → ผูกบัญชี LINE · ลืมรหัสผ่าน ติดต่อเจ้าของร้าน</p></form>`;
     $('#lgForm').addEventListener('submit',e=>{e.preventDefault();login()});(last?$('#lgPw'):$('#lgUser')).focus();return}
@@ -1286,7 +1302,7 @@ function viewKitchen(){
 
 function viewMenu(){
   const cats=curCats();
-  let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
+  let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+(isPo()?'':'<button class="btn sm combob" data-act="combos" type="button">🎁 Combo เซ็ต</button>')+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
   <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div><div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
   const list=S.menu.filter(m=>S.menuCat==='all'||m.cat===S.menuCat);
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุน</div>`;
@@ -1417,7 +1433,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -1714,7 +1730,7 @@ function receiptHTML(o,mode){const st=S.settings,isBill=mode==='bill',items=o.it
   const d=dt.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+hm(t);
   const ln=(a,b,c='')=>`<div class="rl ${c}"><span>${a}</span><span>${b}</span></div>`;
   const po=o.shop==='po',pc=po?poCfg():null;
-  const B=po?{logo:pc.rcLogo||'images/logo-po-t.png',name:pc.rcName||pc.shopName||'ข้าวมันไก่',en:pc.rcNameEn??'KHAO MAN GAI',phone:pc.phone,fb:pc.rcFb}
+  const B=po?{logo:pc.rcLogo||'images/logo-po-t.png?v=20261018',name:pc.rcName||pc.shopName||'ข้าวมันไก่',en:pc.rcNameEn??'KHAO MAN GAI',phone:pc.phone,fb:pc.rcFb}
     :{logo:st.rcLogo||'images/logo-nl-t.png?v=20261016b',name:st.rcName||'เนื้อล้วนๆ',en:st.rcNameEn??'NUEA LWOON',phone:st.phone,fb:st.rcFb??'เนื้อล้วนๆ ก๋วยเตี๋ยวเนื้อ'};
   let h=`<div class="rc rc-brand${po?' rc-po':''}">`;
   h+=`<img class="rc-logo" src="${esc(B.logo)}" alt=""><div class="rc-shop">${esc(B.name)}</div>${B.en?`<div class="rc-en">${esc(B.en)}</div>`:''}`;
@@ -2028,7 +2044,7 @@ function bellCard(){const c=bellCfg(),opt=v=>Object.entries(BELLS).map(([k,n])=>
    <div class="grid2"><div class="field"><label for="bVol">ความดัง ${Math.round((+c.vol||1)*100)}%</label><input id="bVol" type="range" min="10" max="100" step="10" value="${Math.round((+c.vol||1)*100)}" data-bell="vol" style="min-height:0;padding:0;border:0;background:none"></div>
    <div class="field"><label for="bRep">ดังซ้ำจนกดรับทราบ</label><select id="bRep" data-bell="rep">${[[0,'ดังครั้งเดียว'],[8,'ทุก 8 วินาที'],[12,'ทุก 12 วินาที'],[20,'ทุก 20 วินาที'],[30,'ทุก 30 วินาที']].map(([v,n])=>`<option value="${v}" ${+c.rep===v?'selected':''}>${n}</option>`).join('')}</select></div></div>
    <div class="field" style="border-top:1px solid var(--line);padding-top:10px;margin-top:4px"><label>📲 แจ้งเตือนแม้ล็อกจอ / ปิดแอปอยู่</label><span class="help" id="pushStat">กำลังตรวจสอบ…</span>
-     <div class="inrow" style="flex-wrap:wrap;gap:8px;margin-top:6px"><button class="btn sm pri" id="pushOnBtn" data-act="pushOn" type="button">เปิดแจ้งเตือนบนเครื่องนี้</button><button class="btn sm" id="pushTestBtn" data-act="pushTest" type="button" hidden>ส่งทดสอบ</button></div></div>
+     <div class="inrow" style="flex-wrap:wrap;gap:8px;margin-top:6px"><button class="btn sm" data-act="instOpen" type="button">📲 วิธีติดตั้งแอป / QR ให้พนักงาน</button><button class="btn sm pri" id="pushOnBtn" data-act="pushOn" type="button">เปิดแจ้งเตือนบนเครื่องนี้</button><button class="btn sm" id="pushTestBtn" data-act="pushTest" type="button" hidden>ส่งทดสอบ</button></div></div>
    <div class="inrow" style="flex-wrap:wrap;gap:8px"><label class="btn sm" for="bFile">อัปโหลดเสียงของฉัน</label><input id="bFile" type="file" accept="audio/*" hidden>${bellCustom()?'<button class="btn sm ghost" data-act="bellDel" type="button">ลบเสียงของฉัน</button>':''}<span class="help">${Bell.ok?'เสียงเปิดอยู่':'แตะ ▶ เพื่อเปิดเสียงในเครื่องนี้'} · ไฟล์ mp3/m4a ไม่เกิน 1 MB</span></div></div>`}
 function bellBind(){pushStatus();if(PUSH.ok())PUSH.loadKey().catch(()=>{});document.querySelectorAll('[data-bell]').forEach(e=>e.addEventListener(e.type==='range'&&e.dataset.bell!=='rate'?'input':'change',()=>{const c=bellCfg(),k=e.dataset.bell;c[k]=k==='vol'||k==='rate'?(+e.value/100):k==='rep'?+e.value:e.value;bellSave(c);if(k==='mode')return;
     if(k==='rate'){const l=e.closest('.field').querySelector('label');if(l)l.textContent='ความเร็วพูด '+e.value+'%';Bell.sayNow('โต๊ะ 2 ขอชำระเงิน เช็คบิล');return}if(k==='voice'){Bell.sayNow('โต๊ะ 2 ขอชำระเงิน เช็คบิล');return}
@@ -2044,6 +2060,32 @@ function pushNag(){if(!['owner','chef'].includes(S.role))return '';pushCheck();i
   const iosTip=PUSH.ios&&!PUSH.standalone();const den=PUSH.ok()&&Notification.permission==='denied';
   return `<div style="border:2px solid var(--chili);border-radius:14px;background:var(--surface);padding:12px 14px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.08)"><b style="color:var(--chili)">🔕 เครื่องนี้ยังไม่ได้เปิดแจ้งเตือน</b><span>มีลูกค้าสั่งตอนล็อกจอ / ปิดแอป จะไม่มีเสียงเตือน${iosTip?' · <b>iPhone:</b> กดปุ่มแชร์ ⬆️ → "เพิ่มไปยังหน้าจอโฮม" แล้วเปิดแอปจากไอคอนก่อน จึงจะเปิดแจ้งเตือนได้':''}${den?' · ถูกปิดไว้ในตั้งค่ามือถือ ไปที่ ตั้งค่า → การแจ้งเตือน → อนุญาตเว็บนี้':''}</span>
    <div class="inrow" style="gap:8px;flex-wrap:wrap">${iosTip||den||!PUSH.ok()?'':'<button class="btn sm pri" data-act="pushOnNag" type="button">🔔 เปิดแจ้งเตือนเลย</button>'}<button class="btn sm ghost" data-act="pushNagHide" type="button">ไว้ทีหลัง</button></div></div>`}
+
+// ---------- ตัวช่วยติดตั้งแอป (PWA) · ไม่ผ่าน App Store · เปิดด้วย ?install=1 หรือปุ่ม 📲 ----------
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.__bip=e;const b=document.getElementById('instAnd');if(b)b.hidden=false});
+const INST={ua:navigator.userAgent,
+  ios(){return PUSH.ios},line(){return /\bLine\//i.test(this.ua)},fb(){return /FBAN|FBAV|Instagram/i.test(this.ua)},
+  iosSafari(){return this.ios()&&!/CriOS|FxiOS|EdgiOS|OPiOS|Line\/|FBAN|FBAV|Instagram/i.test(this.ua)},
+  android(){return /Android/i.test(this.ua)},iosVer(){const m=this.ua.match(/OS (\d+)_(\d+)/);return m?+m[1]+(+m[2])/100:99},
+  url(){return location.origin+location.pathname.replace(/[^/]*$/,'')+'?install=1'}};
+function instOpen(){let el=document.getElementById('instG');if(el)el.remove();el=document.createElement('div');el.id='instG';
+  const shareIc='<svg viewBox="0 0 24 24" width="22" height="22" style="vertical-align:-5px" fill="none" stroke="#0a84ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+  const addIc='<svg viewBox="0 0 24 24" width="22" height="22" style="vertical-align:-5px" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
+  const st=(n,t,d)=>`<li><b class="instn">${n}</b><div><div class="instt">${t}</div>${d?`<div class="instd">${d}</div>`:''}</div></li>`;
+  const after=`${st('✓','เปิดแอปจากไอคอน "NueaLwoan" บนหน้าจอโฮม','ต่อจากนี้เปิดจากไอคอนเท่านั้น (ไม่ต้องเข้าทางเว็บ)')}${st('🔔','เข้าสู่ระบบ แล้วกด "เปิดแจ้งเตือนเลย" → กด "อนุญาต"','หรือ 👤 บัญชี → 📲 แจ้งเตือนแม้ล็อกจอ → เปิดแจ้งเตือนบนเครื่องนี้ → ส่งทดสอบ')}`;
+  let body;
+  if(PUSH.standalone())body=`<div class="instok">✅ ติดตั้งแอปแล้ว<br><small>เข้าสู่ระบบ แล้วเปิดแจ้งเตือนได้เลย</small></div><ol class="instl">${st('🔔','กด "เปิดแจ้งเตือนเลย" → อนุญาต','หรือ 👤 บัญชี → แจ้งเตือนแม้ล็อกจอ')}</ol>`;
+  else if(INST.line()||INST.fb())body=`<p class="instw">⚠️ ตอนนี้เปิดอยู่ใน${INST.line()?' LINE':'แอปอื่น'} ซึ่งติดตั้งแอปไม่ได้</p><ol class="instl">${st(1,INST.ios()?'กดปุ่ม ⋯ หรือ ↗️ มุมขวา แล้วเลือก "เปิดใน Safari"':'กดปุ่ม ⋮ มุมขวา แล้วเลือก "เปิดในเบราว์เซอร์" (Chrome)','ถ้าไม่มีปุ่ม กดคัดลอกลิงก์ด้านล่าง แล้ววางใน '+(INST.ios()?'Safari':'Chrome'))}${st(2,'ทำตามขั้นตอนติดตั้งที่ขึ้นมาอีกครั้ง','')}</ol><button class="btn" data-act="instCopy" type="button">📋 คัดลอกลิงก์ติดตั้ง</button>`;
+  else if(INST.ios()&&!INST.iosSafari())body=`<p class="instw">⚠️ แนะนำให้ใช้ Safari ติดตั้ง (แจ้งเตือนทำงานดีที่สุด)</p><ol class="instl">${st(1,'กดคัดลอกลิงก์ แล้วเปิดแอป Safari วางลิงก์','')}${st(2,'ทำตามขั้นตอนติดตั้งที่ขึ้นมา','')}</ol><button class="btn" data-act="instCopy" type="button">📋 คัดลอกลิงก์ติดตั้ง</button>`;
+  else if(INST.ios())body=`${INST.iosVer()<16.4?'<p class="instw">⚠️ iPhone เครื่องนี้ iOS ต่ำกว่า 16.4 จะติดตั้งได้แต่ไม่มีแจ้งเตือนตอนล็อกจอ · ไปที่ การตั้งค่า → ทั่วไป → อัปเดตซอฟต์แวร์</p>':''}
+    <ol class="instl">${st(1,`กดปุ่มแชร์ ${shareIc} ที่แถบล่างของ Safari`,'iPad: อยู่มุมขวาบน · ถ้าไม่เห็นแถบ ให้แตะด้านล่างจอ 1 ครั้ง')}${st(2,`เลื่อนลง แล้วกด "เพิ่มไปยังหน้าจอโฮม" ${addIc}`,'ภาษาอังกฤษ: Add to Home Screen')}${st(3,'กด "เพิ่ม" มุมขวาบน','จะได้ไอคอนร้านบนหน้าจอโฮม')}${after}</ol><div class="instarrow">⬇︎ ปุ่มแชร์อยู่ด้านล่าง ⬇︎</div>`;
+  else if(INST.android())body=`<button class="btn pri" id="instAnd" data-act="instAndroid" type="button" ${window.__bip?'':'hidden'}>⬇️ ติดตั้งแอปเลย</button>
+    <ol class="instl">${st(1,'เปิดลิงก์นี้ใน Chrome','')}${st(2,'กดปุ่ม ⋮ มุมขวาบน → "ติดตั้งแอป" หรือ "เพิ่มลงในหน้าจอหลัก"','ถ้ามีปุ่มเขียว "ติดตั้งแอปเลย" ด้านบน กดได้ทันที')}${st(3,'กด "ติดตั้ง"','')}${after}</ol>`;
+  else body=`<p style="margin:0 0 6px">ให้พนักงานสแกน QR นี้ด้วยกล้องมือถือ แล้วทำตามขั้นตอนที่ขึ้นมา (iPhone ใช้ Safari · Android ใช้ Chrome)</p>`;
+  el.innerHTML=`<div class="instbox" role="dialog" aria-label="ติดตั้งแอป"><div class="insth"><img src="images/icon-192.png" alt=""><div><b>ติดตั้งแอป NueaLwoan</b><small>ฟรี · ไม่ต้องผ่าน App Store · ได้แจ้งเตือนแม้ล็อกจอ</small></div><button class="insx" data-act="instClose" type="button" aria-label="ปิด">✕</button></div>
+    ${body}<details class="instqr"${!INST.ios()&&!INST.android()?' open':''}><summary>QR สำหรับให้เครื่องอื่นติดตั้ง</summary><div class="instq">${qrSvg(INST.url())}</div><small>${esc(INST.url())}</small></details>
+    <p class="instd" style="margin:6px 0 0">แอดมิน · แม่ครัว · พนักงาน · หุ้นส่วน ใช้แอปเดียวกัน · เห็นเมนูตามสิทธิ์ของบัญชีที่เข้าสู่ระบบ</p></div>`;
+  document.body.appendChild(el)}
 async function pushStatus(){const el=$('#pushStat');if(!el)return;let t,on=false;
   if(!PUSH.ok())t=PUSH.errText('unsupported');else if(Notification.permission==='denied')t=PUSH.errText('denied');
   else{const sub=await PUSH.current().catch(()=>null);on=!!sub&&Notification.permission==='granted';t=on?'✓ เปิดอยู่บนเครื่องนี้ · ล็อกจอก็ยังได้รับแจ้งเตือน':'ยังไม่ได้เปิดบนเครื่องนี้'}
@@ -2260,6 +2302,10 @@ const ACT={
   bellTest:d=>{Bell.unlock();setTimeout(()=>{Bell.ring(d.k==='pay'?'pay':'staff');if(!d.k)toast(Bell.ok?'ถ้าไม่ได้ยิน ให้เพิ่มเสียงมือถือ':'กดอีกครั้งเพื่อทดสอบเสียง')},150)},
   pushOn:async(d,b)=>{if(b)b.disabled=true;try{const sub=await PUSH.subscribe();const ok=await pushSaveStaff(sub);if(ok)toast('เปิดแจ้งเตือนแล้ว ลองกด "ส่งทดสอบ" แล้วล็อกจอดู')}catch(e){toast(PUSH.errText(e),'bad')}if(b)b.disabled=false;pushStatus()},
   pushOnNag:async(d,b)=>{if(b)b.disabled=true;try{const sub=await PUSH.subscribe();const ok=await pushSaveStaff(sub);if(ok){S.pushOn=true;render();toast('🔔 เปิดแจ้งเตือนแล้ว · มีพรีออเดอร์ใหม่จะเด้งแม้ล็อกจอ')}}catch(e){toast(PUSH.errText(e),'bad')}if(b)b.disabled=false},
+  instOpen:()=>instOpen(),
+  instClose:()=>{const el=document.getElementById('instG');if(el)el.remove();try{const u=new URL(location.href);if(u.searchParams.has('install')){u.searchParams.delete('install');history.replaceState(null,'',u.href)}}catch(e){}},
+  instCopy:async()=>{try{await navigator.clipboard.writeText(INST.url());toast('คัดลอกลิงก์แล้ว')}catch(e){window.prompt('คัดลอกลิงก์นี้',INST.url())}},
+  instAndroid:async()=>{const p=window.__bip;if(!p)return toast('กด ⋮ มุมขวาบน → ติดตั้งแอป','bad');p.prompt();try{const r=await p.userChoice;if(r&&r.outcome==='accepted')toast('ติดตั้งแล้ว · เปิดจากไอคอนบนหน้าจอ')}catch(e){}window.__bip=null},
   pushNagHide:()=>{S.pushNagHide=true;render()},
   pushTest:async()=>{const {data,error}=await SB.rpc('push_test');if(error)return toast('ส่งไม่ได้: ฐานข้อมูลยังไม่ได้อัปเดต (รัน SQL)','bad');toast(data?'ส่งแล้ว ล็อกจอรอ 2–5 วินาที':'ยังไม่พบเครื่องนี้ในระบบ กดเปิดแจ้งเตือนอีกครั้ง',data?'':'bad')},
   coAdd:()=>{readCo();if(S.sheet.co.length>=8)return toast('ได้สูงสุด 8 ประโยค','bad');S.sheet.co.push({id:'c'+Date.now().toString(36).slice(-6),label:''});renderCo();const ins=document.querySelectorAll('[data-co]');ins[ins.length-1]?.focus()},
@@ -2457,6 +2503,7 @@ const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
   if(m&&APP_VER&&m[1]!==APP_VER&&!document.getElementById('updBar')){const b=document.createElement('div');b.id='updBar';b.className='updbar';b.innerHTML='มีเวอร์ชันใหม่ของเว็บ <button type="button">อัปเดตเลย</button>';
     b.querySelector('button').onclick=()=>{const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)};document.body.appendChild(b)}}catch(e){}}
+setTimeout(()=>{try{if(new URLSearchParams(location.search).has('install')&&!PUSH.standalone())instOpen()}catch(e){}},600);
 setTimeout(checkUpdate,3000);setInterval(checkUpdate,5*60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
 /* ======================= ร้านพรีออเดอร์ (ข้าวมันไก่) ======================= */
@@ -2566,6 +2613,49 @@ function sheetReset(){const s=S.sheet,nm=s.shop==='po'?'ข้าวมันไ
    <p class="err" id="rsErr" role="alert"></p></form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ยกเลิก</button><button class="btn danger wide" id="rsGo" data-act="resetGo" type="button" disabled>รีเซตบิล${nm}</button></div>`;
   const t=$('#rsTxt');t.addEventListener('input',()=>{$('#rsGo').disabled=t.value.trim().toLowerCase()!=='reset'});}
+
+// ---------- Combo เซ็ต: จับคู่เมนูเป็นเซ็ตราคาพิเศษ (เก็บเป็นเมนูปกติ + data.combo) ----------
+const COMBO_CAT='โปรโมชั่น';
+const comboState=m=>!m.combo?'':m.active===false?'ปิดขาย':(m.combo.start&&bkkNowMin()<m.combo.start)?'ยังไม่เริ่ม':(m.combo.end&&bkkNowMin()>m.combo.end)?'หมดเวลา':'กำลังขาย';
+const comboWhen=c=>{const f=x=>x?x.replace('T',' ').replace(/^(\d{4})-(\d\d)-(\d\d)/,(_,y,m,d)=>`${d}/${m}/${y}`):'';return c.start||c.end?`${f(c.start)||'ตอนนี้'} – ${f(c.end)||'ไม่กำหนด'}`:'ไม่จำกัดเวลา'};
+function sheetCombos(){const L=(S.nMenu||[]).filter(m=>m.combo);
+  $('#panel').innerHTML=head('🎁 Combo เซ็ต','จับคู่เมนูเป็นเซ็ต ขายราคาพิเศษ · ขึ้นหน้าแรก E-book + หน้าสั่งอาหาร')+`<div class="sh-body">
+   ${L.length?`<div class="list">${L.map(m=>{const st=comboState(m),sv=Math.max(0,(+m.combo.regular||0)-(+m.price||0));return `<div class="row click" data-act="comboEdit" data-id="${m.id}">${thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} <span class="pill ${st==='กำลังขาย'?'ok':st==='ยังไม่เริ่ม'?'info':'mute'}">${st}</span></div><div class="s">${esc((m.combo.items||[]).map(c=>c.name+' ×'+c.qty).join(' · '))}</div><div class="s">🕒 ${esc(comboWhen(m.combo))}</div></div><div style="text-align:right"><b>${baht(+m.price||0)}</b>${sv?`<div class="s" style="color:#0f9488">ประหยัด ${baht(sv)}</div>`:''}</div></div>`}).join('')}</div>`
+     :'<div class="empty"><b>ยังไม่มี Combo เซ็ต</b>กด "สร้างเซ็ตใหม่" แล้วเลือกเมนูที่จะจับคู่ ตั้งราคาพิเศษ และช่วงวันที่</div>'}
+   <p class="help" style="margin:0">เซ็ตจะอยู่ในหมวด "${COMBO_CAT}" · พนักงานกดขายหน้าร้านได้ · ลูกค้าสั่งผ่าน QR / เดลิเวอรี่ได้ · หมดเวลาแล้วระบบซ่อนให้เอง</p></div>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="comboEdit" type="button">+ สร้างเซ็ตใหม่</button></div>`}
+function sheetComboEdit(){const s=S.sheet;if(!s.q){const m=s.id?(S.nMenu||[]).find(x=>x.id===s.id):null;s.m=m;s.q={};(m&&m.combo&&m.combo.items||[]).forEach(c=>s.q[c.menuId]=+c.qty||1)}
+  const m=s.m||{},c=m.combo||{},base=(S.nMenu||[]).filter(x=>!x.combo),cats=[...new Set(base.map(x=>x.cat||'อื่นๆ'))];
+  const reg=base.reduce((a,x)=>a+(+x.price||0)*(+s.q[x.id]||0),0);
+  $('#panel').innerHTML=head(s.id?'แก้ไข Combo เซ็ต':'สร้าง Combo เซ็ต','เลือกเมนูที่จะจับคู่ แล้วตั้งราคาเซ็ต')+`<form class="sh-body" onsubmit="return false">
+   <div class="field"><label for="cbName">ชื่อเซ็ต (ลูกค้าเห็น)</label><input id="cbName" maxlength="60" value="${esc(s.name??m.name??'')}" placeholder="เช่น เซ็ตหม้อไฟ 11.11"></div>
+   <div class="card" style="padding:10px 12px"><h3 style="margin:0 0 6px">เมนูในเซ็ต</h3>${cats.map(ct=>`<div class="muted" style="font-size:12.5px;margin:8px 0 2px">${esc(ct)}</div>${base.filter(x=>(x.cat||'อื่นๆ')===ct).map(x=>{const q=+s.q[x.id]||0;return `<div class="cbrow${q?' on':''}"><span class="grow">${esc(x.name)} <small class="muted">${baht(+x.price||0)}</small></span><button class="btn sm" data-act="cbQ" data-id="${x.id}" data-d="-1" type="button" ${q?'':'disabled'} aria-label="ลด">−</button><b class="cbq">${q}</b><button class="btn sm" data-act="cbQ" data-id="${x.id}" data-d="1" type="button" aria-label="เพิ่ม">+</button></div>`}).join('')}`).join('')||'<p class="help">ยังไม่มีเมนูให้เลือก</p>'}</div>
+   <div class="grid2"><div class="field"><label>ราคาปกติรวม</label><div class="cbreg">${baht(reg)}</div></div>
+   <div class="field"><label for="cbPrice">ราคาเซ็ต (บาท)</label><input id="cbPrice" inputmode="decimal" value="${esc(String(s.price??m.price??''))}" placeholder="เช่น 199"></div></div>
+   <p class="help" id="cbSave" style="margin:-4px 0 0;color:#0f9488;font-weight:700"></p>
+   <div class="grid2"><div class="field"><label for="cbSD">เริ่มวันที่</label><input id="cbSD" type="date" value="${esc((s.start??c.start??'').slice(0,10))}"></div><div class="field"><label for="cbST">เวลา</label><input id="cbST" type="time" value="${esc((s.start??c.start??'').slice(11,16))}"></div></div>
+   <div class="grid2"><div class="field"><label for="cbED">ถึงวันที่</label><input id="cbED" type="date" value="${esc((s.end??c.end??'').slice(0,10))}"></div><div class="field"><label for="cbET">เวลา</label><input id="cbET" type="time" value="${esc((s.end??c.end??'').slice(11,16))}"></div></div>
+   <span class="help" style="margin-top:-6px">เว้นว่าง = ขายได้ตลอด · เช่น โปร 11.11: เริ่ม 11/11 00:00 ถึง 11/11 23:59</span>
+   <label class="check"><input type="checkbox" id="cbOn" ${m.active===false?'':'checked'}> เปิดขายเซ็ตนี้</label>
+   <p class="help" style="margin:0">รูปเซ็ต: ใช้รูปเมนูแรกในเซ็ตให้อัตโนมัติ · เปลี่ยนรูปได้ภายหลังที่แท็บเมนู → แตะเซ็ตนี้ · ต้นทุนและสต็อกคิดจากสูตรของทุกเมนูในเซ็ต</p>
+   <p class="err" id="cbErr" role="alert"></p></form>
+   <div class="sh-foot">${s.id?'<button class="btn danger" data-act="comboDel" data-confirm="1" type="button">ลบเซ็ต</button>':'<button class="btn" data-act="combos" type="button">ย้อนกลับ</button>'}<button class="btn pri wide" data-act="comboSave" type="button">บันทึกเซ็ต</button></div>`;
+  const upd=()=>{const p=nval('cbPrice'),sv=reg-p;$('#cbSave').textContent=p>0&&reg>0?(sv>0?`ลูกค้าประหยัด ${baht(sv)} (${Math.round(sv/reg*100)}%)`:'⚠️ ราคาเซ็ตไม่ถูกกว่าราคาปกติ'):''};$('#cbPrice').addEventListener('input',upd);upd()}
+function comboKeep(){const s=S.sheet;if(!s||s.type!=='comboEdit')return;s.name=val('cbName');s.price=val('cbPrice');
+  const dt=(d,t)=>val(d)?val(d)+'T'+(val(t)||'00:00'):'';s.start=dt('cbSD','cbST');s.end=dt('cbED','cbET')}
+async function comboSave(){const s=S.sheet;comboKeep();const e=$('#cbErr');const base=(S.nMenu||[]).filter(x=>!x.combo);
+  const items=base.filter(x=>+s.q[x.id]>0).map(x=>({menuId:x.id,name:x.name,qty:+s.q[x.id]}));
+  if(!s.name)return e.textContent='ใส่ชื่อเซ็ต';if(items.reduce((a,c)=>a+c.qty,0)<2)return e.textContent='เลือกเมนูอย่างน้อย 2 ที่';
+  const price=nval('cbPrice');if(!(price>0))return e.textContent='ใส่ราคาเซ็ต';
+  let end=s.end;if(end&&/T00:00$/.test(end)&&!val('cbET'))end=end.slice(0,10)+'T23:59';if(s.start&&end&&end<s.start)return e.textContent='วันจบต้องหลังวันเริ่ม';
+  const M=id=>base.find(x=>x.id===id),regular=items.reduce((a,c)=>a+(+M(c.menuId).price||0)*c.qty,0),cost=items.reduce((a,c)=>a+(+M(c.menuId).cost||0)*c.qty,0);
+  const R={};items.forEach(c=>(M(c.menuId).recipe||[]).forEach(g=>{if(g.stockId)R[g.stockId]=(R[g.stockId]||0)+(+g.qty||0)*c.qty}));
+  const old=s.m||{},img=old.img||(items.map(c=>M(c.menuId).img).find(Boolean)||'');
+  const data={...old,name:s.name,cat:COMBO_CAT,price,cost:r2(cost),desc:items.map(c=>c.name+' ×'+c.qty).join(' · '),img,recipe:Object.entries(R).map(([stockId,qty])=>({stockId,qty:r2(qty)})),active:$('#cbOn').checked,combo:{items,regular:r2(regular),start:s.start||'',end:end||''}};delete data.id;
+  const id=s.id||S.db.collection('menu').doc().id;const ok=await write('menu/'+id,r=>r.set(data));if(!ok)return;
+  {const L=S.nMenu||(S.nMenu=[]),k=L.findIndex(x=>x.id===id),row={id,...data};if(k>=0)L[k]=row;else L.push(row)}
+  const cats=S.settings.cats||[];if(!cats.includes(COMBO_CAT))await write('config/settings',r=>r.update({cats:[COMBO_CAT,...cats]})).then(k=>{if(k)S.settings={...S.settings,cats:[COMBO_CAT,...cats]}});
+  toast('🎁 บันทึกเซ็ตแล้ว');openSheet({type:'combos'})}
 function sheetPoNote(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(!o){closeSheet();return}
   $('#panel').innerHTML=head('✏️ โน้ตออร์เดอร์ · '+esc(poShort(o)),'คุณ'+esc(o.name)+' · แอดมิน / แม่ครัว')+`<form class="sh-body" onsubmit="return false">
    ${o.note0&&o.note0!==o.note?`<p class="help" style="margin:0">โน้ตเดิมของลูกค้า: ${esc(o.note0)}</p>`:''}
@@ -2729,7 +2819,7 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
     <div class="field"><label for="pPP">พร้อมเพย์</label><input id="pPP" inputmode="numeric" value="${esc(c.promptpay||'')}" placeholder="${esc(S.settings.promptpay?'เว้นว่าง = ใช้ของร้านก๋วยเตี๋ยว ('+S.settings.promptpay+')':'เบอร์มือถือ หรือเลขบัตร 13 หลัก')}"></div><div class="field"><label for="pPPN">ชื่อ-นามสกุล เจ้าของพร้อมเพย์</label><input id="pPPN" maxlength="60" value="${esc(c.ppName||'')}" placeholder="แสดงให้ลูกค้าเห็นตอนโอน"></div></div>
    <div class="grid2"><div class="field"><label for="pPhone">เบอร์ร้าน (ลูกค้ากดโทรได้)</label><input id="pPhone" inputmode="tel" maxlength="20" value="${esc(c.phone||'')}"></div><div class="field"><label for="pLine">ลิงก์ LINE ร้าน (ปุ่มส่งข้อความ)</label><input id="pLine" inputmode="url" maxlength="200" value="${esc(c.line||'')}" placeholder="https://lin.ee/… (เว้นว่าง = ส่ง SMS)"></div></div>
    <div class="card"><h3>โลโก้ร้าน & หัวใบเสร็จ (ร้านข้าวมันไก่)</h3>
-    ${rcLogoField('poRcLogo',c.rcLogo||c.logo,'images/logo-po-t.png')}
+    ${rcLogoField('poRcLogo',c.rcLogo||c.logo,'images/logo-po-t.png?v=20261018')}
     <div class="grid2"><div class="field"><label for="poRcName">ชื่อร้าน (ไทย)</label><input id="poRcName" maxlength="40" value="${esc(c.rcName??c.shopName??'ข้าวมันไก่')}"></div><div class="field"><label for="poRcNameEn">ชื่อร้าน (อังกฤษ)</label><input id="poRcNameEn" maxlength="40" value="${esc(c.rcNameEn??'KHAO MAN GAI')}"></div></div>
     <div class="field"><label for="poRcTag">คำโปรยใต้ชื่อ</label><input id="poRcTag" maxlength="80" value="${esc(c.rcTag??'CHICKEN RICE')}"></div>
     <div class="grid2"><div class="field"><label for="poRcFb">ชื่อเพจ Facebook</label><input id="poRcFb" maxlength="60" value="${esc(c.rcFb||'')}" placeholder="เว้นว่าง = ไม่แสดง"></div><div class="field"><label for="poRcFbUrl">ลิงก์เพจ Facebook</label><input id="poRcFbUrl" inputmode="url" value="${esc(c.rcFbUrl||'')}" placeholder="https://facebook.com/..."></div></div>
@@ -2784,6 +2874,11 @@ Object.assign(ACT,{
   poSumPrint:d=>poSumPrint(d.v),
   poSumImg:(d,b)=>poSumImg(d.v,b),
   poSumCopy:async d=>{const t=poSumText(d.v);try{await navigator.clipboard.writeText(t);toast('คัดลอกสรุปแล้ว · วางในไลน์ได้เลย')}catch(e){window.prompt('คัดลอกข้อความนี้',t)}},
+  combos:()=>{if(!can('menu_edit'))return deny();openSheet({type:'combos'})},
+  comboEdit:d=>{if(!can('menu_edit'))return deny();openSheet({type:'comboEdit',id:d.id||''})},
+  cbQ:d=>{comboKeep();const s=S.sheet;s.q[d.id]=Math.max(0,Math.min(20,(+s.q[d.id]||0)+(+d.d)));const y=$('#panel .sh-body')?.scrollTop||0;sheetComboEdit();const b=$('#panel .sh-body');if(b)b.scrollTop=y},
+  comboSave:()=>comboSave(),
+  comboDel:async()=>{const s=S.sheet;if(!s.id)return;const ok=await write('menu/'+s.id,r=>r.delete());if(ok){S.nMenu=(S.nMenu||[]).filter(x=>x.id!==s.id);toast('ลบเซ็ตแล้ว');openSheet({type:'combos'})}},
   poRound:()=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poRound'})},
   poRoundSave:async()=>{const d=val('prD'),cd=val('prC'),t=val('prT');const e=$('#prErr');await poSaveCancel();
     const w=poWinArg(),od=val('prO'),of=val('prOT');if(!d){if(!poState().round){if(w!==null||of!==(poCfg().openFrom||'')){const {error}=await SB.rpc('po_set_round',{p_round:'',p_close:'',p_cutoff:t,p_window:w,p_open_date:'',p_open_from:of});if(error)return toast('บันทึกเวลาส่งไม่สำเร็จ: '+error.message,'bad');S.po={...poCfg(),...(w!==null?{window:w}:{}),openFrom:of,openDate:''}}closeSheet();render();return toast('บันทึกแล้ว')}if(e)e.textContent='เลือกวันส่ง หรือกด "ใช้แบบอัตโนมัติ"';return}if(cd&&cd>d){if(e)e.textContent='วันปิดรับต้องไม่หลังวันส่ง';return}if(od&&od>(cd||poShift(d,-1))){if(e)e.textContent='วันเปิดรับต้องไม่หลังวันปิดรับ';return}

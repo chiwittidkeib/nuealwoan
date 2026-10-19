@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-2030">
+<meta name="app-version" content="2026.10.18-2300">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#17694f">
 <title>NueaLwoan · สั่งอาหาร</title>
@@ -185,7 +185,7 @@ body.welcome .callb{display:none}
 .stamp{flex-direction:column;gap:3px}
 .stamp b{display:block;font-weight:800;font-size:1em;line-height:1.15;padding-bottom:3px;border-bottom:2px solid currentColor;color:inherit;opacity:1;margin:0}
 .stamp i{display:block;font-style:normal;font-weight:800;font-size:.62em;letter-spacing:.6px;text-transform:uppercase;line-height:1;color:inherit;opacity:1}
-.stamp b,.stamp i{color:var(--jade)!important;opacity:1!important;font-family:var(--f-body)}
+.stamp b,.stamp i{color:#5ec59c!important;opacity:1!important;font-family:var(--f-body)}
 .item .stamp b{font-size:17px}
 .cath{font-size:18px;margin:6px 2px -4px;display:flex;align-items:center;gap:8px}.cath::after{content:"";flex:1;height:1px;background:var(--line)}
 .slipbox{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:2px dashed #ffd58a;border-radius:14px;padding:12px}
@@ -254,6 +254,7 @@ label.btn{display:flex;align-items:center;justify-content:center;text-align:cent
 .cstamp img{width:118px;height:83px;object-fit:contain;margin-top:-6px}
 .cstamp b{color:#5ec59c;font-size:24px;font-weight:800;line-height:1.15;padding-bottom:4px;border-bottom:2px solid #5ec59c;font-family:var(--f-body)}
 .cstamp i{color:#5ec59c;font-style:normal;font-weight:800;font-size:16px;letter-spacing:3px;text-transform:uppercase}
+.cbsv{display:block;font-size:12px;font-weight:700;color:#0f9488}.cbsv s{color:#9a9a9a;font-weight:400;margin-right:4px}
 </style>
 </head>
 <body>
@@ -510,7 +511,7 @@ const inCart=id=>Object.values(S.cart).reduce((a,e)=>a+(e.menuId===id?e.qty:0),0
 function putCart(m,sel){const k=m.id+'|'+optKey(sel.opts)+'|'+sel.note;if(S.cart[k])S.cart[k].qty+=sel.qty;else S.cart[k]={menuId:m.id,opts:sel.opts,note:sel.note,qty:sel.qty};render()}
 
 const MENU_PH='images/menu-ph.jpg?v=20261016b';
-function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph"><img src="${esc(m.img||MENU_PH)}" alt="${esc(m.name)}" loading="lazy"${m.img?'':' class="noimg"'}></div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
+function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph"><img src="${esc(m.img||MENU_PH)}" alt="${esc(m.name)}" loading="lazy"${m.img?'':' class="noimg"'}></div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${m.combo&&+m.combo.regular>(+m.price||0)?`<span class="cbsv"><s>${baht(m.combo.regular)}</s> ประหยัด ${baht(m.combo.regular-(+m.price||0))}</span>`:''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
 function menuGrid(empty){const list=S.menu.filter(m=>S.cat==='all'||m.cat===S.cat);if(!list.length)return empty;
   if(S.cat!=='all')return `<div class="grid">${list.map(menuCard).join('')}</div>`;
   const order=[...S.cats,...new Set(list.map(m=>m.cat||'').filter(c=>!S.cats.includes(c)))];

@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.16-2030">
+<meta name="app-version" content="2026.10.18-2055">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#5a2e14">
 <meta name="robots" content="noindex">
@@ -62,7 +62,10 @@ tbody tr.pad td{height:26px}
 .foot .ty::before,.foot .ty::after{content:"";width:34px;height:1.5px;background:var(--brown)}
 .foot small{display:block;font-size:12.5px;margin-top:2px}
 .foot .hrt{font-size:14px;margin-top:4px;color:var(--gold)}
-.stamp{position:absolute;top:150px;right:14px;transform:rotate(-12deg);border:3px solid #2f8a3e;color:#2f8a3e;border-radius:10px;padding:2px 10px;font-family:Kanit,sans-serif;font-weight:800;font-size:18px;opacity:.75;letter-spacing:1px}
+.title{position:relative}
+.stamp{position:absolute;top:30px;left:50%;z-index:2;pointer-events:none;width:92px;height:92px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.05;text-align:center;border:3px solid #d32f2f;background:rgba(240,253,250,.55);color:#0f9488;transform:rotate(-14deg);font-family:Kanit,sans-serif;font-weight:700;font-size:11px;opacity:.9}
+.stamp::before{content:"";position:absolute;inset:3px;border:1.5px solid #d32f2f;border-radius:50%}
+.stamp i{font-style:normal;font-size:10.5px;letter-spacing:3px;border-top:1.5px solid #0f9488;padding-top:2px;margin-top:1px}
 .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,253,249,.96);border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;justify-content:center;box-shadow:0 -6px 20px rgba(40,20,5,.15)}
 .bar button{flex:1;max-width:250px;min-height:50px;border-radius:12px;border:1px solid var(--brown);background:#fff;color:var(--brown);font:inherit;font-weight:600;font-size:15px;cursor:pointer}
 .bar button.pri{background:var(--brown);color:#fff}
@@ -184,11 +187,11 @@ function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bi
   const telHtml=s.phone?`<a href="tel:${esc(String(s.phone).replace(/[^\d+]/g,''))}">${IC.tel}${esc(s.phone)}</a>`:'';
   const mapHtml=s.mapText||safeUrl(s.mapUrl)?(safeUrl(s.mapUrl)?`<a class="map" href="${esc(safeUrl(s.mapUrl))}" target="_blank" rel="noopener">${IC.pin}${esc(s.mapText||'ดูแผนที่ร้าน')}</a>`:`<span class="map">${IC.pin}${esc(s.mapText)}</span>`):'';
   $('#view').innerHTML=`<div class="rc" id="rc">
-   <img class="logo${po?' po':''}" src="${esc(safeUrl(s.logo)||(po?'images/logo-po-t.png':'images/logo-nl-t.png?v=20261016b'))}" alt="" crossorigin="anonymous">
+   <img class="logo${po?' po':''}" src="${esc(safeUrl(s.logo)||(po?'images/logo-po-t.png?v=20261018':'images/logo-nl-t.png?v=20261016b'))}" alt="" crossorigin="anonymous">
    <h2 class="nm">${esc(s.name)}</h2>${s.nameEn?`<div class="en">${esc(s.nameEn)}</div>`:''}${s.tagline&&!(s.theme!=='po'&&s.tagline==='BEEF NOODLES • BRAISED BEEF • KHAO SOI')?`<div class="tag">${esc(s.tagline)}</div>`:''}
    ${fbHtml||telHtml||mapHtml?`<div class="contact">${fbHtml}${telHtml}${mapHtml}</div>`:''}
    <hr class="br">
-   <div class="head"><div class="title"><h1 class="${taxInv?'long':''}">${taxInv?'ใบเสร็จรับเงิน/<br>ใบกำกับภาษีอย่างย่อ':'ใบเสร็จรับเงิน'}</h1><small>RECEIPT</small>${taxInv?`<small class="tax">เลขประจำตัวผู้เสียภาษี ${esc(s.taxId)}</small>`:''}</div>
+   <div class="head"><div class="title"><div class="stamp" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></div><h1 class="${taxInv?'long':''}">${taxInv?'ใบเสร็จรับเงิน/<br>ใบกำกับภาษีอย่างย่อ':'ใบเสร็จรับเงิน'}</h1><small>RECEIPT</small>${taxInv?`<small class="tax">เลขประจำตัวผู้เสียภาษี ${esc(s.taxId)}</small>`:''}</div>
      <div class="meta"><div><b>วันที่ :</b><span>${esc(date)}</span></div><div><b>เวลา :</b><span>${esc(time)}</span></div>${po?`${dd?`<div><b>รับ :</b><span>${esc(dd)}</span></div>`:''}<div><b>ที่ :</b><span>${esc(where)}</span></div>${b.customer?`<div><b>ลูกค้า :</b><span>${esc(b.customer)}</span></div>`:''}`:`<div><b>โต๊ะ :</b><span>${esc(where)}</span></div>`}</div></div>
    <table><thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>ราคา</th><th>รวมเงิน</th></tr></thead><tbody>${rows}${pad}</tbody></table>
    <div class="sum"><div class="no">Receipt No. :<b>${esc(b.billNo||'-')}</b></div><div class="tot">
@@ -202,7 +205,6 @@ function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bi
    <div class="paid">ชำระโดย ${esc(METHOD[b.method]||b.method||'-')}${b.method==='cash'&&+b.received?` · รับ ${num(b.received)} · ทอน ${num(b.change)}`:''}</div>
    ${b.member?`<div class="pts">⭐ สมาชิก <b>${esc(b.member)}</b>${b.memberName?' · คุณ'+esc(b.memberName):''}<br>${+b.ptsEarned?`บิลนี้ได้ +${+b.ptsEarned} แต้ม · `:''}${+b.ptsUsed?`ใช้ ${+b.ptsUsed} แต้ม · `:''}แต้มสะสมล่าสุด <b>${b.ptsBalance!=null?+b.ptsBalance:'-'}</b> แต้ม${Array.isArray(b.rewards)&&b.rewards.length?`<br>🎁 แลกแต้ม: ${b.rewards.map(x=>esc(x.name)+' ('+(+x.pts)+' แต้ม)').join(', ')}`:''}${b.ptsExp&&+b.ptsExp.pts?`<br><span class="pexp">⚠️ ${+b.ptsExp.pts} แต้มจะหมดอายุ ${new Date(+b.ptsExp.at).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',timeZone:'Asia/Bangkok'})}</span>`:''}</div>`
      :s.pointsOn&&s.theme!=='po'?`<div class="join"><img alt="QR สมัครสมาชิก" src="${joinQr()}"><div><b>ยังไม่เป็นสมาชิก?</b><span>สแกนสมัครสะสมแต้มฟรี ทุก ${+s.pointsPer||50} บาท ได้ 1 แต้ม</span><small>แต้มเริ่มสะสมในการซื้อครั้งถัดไป (ไม่นับย้อนหลังบิลนี้)</small><a href="${esc(joinUrl())}">สมัครเลย ›</a></div></div>`:''}
-   <div class="stamp">PAID</div>
    <div class="foot"><div class="ty">${esc(s.thanks)}</div>${s.thanks2?`<small>${esc(s.thanks2)}</small>`:''}<div class="hrt">♡</div></div></div>`;
   document.title='ใบเสร็จ '+(b.billNo||'')+' · '+s.name;{const bc=$('#bCard');bc.hidden=!b.member;bc.onclick=()=>showMemberCard({phone:b.member,name:b.memberName,points:b.ptsBalance,exp:b.ptsExp,note:+b.ptsEarned?`ได้รับ +${+b.ptsEarned} แต้มจากบิลนี้`:''})}$('#bar').hidden=EMBED;if(EMBED){document.body.classList.add('embed');try{parent.postMessage({rcH:document.documentElement.scrollHeight},'*')}catch(e){}}}
 async function start(){const cfg=window.APP_CONFIG||{};
