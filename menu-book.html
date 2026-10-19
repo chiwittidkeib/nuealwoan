@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.18-2300">
+<meta name="app-version" content="2026.10.18-2315">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0907">
 <title>เมนู · เนื้อล้วนๆ</title>
@@ -221,7 +221,7 @@ const base=f=>new URL(f,location.href).href.split('?')[0];
 
 // จานอาหารวางบนโต๊ะ: สลับซ้าย-ขวา ขนาดต่างกันเล็กน้อย แบบเมนูนิตยสาร
 const SZ=[48,42,46,41];
-const cbEnd=e=>{try{const d=new Date(e+':00+07:00');return d.toLocaleDateString('th-TH',{day:'numeric',month:'short',timeZone:'Asia/Bangkok'})+' '+e.slice(11,16)+' น.'}catch(x){return e}};
+const cbEnd=e=>{try{const d=new Date(e+':00+07:00');return d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',timeZone:'Asia/Bangkok'})}catch(x){return e}};
 function dish(m,k){const r=k%2===1,sz=SZ[k%SZ.length];
   return `<div class="dish${r?' r':''}${m.soldOut?' off':''}" style="--k:${k};--sz:${sz}%">
     <div class="plate" data-a="zoom" data-id="${esc(m.id)}"><div class="rim"><img src="${esc(m.img||'images/menu-ph.jpg?v=20261016b')}" alt="" loading="lazy"${m.img?'':' class="noimg"'}></div>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}</div>
