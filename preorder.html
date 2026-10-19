@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1410">
+<meta name="app-version" content="2026.10.19-1700">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -299,6 +299,14 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 .arrbox{border-radius:18px;padding:14px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid #42a5f5;background:#e3f2fd;animation:arrPulse 1.6s ease-in-out 3}
 .arrbox .rt{font-size:21px;color:#0d47a1}.arrbox .an{font-size:17px;font-weight:700;color:#1a237e}.arrbox small{color:#455a64;font-size:12.5px}.arrbox .btn{width:100%;margin-top:4px}
 @keyframes arrPulse{0%,100%{box-shadow:0 0 0 0 rgba(66,165,245,.0)}50%{box-shadow:0 0 0 8px rgba(66,165,245,.35)}}
+.mybtn{position:relative;border:2px solid #0891b2;background:linear-gradient(135deg,#e0f7fa,#b2ebf2);color:#055160;font-weight:800;animation:myGlow 1.8s ease-in-out infinite;overflow:hidden}
+.mybtn::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.75) 50%,transparent 70%);transform:translateX(-120%);animation:myShine 2.6s ease-in-out infinite;pointer-events:none}
+.mybtn.big{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 14px;font-size:18px}
+.mybtn.big small{font-weight:500;font-size:12.5px;color:#0e6f80}
+.mybtn .mycnt{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;margin-left:4px;border-radius:99px;background:#0891b2;color:#fff;font-size:14px;vertical-align:middle}
+@keyframes myGlow{0%,100%{box-shadow:0 0 0 0 rgba(6,182,212,.6),0 0 6px rgba(6,182,212,.4)}50%{box-shadow:0 0 0 8px rgba(6,182,212,0),0 0 20px rgba(6,182,212,.85);border-color:#22d3ee}}
+@keyframes myShine{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@media (prefers-reduced-motion:reduce){.mybtn,.mybtn::after{animation:none}}
 .recvbox{border-radius:18px;padding:14px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid #e0b04a;background:#fff8e1}
 .recvbox .rt{font-size:19px}.recvbox span{color:var(--muted);font-size:14px}.recvbox small{color:var(--muted);font-size:12.5px}
 .recvbox .rok{width:100%;font-size:18px;padding:14px;margin-top:4px}.recvbox .lnk{background:none;border:0;color:#b71c1c;text-decoration:underline;font:inherit;font-size:14px;padding:4px;cursor:pointer}
@@ -595,7 +603,7 @@ function render(){
     ${poHero(st)}
     ${S.staff&&st.reason==='after'?`<div class="notice">👩‍🍳 โหมด${S.staff==='owner'?'แอดมิน':'แม่ครัว'}: สั่งเพิ่มให้ลูกค้าหลังปิดรับได้ (รอบส่ง${esc((thDate(st.deliverDate)+tmW(st.deliverDate)))})</div>`:''}
     ${!st.open&&!S.staff?`<button class="btn pri" data-a="view" data-v="board" type="button">📋 เช็กสถานะออร์เดอร์ / โอนเงิน + แนบสลิป</button>`:''}
-    ${mine.length?`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน (${mine.length})</button>`:''}
+    ${mine.length?`<button class="btn mybtn big" data-a="mine" type="button"><span>📋 ออร์เดอร์ของฉัน <b class="mycnt">${mine.length}</b></span><small>แตะเพื่อเช็กสถานะ / แนบสลิป / ใบเสร็จ</small></button>`:''}
     ${((c.promos)||[]).length?`<div class="probanner">${c.promos.map(p=>`<div><b>🎁 ${esc(p.name)}</b><span>เลือกคละได้ ${(p.items||[]).map(id=>(S.menu.find(m=>m.id===id)||{}).name).filter(Boolean).map(esc).join(' · ')}${p.end?' · ถึง '+esc(thDate(p.end)):''}</span></div>`).join('')}</div>`:''}
     ${(()=>{const pn=S.menu.filter(m=>promoIds().has(m.id)).length,ks=['all',...(pn?['__promo']:[]),...S.cats];return ks.length>2||(S.cats.length>1)?`<div class="chips">${ks.map(x=>`<button class="chip${x==='__promo'?' chip-promo':''}" aria-pressed="${S.cat===x}" data-a="cat" data-v="${esc(x)}" type="button">${x==='all'?'ทั้งหมด':x==='__promo'?'📢 '+esc(promoTab()):esc(x)}</button>`).join('')}</div>`:''})()}
     ${menuGrid('<p class="muted">ยังไม่มีเมนู</p>')}`;
@@ -626,7 +634,7 @@ function render(){
     <p class="err" id="sendErr" role="alert">${esc(S.err||'')}</p>`;
     ft=`<button class="btn" data-a="view" data-v="menu" type="button">เลือกเพิ่ม</button><button class="btn pri wide" data-a="send" ${cartN()&&!S.sending?'':'disabled'} type="button">${S.sending?'กำลังส่ง…':'ยืนยันสั่ง '+baht(cartT())}</button>`;
   }else if(S.view==='board'){
-    h=boardView();ft=`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน</button><button class="btn pri wide" data-a="view" data-v="menu" type="button">ดูเมนู</button>`;
+    h=boardView();ft=`<button class="btn mybtn" data-a="mine" type="button">📋 ออร์เดอร์ของฉัน</button><button class="btn pri wide" data-a="view" data-v="menu" type="button">ดูเมนู</button>`;
   }else if(S.view==='mine'){
     const a=myOrders(),M=S.myStat||{};if(!S.myBusy&&(!S.myAt||Date.now()-S.myAt>15000))loadMy();
     const MST=x=>{const m=M[x.id];if(!m)return '';if(m.status==='cancelled')return '';const t={new:['รอร้านยืนยัน','warn'],confirmed:['ร้านรับออร์เดอร์แล้ว','ok'],ready:['อยู่ระหว่างจัดส่ง','info'],done:['ส่งอาหารสำเร็จ','ok']}[m.status]||['',''];
@@ -665,7 +673,7 @@ function render(){
       ${o.canCancel?`<button class="btn danger" data-a="cancel" type="button">ยกเลิกออร์เดอร์</button><p class="tm" style="margin:-4px 0 0;text-align:center">ยกเลิกเองได้ถึง ${o.cancelUntil?esc(new Date(+o.cancelUntil).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p>`
         :['new','confirmed'].includes(o.status)?`<div class="cxinfo">ต้องการยกเลิกออร์เดอร์? เลยเวลายกเลิกเองแล้ว · ติดต่อร้านได้เลย${o.line?` <a class="btn sm" href="${esc(o.line)}" target="_blank" rel="noopener">💬 LINE</a>`:''}</div>`:''}
       <p class="tm" style="margin:0;text-align:center">อัปเดตสถานะอัตโนมัติ</p>`}
-    ft=`<button class="btn" data-a="mine" type="button">ออร์เดอร์ของฉัน</button><button class="btn pri wide" data-a="new" type="button">สั่งเพิ่ม</button>`;
+    ft=`<button class="btn mybtn" data-a="mine" type="button">📋 ออร์เดอร์ของฉัน</button><button class="btn pri wide" data-a="new" type="button">สั่งเพิ่ม</button>`;
   }
   v.innerHTML=h;f.innerHTML=ft;$('#foot').hidden=false;
   if(S.view==='board'){renderBoard();const bi=$('#bq');if(bi)bi.addEventListener('input',()=>{S.bq=bi.value.trim();clearTimeout(BT);BT=setTimeout(()=>{S.board=null;renderBoard();loadBoard()},350)})}
