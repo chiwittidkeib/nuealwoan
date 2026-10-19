@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1000">
+<meta name="app-version" content="2026.10.19-0940">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -290,6 +290,11 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 .cxinfo{background:var(--sunk);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--muted);text-align:center}
 .pill.info{background:#e3f0fd;color:#1565c0}
 .shr{display:flex;gap:8px}.shr .btn{min-width:0;white-space:nowrap}.shr .btn:last-child{flex:none;padding-left:12px;padding-right:12px}.shr .lineshr{flex:1;background:#06c755;border-color:#06c755;color:#fff;font-weight:700}.shr .lineshr b{background:#fff;color:#06c755;border-radius:6px;padding:0 6px;margin-right:6px;font-size:13px}
+.recvbox{border-radius:18px;padding:14px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid #e0b04a;background:#fff8e1}
+.recvbox .rt{font-size:19px}.recvbox span{color:var(--muted);font-size:14px}.recvbox small{color:var(--muted);font-size:12.5px}
+.recvbox .rok{width:100%;font-size:18px;padding:14px;margin-top:4px}.recvbox .lnk{background:none;border:0;color:#b71c1c;text-decoration:underline;font:inherit;font-size:14px;padding:4px;cursor:pointer}
+.recvbox .rno{width:100%;display:flex;flex-direction:column;gap:6px}.recvbox textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;font-size:15px}
+.recvbox.issue{border-color:#e57373;background:#fdecea}.recvbox.ok{border-color:#66bb6a;background:#e8f5ee}.recvbox.ok .rt{color:#1b6e3c}
 .pickbox{background:var(--surface);border:2px solid var(--jade);border-radius:18px;padding:12px 12px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
 .pickbox small{color:var(--muted);font-size:12.5px}.pickbox .kmk{font-size:48px;font-weight:900;letter-spacing:2px;line-height:1.05;color:var(--jade);font-family:var(--f-display)}
 .pickbox .pst{font-weight:700;font-size:15px}.pickbox .pst.ok{color:#0f9488}.pickbox .pst.chk{color:#0277bd}.pickbox .pst.due{color:#d32f2f}
@@ -412,6 +417,16 @@ const cartT=()=>Object.values(S.cart).reduce((s,e)=>s+eUnit(e)*e.qty,0);
 const inCart=id=>Object.values(S.cart).filter(e=>e.menuId===id).reduce((a,e)=>a+e.qty,0);
 function putCart(m,sel){const k=m.id+'|'+optKey(sel.opts)+'|'+sel.note;if(S.cart[k])S.cart[k].qty+=sel.qty;else S.cart[k]={menuId:m.id,opts:sel.opts,note:sel.note,qty:sel.qty};render()}
 function fail(title,text){$('#view').innerHTML=`<div class="msg"><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p></div>`;$('#foot').hidden=true}
+function recvBox(o){const r=o.recvState||'';const at=t=>t?new Date(+t).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Bangkok'})+' น.':'';
+  if(r==='wait'||r==='issue')return `<div class="recvbox ${r}">${r==='wait'?`<b class="rt">🛵 ร้านส่งของให้คุณแล้ว</b><span>ได้รับของครบแล้ว กดยืนยันด้วยนะคะ</span>`:`<b class="rt">⚠️ แจ้งร้านแล้วว่ายังไม่ได้รับของ</b><span>ร้านจะรีบติดต่อกลับ${o.recvIssue?` · "${esc(o.recvIssue)}"`:''}</span>`}
+    <button class="btn pri wide rok" data-a="recvOk" type="button" ${S.recvBusy?'disabled':''}>✅ ได้รับของแล้ว</button>
+    ${r==='wait'?(S.recvNo?`<div class="rno"><textarea id="recvNote" rows="2" maxlength="150" placeholder="เช่น ยังไม่ถึง / ของไม่ครบ / ได้ผิดออร์เดอร์"></textarea><div class="seg"><button class="btn" data-a="recvNoX" type="button">ยกเลิก</button><button class="btn danger" data-a="recvNoSend" type="button" ${S.recvBusy?'disabled':''}>แจ้งร้าน</button></div></div>`:`<button class="lnk" data-a="recvNo" type="button">ยังไม่ได้รับของ / ของไม่ครบ?</button>`):''}
+    ${r==='wait'&&o.recvUntil?`<small>ถ้าไม่ได้กด ระบบจะยืนยันรับให้อัตโนมัติเวลา ${at(o.recvUntil)}</small>`:''}</div>`;
+  if(r==='ok'||r==='auto')return `<div class="recvbox ok"><b class="rt">✓ รับของเรียบร้อย</b><span>${r==='auto'?'ยืนยันอัตโนมัติ '+at(o.recvUntil):o.recvBy==='shop'?'ร้านยืนยันจัดส่งสำเร็จ '+at(o.recvAt):'คุณยืนยันรับแล้ว '+at(o.recvAt)} · ขอบคุณที่อุดหนุนค่ะ</span></div>`;
+  return ''}
+async function recvSend(ok){if(S.recvBusy||!S.cur)return;const note=ok?'':(document.getElementById('recvNote')?.value||'').trim();if(!ok&&!note)return toast('พิมพ์บอกร้านสั้นๆ ก่อนนะคะ');
+  S.recvBusy=true;render();const {error}=await sb.rpc('po_order_receive',{p_id:S.cur.id,p_token:S.cur.token,p_ok:ok,p_note:note});S.recvBusy=false;
+  if(error){render();return toast(rpcErr(error))}S.recvNo=false;toast(ok?'ขอบคุณค่ะ ยืนยันรับของแล้ว':'แจ้งร้านแล้ว ร้านจะติดต่อกลับค่ะ');await loadOrder();render()}
 function rpcErr(e){const m=String(e&&e.message||'');
   if(/po_closed/.test(m))return 'ร้านปิดรับพรีออเดอร์แล้ว';
   if(/shop_closed/.test(m))return 'ร้านปิดให้บริการแล้ว ขอบคุณที่แวะมาค่ะ';
@@ -597,6 +612,7 @@ function render(){
       ${cx?`<div class="cxwrap"><span class="cxstamp"><b>ยกเลิกออร์เดอร์</b><i>Cancelled</i></span><p class="muted" style="margin:0">${o.cancelledBy==='customer'?'คุณยกเลิกออร์เดอร์นี้':'ร้านยกเลิกออร์เดอร์นี้'}${o.cancelReason?`<br><b style="color:var(--chili)">เหตุผล: ${esc(o.cancelReason)}</b>`:''}${o.cancelledAt?' · '+esc(new Date(+o.cancelledAt).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p></div>`:''}
       ${!cx&&o.status!=='done'?`<div class="pickbox"><small>แสดงหน้านี้ตอนรับของ</small><div class="kmk">KMK ${esc(String(o.orderNo||'').slice(-4))}</div><div class="pst ${o.payStatus==='paid'?'ok':o.payStatus==='slip'?'chk':'due'}">${o.payStatus==='paid'?'✓ ชำระแล้ว':o.payStatus==='slip'?'⏳ รอร้านตรวจสลิป':'ค้างชำระ '+baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0)))+' · จ่ายตอนรับได้ (เงินสด / สแกน)'}</div>
         <button class="pqbtn" data-a="pickQr" type="button">📲 แสดง QR รับของ</button><div class="pq" id="pickQr" hidden>${qrSvg(location.origin+location.pathname+'?o='+encodeURIComponent(S.cur.id)+'&t='+encodeURIComponent(S.cur.token))}<span>ให้พนักงานสแกน</span></div></div>`:''}
+      ${!cx&&o.status==='done'?recvBox(o):''}
       <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b class="qs-${cx?'cx':esc(o.status)}">${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc(thDate(o.deliverDate)+(o.window?' · เวลา '+o.window:tmW(o.deliverDate)))}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
       ${cx?'':`<div class="shr"><button class="btn lineshr" data-a="shareLine" type="button"><b>LINE</b> แชร์ลิงก์ไว้เช็กสถานะ</button><button class="btn" data-a="copyLink" type="button" aria-label="คัดลอกลิงก์">📋 คัดลอก</button></div><p class="muted" style="margin:-4px 0 0;font-size:12.5px;text-align:center">ส่งเข้า Keep memo หรือแชทตัวเอง · เปิดเช็กสถานะ แนบสลิป ดูใบเสร็จ ได้จากทุกเครื่อง</p>`}
       ${cx?'':`<ol class="steps">${STEPS.map((s,i)=>`<li class="st-${s[0]}${i<=idx?' on':''}${i===idx?' cur':''}">${esc(s[1])}</li>`).join('')}</ol>`}
@@ -655,6 +671,10 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   else if(a==='ppCopy'){try{await navigator.clipboard.writeText(b.dataset.v);toast('คัดลอกเบอร์พร้อมเพย์แล้ว')}catch(e){prompt('คัดลอกเบอร์พร้อมเพย์',b.dataset.v)}}
   else if(a==='new'){S.view='menu';S.justSent=false;try{const u=new URL(location.href);u.searchParams.delete('o');u.searchParams.delete('t');history.replaceState(null,'',u.href)}catch(e){}await loadShop();render()}
   else if(a==='cancel')askCancel();
+  else if(a==='recvOk')recvSend(true);
+  else if(a==='recvNo'){S.recvNo=true;render();setTimeout(()=>document.getElementById('recvNote')?.focus(),50)}
+  else if(a==='recvNoX'){S.recvNo=false;render()}
+  else if(a==='recvNoSend')recvSend(false);
 });
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='pMem')S.memOn=e.target.checked});
 const focusEl=sel=>setTimeout(()=>{const el=document.querySelector(sel);if(el)el.scrollIntoView({block:'center',behavior:'smooth'})},80);
