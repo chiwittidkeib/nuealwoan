@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1355">
+<meta name="app-version" content="2026.10.19-1410">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -775,6 +775,7 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 @media (prefers-color-scheme:dark){.pocpaid.due{background:rgba(60,8,8,.85);color:#ff8a80;border-color:#ff8a80;box-shadow:inset 0 0 0 3px rgba(60,8,8,.9),inset 0 0 0 4.5px #ff8a80}.pocpaid.due i{border-color:#ff8a80}}
 .poc.pick mark{background:#fff3a6;color:inherit;border-radius:4px;padding:0 2px}
 .chip.chip-promo{border-color:#e65100;color:#bf360c;font-weight:700;background:#fff3e0}.chip.chip-promo[aria-pressed="true"]{background:#e65100;color:#fff}.pill.promo{background:#e65100;color:#fff}
+.arrbtn{margin-left:auto;background:#e3f2fd;border-color:#64b5f6;color:#0d47a1;font-weight:700}.spotrow{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px dashed var(--line)}.spotrow:last-child{border:0}.spotrow.on{font-weight:700}
 .porecv{margin:8px 0 2px;padding:8px 10px;border-radius:10px;font-size:13.5px;font-weight:600;display:flex;flex-direction:column;gap:1px}.porecv small{font-weight:400;color:var(--muted);font-size:12px}
 .porecv.wait{background:#fff8e1;color:#8a5a00;border:1px dashed #e0b04a}.porecv.ok{background:#e8f5ee;color:#1b6e3c}.porecv.bad{background:#fdecea;color:#b71c1c;border:1.5px solid #e57373}
 .pickpay{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 8px;padding:10px;border-radius:12px;background:var(--sunk,#f4efe8)}
@@ -1462,7 +1463,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2837,10 +2838,33 @@ function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=P
     ${+o.promoDisc?`<div class="poc-note" style="color:#e65100;font-weight:700">🎁 ${(o.promos||[]).map(x=>esc(x.name)+(x.sets>1?' ×'+x.sets:'')).join(', ')} · ลด ${baht(o.promoDisc)} <small class="muted" style="font-weight:400">(ปกติ ${baht(o.subtotal)})</small></div>`:''}
     ${o.note||ed?`<div class="poc-note">${o.note?`📝 ${esc(o.note)}`:''}${ed?` <button class="lnk" data-act="poNote" data-id="${esc(o.id)}" type="button">✏️ ${o.note?'แก้ไขโน้ต':'เพิ่มโน้ต'}</button>`:''}${o.noteBy?` <small class="muted">(แก้โดย ${esc(o.noteBy)})</small>`:''}</div>`:''}
     ${o.slipBad&&o.payStatus!=='paid'&&o.payStatus!=='slip'?`<div class="poc-note" style="color:var(--chili)">❌ แจ้งลูกค้าแล้ว: ${esc(o.slipBad)} · <a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a></div>`:''}
+    ${o.arrive&&['confirmed','ready'].includes(o.status)?`<div class="porecv wait" style="background:#e3f2fd;color:#0d47a1;border-color:#64b5f6">📍 แจ้งลูกค้าแล้ว ${hm(o.arrive.at)} น. · ถึง ${esc(o.arrive.name||'')}${o.arrive.lat!=null?` · <a href="${gmapLink(o.arrive.lat,o.arrive.lng)}" target="_blank" rel="noopener">หมุด</a>`:''}</div>`:''}
     ${poRecvLine(o)}
     <div class="poc-f"><b>${baht(+o.total||0)}</b>${+o.paidAmt>0&&o.payStatus!=='paid'?`<small class="muted">จ่ายแล้ว ${baht(o.paidAmt)} · ค้าง <b style="color:var(--chili)">${baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0)))}</b></small>`:''}${poPayPill(o)}<span class="grow"></span>${(o.pay==='before'&&o.payStatus!=='waiting')||o.payStatus==='slip'?`<button class="btn sm" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button>`:''}${o.payStatus==='slip'&&['owner','chef'].includes(S.role)?`<button class="btn sm danger" data-act="poSlipBad" data-id="${esc(o.id)}" type="button">❌ สลิปไม่ถูกต้อง</button>`:''}${o.payStatus==='paid'&&poLive(o)?`<button class="btn sm" data-act="poRc" data-id="${esc(o.id)}" type="button">🧾 ใบเสร็จ</button>`:''}${o.payStatus!=='paid'&&poLive(o)&&(o.payStatus==='slip'||['ready','done'].includes(o.status))?`<button class="btn sm" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">รับเงินแล้ว</button>`:''}</div>
     ${o.status==='cancelled'?`<div class="poc-a"><span class="pocx">ยกเลิกออร์เดอร์<i>Cancelled</i></span><span class="muted grow">${o.cancelledBy==='customer'?'ลูกค้ายกเลิกเอง':'ร้านยกเลิก'}${o.cancelledAt?' '+hm(o.cancelledAt):''}${o.cancelReason?`<br><b style="color:var(--chili)">เหตุผล: ${esc(o.cancelReason)}</b>`:''}</span>${o.cancelSeen===false?`<button class="btn sm" data-act="poCxSeen" data-id="${esc(o.id)}" type="button">รับทราบ</button>`:''}<button class="btn sm" data-act="poBack" data-id="${esc(o.id)}" type="button">กู้คืน</button></div>`
       :`<div class="poc-a">${pv?`<button class="btn sm ghost" data-act="poBack" data-id="${esc(o.id)}" type="button" aria-label="ย้อนสถานะ" title="ย้อนสถานะ">↩</button>`:''}${o.status!=='done'?`<button class="btn sm ghost" data-act="poCancel" data-id="${esc(o.id)}" data-confirm="1" type="button">ยกเลิก</button>`:''}<span class="grow"></span>${nx?`<button class="btn pri" data-act="poStep" data-id="${esc(o.id)}" type="button">${nx[1]}</button>`:''}</div>`}</div>`}
+// ===== แจ้งลูกค้า "ถึงจุดส่งแล้ว" + หมุด (po_orders.arrive · push ลูกค้าด้วย trigger docs_push_po_arrive)
+const poGrpKey=o=>o.method==='pickup'?'~บริการจัดส่ง':(o.pointName||'ไม่ระบุจุด');
+const poArriveTargets=(k,day)=>(S.poOrders||[]).filter(o=>o.deliverDate===day&&poGrpKey(o)===k&&['confirmed','ready'].includes(o.status));
+const poSpots=()=>Array.isArray(poCfg().spots)?poCfg().spots:[];
+const gmapLink=(lat,lng)=>'https://www.google.com/maps/search/?api=1&query='+lat+','+lng;
+function parseLatLng(t){t=String(t||'');const m=t.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||t.match(/[?&](?:q|query|ll)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/)||t.match(/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/);
+  if(!m)return null;const lat=+m[1],lng=+m[2];return Math.abs(lat)<=90&&Math.abs(lng)<=180?{lat:+lat.toFixed(6),lng:+lng.toFixed(6)}:null}
+function sheetPoArrive(){const s=S.sheet,day=poPickDay(),T=poArriveTargets(s.k,day),sp=poSpots();
+  if(s.name==null){const last=sp.find(x=>x.id===poCfg().lastSpot)||null;s.name=last?last.name:s.k.replace(/^~/,'')==='บริการจัดส่ง'?'':s.k;if(last){s.lat=last.lat;s.lng=last.lng;s.spot=last.id}}
+  $('#panel').innerHTML=head('📍 ถึงจุดส่งแล้ว',`${esc(s.k.replace(/^~/,''))} · ส่ง${esc(poDayName(day))} · แจ้งลูกค้า ${T.length} คน`)+`<div class="sh-body">
+   ${sp.length?`<div class="card" style="padding:10px 12px"><h3 style="margin:0 0 6px">จุดส่งที่บันทึกไว้</h3>${sp.map(x=>`<div class="spotrow${s.spot===x.id?' on':''}"><button class="grow lnk" data-act="arrSpot" data-v="${esc(x.id)}" type="button" style="text-align:left">${s.spot===x.id?'✅':'📍'} ${esc(x.name)}${x.lat!=null?' <small class="muted">· มีหมุด</small>':''}</button><button class="btn sm ghost" data-act="arrSpotDel" data-v="${esc(x.id)}" data-confirm="1" type="button" aria-label="ลบจุดนี้">✕</button></div>`).join('')}</div>`:''}
+   <div class="field"><label for="arName">ชื่อจุดส่ง (ลูกค้าเห็น)</label><input id="arName" maxlength="80" value="${esc(s.name||'')}" placeholder="เช่น ลานจอดรถหลัง รพ."></div>
+   <div class="field"><label for="arPin">หมุด (ไม่บังคับ)</label><div class="inrow" style="gap:6px"><input id="arPin" style="flex:1;min-width:0" value="${s.lat!=null?esc(s.lat+','+s.lng):''}" placeholder="วางลิงก์ Google Maps หรือ พิกัด"><button class="btn sm" data-act="arGps" type="button">📡 ตำแหน่งตอนนี้</button></div>
+     <span class="help" id="arPinTxt">${s.lat!=null?`✓ ปักหมุดแล้ว · <a href="${gmapLink(s.lat,s.lng)}" target="_blank" rel="noopener">ดูบนแผนที่</a>`:'กด "ตำแหน่งตอนนี้" ตอนยืนอยู่ที่จุดส่ง หรือวางลิงก์จาก Google Maps'}</span></div>
+   <div class="field"><label for="arNote">ข้อความเพิ่มเติม (ไม่บังคับ)</label><input id="arNote" maxlength="80" value="${esc(s.note||'')}" placeholder="เช่น รถกระบะสีขาว รออยู่ 15 นาที"></div>
+   <label class="check"><input type="checkbox" id="arSave" ${s.save===false?'':'checked'}> บันทึกจุดนี้ไว้ใช้ครั้งหน้า</label>
+   <div class="list">${T.map(o=>`<div class="row"><div class="grow"><div class="t">${esc(poShort(o))} · ${esc(o.name)}</div><div class="s">${o.arrive?'แจ้งแล้ว '+hm(o.arrive.at)+' · '+esc(o.arrive.name||''):'ยังไม่แจ้ง'}</div></div></div>`).join('')||'<p class="help">ไม่มีออร์เดอร์ที่ยืนยันแล้วในจุดนี้</p>'}</div>
+   <p class="help" style="margin:0">ลูกค้าเห็นกล่อง "อาหารมาถึงแล้ว" + ปุ่มเปิดแผนที่ในหน้าติดตามออร์เดอร์ (หน้าเปิดค้างไว้จะสั่น + เด้งข้อความ) · ออร์เดอร์ที่ยืนยันแล้วจะเปลี่ยนเป็น "อยู่ระหว่างจัดส่ง"</p>
+   <p class="err" id="arErr" role="alert"></p></div>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="arGo" type="button" ${T.length?'':'disabled'}>📣 แจ้งลูกค้า ${T.length} คน</button></div>`;
+  const pin=$('#arPin');pin.addEventListener('change',()=>{const v=pin.value.trim();if(!v){s.lat=s.lng=null;$('#arPinTxt').textContent='ไม่ใส่หมุด';return}const ll=parseLatLng(v);if(ll){s.lat=ll.lat;s.lng=ll.lng;pin.value=ll.lat+','+ll.lng;$('#arPinTxt').innerHTML=`✓ ปักหมุดแล้ว · <a href="${gmapLink(ll.lat,ll.lng)}" target="_blank" rel="noopener">ดูบนแผนที่</a>`}else $('#arPinTxt').textContent='อ่านพิกัดไม่ได้ · ลิงก์สั้น (maps.app.goo.gl) ให้เปิดในแผนที่แล้วคัดลอกพิกัดมาแทน'})}
+function arKeep(){const s=S.sheet;if(!s||s.type!=='poArrive')return;s.name=val('arName');s.note=val('arNote');s.save=$('#arSave').checked}
 function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliverDate===day),live=all.filter(poLive);
   // รอยืนยัน = ทุกวันส่ง (เห็นออร์เดอร์ใหม่ทันที แม้สั่งไว้ส่งวันอื่น) · ที่เหลือ = ตามวันส่งที่เลือก
   const pend=(S.poOrders||[]).filter(o=>o.status==='new').sort((a,b)=>b.at-a.at);
@@ -2856,7 +2880,8 @@ function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliver
   const groups={};list.forEach(o=>{const k=o.method==='pickup'?'~บริการจัดส่ง':(o.pointName||'ไม่ระบุจุด');(groups[k]=groups[k]||[]).push(o)});
   const pts=poCfg().points.map(p=>p.name);
   Object.keys(groups).sort((a,b)=>{const ia=pts.indexOf(a),ib=pts.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b,'th')}).forEach(k=>{const g=groups[k];
-    h+=`<div class="sec-h" style="margin-top:6px"><h2>📍 ${esc(k.replace(/^~/,''))}</h2><span class="hint">${g.length} ออร์เดอร์ · ${g.reduce((a,o)=>a+poQty(o),0)} ชิ้น</span></div><div class="pogrid">${g.map(poCard).join('')}</div>`});
+    const arrN=poArriveTargets(k,day).length;
+    h+=`<div class="sec-h" style="margin-top:6px"><h2>📍 ${esc(k.replace(/^~/,''))}</h2><span class="hint">${g.length} ออร์เดอร์ · ${g.reduce((a,o)=>a+poQty(o),0)} ชิ้น</span>${['owner','chef'].includes(S.role)&&arrN?`<button class="btn sm arrbtn" data-act="poArrive" data-v="${esc(k)}" type="button">📍 ถึงจุดส่งแล้ว · แจ้งลูกค้า</button>`:''}</div><div class="pogrid">${g.map(poCard).join('')}</div>`});
   return h}
 function viewPoPrep(){const day=poPickDay(),live=(S.poOrders||[]).filter(o=>o.deliverDate===day&&poLive(o));
   let h=`<div class="sec-h"><h2>เตรียมของ ส่ง${poDayName(day)}</h2><span class="hint">${esc(poDate(day))} · รวมทุกออร์เดอร์ที่ไม่ยกเลิก</span></div>`+poDayChips(day)
@@ -3017,6 +3042,17 @@ Object.assign(ACT,{
   poSumPrint:d=>poSumPrint(d.v),
   poSumImg:(d,b)=>poSumImg(d.v,b),
   poSumCopy:async d=>{const t=poSumText(d.v);try{await navigator.clipboard.writeText(t);toast('คัดลอกสรุปแล้ว · วางในไลน์ได้เลย')}catch(e){window.prompt('คัดลอกข้อความนี้',t)}},
+  poArrive:d=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poArrive',k:d.v})},
+  arSpot:d=>{arKeep();const s=S.sheet,x=poSpots().find(y=>y.id===d.v);if(!x)return;s.spot=x.id;s.name=x.name;s.lat=x.lat??null;s.lng=x.lng??null;sheetPoArrive()},
+  arSpotDel:async d=>{arKeep();const L=poSpots().filter(x=>x.id!==d.v);const {data,error}=await SB.rpc('po_set_spots',{p_spots:L});if(error)return toast('ลบไม่สำเร็จ: '+error.message,'bad');S.po={...poCfg(),spots:(data&&data.spots)||L};if(S.sheet.spot===d.v)S.sheet.spot=null;sheetPoArrive()},
+  arGps:()=>{arKeep();if(!navigator.geolocation)return toast('เครื่องนี้หาตำแหน่งไม่ได้','bad');toast('กำลังหาตำแหน่ง…');navigator.geolocation.getCurrentPosition(p=>{const s=S.sheet;if(!s||s.type!=='poArrive')return;s.lat=+p.coords.latitude.toFixed(6);s.lng=+p.coords.longitude.toFixed(6);s.spot=null;sheetPoArrive();toast('ปักหมุดตำแหน่งนี้แล้ว')},()=>toast('หาตำแหน่งไม่ได้ อนุญาตตำแหน่งในเบราว์เซอร์ก่อน','bad'),{enableHighAccuracy:true,timeout:15000})},
+  arGo:async()=>{arKeep();const s=S.sheet,e=$('#arErr'),name=String(s.name||'').trim();if(!name){e.textContent='ใส่ชื่อจุดส่ง';return}
+    const T=poArriveTargets(s.k,poPickDay());if(!T.length)return;$('[data-act=arGo]').disabled=true;
+    const arrive={name,note:String(s.note||'').trim(),at:Date.now(),by:S.me||'',...(s.lat!=null?{lat:s.lat,lng:s.lng}:{})};let n=0;
+    for(const o of T){await poSet(o.id,{arrive,...(o.status==='confirmed'?{status:'ready',readyAt:Date.now()}:{})});n++}
+    if(s.save!==false){const L=poSpots().slice();const i=L.findIndex(x=>x.id===s.spot||x.name===name);const it={id:i>=0?L[i].id:'',name,...(s.lat!=null?{lat:s.lat,lng:s.lng}:{})};if(i>=0)L[i]=it;else L.unshift(it);
+      const {data}=await SB.rpc('po_set_spots',{p_spots:L.slice(0,30)});if(data&&data.spots)S.po={...poCfg(),spots:data.spots}}
+    closeSheet();toast('📣 แจ้งลูกค้า '+n+' คนแล้ว: ถึง '+name)},
   poPromos:()=>{if(!promoCan())return deny();openSheet({type:'poPromos'})},
   poPromoEdit:d=>{if(S.sheet&&S.sheet.type==='poPromoEdit')return;openSheet({type:'poPromoEdit',i:+d.v})},
   ppCat:d=>{const s=S.sheet;ppKeep();const g=promoMenu().filter(x=>(x.cat||'อื่นๆ')===d.v);const all=g.every(x=>s.sel.has(x.id));g.forEach(x=>all?s.sel.delete(x.id):s.sel.add(x.id));sheetPoPromoEdit()},
