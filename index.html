@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1800">
+<meta name="app-version" content="2026.10.20-1820">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -645,6 +645,15 @@ body.shop-po .top{box-shadow:inset 0 -3px 0 #f0a54a}
 .cpk1{transition:transform .2s,box-shadow .2s}.cpk1:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(42,120,214,.14)}
 @keyframes kShine{from{left:-60%}to{left:130%}}
 @media (prefers-reduced-motion:reduce){.dsheen,.dnt.anim .dseg,.dnt.anim .dnt-c,.prk.anim .stat::after{animation:none!important}}
+.prr2{grid-template-columns:34px minmax(0,1.3fr) minmax(0,1.4fr) minmax(0,1.1fr)!important}
+.prk2{font-size:15px;font-weight:700;color:var(--muted);text-align:center}
+.prn .hot{font-size:10.5px;font-weight:700;color:#fff;background:linear-gradient(90deg,#eb6834,#e34948);padding:1px 7px;border-radius:99px;vertical-align:2px;margin-left:4px}
+.prb2{background:rgba(0,0,0,.05);border-radius:6px;padding:0}.prb2 .prb{height:14px}
+.prb .unk{border-radius:5px;background:repeating-linear-gradient(135deg,rgba(42,120,214,.45) 0 6px,rgba(42,120,214,.18) 6px 12px)}
+.mgp{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:4px}.mgp.ok{color:#14805a;background:rgba(27,175,122,.14)}.mgp.mid{color:#9a6a00;background:rgba(237,161,0,.16)}.mgp.bad{color:#c22b2b;background:rgba(227,73,72,.12)}.mgp.warn{color:#8a6d00;background:rgba(237,161,0,.18)}
+.prr2.nc .prn b,.prr2.eq .prn b{color:inherit}
+.prwarn{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13px;padding:8px 12px;border-radius:12px;background:rgba(237,161,0,.10);border:1px dashed rgba(237,161,0,.45)}.prwarn>span{flex:1 1 240px}.prwarn .btn{margin-left:auto}
+@media (max-width:620px){.prr2{grid-template-columns:28px 1fr auto!important;grid-template-areas:"r n v" "r b b"!important}.prr2 .prk2{grid-area:r;align-self:start;padding-top:2px}.prr2 .prn{grid-area:n}.prr2 .prv{grid-area:v}.prr2 .prb2{grid-area:b}}
 .pri{display:flex;flex-direction:column;gap:2px}
 .prr{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) minmax(0,1.2fr);gap:10px;align-items:center;padding:7px 4px;border-bottom:1px dashed var(--line);border-radius:8px;transition:background .15s}.prr:hover{background:rgba(42,120,214,.05)}
 .prn{display:flex;flex-direction:column;min-width:0}.prn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prn span{font-size:12px}
@@ -3194,11 +3203,15 @@ if(!window.__prEv){window.__prEv=1;
   document.addEventListener('pointerout',e=>{if(e.pointerType!=='mouse'||!e.target.closest)return;const rt=e.relatedTarget;const b=e.target.closest('.prc');if(b&&!(rt&&rt.closest&&rt.closest('.prc')===b))clr(b);const w=e.target.closest('.dnt');if(w&&!(rt&&rt.closest&&rt.closest('.dnt')===w))dnOff(w)});
   document.addEventListener('change',e=>{const id=e.target&&e.target.id;if(id!=='prF'&&id!=='prT')return;const f=$('#prF').value,t=$('#prT').value;if(!f||!t)return;let a=f<=t?f:t,b=f<=t?t:f;if(dDiff(a,b)>91)a=dAdd(b,-91);S.prFrom=a;S.prTo=b;prLS('nl_prf',a);prLS('nl_prt',b);render()})}
 function prItems(I){const k=S.prSort||'s',key={s:x=>x.s,q:x=>x.q,p:x=>x.s-x.c,m:x=>x.s?(x.s-x.c)/x.s:0}[k]||(x=>x.s);const L=[...I].sort((a,b)=>key(b)-key(a)),mx=Math.max(1,...L.map(x=>x.s)),top=[...I].sort((a,b)=>b.q-a.q)[0];
+  const st=x=>x.s<=0?'':x.c<=0.005?'nc':x.c>=x.s-0.005?'eq':'';const nc=L.filter(x=>st(x)==='nc').length,eq=L.filter(x=>st(x)==='eq').length;
+  const pill=(x,pc)=>{const t=st(x);if(t==='nc')return '<span class="mgp warn">ยังไม่ใส่ต้นทุน</span>';if(t==='eq')return '<span class="mgp bad">ทุน = ราคาขาย</span>';return `<span class="mgp ${pc>=50?'ok':pc>=20?'mid':'bad'}"${PRANIM?cntB(pc,'p'):''}>${pc}%</span>`};
   return `<div class="chips prsort" role="group">${[['s','ยอดขาย'],['q','จำนวน'],['p','กำไร'],['m','ส่วนต่าง %']].map(([v,t])=>`<button class="chip" aria-pressed="${k===v}" data-act="prSort" data-v="${v}" type="button">${t}</button>`).join('')}</div>
-   <div class="pri">${L.map((x,i)=>{const p=x.s-x.c,pc=x.s?Math.round(p/x.s*100):0;return `<div class="prr" style="--d:${Math.min(i*50,600)}ms" title="${esc(x.n)} · ขาย ${x.q} · ยอด ${baht(x.s)} · ต้นทุน ${baht(x.c)} · กำไร ${baht(p)}">
-     <div class="prn"><b>${top&&top.n===x.n?'🏆 ':''}${esc(x.n)}</b><span class="muted">${x.q} ชิ้น</span></div>
-     <div class="prb"><span style="width:${x.c/mx*100}%;background:linear-gradient(90deg,#f6915f,${PRC.c})"></span><span style="width:${Math.max(0,p)/mx*100}%;background:linear-gradient(90deg,#3cc795,${PRC.p})"></span></div>
-     <div class="prv"><b>${baht(x.s)}</b><small>ทุน ${baht(x.c)} · กำไร <b style="color:${p>=0?'inherit':'var(--chili)'}">${baht(p)}</b> · ${pc}%</small></div></div>`}).join('')||'<div class="empty"><b>ยังไม่มียอดในช่วงนี้</b></div>'}</div>`}
+   <div class="pri">${L.map((x,i)=>{const p=x.s-x.c,pc=x.s?Math.round(p/x.s*100):0,t=st(x),rk=i<3?['🥇','🥈','🥉'][i]:'#'+(i+1);return `<div class="prr prr2${t?' '+t:''}" style="--d:${Math.min(i*60,700)}ms" title="${esc(x.n)} · ขาย ${x.q} · ยอด ${baht(x.s)} · ต้นทุน ${baht(x.c)} · กำไร ${baht(p)}">
+     <span class="prk2">${rk}</span>
+     <div class="prn"><b>${esc(x.n)}${top&&top.n===x.n&&k!=='q'?' <small class="hot">ขายดี</small>':''}</b><span class="muted">${x.q} ชิ้น · ทุน ${baht(x.c)}</span></div>
+     <div class="prb2"><div class="prb">${t==='nc'?`<span class="unk" style="width:${x.s/mx*100}%"></span>`:`<span style="width:${x.c/mx*100}%;background:linear-gradient(90deg,#f6915f,${PRC.c})"></span>${p>0?`<span style="width:${p/mx*100}%;background:linear-gradient(90deg,#3cc795,${PRC.p})"></span>`:''}`}</div></div>
+     <div class="prv"><b${PRANIM?cntB(x.s):''}>${baht(x.s)}</b><small>กำไร <b style="color:${p>0&&!t?'#1a8a5c':t?'var(--muted)':'var(--chili)'}">${t==='nc'?'?':baht(p)}</b> ${pill(x,pc)}</small></div></div>`}).join('')||'<div class="empty"><b>ยังไม่มียอดในช่วงนี้</b></div>'}</div>
+   ${nc||eq?`<div class="prwarn"><span>⚠️ ${nc?`<b>${nc}</b> เมนูยังไม่ใส่ต้นทุน (กำไรจะสูงเกินจริง)`:''}${nc&&eq?' · ':''}${eq?`<b>${eq}</b> เมนูต้นทุนเท่าราคาขาย`:''} — แก้ที่แท็บ เมนู → ช่อง "ต้นทุน"${cpPlan()?'':' หรือบันทึก 🧮 ต้นทุนเฉลี่ยต่อรอบ'}</span><button class="btn sm" data-act="tab" data-v="menu" type="button">ไปหน้าเมนู</button></div>`:''}`}
 function prExp(t0,t1){if(!can('expenses'))return '';const P=x=>x.shop==='po'&&x.at>=t0&&x.at<t1,G={};(S.exp||[]).filter(P).forEach(x=>{const c=x.waste?WASTE_CAT:(x.cat||'อื่นๆ');G[c]=(G[c]||0)+(+x.amount||0)});
   const L=Object.entries(G).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...L.map(x=>x[1])),tot=L.reduce((a,x)=>a+x[1],0);
   return `<div class="card prcard"><div class="prh"><h3>รายจ่ายร้าน</h3><b>${baht(tot)}</b></div>${L.length?`<div class="prsplit">${prDonut(L.map(([c,v])=>[(c===WASTE_CAT?'🗑 ':'')+c,v]),tot,'รายจ่ายรวม')}<div class="pri">${L.map(([c,v],i)=>`<div class="prr" style="--d:${i*50}ms" title="${esc(c)} ${baht(v)}"><div class="prn"><b>${c===WASTE_CAT?'🗑 ':''}${esc(c)}</b><span class="muted">${tot?Math.round(v/tot*100):0}%</span></div><div class="prb"><span style="width:${v/mx*100}%;background:${i<6?PRCAT[i]:PROTH}"></span></div><div class="prv"><b>${baht(v)}</b></div></div>`).join('')}</div></div>`:'<p class="help" style="margin:0">ไม่มีรายจ่ายในช่วงนี้ · บันทึกที่แท็บ สต็อกสินค้า → รายจ่ายร้าน</p>'}</div>`}
