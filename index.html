@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1125">
+<meta name="app-version" content="2026.10.20-1140">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -783,6 +783,7 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 @media (prefers-color-scheme:dark){.pocpaid.due{background:rgba(60,8,8,.85);color:#ff8a80;border-color:#ff8a80;box-shadow:inset 0 0 0 3px rgba(60,8,8,.9),inset 0 0 0 4.5px #ff8a80}.pocpaid.due i{border-color:#ff8a80}}
 .poc.pick mark{background:#fff3a6;color:inherit;border-radius:4px;padding:0 2px}
 .chip.chip-promo{border-color:#e65100;color:#bf360c;font-weight:700;background:#fff3e0}.chip.chip-promo[aria-pressed="true"]{background:#e65100;color:#fff}.pill.promo{background:#e65100;color:#fff}
+.bulkgo{width:100%;font-size:16px;padding:12px}
 .arrbtn{margin-left:auto;background:#e3f2fd;border-color:#64b5f6;color:#0d47a1;font-weight:700}.spotrow{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px dashed var(--line)}.spotrow:last-child{border:0}.spotrow.on{font-weight:700}
 .porecv{margin:8px 0 2px;padding:8px 10px;border-radius:10px;font-size:13.5px;font-weight:600;display:flex;flex-direction:column;gap:1px}.porecv small{font-weight:400;color:var(--muted);font-size:12px}
 .porecv.wait{background:#fff8e1;color:#8a5a00;border:1px dashed #e0b04a}.porecv.ok{background:#e8f5ee;color:#1b6e3c}.porecv.bad{background:#fdecea;color:#b71c1c;border:1.5px solid #e57373}
@@ -2922,6 +2923,7 @@ function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliver
   const unpaid=live.filter(o=>o.payStatus!=='paid').reduce((a,o)=>a+(+o.total||0),0);
   let h=closedCard()+poHeadCard()+poSearchBox()+poDayChips(day)+`<div class="strip"><div class="stat"><b class="num">${live.length}</b><span>ออร์เดอร์</span></div><div class="stat"><b class="num">${live.reduce((a,o)=>a+poQty(o),0)}</b><span>กล่อง/ชิ้น</span></div><div class="stat"><b class="num">${baht(live.reduce((a,o)=>a+(+o.total||0),0))}</b><span>ยอดขาย</span></div><div class="stat"><b class="num">${baht(unpaid)}</b><span>ยังไม่ได้เงิน</span></div></div>
     <div class="chips">${Object.entries(F).map(([k,f])=>{const n=k==='new'?pend.length:all.filter(f[1]).length;return `<button class="chip pof-${k}${k==='new'&&n?' hot':''}" aria-pressed="${pf===k}" data-act="poF" data-v="${k}" type="button">${k==='new'&&n?'<i class="livedot"></i>':''}${f[0]}${n?` <b class="pofn">${n}</b>`:''}</button>`}).join('')}</div>
+    ${(()=>{const cn=all.filter(o=>o.status==='confirmed').length;return ['owner','chef'].includes(S.role)&&cn?`<button class="btn pri bulkgo" data-act="poShipAll" type="button">🛵 เริ่มจัดส่งทั้งหมด (${cn} ออร์เดอร์ · ส่ง${esc(poDayName(day))})</button>`:''})()}
     ${pf==='new'&&pend.length?`<p class="help" style="margin:0;align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:3px 12px">🔴 อัปเดตทันทีเมื่อลูกค้าสั่ง · รวมทุกวันส่ง</p>`:''}`;
   const iss=(S.poOrders||[]).filter(o=>poRecvSt(o)==='issue').sort((a,b)=>(+b.issueAt||0)-(+a.issueAt||0));
   if(iss.length&&pf!=='recv')h+=`<div class="sec-h" style="margin-top:6px"><h2 style="color:var(--chili)">⚠️ ลูกค้าแจ้งยังไม่ได้รับของ</h2><span class="hint">${iss.length} ออร์เดอร์ · รวมทุกวันส่ง</span></div><div class="pogrid">${iss.map(poCard).join('')}</div>`;
@@ -3104,6 +3106,10 @@ Object.assign(ACT,{
     $('[data-act=peSave]').disabled=true;const ok=await write('po_orders/'+o.id,r=>r.update(patch));if(!ok){$('[data-act=peSave]').disabled=false;return}
     if(o.stockCut){deductStock(o.items,S.poMenu,-1);deductStock(items,S.poMenu,1)}
     Object.assign(o,patch);closeSheet();render();toast('บันทึกการแก้ไขแล้ว · ลูกค้าเห็นในหน้าติดตามออร์เดอร์')},
+  poShipAll:async()=>{if(!['owner','chef'].includes(S.role))return deny();const day=poPickDay(),L=(S.poOrders||[]).filter(o=>o.deliverDate===day&&o.status==='confirmed');if(!L.length)return toast('ไม่มีออร์เดอร์ที่ยืนยันแล้ว');
+    if(!confirm('เริ่มจัดส่งทั้งหมด '+L.length+' ออร์เดอร์ (ส่ง'+poDayName(day)+')?\nสถานะจะเปลี่ยนเป็น "อยู่ระหว่างจัดส่ง" และตัดสต็อก'))return;
+    const b=$('[data-act=poShipAll]');if(b)b.disabled=true;let n=0;for(const o of L){await poSet(o.id,{status:'ready',readyAt:Date.now(),by:S.me||''});n++}
+    toast('🛵 เริ่มจัดส่งแล้ว '+n+' ออร์เดอร์')},
   poArrive:d=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poArrive',k:d.v})},
   arSpot:d=>{arKeep();const s=S.sheet,x=poSpots().find(y=>y.id===d.v);if(!x)return;s.spot=x.id;s.name=x.name;s.lat=x.lat??null;s.lng=x.lng??null;sheetPoArrive()},
   arSpotDel:async d=>{arKeep();const L=poSpots().filter(x=>x.id!==d.v);const {data,error}=await SB.rpc('po_set_spots',{p_spots:L});if(error)return toast('ลบไม่สำเร็จ: '+error.message,'bad');S.po={...poCfg(),spots:(data&&data.spots)||L};if(S.sheet.spot===d.v)S.sheet.spot=null;sheetPoArrive()},
