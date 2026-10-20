@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1530">
+<meta name="app-version" content="2026.10.20-1550">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -593,6 +593,11 @@ body.shop-po .top{box-shadow:inset 0 -3px 0 #f0a54a}
 .cpl input,.cpl select{min-width:0;width:100%;padding:8px;font-size:14px}.cpi>button,.cpp>button{padding-bottom:10px}
 .cpi .cpl-sid{grid-column:1/4;grid-row:1}.cpi .cpl-n{grid-row:2!important}.cplink .cpl-n{display:none}.cplink input[readonly]{background:var(--soft,#f6f1e7);color:var(--muted);border:1px solid var(--line);box-shadow:none}
 .cpu{grid-column:1/-1;margin-top:-2px;font-size:12px}.cpu:empty{display:none}
+.wdc{display:flex;flex-direction:column;gap:8px}.wdl{display:flex;flex-direction:column;gap:4px;padding:6px 0}
+.wdr{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card,#fff)}
+.wdh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.wdh b{font-size:15.5px}.wdh small{flex:1}
+.wdi{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr) minmax(0,.8fr);gap:8px;align-items:end}.wdc2 b{padding:8px 0;font-variant-numeric:tabular-nums}
+@media (max-width:420px){.wdi{grid-template-columns:1fr 1fr}.wdi .cpl:nth-child(2){grid-column:1/-1;grid-row:2}}
 .cpo{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums}.cpo>b:first-child{min-width:70px}
 .cpc .kv b,.cpres .kv b{white-space:nowrap}
 .cpl small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1423,7 +1428,7 @@ function viewBack(){
   if(t==='inc')return h+viewIncome();
   if(t==='mem')return h+viewMembers();
   if(t==='stock'){
-    const low=stockList().filter(isLow);
+    const low=stockList().filter(isLow);h+=wdCard();
     h+=`<div class="sec-h"><h2>ของที่ต้องเติม</h2><span class="hint">คงเหลือต่ำกว่าหรือเท่าจุดสั่งซื้อ</span></div>`;
     h+=low.length?'<div class="list">'+low.map(s=>`<div class="row">${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)}</div><div class="s">เหลือ ${num(s.qty)} ${esc(s.unit)} · จุดสั่งซื้อ ${num(s.min)} ${esc(s.unit)}</div></div><button class="btn sm pri" data-act="purchase" data-id="${s.id}" type="button">ซื้อเติม</button></div>`).join('')+'</div>':`<div class="empty"><b>ของยังพอใช้ทุกรายการ</b>รายการที่ใกล้หมดจะขึ้นที่นี่ให้ซื้อเติมได้ทันที</div>`;
     h+=`<div class="sec-h"><h2>วัตถุดิบทั้งหมด</h2><button class="btn sm" data-act="stockEdit" type="button">+ เพิ่มวัตถุดิบ</button></div>`;
@@ -1530,7 +1535,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
   {const pn=$('#panel');if(pn&&pn.parentElement)pn.parentElement.classList.toggle('findmode',s.type==='poFind')}
-  ({poCost:sheetPoCost,poFind:sheetPoFind,poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({poWd:sheetPoWd,poCost:sheetPoCost,poFind:sheetPoFind,poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -3079,9 +3084,8 @@ function cpCalc(cp){const I=(cp.ing||[]).map(x=>({...x,p:cpP(x)})),P=cp.prod||[]
   const rows=P.map(r=>{const c=(W>0?share/W*(+r.f||100)/100:0)+each,pr=+r.price||0;return {...r,cost:c,profit:pr-c,pct:pr>0?(pr-c)/pr*100:0}});
   const rev=rows.reduce((a,r)=>a+(+r.qty||0)*(+r.price||0),0),cost=share+each*box,avg=box?rev/box:0;
   return {rows,share,each,W,box,rev,cost,buy:I.reduce((a,x)=>a+(+x.p||0),0),profit:rev-cost,be:avg>each?Math.ceil(share/(avg-each)):null}}
-function cpCutText(L){const cp=cpPlan(),lk=cp?(cp.ing||[]).filter(x=>cpSt(x)):[];if(!lk.length)return 'ตามสูตรวัตถุดิบในเมนู (ยกเว้นออร์เดอร์ที่ยกเลิก)';
-  const ms=new Set((cp.prod||[]).map(r=>r.menuId).filter(Boolean)),bx=L.filter(o=>!o.stockCut).reduce((a,o)=>a+(o.items||[]).filter(l=>ms.has(l.menuId)).reduce((b,l)=>b+(+l.qty||0),0),0);
-  return lk.map(x=>{const t=cpSt(x);return t.name+' '+num(x.m==='each'?(+x.use||1)*bx:(+x.q||0))+' '+(t.unit||'')}).join(', ')+' (ตามตารางต้นทุนต่อรอบ)'+(L.some(o=>(o.items||[]).some(l=>!ms.has(l.menuId)))?' + เมนูอื่นตามสูตร':'')}
+function cpCutText(L){const cp=cpPlan();if(!cp||!wdRound().length)return 'ตามสูตรวัตถุดิบในเมนู (ยกเว้นออร์เดอร์ที่ยกเลิก)';
+  return 'ข้าวมันไก่ตัดไปแล้วตอน "ตัดสต็อกขายวันนี้" · เมนูอื่นตัดตามสูตรวัตถุดิบ'}
 function cpMatch(cp,l){const P=(cp&&cp.prod)||[];let k=P.findIndex(r=>r.menuId===l.menuId&&r.opt&&((l.opts||[]).some(o=>String(o.n||'').includes(r.opt))||String(l.name||'').includes(r.opt)));
   if(k<0)k=P.findIndex(r=>r.menuId===l.menuId&&!r.opt);return k}
 // ต้นทุนต่อบรรทัด: ใช้ตารางต้นทุนเฉลี่ยถ้ามี ไม่งั้นใช้ต้นทุนเมนูตอนสั่ง
@@ -3103,12 +3107,12 @@ function cpRoundCard(){const cp=cpPlan(),adm=poAdmin();
 function sheetPoCost(){const s=S.sheet;if(!s.cp)s.cp=JSON.parse(JSON.stringify(cpPlan()||cpDefault()));const cp=s.cp,M=S.poMenu||[],ST=(S.stock||[]).filter(x=>x.shop==='po');
   const F_=(c,k,x)=>`<label class="cpl cpl-${k}"><small>${c}</small>${x}</label>`,io=(i,k,v,a='',c='')=>F_(c,k,`<input data-ci="${i}" data-ck="${k}" value="${esc(v??'')}" ${a}>`),po=(i,k,v,a='',c='')=>F_(c,k,`<input data-pi="${i}" data-pk="${k}" value="${esc(v??'')}" ${a}>`);
   $('#panel').innerHTML=head('🧮 ต้นทุนเฉลี่ยต่อรอบ','ของที่ซื้อ ÷ จำนวนกล่องที่ได้ = ต้นทุนต่อกล่อง · ใช้ประมาณกำไรแต่ละรอบ')+`<form class="sh-body cpf" id="cpForm" onsubmit="return false" autocomplete="off">
-   <div class="card"><h3>1) ของที่ซื้อต่อรอบ</h3>
-        ${cp.ing.map((x,i)=>{const t=cpSt(x),lp=t&&+t.unitCost>0;return `<div class="cpi${t?' cplink':''}">${F_('ตัดจากสต็อกในคลัง','sid',`<select data-ci="${i}" data-ck="sid"><option value="">— ไม่ผูกสต็อก (ใส่ราคาเอง) —</option>${ST.map(o=>`<option value="${esc(o.id)}" ${o.id===x.sid?'selected':''}>${esc(o.name)} · เหลือ ${num(+o.qty||0)} ${esc(o.unit||'')}</option>`).join('')}</select>`)}${io(i,'n',x.n,'maxlength="30" placeholder="เช่น ไก่"'+(t?' readonly':''),'รายการ')}${io(i,'q',x.q,'inputmode="decimal"',x.m==='each'?'เบิกมา':t?'เบิกใช้รอบนี้':'จำนวน')}${io(i,'u',x.u,'maxlength="8"'+(t?' readonly':''),'หน่วย')}${io(i,'p',lp?cpP(x):x.p,'inputmode="decimal" placeholder="0"'+(lp?' readonly':''),lp?'ราคา (จากคลัง)':'ราคารวม ฿')}
+   <div class="card"><div class="inrow" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">1) ของที่ใช้รอบนี้</h3><button class="btn sm" data-act="poWd" type="button">✂️ ตัดสต็อกขายวันนี้</button></div>${wdRound().length?'<p class="help" style="margin:0">รายการที่ผูกสต็อกมาจากการ "ตัดสต็อกขายวันนี้" ของรอบนี้ (แก้จำนวนที่นี่ = แก้แค่การคำนวณ ไม่ตัดสต็อกเพิ่ม)</p>':''}
+        ${cp.ing.map((x,i)=>{const t=cpSt(x),lp=t&&+t.unitCost>0;return `<div class="cpi${t?' cplink':''}">${F_('ทุนจากสต็อกในคลัง','sid',`<select data-ci="${i}" data-ck="sid"><option value="">— ไม่ผูกสต็อก (ใส่ราคาเอง) —</option>${ST.map(o=>`<option value="${esc(o.id)}" ${o.id===x.sid?'selected':''}>${esc(o.name)} · เหลือ ${num(+o.qty||0)} ${esc(o.unit||'')}</option>`).join('')}</select>`)}${io(i,'n',x.n,'maxlength="30" placeholder="เช่น ไก่"'+(t?' readonly':''),'รายการ')}${io(i,'q',x.q,'inputmode="decimal"',t?'เบิก':'จำนวน')}${io(i,'u',x.u,'maxlength="8"'+(t?' readonly':''),'หน่วย')}${io(i,'p',lp?cpP(x):x.p,'inputmode="decimal" placeholder="0"'+(lp?' readonly':''),lp?'ราคา (จากคลัง)':'ราคารวม ฿')}
       ${F_('วิธีคิด','m',`<select data-ci="${i}" data-ck="m"><option value="share" ${x.m!=='each'?'selected':''}>เฉลี่ยตามปริมาณ</option><option value="each" ${x.m==='each'?'selected':''}>ใช้กล่องละ 1</option></select>`)}
       <button class="lnk" data-act="cpDel" data-v="i${i}" type="button" aria-label="ลบ">✕</button><small class="muted cpu" data-cu="${i}"></small></div>`}).join('')}
     <button class="lnk" data-act="cpAdd" data-v="i" type="button" style="align-self:flex-start">+ เพิ่มรายการ</button>
-    <p class="help" style="margin:0"><b>ผูกสต็อก</b> = ราคาคิดจากทุนในคลัง (เช่น ซื้อไก่ 20 กก. 1,800 = 90/กก. → เบิก 10 กก. = 900) และ<b>ตัดสต็อกตอนปิดยอดรอบ</b> · <b>เฉลี่ยตามปริมาณ</b> = ไก่ ข้าว น้ำจิ้ม: ตัดเท่าที่เบิก · <b>ใช้กล่องละ 1</b> = กล่อง ช้อน-ส้อม: ตัดตามจำนวนกล่องที่ขายได้</p></div>
+    <p class="help" style="margin:0"><b>ตัดสต็อก</b>ที่แท็บ สต็อกสินค้า → "✂️ ตัดสต็อกขายวันนี้" แล้วรายการจะมาขึ้นที่นี่เอง (ราคา = จำนวนเบิก × ทุนในคลัง เช่น ซื้อไก่ 20 กก. 1,800 = 90/กก. → เบิก 10 กก. = 900) · <b>เฉลี่ยตามปริมาณ</b> = ไก่ ข้าว น้ำจิ้ม · <b>ใช้กล่องละ 1</b> = กล่อง ช้อน-ส้อม (ราคา ÷ จำนวน)</p></div>
    <div class="card"><h3>2) ได้ข้าวกี่กล่อง</h3>
         ${cp.prod.map((r,i)=>`<div class="cpp">${po(i,'n',r.n,'maxlength="24"','ชื่อ')}${F_('เมนู','menuId',`<select data-pi="${i}" data-pk="menuId"><option value="">— เลือกเมนู —</option>${M.map(m=>`<option value="${esc(m.id)}" ${m.id===r.menuId?'selected':''}>${esc(m.name)}</option>`).join('')}</select>`)}${po(i,'opt',r.opt,'maxlength="20" placeholder="เว้นว่าง = ธรรมดา"','ตัวเลือกที่มีคำว่า')}${po(i,'qty',r.qty,'inputmode="numeric"','กล่อง')}${po(i,'f',r.f,'inputmode="decimal"','ปริมาณ %')}${po(i,'price',r.price,'inputmode="decimal"','ราคาขาย ฿')}<button class="lnk" data-act="cpDel" data-v="p${i}" type="button" aria-label="ลบ">✕</button></div>`).join('')}
     <button class="lnk" data-act="cpAdd" data-v="p" type="button" style="align-self:flex-start">+ เพิ่มแบบ</button>
@@ -3124,8 +3128,8 @@ function cpRead(){const cp=S.sheet&&S.sheet.cp;if(!cp)return;const N=v=>{const x
 function cpUpd(){if(!S.sheet||S.sheet.type!=='poCost'||!S.sheet.cp)return;cpRead();const cp=S.sheet.cp,C=cpCalc(cp),el=$('#cpRes');if(!el)return;
   document.querySelectorAll('[data-cu]').forEach(e=>{const i=+e.dataset.cu,x=cp.ing[i];if(!x)return;const t=cpSt(x),p=cpP(x);
     if(t){const pi=document.querySelector(`[data-ci="${i}"][data-ck="p"]`);if(pi&&pi.readOnly)pi.value=p;}
-    const over=t&&x.m!=='each'&&(+x.q||0)>(+t.qty||0);e.style.color=over?'var(--chili)':'';
-    e.textContent=t?`คลังเหลือ ${num(+t.qty||0)} ${t.unit||''} · ทุน ${baht(+t.unitCost||0)}/${t.unit||'หน่วย'}${x.m==='each'?' · ตัดตามกล่องที่ขายได้':' · เบิก '+num(+x.q||0)+' = '+baht(p)}${over?' ⚠️ เกินของในคลัง':''}`:(+x.q>0&&p>0?'= '+baht(p/x.q)+' / '+(x.u||'หน่วย'):'')});
+    const over=false;e.style.color=over?'var(--chili)':'';
+    e.textContent=t?`ทุน ${baht(+t.unitCost||0)}/${t.unit||'หน่วย'} · ${num(+x.q||0)} ${t.unit||''} = ${baht(p)}${x.m==='each'&&+x.q>0?' → '+baht(p/x.q)+'/กล่อง':''} · คลังเหลือ ${num(+t.qty||0)}`:(+x.q>0&&p>0?'= '+baht(p/x.q)+' / '+(x.u||'หน่วย'):'')});
   const col=v=>`color:${v>=0?'var(--ok,#2e7d32)':'var(--chili)'}`;
   el.innerHTML=`<h3>3) ผลคำนวณ</h3>${C.rows.map(r=>`<div class="cpo"><b>${esc(r.n||'-')}</b><span>ต้นทุน <b>${baht(r.cost)}</b>/กล่อง</span><span>ขาย ${baht(+r.price||0)}</span><span style="${col(r.profit)}">กำไร ${baht(r.profit)} (${Math.round(r.pct)}%)</span></div>`).join('')}
    <div class="kv" style="margin-top:6px"><span>เฉลี่ยตามปริมาณ (${baht(C.share)} ÷ ${num(C.W)} กล่องเทียบธรรมดา)</span><b>${baht(C.W?C.share/C.W:0)}/กล่อง</b></div>
@@ -3144,10 +3148,56 @@ Object.assign(ACT,{
     const ing=cp.ing.filter(x=>String(x.n).trim()||x.sid).map(x=>({...(cpSt(x)?{sid:x.sid}:{}),n:String(x.n||(cpSt(x)||{}).name||'').trim().slice(0,30),q:+x.q||0,u:String(x.u||'').slice(0,8),p:cpP(x),m:x.m==='each'?'each':'share',...(x.m==='each'?{use:+x.use||1}:{})}));
     const prod=cp.prod.filter(r=>String(r.n).trim()||r.menuId).map(r=>({n:String(r.n||'').trim().slice(0,24)||'ธรรมดา',menuId:r.menuId||'',opt:String(r.opt||'').trim().slice(0,20),qty:Math.max(0,Math.round(+r.qty||0)),f:+r.f>0?+r.f:100,price:+r.price||0}));
     if(!prod.length||!prod.some(r=>r.qty>0))return e.textContent='ใส่จำนวนกล่องที่ได้อย่างน้อย 1 แบบ';
-    const plan={ing,prod,at:Date.now(),by:S.me||''},ok=await write('config/po',r=>r.update({costPlan:plan}));if(!ok)return;
+    const plan={ing,prod,wd:(cpPlan()||{}).wd||[],at:Date.now(),by:S.me||''},ok=await write('config/po',r=>r.update({costPlan:plan}));if(!ok)return;
     S.po={...poCfg(),costPlan:plan};let n=0;
     if($('#cpMenu')&&$('#cpMenu').checked){const C=cpCalc(plan);for(const r of C.rows.filter(r=>r.menuId&&!r.opt)){const c=r2(r.cost);const m=(S.poMenu||[]).find(x=>x.id===r.menuId);if(m&&r2(+m.cost||0)!==c){await write('menu/'+r.menuId,x=>x.update({cost:c}));m.cost=c;n++}}}
     closeSheet();render();toast('🧮 บันทึกต้นทุนต่อรอบแล้ว'+(n?' · อัปเดตต้นทุนเมนู '+n+' รายการ':''))}
+});
+/* ===== ข้าวมันไก่: ✂️ ตัดสต็อกขายวันนี้ (เบิกของจากคลัง → ต้นทุนต่อรอบ) ===== */
+const wdRound=()=>{const cp=poCfg().costPlan,cut=+poCfg().cutAt||0;return ((cp&&cp.wd)||[]).filter(w=>+w.at>cut)};
+function wdCard(){if(!isPo()||!poAdmin())return '';const W=wdRound(),A={};
+  W.forEach(w=>(w.items||[]).forEach(x=>{const a=A[x.sid]=A[x.sid]||{n:x.n,u:x.u,q:0,c:0};a.q+=+x.q||0;a.c+=(+x.q||0)*(+x.uc||0)}));
+  const L=Object.values(A),tot=L.reduce((a,x)=>a+x.c,0);
+  return `<div class="card wdc"><div class="inrow" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div class="grow"><h3 style="margin:0">✂️ ตัดสต็อกขายวันนี้</h3><small class="muted">เลือกของจากคลังที่เอาไปทำขายรอบนี้ ระบบตัดสต็อก + คิดต้นทุนให้</small></div><button class="btn pri" data-act="poWd" type="button">✂️ ตัดสต็อกขายวันนี้</button></div>
+   ${L.length?`<div class="wdl">${L.map(x=>`<div class="kv"><span>${esc(x.n)} <b>${num(x.q)}</b> ${esc(x.u||'')}</span><span>${baht(x.c)}</span></div>`).join('')}<div class="kv tot"><span>ตัดแล้วรอบนี้ (${W.length} ครั้ง)</span><b>${baht(tot)}</b></div></div>
+   <div class="inrow" style="gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="poCost" type="button">🧮 ดูต้นทุนต่อกล่อง</button><button class="btn sm danger" data-act="wdUndo" data-confirm="1" type="button">↩ ยกเลิกการตัดครั้งล่าสุด</button></div>`:''}</div>`}
+function sheetPoWd(){const s=S.sheet,ST=stockList();
+  if(!s.rows){const cp=cpPlan()||{},prev=(cp.ing||[]).filter(x=>x.sid&&ST.some(t=>t.id===x.sid));s.rows=prev.length?prev.map(x=>({sid:x.sid,q:'',m:x.m==='each'?'each':'share'})):[]}
+  const R=s.rows,used=new Set(R.map(r=>r.sid)),tot=R.reduce((a,r)=>{const t=ST.find(x=>x.id===r.sid);return a+(t?(+r.q||0)*(+t.unitCost||0):0)},0);
+  $('#panel').innerHTML=head('✂️ ตัดสต็อกขายวันนี้','เลือกของในคลังที่เอาไปทำขาย · ใส่จำนวนที่เบิก · กดตัดสต็อก')+`<form class="sh-body" id="wdForm" onsubmit="return false" autocomplete="off">
+   ${R.length?R.map((r,i)=>{const t=ST.find(x=>x.id===r.sid)||{},over=(+r.q||0)>(+t.qty||0);return `<div class="wdr">
+     <div class="wdh"><b>${esc(t.name||'?')}</b><small class="muted">เหลือ ${num(+t.qty||0)} ${esc(t.unit||'')} · ทุน ${baht(+t.unitCost||0)}/${esc(t.unit||'หน่วย')}</small><button class="lnk" data-act="wdDel" data-v="${i}" type="button" aria-label="ลบ">✕</button></div>
+     <div class="wdi"><label class="cpl"><small>เบิก (${esc(t.unit||'')})</small><input data-wq="${i}" inputmode="decimal" value="${esc(r.q??'')}" placeholder="0"></label>
+      <label class="cpl"><small>คิดต้นทุนแบบ</small><select data-wm="${i}"><option value="share" ${r.m!=='each'?'selected':''}>เฉลี่ยตามปริมาณ</option><option value="each" ${r.m==='each'?'selected':''}>ใช้กล่องละ 1</option></select></label>
+      <div class="cpl wdc2"><small>เป็นเงิน</small><b data-wc="${i}">${baht((+r.q||0)*(+t.unitCost||0))}</b></div></div>
+     ${over?'<p class="help" style="margin:0;color:var(--chili)">⚠️ เบิกเกินของที่เหลือในคลัง</p>':''}</div>`}).join(''):'<div class="empty"><b>ยังไม่ได้เลือกรายการ</b>เลือกของจากคลังด้านล่าง</div>'}
+   <div class="field"><label for="wdAdd">+ เพิ่มรายการจากสต็อก</label><select id="wdAdd"><option value="">— เลือกของในคลัง —</option>${ST.filter(t=>!used.has(t.id)).map(t=>`<option value="${esc(t.id)}">${esc(t.name)} · เหลือ ${num(+t.qty||0)} ${esc(t.unit||'')}</option>`).join('')}</select></div>
+   <div class="kv tot"><span>รวมต้นทุนที่เบิก</span><b id="wdTot">${baht(tot)}</b></div>
+   <p class="help" style="margin:0">กดตัดแล้วสต็อกลดทันที และใช้คำนวณต้นทุนต่อกล่องของรอบนี้ (🧮 ต้นทุนเฉลี่ยต่อรอบ) · ตอนปิดยอดรอบจะไม่ตัดเมนูข้าวมันไก่ซ้ำ · ตัดผิดกด "ยกเลิกการตัดครั้งล่าสุด" ได้</p>
+   <p class="err" id="wdErr" role="alert"></p></form>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="wdSave" type="button">✂️ ตัดสต็อก</button></div>`;
+  const F=$('#wdForm');F.addEventListener('input',wdUpd);F.addEventListener('change',e=>{if(e.target.id==='wdAdd'&&e.target.value){wdRead();const t=ST.find(x=>x.id===e.target.value);s.rows.push({sid:e.target.value,q:'',m:/กล่อง|ช้อน|ส้อม|ถุง|ฝา|ตะเกียบ/.test(t&&t.name||'')?'each':'share'});sheetPoWd();setTimeout(()=>{const q=document.querySelector(`[data-wq="${s.rows.length-1}"]`);if(q)q.focus()},50)}else wdUpd()})}
+function wdRead(){const s=S.sheet;if(!s||s.type!=='poWd')return;document.querySelectorAll('[data-wq]').forEach(e=>{const r=s.rows[+e.dataset.wq];if(r)r.q=e.value.replace(/[^0-9.]/g,'')});document.querySelectorAll('[data-wm]').forEach(e=>{const r=s.rows[+e.dataset.wm];if(r)r.m=e.value})}
+function wdUpd(){if(!S.sheet||S.sheet.type!=='poWd')return;wdRead();const ST=stockList();let tot=0;S.sheet.rows.forEach((r,i)=>{const t=ST.find(x=>x.id===r.sid),c=t?(+r.q||0)*(+t.unitCost||0):0;tot+=c;const el=document.querySelector(`[data-wc="${i}"]`);if(el)el.textContent=baht(c)});const T=$('#wdTot');if(T)T.textContent=baht(tot)}
+async function wdApply(items,sign){for(const x of items){const q=r2((+x.q||0)*sign);const s=S.stock.find(t=>t.id===x.sid);if(s)s.qty=r2((+s.qty||0)-q);await write('stock/'+x.sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))}}
+function wdIng(cp,W){const A={};W.forEach(w=>(w.items||[]).forEach(x=>{const a=A[x.sid]=A[x.sid]||{sid:x.sid,n:x.n,u:x.u,q:0,p:0,m:x.m};a.q=r2(a.q+(+x.q||0));a.p=r2(a.p+(+x.q||0)*(+x.uc||0));a.m=x.m}));
+  return [...(cp.ing||[]).filter(x=>!x.sid),...Object.values(A).map(a=>({...a,m:a.m==='each'?'each':'share',...(a.m==='each'?{use:1}:{})}))]}
+Object.assign(ACT,{
+  poWd:()=>{if(!poAdmin())return deny();if(!stockList().length)return toast('ยังไม่มีของในคลัง เพิ่มที่ "สต็อกวัตถุดิบ" ก่อน','bad');openSheet({type:'poWd'})},
+  wdDel:d=>{wdRead();S.sheet.rows.splice(+d.v,1);sheetPoWd()},
+  wdSave:async()=>{if(!poAdmin())return deny();wdRead();const ST=stockList(),e=$('#wdErr');
+    const items=S.sheet.rows.filter(r=>+r.q>0).map(r=>{const t=ST.find(x=>x.id===r.sid)||{};return {sid:r.sid,n:t.name||'',u:t.unit||'',q:r2(+r.q),uc:+t.unitCost||0,m:r.m==='each'?'each':'share'}});
+    if(!items.length)return e.textContent='ใส่จำนวนที่เบิกอย่างน้อย 1 รายการ';
+    if(!confirm('ตัดสต็อก?\n\n'+items.map(x=>'• '+x.n+' '+num(x.q)+' '+x.u+' ('+baht(x.q*x.uc)+')').join('\n')))return;
+    const b=$('[data-act=wdSave]');if(b)b.disabled=true;
+    await wdApply(items,1);
+    const cp0=cpPlan()||{...cpDefault(),ing:[]},W=[...wdRound(),{at:Date.now(),by:S.me||'',items}];
+    const plan={...cp0,ing:wdIng(cp0,W),wd:W,at:Date.now()};const ok=await write('config/po',r=>r.update({costPlan:plan}));
+    if(ok)S.po={...poCfg(),costPlan:plan};closeSheet();render();toast('✂️ ตัดสต็อกแล้ว '+items.length+' รายการ · ต้นทุนรอบนี้อัปเดตแล้ว')},
+  wdUndo:async()=>{if(!poAdmin())return deny();const W=wdRound();if(!W.length)return toast('ยังไม่มีการตัดในรอบนี้');const last=W[W.length-1];
+    await wdApply(last.items||[],-1);const cp0=cpPlan(),W2=W.slice(0,-1);
+    const plan={...cp0,ing:W2.length?wdIng(cp0,W2):(cp0.ing||[]).map(x=>x.sid?{...x,q:0,p:0}:x),wd:W2,at:Date.now()};
+    const ok=await write('config/po',r=>r.update({costPlan:plan}));if(ok)S.po={...poCfg(),costPlan:plan};render();toast('↩ คืนสต็อกครั้งล่าสุดแล้ว')}
 });
 const poUrl=()=>{const u=new URL('preorder.html',location.href);return u.origin+u.pathname};
 function sheetPoQr(){const c=poCfg(),url=poUrl();const card=`<div class="pq"><small style="font-weight:600">${esc(c.shopName)}</small>${qrSvg(url)}<b>สั่งล่วงหน้า</b><small>สแกนเพื่อดูเมนูและสั่ง · ${c.cutoff?'ปิดรับ '+esc(c.cutoff)+' น. ':''}${c.window?'· ส่ง '+esc(c.window):''}</small></div>`;
