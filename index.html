@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1925">
+<meta name="app-version" content="2026.10.20-1932">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1081,6 +1081,21 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 .stl .str.out::after{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 3px rgba(239,68,68,.55),0 4px 16px rgba(239,68,68,.45);opacity:0;animation:stOutGlow 1s ease-in-out infinite;will-change:opacity}
 @keyframes stOutGlow{0%,100%{opacity:0}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){.stl .str.out::after{animation:none;opacity:.6}}
+.stt td,.stt td b,.stt .qn,.stt td small{font-size:16.5px!important}
+.stt td b:not(.qn){font-weight:700}.stt .qn{font-weight:500}.stt td small{color:var(--muted)}
+.stt td.r{font-weight:500;color:var(--fg)}.stt td.r.muted{color:var(--fg)}
+.tg{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 4px;border-radius:99px;font-size:13.5px;font-weight:600;white-space:nowrap;border:1px solid transparent}
+.tg i{font-style:normal;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.tg-sale{color:#1d4ed8;background:linear-gradient(135deg,rgba(59,130,246,.14),rgba(99,102,241,.10));border-color:rgba(59,130,246,.35)}
+.tg-use{color:#0f766e;background:linear-gradient(135deg,rgba(20,184,166,.16),rgba(16,185,129,.08));border-color:rgba(20,184,166,.4)}
+.sb{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 10px;border-radius:99px;font-size:13.5px;font-weight:700;white-space:nowrap}
+.sb i{width:9px;height:9px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 25%,transparent)}
+.sb-ok{color:#047857;background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(20,184,166,.10));border:1px solid rgba(16,185,129,.35)}
+.sb-low{color:#b45309;background:linear-gradient(135deg,rgba(251,191,36,.28),rgba(249,115,22,.16));border:1px solid rgba(245,158,11,.5)}
+.sb-out{color:#fff;background:linear-gradient(135deg,#f87171,#dc2626 60%,#b91c1c);box-shadow:0 0 0 1px rgba(248,113,113,.5),0 3px 10px rgba(220,38,38,.35)}
+.sb-out i{background:#fff;animation:sbPulse 1s ease-in-out infinite}
+@keyframes sbPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}50%{box-shadow:0 0 0 5px rgba(255,255,255,0)}}
+@media (prefers-reduced-motion:reduce){.sb-out i{animation:none}}
 </style>
 </head>
 <body>
@@ -1687,7 +1702,7 @@ function viewBack(){
     if(lay==='table'){const k=S.stSort||'name',dir=S.stDir||1,V={name:x=>String(x.name||''),qty:x=>+x.qty||0,cost:x=>+x.unitCost||0,val:x=>(+x.qty||0)*(+x.unitCost||0),st:x=>(+x.qty||0)<=0?0:isLow(x)?1:2},f=V[k]||V.name;
       const L=[...SL].sort((a,b)=>{const A=f(a),B=f(b);return (typeof A==='string'?A.localeCompare(B,'th'):A-B)*dir});
       const th=(key,t,cl='')=>`<th class="${cl}"><button type="button" data-act="stSort" data-v="${key}" class="${k===key?'on':''}">${t}${k===key?(dir>0?' ▲':' ▼'):''}</button></th>`;
-      h+=`<div class="sttw"><table class="stt"><thead><tr><th></th>${th('name','วัตถุดิบ')}${th('qty','คงเหลือ','r')}<th class="r">จุดสั่งซื้อ</th>${th('cost','ทุน/หน่วย','r')}${th('val','มูลค่า','r')}${isPo()?'<th>วิธีตัด</th>':''}${th('st','สถานะ')}</tr></thead><tbody>${L.map(s=>{const q=+s.qty||0,lw=isLow(s);return `<tr class="click${lw?' low':''}${q<=0?' out':''}" data-act="stockEdit" data-id="${s.id}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}><td class="av">${stAva(s)}</td><td><b>${esc(s.name)}</b></td><td class="r"><b class="qn">${num(q)}</b> <small>${esc(s.unit||'')}</small></td><td class="r muted">${num(+s.min||0)}</td><td class="r">${baht(+s.unitCost||0)}</td><td class="r">${baht(q*(+s.unitCost||0))}</td>${isPo()?`<td><span class="wdchip ${stCut(s)==='sale'?'sale':'use'}">${stCut(s)==='sale'?'ตามยอดขาย':'เบิกใช้'}</span></td>`:''}<td>${q<=0?'<span class="stp out">หมด</span>':lw?'<span class="stp low">ต้องเติม</span>':'<span class="stp ok">พอ</span>'}</td></tr>`}).join('')}</tbody></table></div>`;
+      h+=`<div class="sttw"><table class="stt"><thead><tr><th></th>${th('name','วัตถุดิบ')}${th('qty','คงเหลือ','r')}<th class="r">จุดสั่งซื้อ</th>${th('cost','ทุน/หน่วย','r')}${th('val','มูลค่า','r')}${isPo()?'<th>วิธีตัด</th>':''}${th('st','สถานะ')}</tr></thead><tbody>${L.map(s=>{const q=+s.qty||0,lw=isLow(s);return `<tr class="click${lw?' low':''}${q<=0?' out':''}" data-act="stockEdit" data-id="${s.id}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}><td class="av">${stAva(s)}</td><td><b>${esc(s.name)}</b></td><td class="r"><b class="qn">${num(q)}</b> <small>${esc(s.unit||'')}</small></td><td class="r muted">${num(+s.min||0)}</td><td class="r">${baht(+s.unitCost||0)}</td><td class="r">${baht(q*(+s.unitCost||0))}</td>${isPo()?`<td>${stCut(s)==='sale'?'<span class="tg tg-sale"><i>🧾</i>ตามยอดขาย</span>':'<span class="tg tg-use"><i>✂️</i>เบิกใช้</span>'}</td>`:''}<td>${q<=0?'<span class="sb sb-out"><i></i>หมด</span>':lw?'<span class="sb sb-low"><i></i>ต้องเติม</span>':'<span class="sb sb-ok"><i></i>พอ</span>'}</td></tr>`}).join('')}</tbody></table></div>`;
       return h}
     h+='<div class="stl">'+SL.map(s=>{const q=+s.qty||0,m=+s.min||0,pct=Math.min(100,m>0?q/(m*3)*100:100),lw=isLow(s),val=q*(+s.unitCost||0);
       return `<div class="str click${lw?' low':''}${q<=0?' out':''}" data-act="stockEdit" data-id="${s.id}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stAva(s)}<div class="wdm"><div class="wdt"><b>${esc(s.name)}</b>${lw?`<span class="stp ${q<=0?'out':'low'}">${q<=0?'หมด':'ต้องเติม'}</span>`:''}</div>
