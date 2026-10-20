@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1410">
+<meta name="app-version" content="2026.10.20-1420">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1804,7 +1804,7 @@ const shopTag=()=>isPo()?{shop:'po'}:{};
 function deductStock(items,menus,sign){const need={},M=menus||S.menu,k=sign||1;
   (items||[]).forEach(l=>{const m=M.find(x=>x.id===l.menuId);(m?.recipe||[]).forEach(g=>{if(g.stockId)need[g.stockId]=(need[g.stockId]||0)+(+g.qty||0)*(+l.qty||0)})});
   Object.entries(need).forEach(([sid,q])=>{q*=k;const s=S.stock.find(x=>x.id===sid);if(!s)return;s.qty=r2((+s.qty||0)-q);write('stock/'+sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))});}
-// ข้าวมันไก่: ตัดสต็อกตอน "เริ่มจัดส่ง" (หรือส่งสำเร็จ) · ย้อนสถานะ/ยกเลิก = คืนสต็อก
+// ข้าวมันไก่: ตัดสต็อกรวมตอน "ปิดยอดรอบนี้" (po_close_round) · ออร์เดอร์ที่ตัดแล้วถูกยกเลิก = คืนสต็อก
 const poCutWant=st=>st==='ready'||st==='done';
 
 /* receipt */
@@ -1900,7 +1900,7 @@ function sheetMenu(){const m=S.menu.find(x=>x.id===S.sheet.id)||{name:'',cat:cur
     <div class="field"><label for="mOwner">ผู้ฝากขาย</label><input id="mOwner" list="ownerList" maxlength="40" value="${esc((m.consign&&m.consign.owner)||S.sheet.owner||'')}" placeholder="เช่น ขนมป้าศรี, น้ำสมุนไพรลุงชัย" autocomplete="off"><datalist id="ownerList">${[...new Set(S.menu.filter(x=>x.consign&&x.consign.owner).map(x=>x.consign.owner))].map(o=>`<option value="${esc(o)}">`).join('')}</datalist></div>
     <p class="help" style="margin:0">"ต้นทุน" ด้านบน = ราคาที่ร้านต้องจ่ายคืนผู้ฝากต่อชิ้น · รับของเข้า / จ่ายเงินผู้ฝาก ทำได้ที่แท็บ "สต็อกสินค้า → ฝากขาย"</p></div>
    <div class="card"><div class="sec-h"><h3>สูตร / วัตถุดิบต่อ 1 ที่</h3><button class="lnk" data-act="addIng" type="button">+ เพิ่มวัตถุดิบ</button></div>
-   <p class="help" style="margin:0">ใส่แล้วระบบจะตัดสต็อกให้เมื่อรับเงิน และคิดต้นทุนจากราคาซื้อล่าสุดได้</p><div id="ingList"></div>
+   <p class="help" style="margin:0">ใส่แล้วระบบจะตัดสต็อกให้${isPo()?'ตอนปิดยอดรอบ':'เมื่อรับเงิน'} และคิดต้นทุนจากราคาซื้อล่าสุดได้</p><div id="ingList"></div>
    <button class="btn sm" data-act="calcCost" type="button">คิดต้นทุนจากสูตร</button></div>
    <div class="card"><div class="sec-h"><h3>ตัวเลือกเมนู (แบบ LINE MAN)</h3></div>
    <p class="help" style="margin:0">เช่น เลือกเส้น · น้ำซุป · ธรรมดา/พิเศษ · เพิ่มท็อปปิ้ง ลูกค้าและพนักงานจะเลือกได้ตอนสั่ง ตัวเลือกที่ใส่ราคา ระบบบวกเพิ่มจากราคาขายให้เอง</p>
@@ -3102,7 +3102,7 @@ function poRecvMins(){const v=poCfg().recvMins;return v==null||v===''?30:Math.ma
 async function poSet(id,patch,msg){const o0=S.poOrders.find(x=>x.id===id);let sc=0;
   if(o0&&patch.status==='done'&&o0.status!=='done'){const n=Date.now(),m=poRecvMins();patch={...patch,handedAt:n,...(m?{recv:'wait',recvUntil:n+m*60000}:{recv:'ok',recvBy:'shop',recvAt:n,recvUntil:null}),recvIssue:null,issueSeen:null}}
   else if(o0&&patch.status&&patch.status!=='done'&&o0.status==='done')patch={...patch,recv:null,recvUntil:null,handedAt:null,recvIssue:null,issueSeen:null};
-  if(o0&&patch.status){const want=poCutWant(patch.status),had=!!o0.stockCut;if(want!==had){patch={...patch,stockCut:want};sc=want?1:-1}}
+  if(o0&&patch.status==='cancelled'&&o0.stockCut){patch={...patch,stockCut:false};sc=-1}
   const ok=await write('po_orders/'+id,r=>r.update(patch));if(ok&&sc&&o0)deductStock(o0.items,S.poMenu,sc);if(ok){const o=S.poOrders.find(x=>x.id===id);if(o)Object.assign(o,patch);render();if(msg)toast(msg)}}
 Object.assign(ACT,{
   viewSlip:async d=>{const o=S.open[d.id];try{const s=await S.db.doc('slips/'+d.id).get();const x=s.exists?s.data():null;if(!x||!x.img)return toast('ลูกค้าลบสลิปแล้ว หรือยังไม่ได้แนบ','bad');viewImg(x.img,'สลิป · '+(o?tableLabel(o):(x.orderNo||''))+' · '+hm(x.at))}catch(e){toast('โหลดสลิปไม่ได้','bad')}},
@@ -3149,13 +3149,13 @@ Object.assign(ACT,{
     Object.assign(o,patch);closeSheet();render();toast('บันทึกการแก้ไขแล้ว · ลูกค้าเห็นในหน้าติดตามออร์เดอร์')},
   poFind:()=>openSheet({type:'poFind'}),
   poCloseRound:async()=>{if(!poAdmin())return deny();const L=(S.poOrders||[]).filter(poLive),nd=L.filter(o=>o.status!=='done').length,un=L.filter(o=>o.payStatus!=='paid').reduce((a,o)=>a+Math.max(0,(+o.total||0)-(+o.paidAmt||0)),0);
-    if(!confirm('ปิดยอดรอบนี้?\n\n• ออร์เดอร์รอบนี้ '+L.length+' รายการ จะหายจากหน้าออร์เดอร์ (ข้อมูลยังอยู่ ดูได้ในสรุปยอด/ใบเสร็จ)'+(nd?'\n• ⚠️ ยังไม่ส่งสำเร็จ '+nd+' ออร์เดอร์':'')+(un>0?'\n• ⚠️ ยังไม่ได้เงิน '+baht(un):'')+'\n• ปิดรับออร์เดอร์ · รอบใหม่เลข KMK เริ่ม 001'))return;
+    if(!confirm('ปิดยอดรอบนี้?\n\n• ออร์เดอร์รอบนี้ '+L.length+' รายการ จะหายจากหน้าออร์เดอร์ (ข้อมูลยังอยู่ ดูได้ในสรุปยอด/ใบเสร็จ)'+(nd?'\n• ⚠️ ยังไม่ส่งสำเร็จ '+nd+' ออร์เดอร์':'')+(un>0?'\n• ⚠️ ยังไม่ได้เงิน '+baht(un):'')+'\n• ตัดสต็อกวัตถุดิบตามสูตรเมนู (รวมทั้งรอบ ยกเว้นออร์เดอร์ที่ยกเลิก)\n• ปิดรับออร์เดอร์ · รอบใหม่เลข KMK เริ่ม 001'))return;
     if(nd&&!confirm('ยังมี '+nd+' ออร์เดอร์ที่ยังไม่ส่งสำเร็จ ยืนยันปิดยอดเลยไหม?'))return;
     const {data,error}=await SB.rpc('po_close_round');if(error)return toast('ปิดยอดไม่สำเร็จ: '+error.message,'bad');
-    S.po={...poCfg(),cutAt:data.cutAt,open:false,lastClose:{at:data.cutAt,orders:data.orders}};poApplyCut();S.poQ='';render();toast('🧾 ปิดยอดแล้ว '+data.orders+' ออร์เดอร์ · กด "เปิดรับออร์เดอร์" เพื่อเริ่มรอบใหม่')},
+    S.po={...poCfg(),cutAt:data.cutAt,open:false,lastClose:{at:data.cutAt,orders:data.orders}};poApplyCut();S.poQ='';render();toast('🧾 ปิดยอดแล้ว '+data.orders+' ออร์เดอร์'+(data.stockItems?' · ตัดสต็อก '+data.stockItems+' รายการ':'')+' · กด "เปิดรับออร์เดอร์" เพื่อเริ่มรอบใหม่')},
   poLay:d=>{try{localStorage.setItem('nl_polay',d.v)}catch(e){}render()},
   poShipAll:async()=>{if(!['owner','chef'].includes(S.role))return deny();const day=poPickDay(),L=(S.poOrders||[]).filter(o=>o.deliverDate===day&&o.status==='confirmed');if(!L.length)return toast('ไม่มีออร์เดอร์ที่ยืนยันแล้ว');
-    if(!confirm('เริ่มจัดส่งทั้งหมด '+L.length+' ออร์เดอร์ (ส่ง'+poDayName(day)+')?\nสถานะจะเปลี่ยนเป็น "อยู่ระหว่างจัดส่ง" และตัดสต็อก'))return;
+    if(!confirm('เริ่มจัดส่งทั้งหมด '+L.length+' ออร์เดอร์ (ส่ง'+poDayName(day)+')?\nสถานะจะเปลี่ยนเป็น "อยู่ระหว่างจัดส่ง"'))return;
     const b=$('[data-act=poShipAll]');if(b)b.disabled=true;let n=0;for(const o of L){await poSet(o.id,{status:'ready',readyAt:Date.now(),by:S.me||''});n++}
     toast('🛵 เริ่มจัดส่งแล้ว '+n+' ออร์เดอร์')},
   poArrive:d=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poArrive',k:d.v})},
