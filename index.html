@@ -1037,6 +1037,14 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 .stt tr.out .qn{color:#c62828}.stt tr.low:not(.out) .qn{color:#b45309}.stt .qn{font-size:16px}
 .stp.ok{color:#14805a;background:rgba(27,175,122,.14)}
 .stt tbody tr:last-child td{border-bottom:0}
+.stt tbody tr.low:not(.out),.stt tbody tr.low:not(.out):nth-child(even){background:rgba(245,158,11,.13)}
+.stt tbody tr.low:not(.out):hover{background:rgba(245,158,11,.2)}
+.stt tbody tr.out,.stt tbody tr.out:nth-child(even){background:rgba(239,68,68,.12);animation:stOut 1.6s ease-in-out infinite}
+.stt tbody tr.out:hover{background:rgba(239,68,68,.2)}
+.str.out{animation:stOutC 1.6s ease-in-out infinite}
+@keyframes stOut{0%,100%{background:rgba(239,68,68,.08)}50%{background:rgba(239,68,68,.24)}}
+@keyframes stOutC{0%,100%{box-shadow:0 2px 8px rgba(30,20,10,.05)}50%{box-shadow:0 0 0 3px rgba(239,68,68,.25),0 4px 14px rgba(239,68,68,.25)}}
+@media (prefers-reduced-motion:reduce){.stt tbody tr.out,.str.out{animation:none}}
 </style>
 </head>
 <body>
