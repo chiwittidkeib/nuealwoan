@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1640">
+<meta name="app-version" content="2026.10.20-1700">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -593,6 +593,10 @@ body.shop-po .top{box-shadow:inset 0 -3px 0 #f0a54a}
 .cpl input,.cpl select{min-width:0;width:100%;padding:8px;font-size:14px}.cpi>button,.cpp>button{padding-bottom:10px}
 .cpi .cpl-sid{grid-column:1/4;grid-row:1}.cpi .cpl-n{grid-row:2!important}.cplink .cpl-n{display:none}.cplink input[readonly]{background:var(--soft,#f6f1e7);color:var(--muted);border:1px solid var(--line);box-shadow:none}
 .cpu{grid-column:1/-1;margin-top:-2px;font-size:12px}.cpu:empty{display:none}
+.wdbtn{position:relative;color:#fff;font-weight:700;border:0;padding:11px 18px;border-radius:12px;background:linear-gradient(135deg,#14b8a6 0%,#0d9488 55%,#0f766e 100%);box-shadow:0 0 0 1px rgba(45,212,191,.55),0 4px 14px rgba(13,148,136,.45),0 0 18px rgba(45,212,191,.55);text-shadow:0 1px 1px rgba(0,0,0,.18);animation:wdglow 2.2s ease-in-out infinite}
+.wdbtn:hover{filter:brightness(1.06)}.wdbtn:active{transform:translateY(1px)}
+@keyframes wdglow{0%,100%{box-shadow:0 0 0 1px rgba(45,212,191,.55),0 4px 14px rgba(13,148,136,.4),0 0 12px rgba(45,212,191,.4)}50%{box-shadow:0 0 0 1px rgba(94,234,212,.9),0 4px 18px rgba(13,148,136,.55),0 0 28px rgba(45,212,191,.85)}}
+@media (prefers-reduced-motion:reduce){.wdbtn{animation:none}}
 .wdc{display:flex;flex-direction:column;gap:8px}.wdw{display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;background:rgba(229,56,59,.06);border:1px dashed rgba(229,56,59,.35)}.wdseg{display:grid;grid-template-columns:1fr 1fr;gap:6px}.wdseg button{padding:10px 8px;border-radius:10px;border:1px solid var(--line);background:var(--card,#fff);font:inherit;font-weight:600}.wdseg button[aria-pressed=true]{background:var(--ink,#3b2314);color:#fff;border-color:transparent}.wdseg button[data-v=waste][aria-pressed=true]{background:var(--chili,#c8102e)}.wdl{display:flex;flex-direction:column;gap:4px;padding:6px 0}
 .wdr{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card,#fff)}
 .wdh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.wdh b{font-size:15.5px}.wdh small{flex:1}
@@ -3220,24 +3224,26 @@ Object.assign(ACT,{
 /* ===== ข้าวมันไก่: ✂️ ตัดสต็อกขายวันนี้ (เบิกของจากคลัง → ต้นทุนต่อรอบ) ===== */
 const WASTE_CAT='ของเสีย / ตัดจำหน่าย';
 const wasteRound=()=>{const cut=+poCfg().cutAt||0;return (S.exp||[]).filter(x=>x.shop==='po'&&x.waste&&+x.at>cut)};
+// วิธีคิดต้นทุนตามหน่วยนำเข้า: หน่วยนับเป็นชิ้น (ใบ คู่ ชิ้น ถุง…) = ใช้กล่องละ 1 · หน่วยชั่ง/ตวง (กก. กรัม ลิตร…) = เฉลี่ยตามปริมาณ
+const wdUnitM=t=>{const u=String((t&&t.unit)||'').replace(/\s|\./g,'');return /^(ใบ|คู่|ชิ้น|ถุง|อัน|ฝา|ชุด|แพ็ค|แพค|ห่อ|ซอง|ขวด|แก้ว|กล่อง|ด้าม|คัน|ม้วน|แผ่น|ลูก|ตัว|pcs|pc|ea)$/i.test(u)?'each':'share'};
 const wdRound=()=>{const cp=poCfg().costPlan,cut=+poCfg().cutAt||0;return ((cp&&cp.wd)||[]).filter(w=>+w.at>cut)};
 function wdCard(){if(!isPo()||!poAdmin())return '';const W=wdRound(),A={};
   W.forEach(w=>(w.items||[]).forEach(x=>{const a=A[x.sid]=A[x.sid]||{n:x.n,u:x.u,q:0,c:0};a.q+=+x.q||0;a.c+=(+x.q||0)*(+x.uc||0)}));
   const L=Object.values(A),tot=L.reduce((a,x)=>a+x.c,0);
-  return `<div class="card wdc"><div class="inrow" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div class="grow"><h3 style="margin:0">✂️ ตัดสต็อก</h3><small class="muted">ใช้ขายวันนี้ = ตัด + คิดต้นทุนต่อกล่อง · ของเสีย = ตัด + ลงเป็นเงินที่เสียไป</small></div><div class="inrow" style="gap:6px;flex-wrap:wrap"><button class="btn pri" data-act="poWd" type="button">✂️ ตัดสต็อกขายวันนี้</button><button class="btn danger" data-act="poWd" data-v="waste" type="button">🗑 ตัดจำหน่าย (ของเสีย)</button></div></div>
+  return `<div class="card wdc"><div class="inrow" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div class="grow"><h3 style="margin:0">✂️ ตัดสต็อก</h3><small class="muted">ใช้ขายวันนี้ = ตัด + คิดต้นทุนต่อกล่อง · ของเสียกดแท็บ "ตัดจำหน่าย" ในหน้าตัดสต็อก</small></div><button class="btn wdbtn" data-act="poWd" type="button">✂️ ตัดสต็อกขายวันนี้</button></div>
    ${L.length?`<div class="wdl">${L.map(x=>`<div class="kv"><span>${esc(x.n)} <b>${num(x.q)}</b> ${esc(x.u||'')}</span><span>${baht(x.c)}</span></div>`).join('')}<div class="kv tot"><span>ตัดแล้วรอบนี้ (${W.length} ครั้ง)</span><b>${baht(tot)}</b></div></div>
    <div class="inrow" style="gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="poCost" type="button">🧮 ดูต้นทุนต่อกล่อง</button><button class="btn sm danger" data-act="wdUndo" data-confirm="1" type="button">↩ ยกเลิกการตัดครั้งล่าสุด</button></div>`:''}
    ${(()=>{const X=wasteRound();if(!X.length)return '';const t=X.reduce((a,x)=>a+(+x.amount||0),0);return `<div class="wdw"><div class="kv"><b>🗑 ตัดจำหน่าย (ของเสีย) รอบนี้</b><b style="color:var(--chili)">−${baht(t)}</b></div>${X.map(x=>`<div class="kv"><span class="muted">${esc((x.waste.items||[]).map(i=>i.n+' '+num(i.q)+' '+(i.u||'')).join(', '))}${x.waste.reason?' · '+esc(x.waste.reason):''}</span><span style="color:var(--chili)">−${baht(+x.amount||0)}</span></div>`).join('')}<button class="btn sm danger" data-act="wsUndo" data-confirm="1" type="button" style="align-self:flex-start">↩ ยกเลิกตัดจำหน่ายครั้งล่าสุด</button></div>`})()}</div>`}
 function sheetPoWd(){const s=S.sheet,ST=stockList(),ws=s.mode==='waste';
   if(!s.rows&&ws)s.rows=[];
-  if(!s.rows){const cp=cpPlan()||{},prev=(cp.ing||[]).filter(x=>x.sid&&ST.some(t=>t.id===x.sid));s.rows=prev.length?prev.map(x=>({sid:x.sid,q:'',m:x.m==='each'?'each':'share'})):[]}
+  if(!s.rows){const cp=cpPlan()||{},prev=(cp.ing||[]).filter(x=>x.sid&&ST.some(t=>t.id===x.sid));s.rows=prev.length?prev.map(x=>({sid:x.sid,q:'',m:wdUnitM(ST.find(t=>t.id===x.sid))})):[]}
   const R=s.rows,used=new Set(R.map(r=>r.sid)),tot=R.reduce((a,r)=>{const t=ST.find(x=>x.id===r.sid);return a+(t?(+r.q||0)*(+t.unitCost||0):0)},0);
   $('#panel').innerHTML=head('✂️ ตัดสต็อก',ws?'ของเสีย / ขายไม่ได้ · ตัดออกจากคลังและบันทึกเป็นเงินที่เสียไป':'เลือกของในคลังที่เอาไปทำขาย · ใส่จำนวนที่เบิก · กดตัดสต็อก')+`<form class="sh-body" id="wdForm" onsubmit="return false" autocomplete="off">
    <div class="seg wdseg" role="group"><button type="button" data-act="wdMode" data-v="sell" aria-pressed="${!ws}">🍚 ใช้ขายวันนี้</button><button type="button" data-act="wdMode" data-v="waste" aria-pressed="${ws}">🗑 ตัดจำหน่าย (ของเสีย)</button></div>
    ${R.length?R.map((r,i)=>{const t=ST.find(x=>x.id===r.sid)||{},over=(+r.q||0)>(+t.qty||0);return `<div class="wdr">
      <div class="wdh"><b>${esc(t.name||'?')}</b><small class="muted">เหลือ ${num(+t.qty||0)} ${esc(t.unit||'')} · ทุน ${baht(+t.unitCost||0)}/${esc(t.unit||'หน่วย')}</small><button class="lnk" data-act="wdDel" data-v="${i}" type="button" aria-label="ลบ">✕</button></div>
      <div class="wdi"><label class="cpl"><small>เบิก (${esc(t.unit||'')})</small><input data-wq="${i}" inputmode="decimal" value="${esc(r.q??'')}" placeholder="0"></label>
-      ${ws?'<span></span>':`<label class="cpl"><small>คิดต้นทุนแบบ</small><select data-wm="${i}"><option value="share" ${r.m!=='each'?'selected':''}>เฉลี่ยตามปริมาณ</option><option value="each" ${r.m==='each'?'selected':''}>ใช้กล่องละ 1</option></select></label>`}
+      ${ws?'<span></span>':`<label class="cpl"><small>คิดต้นทุนแบบ <span class="muted">(ตามหน่วย ${esc(t.unit||'-')})</span></small><select data-wm="${i}"><option value="share" ${r.m!=='each'?'selected':''}>เฉลี่ยตามปริมาณ</option><option value="each" ${r.m==='each'?'selected':''}>ใช้กล่องละ 1</option></select></label>`}
       <div class="cpl wdc2"><small>${ws?'เสียเงิน':'เป็นเงิน'}</small><b data-wc="${i}" ${ws?'style="color:var(--chili)"':''}>${ws?'−':''}${baht((+r.q||0)*(+t.unitCost||0))}</b></div></div>
      ${over?'<p class="help" style="margin:0;color:var(--chili)">⚠️ เบิกเกินของที่เหลือในคลัง</p>':''}</div>`}).join(''):'<div class="empty"><b>ยังไม่ได้เลือกรายการ</b>เลือกของจากคลังด้านล่าง</div>'}
    <div class="field"><label for="wdAdd">+ เพิ่มรายการจากสต็อก</label><select id="wdAdd"><option value="">— เลือกของในคลัง —</option>${ST.filter(t=>!used.has(t.id)).map(t=>`<option value="${esc(t.id)}">${esc(t.name)} · เหลือ ${num(+t.qty||0)} ${esc(t.unit||'')}</option>`).join('')}</select></div>
@@ -3246,7 +3252,7 @@ function sheetPoWd(){const s=S.sheet,ST=stockList(),ws=s.mode==='waste';
    ${ws?'<p class="help" style="margin:0">ตัดออกจากคลังทันที และบันทึกเป็นรายจ่ายร้าน (ติดลบในกำไรสุทธิ) · ไม่นำไปคิดต้นทุนต่อกล่อง · ตัดผิดกด "ยกเลิกตัดจำหน่ายครั้งล่าสุด"</p>':`<p class="help" style="margin:0">กดตัดแล้วสต็อกลดทันที และใช้คำนวณต้นทุนต่อกล่องของรอบนี้ (🧮 ต้นทุนเฉลี่ยต่อรอบ) · ตอนปิดยอดรอบจะไม่ตัดเมนูข้าวมันไก่ซ้ำ · ตัดผิดกด "ยกเลิกการตัดครั้งล่าสุด" ได้</p>`}
    <p class="err" id="wdErr" role="alert"></p></form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn ${ws?'danger':'pri'} wide" data-act="wdSave" type="button">${ws?'🗑 ตัดจำหน่าย':'✂️ ตัดสต็อก'}</button></div>`;
-  const F=$('#wdForm');F.addEventListener('input',wdUpd);F.addEventListener('change',e=>{if(e.target.id==='wdAdd'&&e.target.value){wdRead();const t=ST.find(x=>x.id===e.target.value);s.rows.push({sid:e.target.value,q:'',m:/กล่อง|ช้อน|ส้อม|ถุง|ฝา|ตะเกียบ/.test(t&&t.name||'')?'each':'share'});sheetPoWd();setTimeout(()=>{const q=document.querySelector(`[data-wq="${s.rows.length-1}"]`);if(q)q.focus()},50)}else wdUpd()})}
+  const F=$('#wdForm');F.addEventListener('input',wdUpd);F.addEventListener('change',e=>{if(e.target.id==='wdAdd'&&e.target.value){wdRead();const t=ST.find(x=>x.id===e.target.value);s.rows.push({sid:e.target.value,q:'',m:wdUnitM(t)});sheetPoWd();setTimeout(()=>{const q=document.querySelector(`[data-wq="${s.rows.length-1}"]`);if(q)q.focus()},50)}else wdUpd()})}
 function wdRead(){const s=S.sheet;if(!s||s.type!=='poWd')return;{const w=$('#wsWhy');if(w)s.why=w.value}document.querySelectorAll('[data-wq]').forEach(e=>{const r=s.rows[+e.dataset.wq];if(r)r.q=e.value.replace(/[^0-9.]/g,'')});document.querySelectorAll('[data-wm]').forEach(e=>{const r=s.rows[+e.dataset.wm];if(r)r.m=e.value})}
 function wdUpd(){if(!S.sheet||S.sheet.type!=='poWd')return;wdRead();const ST=stockList();let tot=0;S.sheet.rows.forEach((r,i)=>{const t=ST.find(x=>x.id===r.sid),c=t?(+r.q||0)*(+t.unitCost||0):0;tot+=c;const el=document.querySelector(`[data-wc="${i}"]`);if(el)el.textContent=(S.sheet.mode==='waste'?'−':'')+baht(c)});const T=$('#wdTot');if(T)T.textContent=(S.sheet.mode==='waste'?'−':'')+baht(tot)}
 async function wdApply(items,sign){for(const x of items){const q=r2((+x.q||0)*sign);const s=S.stock.find(t=>t.id===x.sid);if(s)s.qty=r2((+s.qty||0)-q);await write('stock/'+x.sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))}}
