@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1235">
+<meta name="app-version" content="2026.10.20-1300">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -778,7 +778,12 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .pocpaid.chk{border-color:#0277bd;color:#0277bd;background:rgba(225,243,252,.78);box-shadow:inset 0 0 0 3px rgba(255,255,255,.9),inset 0 0 0 4.5px #0277bd;font-size:11px;line-height:1.1}
 .pocpaid.chk i{border-top-color:#0277bd;letter-spacing:.6px;font-size:8.5px}
 @media (prefers-color-scheme:dark){.pocpaid.chk{background:rgba(3,40,60,.85);color:#4fc3f7;border-color:#4fc3f7;box-shadow:inset 0 0 0 3px rgba(3,40,60,.9),inset 0 0 0 4.5px #4fc3f7}.pocpaid.chk i{border-color:#4fc3f7}}
-.posrch{display:flex;gap:8px;margin:0 0 10px;position:sticky;top:calc(var(--toph,60px) + 4px);z-index:15;padding:6px;border-radius:16px;background:rgba(var(--veil-rgb,255,255,255),.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.posrch{display:flex;gap:8px;margin:0 0 10px}
+.srchbtn{flex:1;min-width:0;text-align:left;border:2px solid #c8102e;border-radius:14px;padding:12px 14px;font:inherit;font-size:15.5px;background:var(--surface);color:var(--muted);cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.findhead{display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}.findhead input{flex:1;min-width:0;border:2px solid #c8102e;border-radius:14px;padding:11px 14px;font:inherit;font-size:16px;background:var(--surface);color:var(--fg)}
+body.kb .tabs{display:none}
+.sheet.findmode{align-items:stretch}.sheet.findmode .panel{max-height:none;height:100%;border-radius:0;max-width:none}
+.undodone{margin-top:6px;border:1.5px dashed #c2410c;color:#9a3412;background:#fff7ed;font-weight:700}
 .pickdoneok{text-align:center;font-weight:800;color:#1b6e3c;background:#e8f5ee;border-radius:12px;padding:12px}.posrch input{flex:1;min-width:0;border:2px solid #c8102e;border-radius:14px;padding:11px 14px;font:inherit;font-size:16px;background:var(--surface);color:var(--fg)}.posrch .btn{white-space:nowrap}
 .pocpaid.due{border-color:#d32f2f;color:#d32f2f;background:rgba(255,235,235,.85);box-shadow:inset 0 0 0 3px rgba(255,255,255,.9),inset 0 0 0 4.5px #d32f2f;font-size:12px}.pocpaid.due i{border-top-color:#d32f2f;letter-spacing:1.5px}
 @media (prefers-color-scheme:dark){.pocpaid.due{background:rgba(60,8,8,.85);color:#ff8a80;border-color:#ff8a80;box-shadow:inset 0 0 0 3px rgba(60,8,8,.9),inset 0 0 0 4.5px #ff8a80}.pocpaid.due i{border-color:#ff8a80}}
@@ -1247,6 +1252,8 @@ document.addEventListener('pointerdown',()=>{Bell.unlock();Bell.speechUnlock()},
 function sortMenu(both){if(both){const k=S.shop;S.shop=k==='po'?'noodle':'po';sortMenu();S.shop=k}const cats=curCats();S.menu.sort((a,b)=>{const ca=cats.indexOf(a.cat),cb=cats.indexOf(b.cat);return (ca<0?99:ca)-(cb<0?99:cb)||String(a.name).localeCompare(String(b.name),'th')})}
 
 /* ---------- main render ---------- */
+document.addEventListener('focusin',e=>{const t=e.target;if(t&&(t.tagName==='TEXTAREA'||(t.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|file|range|color)$/.test(t.type))))document.body.classList.add('kb')});
+document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;if(!a||!/^(INPUT|TEXTAREA)$/.test(a.tagName))document.body.classList.remove('kb')},120));
 function setTopH(){const t=document.querySelector('header.top');if(t)document.documentElement.style.setProperty('--toph',t.offsetHeight+'px')}
 try{new ResizeObserver(setTopH).observe(document.querySelector('header.top')||document.body)}catch(e){window.addEventListener('resize',setTopH)}
 function render(){
@@ -1497,7 +1504,8 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  {const pn=$('#panel');if(pn&&pn.parentElement)pn.parentElement.classList.toggle('findmode',s.type==='poFind')}
+  ({poFind:sheetPoFind,poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2555,7 +2563,7 @@ const ACT={
   bill:d=>openSheet({type:'bill',id:d.id}),
   voidPaid:async d=>{if(!can('void'))return deny();const ok=await write('orders/'+d.id,r=>r.update({status:'void',voidedAt:Date.now()}));if(ok){closeSheet();S.report.data=null;loadReport();toast('ยกเลิกบิลแล้ว')}},
 };
-document.addEventListener('input',e=>{if(e.target&&e.target.id==='poQ'){S.poQ=e.target.value;const r=$('#poRes');if(r){r.innerHTML=poResHtml();
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='pfQ'){S.poQ=e.target.value;const f=$('#pfRes');if(f){f.innerHTML=poFindRes();f.scrollTop=0}return}if(e.target&&e.target.id==='poQ'){S.poQ=e.target.value;const r=$('#poRes');if(r){r.innerHTML=poResHtml();
   if(S.poQ.trim()){const sb=document.querySelector('.posrch'),top=r.getBoundingClientRect().top,lim=(sb?sb.getBoundingClientRect().bottom:0)+4;if(top<lim||top>innerHeight*.6)window.scrollBy({top:top-lim,behavior:'smooth'})}}}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
   if(b.closest('form')&&b.tagName==='BUTTON')e.preventDefault();
@@ -2776,7 +2784,11 @@ function poMatch(q){q=String(q||'').trim().toLowerCase().replace(/^kmk\s*/,'');i
   return (S.poOrders||[]).filter(o=>poLive(o)).filter(o=>{const ph=String(o.phone||'').replace(/\D/g,''),no=String(o.orderNo||'').slice(-4);
     if(/^\d+$/.test(q))return (q.length>=3&&ph.endsWith(q))||(q.length<=4&&+no===+q);return String(o.name||'').toLowerCase().includes(q)})
    .sort((a,b)=>((a.status==='done')-(b.status==='done'))||(a.deliverDate||'').localeCompare(b.deliverDate||'')||a.at-b.at)}
-function poSearchBox(){return `<div class="posrch"><input id="poQ" type="search" autocomplete="off" enterkeyhint="search" placeholder="🔍 ค้นหาเพื่อส่งของ · เบอร์ 4 ตัวท้าย / KMK / ชื่อ" value="${esc(S.poQ||'')}"><button class="btn" data-act="poScan" type="button">📷 สแกนรับของ</button></div><div id="poRes">${poResHtml()}</div>`}
+function poSearchBox(){return `<div class="posrch"><button class="srchbtn" data-act="poFind" type="button">🔍 ค้นหาเพื่อส่งของ · เบอร์ 4 ตัวท้าย / KMK / ชื่อ</button><button class="btn" data-act="poScan" type="button">📷 สแกนรับของ</button></div>`}
+// หน้าค้นหาแยก (ช่องพิมพ์บนสุด ผลอยู่ใต้ทันที · ไม่พังตอนคีย์บอร์ดเด้งบน iPhone)
+function sheetPoFind(){$('#panel').innerHTML=`<div class="sh-head findhead"><input id="pfQ" type="search" autocomplete="off" enterkeyhint="search" placeholder="🔍 เบอร์ 4 ตัวท้าย / KMK / ชื่อ" value="${esc(S.poQ||'')}"><button class="btn" data-act="close" type="button">ปิด</button></div>
+   <div class="sh-body" id="pfRes">${poFindRes()}</div>`;const i=$('#pfQ');setTimeout(()=>{i.focus();try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}},60)}
+function poFindRes(){const q=(S.poQ||'').trim();if(!q)return '<p class="help" style="text-align:center;margin:20px 0">พิมพ์เบอร์ 4 ตัวท้าย, เลข KMK หรือชื่อลูกค้า<br>รวมออร์เดอร์ที่ส่งแล้ว (ไม่รวมที่ยกเลิก)</p>';return poResHtml()}
 function poResHtml(){const q=(S.poQ||'').trim();if(!q)return '';const L=poMatch(q);
   return `<div class="sec-h" style="margin-top:4px"><h2>ผลค้นหา "${esc(q)}"</h2><span class="hint">${L.length?'พบ '+L.length+' ออร์เดอร์':'ไม่พบ'} · ไม่รวมที่ยกเลิก · ที่ส่งแล้วอยู่ท้าย</span></div>${L.length?`<div class="pogrid">${L.map(o=>poPickCard(o,q)).join('')}</div>`:'<div class="empty"><b>ไม่พบออร์เดอร์</b>ลองพิมพ์เบอร์ 4 ตัวท้าย หรือเลข KMK</div>'}`}
 function poPickCard(o,q){const due=poDue(o),paid=o.payStatus==='paid',slip=o.payStatus==='slip',hl=s=>{const d=String(q||'').replace(/\D/g,'');return d.length>=3&&String(s).replace(/\D/g,'').endsWith(d)?esc(String(s).slice(0,-d.length))+'<mark>'+esc(String(s).slice(-d.length))+'</mark>':esc(s)};
@@ -2790,8 +2802,8 @@ function poPickCard(o,q){const due=poDue(o),paid=o.payStatus==='paid',slip=o.pay
    <div class="pickpay"><div><small>${paid?'ชำระแล้ว':'ยอดที่ต้องเก็บ'}</small><b class="${paid?'':'due'}">${baht(paid?+o.total||0:due)}</b></div>
     ${paid?'':slip?`<button class="btn" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button><button class="btn" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">✓ สลิปถูกต้อง · รับเงินแล้ว</button>`
       :`<button class="btn cash" data-act="poCash" data-id="${esc(o.id)}" data-confirm="1" type="button">💵 รับเงินสด</button><button class="btn scan" data-act="poPayQr" data-id="${esc(o.id)}" type="button">📱 สแกนจ่าย</button>`}</div>
-   ${o.status==='done'?`<div class="pickdoneok">✅ ส่งอาหารสำเร็จแล้ว${o.doneAt?' '+hm(o.doneAt)+' น.':''}${o.by?` · โดย ${esc(o.by)}`:''}</div>${poRecvLine(o)}`:`<button class="btn pri wide pickdone" data-act="poDeliver" data-id="${esc(o.id)}" data-confirm="1" type="button">✅ ส่งอาหารสำเร็จ</button>`}${poRecvMins()&&o.status!=='done'?`<p class="help" style="margin:6px 0 0;text-align:center">ลูกค้ากด "ได้รับของแล้ว" ในหน้าของตัวเอง · ไม่กดใน ${poRecvMins()} นาที = ยืนยันอัตโนมัติ</p>`:''}</div>`}
-function poPickRefresh(){const s=S.sheet;if(s&&s.type==='poPick'){sheetPoPick();return}const r=$('#poRes');if(r)r.innerHTML=poResHtml()}
+   ${o.status==='done'?`<div class="pickdoneok">✅ ส่งอาหารสำเร็จแล้ว${o.doneAt?' '+hm(o.doneAt)+' น.':''}${o.by?` · โดย ${esc(o.by)}`:''}</div>${poRecvLine(o)}${['owner','chef'].includes(S.role)?`<button class="btn wide undodone" data-act="poBack" data-id="${esc(o.id)}" data-confirm="1" type="button">↩ ย้อนสถานะ · ยังไม่ได้ส่ง (กดผิด)</button>`:''}`:`<button class="btn pri wide pickdone" data-act="poDeliver" data-id="${esc(o.id)}" data-confirm="1" type="button">✅ ส่งอาหารสำเร็จ</button>`}${poRecvMins()&&o.status!=='done'?`<p class="help" style="margin:6px 0 0;text-align:center">ลูกค้ากด "ได้รับของแล้ว" ในหน้าของตัวเอง · ไม่กดใน ${poRecvMins()} นาที = ยืนยันอัตโนมัติ</p>`:''}</div>`}
+function poPickRefresh(){const s=S.sheet;if(s&&s.type==='poPick'){sheetPoPick();return}if(s&&s.type==='poFind'){const f=$('#pfRes');if(f)f.innerHTML=poFindRes();return}const r=$('#poRes');if(r)r.innerHTML=poResHtml()}
 function sheetPoPick(){const o=(S.poOrders||[]).find(x=>x.id===S.sheet.id);if(!o){closeSheet();return toast('ไม่พบออร์เดอร์นี้','bad')}
   $('#panel').innerHTML=head('📦 รับของ · '+esc(poShort(o)),o.status==='done'?'ออร์เดอร์นี้ส่งสำเร็จแล้ว':'ตรวจรายการ เก็บเงิน แล้วกดส่งอาหารสำเร็จ')+`<div class="sh-body">${o.status==='done'?'<div class="notice">✅ ส่งอาหารสำเร็จไปแล้ว</div>':''}${poPickCard(o,'')}</div>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn wide" data-act="poScan" type="button">📷 สแกนคนถัดไป</button></div>`}
@@ -2930,7 +2942,7 @@ function poRow(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pay=o
   const items=(o.items||[]).map(l=>l.qty+'× '+l.name+(l.opts&&l.opts.length?' ('+optPx(l.opts)+')':'')).join(', ');
   return `<div class="porow st-${esc(o.status)}" data-act="poPickBack" data-id="${esc(o.id)}" role="button" tabindex="0"><div class="pr-l"><div class="pr-h"><b>${esc(poShort(o))}</b> <span class="pill ${st[1]}">${st[0]}</span>${(o.changes||[]).length?' <span class="pill warn">🔄 แก้แล้ว</span>':''}${o.arrive&&['confirmed','ready'].includes(o.status)?' <span class="pill info">📍 แจ้งแล้ว</span>':''}${o.status==='done'?(r=>r==='ok'?' <span class="pill ok">✓ ลูกค้ายืนยันรับ</span>':r==='auto'?' <span class="pill mute">ยืนยันอัตโนมัติ</span>':r==='wait'?' <span class="pill warn">⏳ รอลูกค้ายืนยัน</span>':r==='issue'?' <span class="pill bad">⚠️ แจ้งยังไม่ได้รับ</span>':'')(poRecvSt(o)):''}${o.doneAt&&o.status==='done'?` <small class="muted">ส่ง ${hm(o.doneAt)}</small>`:''}</div>
     <div class="pr-n">${esc(o.name||'')} · ${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</div><div class="pr-i">${esc(items)}${o.note?` <i>— ${esc(o.note)}</i>`:''}</div></div>
-    <div class="pr-r"><b>${baht(+o.total||0)}</b><span class="pill ${pay[1]}">${pay[0]}</span>${nx&&['owner','chef'].includes(S.role)?`<button class="btn sm pri" data-act="poStep" data-id="${esc(o.id)}"${nx[0]==='done'?' data-confirm="1"':''} type="button">${nx[1]}</button>`:''}</div></div>`}
+    <div class="pr-r"><b>${baht(+o.total||0)}</b><span class="pill ${pay[1]}">${pay[0]}</span>${o.status==='done'&&['owner','chef'].includes(S.role)?`<button class="btn sm undodone" data-act="poBack" data-id="${esc(o.id)}" data-confirm="1" type="button">↩ ย้อนส่ง</button>`:''}${nx&&['owner','chef'].includes(S.role)?`<button class="btn sm pri" data-act="poStep" data-id="${esc(o.id)}"${nx[0]==='done'?' data-confirm="1"':''} type="button">${nx[1]}</button>`:''}</div></div>`}
 function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliverDate===day),live=all.filter(poLive);
   // รอยืนยัน = ทุกวันส่ง (เห็นออร์เดอร์ใหม่ทันที แม้สั่งไว้ส่งวันอื่น) · ที่เหลือ = ตามวันส่งที่เลือก
   const pend=(S.poOrders||[]).filter(o=>o.status==='new').sort((a,b)=>b.at-a.at);
@@ -3122,6 +3134,7 @@ Object.assign(ACT,{
     $('[data-act=peSave]').disabled=true;const ok=await write('po_orders/'+o.id,r=>r.update(patch));if(!ok){$('[data-act=peSave]').disabled=false;return}
     if(o.stockCut){deductStock(o.items,S.poMenu,-1);deductStock(items,S.poMenu,1)}
     Object.assign(o,patch);closeSheet();render();toast('บันทึกการแก้ไขแล้ว · ลูกค้าเห็นในหน้าติดตามออร์เดอร์')},
+  poFind:()=>openSheet({type:'poFind'}),
   poLay:d=>{try{localStorage.setItem('nl_polay',d.v)}catch(e){}render()},
   poShipAll:async()=>{if(!['owner','chef'].includes(S.role))return deny();const day=poPickDay(),L=(S.poOrders||[]).filter(o=>o.deliverDate===day&&o.status==='confirmed');if(!L.length)return toast('ไม่มีออร์เดอร์ที่ยืนยันแล้ว');
     if(!confirm('เริ่มจัดส่งทั้งหมด '+L.length+' ออร์เดอร์ (ส่ง'+poDayName(day)+')?\nสถานะจะเปลี่ยนเป็น "อยู่ระหว่างจัดส่ง" และตัดสต็อก'))return;
@@ -3190,7 +3203,7 @@ Object.assign(ACT,{
   poPtDel:d=>{poReadPts();S.sheet.d.points.splice(+d.i,1);S.sheet.dirty=true;poRenderPts()},
   poSave:()=>poSave(),
   poStep:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;const nx=PO_NEXT[o.status];if(!nx)return;poSet(o.id,{status:nx[0],[nx[0]+'At']:Date.now(),by:S.me||''},PO_ST[nx[0]][0]+' · '+poShort(o))},
-  poBack:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;const pv=PO_PREV[o.status];if(pv)poSet(o.id,{status:pv},'ย้อนเป็น '+PO_ST[pv][0])},
+  poBack:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;const pv=PO_PREV[o.status];if(!pv)return;await poSet(o.id,{status:pv,...(o.status==='done'?{doneAt:null}:{})},'ย้อนเป็น '+PO_ST[pv][0]);poPickRefresh()},
   poCancel:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(o)openSheet({type:'poCx',id:o.id,rs:''})},
   poCxRs:d=>{const i=$('#cxTxt');if(i){i.value=d.v;S.sheet.rs=d.v}},
   poCxGo:()=>{const o=S.poOrders.find(x=>x.id===S.sheet.id);const t=(val('cxTxt')||'').trim().slice(0,150);if(!o)return closeSheet();if(!t)return toast('เลือกหรือพิมพ์เหตุผลการยกเลิกก่อน','bad');
