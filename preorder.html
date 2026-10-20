@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1700">
+<meta name="app-version" content="2026.10.20-1100">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -503,7 +503,7 @@ async function start(){
   sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:STAFF?{persistSession:true,autoRefreshToken:true}:{persistSession:false}});
   if(STAFF){try{const {data}=await sb.rpc('my_role');if(['owner','chef'].includes(data))S.staff=data}catch(e){}}
   const ok=await loadShop(true);if(!ok)return;loadMy();
-  if(!o0()&&S.cfg&&S.cfg.state&&S.cfg.state.reason==='after'&&!S.staff){S.view='board';loadBoard()}
+  if(!o0()&&S.cfg&&S.cfg.state&&S.cfg.state.reason==='after'&&!S.staff){S.view='board';if(!S.bq){const me=lsGet(ME_KEY,{})||{};if(me.phone)S.bq=me.phone}loadBoard();loadMy()}
   const o=(P.get('o')||'').replace(/[^0-9a-f-]/gi,'').slice(0,60),t=(P.get('t')||'').replace(/[^0-9a-f]/gi,'').slice(0,32);
   if(o&&t){S.view='status';S.cur={id:o,token:t};await loadOrder()}
   render();
@@ -515,7 +515,7 @@ const ppFmt=pp=>pp.length===10?pp.replace(/^(\d{3})(\d{3})(\d{4})$/,'$1-$2-$3'):
 const ppBox=(pp,amt,name)=>`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,amt))}<b>${baht(amt)}</b>
   <div class="ppinfo"><span>พร้อมเพย์ <b>${esc(ppFmt(pp))}</b></span>${name?`<span>ชื่อบัญชี <b>${esc(name)}</b></span>`:''}<button class="btn sm" data-a="ppCopy" data-v="${esc(pp)}" type="button">📋 คัดลอกเบอร์</button></div></div>`;
 const poDue=o=>Math.max(0,(+o.total||0)-(+o.paidAmt||0));
-async function loadMy(){const a=myOrders();if(!a.length||!sb)return;S.myBusy=true;try{const {data}=await sb.rpc('po_my',{p_list:a.slice(0,30).map(x=>({id:x.id,t:x.token}))});if(Array.isArray(data)){const M={};data.forEach(m=>M[m.id]=m);S.myStat=M;const q=new Set(a.slice(0,30).map(x=>x.id));const keep=myOrders().filter(x=>!q.has(x.id)||M[x.id]);if(keep.length!==myOrders().length){lsSet(MY_KEY,keep);if(S.view==='menu')render()}}}catch(e){}S.myBusy=false;S.myAt=Date.now();if(S.view==='mine')render()}
+async function loadMy(){const a=myOrders();if(!a.length||!sb)return;S.myBusy=true;try{const {data}=await sb.rpc('po_my',{p_list:a.slice(0,30).map(x=>({id:x.id,t:x.token}))});if(Array.isArray(data)){const M={};data.forEach(m=>M[m.id]=m);S.myStat=M;const q=new Set(a.slice(0,30).map(x=>x.id));const keep=myOrders().filter(x=>!q.has(x.id)||M[x.id]);if(keep.length!==myOrders().length){lsSet(MY_KEY,keep);if(S.view==='menu')render()}}}catch(e){}S.myBusy=false;S.myAt=Date.now();if(S.view==='mine'||S.view==='board')render()}
 const CX_DEF=['สั่งผิด / เลือกเมนูผิด','เปลี่ยนใจ ไม่สะดวกรับของ','สั่งซ้ำ','อยากแก้รายการ จะสั่งใหม่','ไม่สะดวกโอนเงิน'];
 function askCancel(){const cr=S.cfg&&S.cfg.cxReasons;const rs=Array.isArray(cr)&&cr.length?cr:CX_DEF;let pick='';
   const el=document.createElement('div');el.className='opop';el.innerHTML=`<div class="op-card" style="padding:18px 16px;gap:10px;display:flex;flex-direction:column"><h2 style="margin:0">ยกเลิกออร์เดอร์?</h2><p class="muted" style="margin:0">เลือกเหตุผล เพื่อให้ร้านทราบ</p>
@@ -537,14 +537,19 @@ const BST=o=>o.status==='new'?['⏳ รอร้านยืนยัน','warn'
 const BPAY=o=>o.payStatus==='paid'?['ชำระเงินแล้ว ✓','ok']:o.payStatus==='slip'?['⏳ รอตรวจสอบยอดชำระ','warn']:o.slipBad?['❌ สลิปไม่ถูกต้อง · แนบใหม่','bad']:['ค้างชำระ','bad'];
 function renderBoard(){const box=$('#bList');if(!box)return;const b=S.board;
   if(!b){box.innerHTML='<p class="muted">กำลังโหลด…</p>';return}if(b.err){box.innerHTML='<p class="muted">โหลดไม่ได้ ลองใหม่อีกครั้ง</p>';return}
-  const L=b.orders||[];if(!L.length){box.innerHTML=`<p class="muted" style="text-align:center">${S.bq?'ไม่พบออร์เดอร์ที่ค้นหา · ลองพิมพ์ชื่ออื่น หรือเบอร์ 4 ตัวท้าย':'ยังไม่มีออร์เดอร์รอบนี้'}</p>`;return}
+  const qd=String(S.bq||'').replace(/\D/g,'');if(qd.length<9){box.innerHTML='';return}
+  const L=b.orders||[];if(!L.length){box.innerHTML=`<p class="muted" style="text-align:center">ไม่พบออร์เดอร์ของเบอร์นี้ · ตรวจเบอร์ให้ตรงกับที่ใช้สั่ง</p>`;return}
   const days=[...new Set(L.map(o=>o.deliverDate))];
   box.innerHTML=days.map(d=>`<h3 class="cath">รับ${esc((thDate(d)+tmW(d)))}</h3><div class="list">${L.filter(o=>o.deliverDate===d).map(o=>{const s1=BST(o),s2=BPAY(o);
-    return `<button class="row rowb brow" data-a="bopen" data-id="${esc(o.id)}" type="button"><div class="g"><b>#${esc(o.no)} · ${esc(o.name||'')}</b><div class="tm">เบอร์ xxx-xxx-${esc(o.ph||'')} · ${baht(o.total)}</div>
+    return `<button class="row rowb brow" data-a="open" data-id="${esc(o.id)}" data-t="${esc(o.token||'')}" type="button"><div class="g"><b>#${esc(o.no)} · ${esc(o.name||'')}</b><div class="tm">${baht(o.total)}</div>
       <div class="bpills"><span class="pill ${s1[1]}">${s1[0]}</span><span class="pill ${s2[1]}">${s2[0]}</span></div></div><div class="r">${o.payStatus==='paid'?'':'<span class="bslip">แนบสลิป ›</span>'}</div></button>`}).join('')}</div>`).join('')}
+function myListHtml(a,M){const MST=x=>{const m=M[x.id];if(!m)return '';if(m.status==='cancelled')return '';const t={new:['รอร้านยืนยัน','warn'],confirmed:['ร้านรับออร์เดอร์แล้ว','ok'],ready:['อยู่ระหว่างจัดส่ง','info'],done:['ส่งอาหารสำเร็จ','ok']}[m.status]||['',''];
+    return `<span class="pill ${t[1]}">${t[0]}</span>${m.payStatus==='paid'?' <span class="pill ok">ชำระแล้ว</span>':m.payStatus==='slip'?' <span class="pill warn">รอตรวจสอบยอด</span>':' <span class="pill bad">ค้างชำระ</span>'}`};
+  return `<div class="list">${a.map(x=>{const cx=M[x.id]&&M[x.id].status==='cancelled';return `<button class="row rowb myrow${cx?' cx':''}" data-a="open" data-id="${esc(x.id)}" data-t="${esc(x.token)}" type="button"><div class="g"><b>${esc(x.no||'ออร์เดอร์')}</b><div class="tm">รับ${esc((thDate(x.d)+tmW(x.d)))}${M[x.id]?' · '+baht(M[x.id].total):''}</div><div class="bpills">${MST(x)}</div></div>${cx?'<span class="cxstamp sm"><b>ยกเลิก</b><i>Cancelled</i></span>':'<span class="muted">ดู ›</span>'}</button>`}).join('')}</div>`}
 function boardView(){const c=S.cfg||{},st=c.state||{},b=S.board||{},ph=String(b.phone||c.phone||''),tel=ph.replace(/[^\d+]/g,''),line=b.line||c.line||'';
   return `<div class="pobar off"><b>${st.reason==='after'?'ปิดรับออร์เดอร์รอบนี้แล้ว':'สถานะออร์เดอร์'}</b><span>เช็กสถานะออร์เดอร์ของคุณ แล้วโอนเงิน + แนบสลิปได้ที่นี่</span></div>
-    <div class="field"><label for="bq">ค้นหาจากชื่อ หรือเบอร์โทร (4 ตัวท้ายขึ้นไป)</label><input id="bq" type="search" autocomplete="off" placeholder="เช่น สมชาย หรือ 1234" value="${esc(S.bq||'')}"></div>
+    ${myOrders().length?`<h3 class="cath">ออร์เดอร์ในเครื่องนี้</h3>${myListHtml(myOrders(),S.myStat||{})}`:''}
+    <div class="field"><label for="bq">เช็กด้วยเบอร์โทรที่ใช้สั่ง (ใส่ครบ 10 หลัก)</label><input id="bq" type="tel" inputmode="tel" maxlength="12" autocomplete="tel" placeholder="08x-xxx-xxxx" value="${esc(S.bq||'')}"><span class="muted" style="font-size:12.5px">แสดงเฉพาะออร์เดอร์ของเบอร์นี้ · ไม่แสดงของคนอื่น</span></div>
     <div id="bList"></div>
     ${tel||line?`<section class="box"><h3>ติดต่อเจ้าของร้าน</h3><div class="seg">${tel?`<a class="btn" href="tel:${esc(tel)}">📞 โทร ${esc(ph)}</a>`:''}${line?`<a class="btn" href="${esc(line)}" target="_blank" rel="noopener">💬 LINE</a>`:tel?`<a class="btn" href="sms:${esc(tel)}">💬 ส่งข้อความ</a>`:''}</div></section>`:''}`}
 function askPhone(id){const el=document.createElement('div');el.className='opop';el.innerHTML=`<div class="op-card" style="padding:18px 16px;gap:10px;display:flex;flex-direction:column"><h2 style="margin:0">ยืนยันเบอร์โทร</h2><p class="muted" style="margin:0">ใส่เบอร์ที่ใช้สั่งออร์เดอร์นี้ เพื่อเปิดดูรายละเอียดและแนบสลิป</p>
@@ -637,9 +642,7 @@ function render(){
     h=boardView();ft=`<button class="btn mybtn" data-a="mine" type="button">📋 ออร์เดอร์ของฉัน</button><button class="btn pri wide" data-a="view" data-v="menu" type="button">ดูเมนู</button>`;
   }else if(S.view==='mine'){
     const a=myOrders(),M=S.myStat||{};if(!S.myBusy&&(!S.myAt||Date.now()-S.myAt>15000))loadMy();
-    const MST=x=>{const m=M[x.id];if(!m)return '';if(m.status==='cancelled')return '';const t={new:['รอร้านยืนยัน','warn'],confirmed:['ร้านรับออร์เดอร์แล้ว','ok'],ready:['อยู่ระหว่างจัดส่ง','info'],done:['ส่งอาหารสำเร็จ','ok']}[m.status]||['',''];
-      return `<span class="pill ${t[1]}">${t[0]}</span>${m.payStatus==='paid'?' <span class="pill ok">ชำระแล้ว</span>':m.payStatus==='slip'?' <span class="pill warn">รอตรวจสอบยอด</span>':' <span class="pill bad">ค้างชำระ</span>'}`};
-    h=`<h2>ออร์เดอร์ของฉัน</h2>${a.length?`<div class="list">${a.map(x=>{const cx=M[x.id]&&M[x.id].status==='cancelled';return `<button class="row rowb myrow${cx?' cx':''}" data-a="open" data-id="${esc(x.id)}" data-t="${esc(x.token)}" type="button"><div class="g"><b>${esc(x.no||'ออร์เดอร์')}</b><div class="tm">รับ${esc((thDate(x.d)+tmW(x.d)))}${M[x.id]?' · '+baht(M[x.id].total):''}</div><div class="bpills">${MST(x)}</div></div>${cx?'<span class="cxstamp sm"><b>ยกเลิก</b><i>Cancelled</i></span>':'<span class="muted">ดู ›</span>'}</button>`}).join('')}</div>`:'<p class="muted">ยังไม่มีออร์เดอร์บนเครื่องนี้</p>'}`;
+    h=`<h2>ออร์เดอร์ของฉัน</h2>${a.length?myListHtml(a,M):'<p class="muted">ยังไม่มีออร์เดอร์ในเครื่องนี้</p>'}`;
     ft=`<button class="btn pri wide" data-a="view" data-v="menu" type="button">กลับไปหน้าเมนู</button>`;
   }else{
     const o=S.order;
@@ -702,7 +705,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   else if(a==='add'){const m=S.menu.find(x=>x.id===b.dataset.m);if(!m||m.soldOut)return;if(!canOrder())return toast(stateLine(S.cfg.state).replace(/<[^>]+>/g,''));
     optPick(m,{addLabel:'ใส่ตะกร้า',onAdd:sel=>{putCart(m,sel);toast('ใส่ตะกร้าแล้ว: '+m.name)}})}
   else if(a==='qty'){const e2=S.cart[b.dataset.k];if(!e2)return;e2.qty+=+b.dataset.d;if(e2.qty<=0)delete S.cart[b.dataset.k];if(!cartN())S.view='menu';render()}
-  else if(a==='view'){S.view=b.dataset.v;S.err='';if(S.view==='board'){S.board=null;loadBoard()}render();$('main').scrollTop=0}
+  else if(a==='view'){S.view=b.dataset.v;S.err='';if(S.view==='board'){S.board=null;if(!S.bq){const me=lsGet(ME_KEY,{})||{};if(me.phone)S.bq=me.phone}loadBoard();loadMy()}render();$('main').scrollTop=0}
   else if(a==='method'){S.method=b.dataset.v;render()}
   else if(a==='point'){S.point=b.dataset.v;render()}
   else if(a==='pay'){S.pay=b.dataset.v;render()}
