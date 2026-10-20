@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1930">
+<meta name="app-version" content="2026.10.20-1940">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -942,6 +942,9 @@ body.shop-po .chip[aria-pressed="true"]{border-color:transparent;background:line
 .prgrp button[aria-pressed=true]{background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff;box-shadow:0 0 0 1px rgba(45,212,191,.5),0 3px 10px rgba(13,148,136,.35)}
 @keyframes btnSheen{from{background-position:150% 0}to{background-position:-60% 0}}
 @media (prefers-reduced-motion:reduce){.btn,.btn::after,.chip{transition:none;animation:none!important}}
+.stsearch{position:sticky;top:6px;z-index:5;display:flex;align-items:center;gap:10px;margin:10px 0 4px;padding:6px;border-radius:14px;background:rgba(255,255,255,.75);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(30,20,10,.08)}
+.stsearch input{flex:1;min-width:0;padding:11px 14px;border-radius:11px;border:1.5px solid rgba(20,184,166,.45);font:inherit;font-size:16px;background:var(--surface)}
+.stsearch input:focus{outline:none;border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,.18)}.stsearch span{font-size:12.5px;white-space:nowrap;padding-right:6px}
 </style>
 </head>
 <body>
@@ -1438,9 +1441,11 @@ function render(){
     $('#lgForm').addEventListener('submit',e=>{e.preventDefault();login()});(last?$('#lgPw'):$('#lgUser')).focus();return}
   if(S.state==='loading'){v.innerHTML=S.loadErr?`<div class="empty"><b>ยังเชื่อมต่อไม่ได้</b>${esc(S.loadErr)} · กำลังลองใหม่อัตโนมัติ…<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn pri" type="button" onclick="location.reload()">โหลดหน้าใหม่</button><button class="btn" type="button" data-act="logout">ออกจากระบบ</button></div></div>`:`<div class="empty"><b>กำลังโหลดข้อมูลร้าน…</b>โต๊ะ เมนู และยอดขายวันนี้จะขึ้นในไม่กี่วินาที<br><small class="muted">${esc(S.loadStep||'')}</small><div style="margin-top:14px"><button class="btn sm ghost" type="button" data-act="logout">ค้างนาน? เข้าสู่ระบบใหม่</button></div></div>`;return}
   const fqF=document.activeElement&&document.activeElement.id==='fq';
+  const sqF=document.activeElement&&document.activeElement.id==='stQ'?document.activeElement.selectionStart:null;
   const qf=document.activeElement&&document.activeElement.id==='poQ'?document.activeElement.selectionStart:null;
   v.innerHTML=((S.tab==='po'||S.tab==='poprep')?pushNag():'')+({tables:viewTables,kitchen:viewKitchen,menu:viewMenu,back:viewBack,report:viewReport,po:viewPo,poprep:viewPoPrep,poreport:viewPoReport}[S.tab])();
   if(qf!==null){const q=document.getElementById('poQ');if(q){q.focus();try{q.setSelectionRange(qf,qf)}catch(e){}}}
+  if(sqF!==null){const q=$('#stQ');if(q){q.focus();try{q.setSelectionRange(sqF,sqF)}catch(e){}}stQApply()}
   if(fqF){const q=$('#fq');if(q){q.focus();const n=q.value.length;try{q.setSelectionRange(n,n)}catch(e){}}}
 }
 const isLow=s=>(+s.qty||0)<=(+s.min||0);
@@ -1536,13 +1541,14 @@ function viewBack(){
   if(t==='inc')return h+viewIncome();
   if(t==='mem')return h+viewMembers();
   if(t==='stock'){
-    const low=stockList().filter(isLow);h+=wdCard();
+    const low=stockList().filter(isLow);h+=wdCard();const q0=String(S.stQ||'').trim().toLowerCase(),hid=s=>q0&&!String(s.name||'').toLowerCase().includes(q0)?' hidden':'';
+    if(stockList().length)h+=`<div class="stsearch"><input id="stQ" type="search" placeholder="🔍 ค้นหาวัตถุดิบ เช่น ไก่ น้ำปลา กล่อง" value="${esc(S.stQ||'')}" autocomplete="off" aria-label="ค้นหาวัตถุดิบ"><span class="muted" id="stQn"></span></div>`;
     h+=`<div class="sec-h"><h2>ของที่ต้องเติม</h2><span class="hint">คงเหลือต่ำกว่าหรือเท่าจุดสั่งซื้อ</span></div>`;
-    h+=low.length?'<div class="list">'+low.map(s=>`<div class="row">${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)}</div><div class="s">เหลือ ${num(s.qty)} ${esc(s.unit)} · จุดสั่งซื้อ ${num(s.min)} ${esc(s.unit)}</div></div><button class="btn sm pri" data-act="purchase" data-id="${s.id}" type="button">ซื้อเติม</button></div>`).join('')+'</div>':`<div class="empty"><b>ของยังพอใช้ทุกรายการ</b>รายการที่ใกล้หมดจะขึ้นที่นี่ให้ซื้อเติมได้ทันที</div>`;
+    h+=low.length?'<div class="list">'+low.map(s=>`<div class="row" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)}</div><div class="s">เหลือ ${num(s.qty)} ${esc(s.unit)} · จุดสั่งซื้อ ${num(s.min)} ${esc(s.unit)}</div></div><button class="btn sm pri" data-act="purchase" data-id="${s.id}" type="button">ซื้อเติม</button></div>`).join('')+'</div>':`<div class="empty"><b>ของยังพอใช้ทุกรายการ</b>รายการที่ใกล้หมดจะขึ้นที่นี่ให้ซื้อเติมได้ทันที</div>`;
     h+=`<div class="sec-h"><h2>วัตถุดิบทั้งหมด</h2><button class="btn sm" data-act="stockEdit" type="button">+ เพิ่มวัตถุดิบ</button></div>`;
     if(!stockList().length)return h+`<div class="empty"><b>ยังไม่มีวัตถุดิบ</b>${isPo()?"เพิ่มข้าวสาร ไก่ ซอส แตงกวา กล่อง":"เพิ่มเส้น ลูกชิ้น เนื้อสัตว์ ผัก"} เพื่อติดตามของคงเหลือและต้นทุน</div>`;
     h+='<div class="list">'+stockList().map(s=>{const q=+s.qty||0,m=+s.min||0,pct=Math.min(100,m>0?q/(m*3)*100:100);
-      return `<div class="row click" data-act="stockEdit" data-id="${s.id}">${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)} ${isLow(s)?'<span class="pill bad">ต้องเติม</span>':''}</div><div class="s">ทุนล่าสุด ${baht(s.unitCost||0)}/${esc(s.unit)}${s.buyPer&&s.buyUnit?` · 1 ${esc(s.buyUnit)} ≈ ${num(s.buyPer)} ${esc(s.unit)}`:''}</div><div class="meter ${isLow(s)?'low':''}"><i style="width:${Math.max(3,pct)}%"></i></div></div><div class="r"><b class="num">${num(q)}</b> <span class="muted">${esc(s.unit)}</span></div></div>`}).join('')+'</div>';
+      return `<div class="row click" data-act="stockEdit" data-id="${s.id}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)} ${isLow(s)?'<span class="pill bad">ต้องเติม</span>':''}</div><div class="s">ทุนล่าสุด ${baht(s.unitCost||0)}/${esc(s.unit)}${s.buyPer&&s.buyUnit?` · 1 ${esc(s.buyUnit)} ≈ ${num(s.buyPer)} ${esc(s.unit)}`:''}</div><div class="meter ${isLow(s)?'low':''}"><i style="width:${Math.max(3,pct)}%"></i></div></div><div class="r"><b class="num">${num(q)}</b> <span class="muted">${esc(s.unit)}</span></div></div>`}).join('')+'</div>';
     return h;}
   if(t==='purch'){
     const sum=purchList().filter(p=>p.at>=sod()-29*DAY).reduce((s,p)=>s+(+p.amount||0),0);
@@ -3166,6 +3172,8 @@ async function poSumImg(day,btn){const L=poSumLive(day),t=poSumTot(L),c=poCfg();
 /* ===== สรุปยอดข้าวมันไก่ + กราฟ ===== */
 const PR_RANGES=[[1,'วันนี้'],[3,'3 วัน'],[5,'5 วัน'],[30,'1 เดือน']];
 const PRC={s:'#2a78d6',c:'#eb6834',p:'#1baf7a'},PRCAT=['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#6250d6'],PROTH='#a8a29e';
+function stQApply(){const q=String(S.stQ||'').trim().toLowerCase();let n=0,t=0;document.querySelectorAll('[data-sn]').forEach(e=>{const ok=!q||e.dataset.sn.includes(q);e.hidden=!ok;if(e.closest('.list'))t++;if(ok)n++});const c=$('#stQn');if(c)c.textContent=q?(n?'พบ '+n+' รายการ':'ไม่พบ "'+S.stQ+'"'):''}
+if(!window.__stQ){window.__stQ=1;document.addEventListener('input',e=>{if(e.target&&e.target.id==='stQ'){S.stQ=e.target.value;stQApply()}})}
 let PRD=null,PRW=640,PRAK='',PRANIM=false,PRGA=false;
 const prGrp=()=>{const v=S.prGrp||prLS('nl_prg');return ['f','d','all'].includes(v)?v:'f'};
 const cntB=(v,f='b')=>` data-cnt="${r2(v)}" data-f="${f}"`;
