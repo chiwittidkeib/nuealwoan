@@ -1060,6 +1060,17 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 .str.out{animation:stOutC 1s ease-in-out infinite}
 @keyframes stOut2{0%,100%{background:rgba(239,68,68,.16)}50%{background:rgba(239,68,68,.38)}}
 @media (prefers-reduced-motion:reduce){.stt tbody tr.out{animation:none;background:rgba(239,68,68,.25)}}
+.stl .str.out{background:rgba(0,0,0,.3)!important;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-color:rgba(239,68,68,.75)}
+.stl .str.out .wdt b,.stl .str.out .stq small{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+.stl .str.out .stq b{color:#ff8a8a;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.stl .str.out .wdchip{background:rgba(255,255,255,.85)}.stl .str.out .wdmeter{background:rgba(255,255,255,.35)}
+.stl .str.out .wda{filter:saturate(.75)}
+.stl{grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
+.stl .str{grid-template-columns:96px minmax(0,1fr) auto;gap:16px;padding:16px 18px;border-radius:20px}
+.stl .str .wda{width:96px;height:96px;border-radius:20px;font-size:34px}.stl .str .wda .thumb,.stl .str .wda img,.stl .str .stcam2{border-radius:20px}
+.stl .str .wdt b{font-size:20px}.stl .str .wdm{gap:8px}.stl .str .wdchip{font-size:14px;padding:4px 11px}.stl .str .stp{font-size:13px;padding:3px 11px}
+.stl .str .wdmeter{height:8px}.stl .str .stq b{font-size:36px}.stl .str .stq small{font-size:15px}.stl .str .stq em{font-size:14px}
+@media (max-width:560px){.stl{grid-template-columns:1fr;gap:12px}.stl .str{grid-template-columns:80px minmax(0,1fr) auto;gap:14px;padding:14px 16px}.stl .str .wda{width:80px;height:80px;font-size:30px}.stl .str .wdt b{font-size:19px}.stl .str .stq b{font-size:32px}.stl .str .wdchip{font-size:13.5px}}
 </style>
 </head>
 <body>
