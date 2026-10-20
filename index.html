@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-2050">
+<meta name="app-version" content="2026.10.20-2200">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -597,16 +597,16 @@ body.shop-po .top{box-shadow:inset 0 -3px 0 #f0a54a}
 .wdbtn:hover{filter:brightness(1.06)}.wdbtn:active{transform:translateY(1px)}
 @keyframes wdglow{0%,100%{box-shadow:0 0 0 1px rgba(45,212,191,.55),0 4px 14px rgba(13,148,136,.4),0 0 12px rgba(45,212,191,.4)}50%{box-shadow:0 0 0 1px rgba(94,234,212,.9),0 4px 18px rgba(13,148,136,.55),0 0 28px rgba(45,212,191,.85)}}
 @media (prefers-reduced-motion:reduce){.wdbtn{animation:none}}
-.wdc{display:flex;flex-direction:column;gap:8px}.wdw{display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;background:rgba(229,56,59,.06);border:1px dashed rgba(229,56,59,.35)}.wdseg{display:grid;grid-template-columns:1fr 1fr;gap:6px}.wdseg button{padding:10px 8px;border-radius:10px;border:1px solid var(--line);background:var(--card,#fff);font:inherit;font-weight:600}.wdseg button[aria-pressed=true]{background:var(--ink,#3b2314);color:#fff;border-color:transparent}.wdseg button[data-v=waste][aria-pressed=true]{background:var(--chili,#c8102e)}.wdl{display:flex;flex-direction:column;gap:4px;padding:6px 0}
-.wdr{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card,#fff)}
+.wdc{display:flex;flex-direction:column;gap:8px}.wdw{display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:10px;background:rgba(229,56,59,.06);border:1px dashed rgba(229,56,59,.35)}.wdseg{display:grid;grid-template-columns:1fr 1fr;gap:6px}.wdseg button{padding:10px 8px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font:inherit;font-weight:600}.wdseg button[aria-pressed=true]{background:var(--ink,#3b2314);color:#fff;border-color:transparent}.wdseg button[data-v=waste][aria-pressed=true]{background:var(--chili,#c8102e)}.wdl{display:flex;flex-direction:column;gap:4px;padding:6px 0}
+.wdr{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .wdh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.wdh b{font-size:15.5px}.wdh small{flex:1}
 .wdi{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr) minmax(0,.8fr);gap:8px;align-items:end}.wdc2 b{padding:8px 0;font-variant-numeric:tabular-nums}
 @media (max-width:420px){.wdi{grid-template-columns:1fr 1fr}.wdi .cpl:nth-child(2){grid-column:1/-1;grid-row:2}}
 .cpc{display:flex;flex-direction:column;gap:10px}
 .prbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:4px 0 10px}.prrange{flex-wrap:wrap}.prdr{font-size:12.5px;white-space:nowrap}
-.prdates{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.prdates input{padding:7px 10px;border-radius:10px;border:1px solid var(--line);font:inherit;background:var(--card,#fff)}
+.prdates{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.prdates input{padding:7px 10px;border-radius:10px;border:1px solid var(--line);font:inherit;background:var(--surface)}
 .prk{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
-.prk .stat{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:2px;padding:12px 14px 10px;border-radius:16px;background:linear-gradient(160deg,var(--card,#fff) 55%,rgba(42,120,214,.05));border:1px solid var(--line);box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 6px 18px rgba(60,35,20,.06)}
+.prk .stat{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:2px;padding:12px 14px 10px;border-radius:16px;background:linear-gradient(160deg,var(--surface) 55%,rgba(42,120,214,.08));color:var(--fg);border:1px solid var(--line);box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 6px 18px rgba(60,35,20,.06)}
 .prk .stat>span{font-size:12.5px;color:var(--muted)}.prk .stat b.num{font-size:22px;line-height:1.2;font-variant-numeric:tabular-nums}
 .prk .spk{width:100%;height:30px;margin-top:4px}
 .prk.anim .stat{animation:prUp .5s cubic-bezier(.2,.8,.2,1) both}.prk.anim .stat:nth-child(2){animation-delay:.06s}.prk.anim .stat:nth-child(3){animation-delay:.12s}.prk.anim .stat:nth-child(4){animation-delay:.18s}
@@ -622,13 +622,13 @@ body.shop-po .top{box-shadow:inset 0 -3px 0 #f0a54a}
 .prc .peak rect{fill:#3b2314;opacity:.88}.prc .peak text{fill:#fff;font-size:11px;font-weight:700;text-anchor:middle}
 .prc.anim .bar{transform-box:fill-box;transform-origin:bottom;animation:prGrow .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d)}
 .prc.anim .pline{stroke-dasharray:1;stroke-dashoffset:1;animation:prDraw 1.1s .25s ease-out forwards}.prc.anim .area{animation:prFade .8s .6s both}.prc.anim .peak{animation:prFade .4s 1s both}
-.prtip{position:absolute;top:6px;min-width:160px;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);box-shadow:0 10px 28px rgba(0,0,0,.14);font-size:13px;line-height:1.55;pointer-events:none;z-index:2;font-variant-numeric:tabular-nums}
+.prtip{position:absolute;top:6px;min-width:160px;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,var(--surface) 88%,transparent);color:var(--fg);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);box-shadow:0 10px 28px rgba(0,0,0,.14);font-size:13px;line-height:1.55;pointer-events:none;z-index:2;font-variant-numeric:tabular-nums}
 .prsplit{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:16px;align-items:start}
 .dnt{display:flex;flex-direction:column;align-items:center;gap:10px}.dnt-c{position:relative;width:min(220px,100%);aspect-ratio:1}.dnt-c svg{width:100%;height:100%;overflow:visible}
 .dseg{cursor:pointer}.dnt.hov .dseg:not(.on){opacity:.35}
 .dnt-in{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 46px}.dnt-in small{font-size:11.5px;color:var(--muted);line-height:1.3;max-height:2.6em;overflow:hidden}.dnt-in b{font-size:18px;font-variant-numeric:tabular-nums}.dnt-in em{font-style:normal;font-size:12px;font-weight:700;color:var(--muted)}
 .dnt-l{display:flex;flex-direction:column;gap:2px;width:100%}.dnt-r{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px;padding:4px 6px;border-radius:8px;cursor:pointer}.dnt-r i{width:12px;height:12px;border-radius:4px}.dnt-r span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dnt-r.on{background:rgba(0,0,0,.05)}
-.dnt-c svg{position:relative;z-index:1}.dnt-c::before{content:"";position:absolute;inset:23%;z-index:0;border-radius:50%;background:radial-gradient(circle at 50% 35%,#fff,rgba(255,255,255,.75) 60%,rgba(240,232,220,.6));box-shadow:inset 0 2px 8px rgba(59,35,20,.10),0 1px 0 rgba(255,255,255,.8)}
+.dnt-c svg{position:relative;z-index:1}.dnt-c::before{content:"";position:absolute;inset:23%;z-index:0;border-radius:50%;background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--surface) 70%,#fff),var(--surface) 70%);box-shadow:inset 0 2px 8px rgba(59,35,20,.10),0 1px 0 rgba(255,255,255,.8)}
 .dseg{transform-box:view-box;transform-origin:90px 90px;transition:stroke-width .25s,opacity .25s,transform .25s cubic-bezier(.2,.8,.2,1),filter .25s}
 .dseg.on{stroke-width:30;transform:translate(var(--tx),var(--ty));filter:drop-shadow(0 0 6px var(--c))}
 .dnt.anim .dseg{animation:dSweep .9s cubic-bezier(.3,.7,.2,1) both;animation-delay:var(--d)}
@@ -655,7 +655,7 @@ body.shop-po .top{box-shadow:inset 0 -3px 0 #f0a54a}
 .prwarn{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13px;padding:8px 12px;border-radius:12px;background:rgba(237,161,0,.10);border:1px dashed rgba(237,161,0,.45)}.prwarn>span{flex:1 1 240px}.prwarn .btn{margin-left:auto}
 @media (max-width:620px){.prr2{grid-template-columns:28px 1fr auto!important;grid-template-areas:"r n v" "r b b"!important}.prr2 .prk2{grid-area:r;align-self:start;padding-top:2px}.prr2 .prn{grid-area:n}.prr2 .prv{grid-area:v}.prr2 .prb2{grid-area:b}}
 .strip5{grid-template-columns:repeat(5,minmax(0,1fr))}@media (max-width:560px){.strip5{grid-template-columns:repeat(2,minmax(0,1fr))}.strip5 .stat:first-child{grid-column:1/-1}}
-.prgrp{display:inline-grid;grid-auto-flow:column;gap:4px;padding:4px;border-radius:12px;background:rgba(0,0,0,.05);align-self:flex-start}.prgrp button{border:0;background:transparent;padding:7px 12px;border-radius:9px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}.prgrp button[aria-pressed=true]{background:var(--card,#fff);color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.prgrp{display:inline-grid;grid-auto-flow:column;gap:4px;padding:4px;border-radius:12px;background:rgba(0,0,0,.05);align-self:flex-start}.prgrp button{border:0;background:transparent;padding:7px 12px;border-radius:9px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}.prgrp button[aria-pressed=true]{background:var(--surface);color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.1)}
 .pri{display:flex;flex-direction:column;gap:2px}
 .prr{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) minmax(0,1.2fr);gap:10px;align-items:center;padding:7px 4px;border-bottom:1px dashed var(--line);border-radius:8px;transition:background .15s}.prr:hover{background:rgba(42,120,214,.05)}
 .prn{display:flex;flex-direction:column;min-width:0}.prn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prn span{font-size:12px}
@@ -916,7 +916,7 @@ body.kb .tabs{display:none}
 .scfr{position:absolute;inset:16%;border:4px solid #4ade80;border-radius:18px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
 
 /* ===== ปุ่มสไตล์ใหม่ (เขียวทะเลเรืองแสง + แสงปาด) ===== */
-.btn{position:relative;isolation:isolate;background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 86%,var(--sunk)));box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 6px rgba(30,20,10,.07);transition:transform .15s ease,box-shadow .2s ease,border-color .2s ease,filter .2s}
+.btn{position:relative;isolation:isolate;background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 86%,var(--sunk)));box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 2px 6px rgba(0,0,0,.08);transition:transform .15s ease,box-shadow .2s ease,border-color .2s ease,filter .2s}
 .btn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%) no-repeat;background-size:250% 100%;background-position:150% 0;opacity:0}
 .btn:hover:not(:disabled){border-color:rgba(20,184,166,.6);box-shadow:0 0 0 3px rgba(20,184,166,.13),0 6px 16px rgba(13,148,136,.18);transform:translateY(-1px)}
 .btn:hover:not(:disabled)::after{opacity:1;animation:btnSheen .8s ease-out}
@@ -927,7 +927,7 @@ body.kb .tabs{display:none}
 main .btn.pri:not(.sm),.view .btn.pri:not(.sm){animation:wdglow 2.4s ease-in-out infinite}
 #panel .btn.pri,#sheet .btn.pri{animation:none}
 .btn.pri:disabled{filter:grayscale(.5);box-shadow:none}
-.btn.danger{color:#c22b2b;border-color:rgba(227,73,72,.45);background:linear-gradient(180deg,#fff,#fff1f1)}
+.btn.danger{color:#e34948;border-color:rgba(227,73,72,.45);background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 88%,#e34948))}
 .btn.danger:hover:not(:disabled){border-color:#e34948;box-shadow:0 0 0 3px rgba(227,73,72,.14),0 6px 16px rgba(227,73,72,.22)}
 .btn.danger.wide,.sh-foot .btn.danger.wide{color:#fff;border:0;background:linear-gradient(135deg,#f0525a,#e5383b 55%,#b91c1c);box-shadow:0 0 0 1px rgba(248,113,113,.5),0 4px 14px rgba(229,56,59,.35),0 0 14px rgba(248,113,113,.35)}
 .btn.ghost{background:none;box-shadow:none}
@@ -942,7 +942,7 @@ body.shop-po .chip[aria-pressed="true"]{border-color:transparent;background:line
 .prgrp button[aria-pressed=true]{background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff;box-shadow:0 0 0 1px rgba(45,212,191,.5),0 3px 10px rgba(13,148,136,.35)}
 @keyframes btnSheen{from{background-position:150% 0}to{background-position:-60% 0}}
 @media (prefers-reduced-motion:reduce){.btn,.btn::after,.chip{transition:none;animation:none!important}}
-.stsearch{position:sticky;top:6px;z-index:5;display:flex;align-items:center;gap:10px;margin:10px 0 4px;padding:6px;border-radius:14px;background:rgba(255,255,255,.75);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(30,20,10,.08)}
+.stsearch{position:sticky;top:6px;z-index:5;display:flex;align-items:center;gap:10px;margin:10px 0 4px;padding:6px;border-radius:14px;background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(0,0,0,.10)}
 .stsearch input{flex:1;min-width:0;padding:11px 14px;border-radius:11px;border:1.5px solid rgba(20,184,166,.45);font:inherit;font-size:16px;background:var(--surface)}
 .stsearch input:focus{outline:none;border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,.18)}.stsearch span{font-size:12.5px;white-space:nowrap;padding-right:6px}
 .cashk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -972,8 +972,8 @@ body.shop-po .chip[aria-pressed="true"]{border-color:transparent;background:line
 .wdseg button[aria-pressed=true][data-v=sell]{background:linear-gradient(135deg,#14b8a6,#0f766e);box-shadow:0 0 0 1px rgba(45,212,191,.5),0 4px 12px rgba(13,148,136,.35);color:#fff}
 .wdseg button[aria-pressed=true][data-v=waste]{background:linear-gradient(135deg,#f0525a,#b91c1c);box-shadow:0 4px 12px rgba(229,56,59,.3);color:#fff}
 @media (max-width:420px){.wdr2{grid-template-columns:40px minmax(0,1fr);grid-template-areas:"a m" "c c"}.wdr2 .wda{grid-area:a;width:40px;height:40px}.wdr2 .wdm{grid-area:m}.wdr2 .wdctl{grid-area:c;grid-template-columns:1fr auto auto;grid-template-areas:"u s c";justify-items:start}.wdr2 .wdc{justify-self:end;min-width:64px;text-align:right}}
-.subtabs{gap:6px;padding:6px;border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.5));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.7);box-shadow:0 8px 24px rgba(60,35,20,.10),inset 0 1px 0 rgba(255,255,255,.8)}
-.subtabs button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 16px;border-radius:13px;font-weight:600;color:#6b5a4c;transition:background .25s,color .25s,box-shadow .25s,transform .15s}
+.subtabs{gap:6px;padding:6px;border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--surface) 80%,transparent),color-mix(in srgb,var(--surface) 55%,transparent));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid color-mix(in srgb,var(--line) 60%,transparent);box-shadow:0 8px 24px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.12)}
+.subtabs button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 16px;border-radius:13px;font-weight:600;color:var(--muted);transition:background .25s,color .25s,box-shadow .25s,transform .15s}
 .subtabs button i{font-style:normal;font-size:17px;line-height:1;display:inline-grid;place-items:center;width:28px;height:28px;border-radius:9px;background:rgba(0,0,0,.05);transition:background .25s,transform .25s}
 .subtabs button:hover:not([aria-pressed="true"]){background:rgba(20,184,166,.08);color:#0f766e}.subtabs button:hover i{transform:scale(1.08)}
 .subtabs button[aria-pressed="true"]{color:#fff;background:linear-gradient(135deg,#14b8a6,#0d9488 55%,#0f766e);box-shadow:0 0 0 1px rgba(45,212,191,.55),0 6px 16px rgba(13,148,136,.35),0 0 18px rgba(45,212,191,.35);text-shadow:0 1px 1px rgba(0,0,0,.15)}
@@ -981,6 +981,36 @@ body.shop-po .chip[aria-pressed="true"]{border-color:transparent;background:line
 .subtabs button[aria-pressed="true"]::after{content:"";position:absolute;left:50%;bottom:-3px;width:26px;height:3px;margin-left:-13px;border-radius:3px;background:#5eead4;box-shadow:0 0 8px #5eead4}
 .subtabs button:active{transform:scale(.97)}
 @media (max-width:560px){.subtabs button{padding:8px 12px}.subtabs button i{width:24px;height:24px;font-size:15px}}
+.stl{display:flex;flex-direction:column;gap:8px}
+.str{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--line);box-shadow:0 2px 8px rgba(30,20,10,.05);transition:transform .15s,box-shadow .2s,border-color .2s}
+.str.click{cursor:pointer}.str.click:hover{transform:translateY(-1px);border-color:rgba(20,184,166,.55);box-shadow:0 0 0 3px rgba(20,184,166,.10),0 8px 18px rgba(13,148,136,.12)}
+.str.low{border-color:rgba(237,161,0,.55);background:linear-gradient(135deg,rgba(237,161,0,.07),var(--surface) 55%)}
+.str.out{border-color:rgba(227,73,72,.5);background:linear-gradient(135deg,rgba(227,73,72,.07),var(--surface) 55%)}
+.stp{font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;white-space:nowrap}.stp.low{color:#9a6a00;background:rgba(237,161,0,.18)}.stp.out{color:#fff;background:linear-gradient(135deg,#f0525a,#c62828)}
+.wdchip.sale{color:#1d4ed8;background:rgba(42,120,214,.10)}.wdchip.use{color:#0f766e;background:rgba(20,184,166,.12)}
+.wdmeter.lw i{background:linear-gradient(90deg,#eda100,#eb6834)}.str.out .wdmeter i{background:#e34948}
+.stq{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15;min-width:64px}.stq b{font-size:22px;font-variant-numeric:tabular-nums}.stq small{font-size:12px;color:var(--muted)}.stq em{font-style:normal;font-size:11px;color:var(--muted);margin-top:2px}
+.str.out .stq b{color:#c62828}.str.low:not(.out) .stq b{color:#b45309}
+.str .wda .zoomable{display:block}
+@media (max-width:420px){.str{grid-template-columns:40px minmax(0,1fr) auto;gap:10px;padding:10px 12px}.str .wda{width:40px;height:40px}.str .btn.sm{padding:5px 8px}}
+.stava{position:relative;overflow:visible!important}.stava .thumb,.stava .zoomable{border-radius:13px;overflow:hidden;display:block;width:100%;height:100%}.stava .thumb img,.stava img{width:100%;height:100%;object-fit:cover;border-radius:13px}
+.stava.has{background:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.stini{display:grid;place-items:center;width:100%;height:100%;cursor:pointer}
+.stcam{position:absolute;right:-6px;bottom:-6px;width:22px;height:22px;border-radius:50%;border:2px solid var(--surface);background:linear-gradient(135deg,#14b8a6,#0f766e);color:#fff;font-size:11px;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 6px rgba(13,148,136,.4);padding:0;transition:transform .15s}
+.stcam:hover{transform:scale(1.15)}.str .wda,.wdr2 .wda{width:52px;height:52px}.str{grid-template-columns:52px minmax(0,1fr) auto}
+@media (max-width:420px){.str{grid-template-columns:46px minmax(0,1fr) auto}.str .wda{width:46px;height:46px}}
+body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#fff;background:linear-gradient(135deg,#3b2a1e,#1f1712 60%,#0f0b08);box-shadow:0 0 0 1px rgba(226,178,101,.55),0 4px 12px rgba(0,0,0,.25),0 0 12px rgba(226,178,101,.35)}
+.btn.goldbtn{border:0;color:#3b2405;font-weight:700;text-shadow:0 1px 0 rgba(255,255,255,.45);background:linear-gradient(135deg,#fde68a 0%,#f5c542 35%,#d4a017 70%,#a87b05 100%);box-shadow:0 0 0 1px rgba(250,204,21,.65),0 4px 14px rgba(180,130,10,.35),0 0 16px rgba(250,204,21,.45);animation:goldglow 2.4s ease-in-out infinite}
+.btn.goldbtn:hover:not(:disabled){filter:brightness(1.06);box-shadow:0 0 0 1px rgba(253,230,138,.95),0 6px 20px rgba(180,130,10,.45),0 0 26px rgba(250,204,21,.75)}
+@keyframes goldglow{0%,100%{box-shadow:0 0 0 1px rgba(250,204,21,.6),0 4px 14px rgba(180,130,10,.3),0 0 10px rgba(250,204,21,.35)}50%{box-shadow:0 0 0 1px rgba(253,230,138,.95),0 4px 18px rgba(180,130,10,.45),0 0 24px rgba(250,204,21,.75)}}
+@media (prefers-reduced-motion:reduce){.btn.goldbtn{animation:none}}
+.catbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--surface) 82%,transparent),color-mix(in srgb,var(--surface) 55%,transparent));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid color-mix(in srgb,var(--line) 60%,transparent);box-shadow:0 8px 24px rgba(0,0,0,.10)}
+.cblabel{font-weight:700;font-size:13.5px;color:var(--muted);white-space:nowrap}.cbchips{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+.cbchip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 4px;border-radius:99px;font-size:13px;font-weight:600;color:hsl(var(--h) 45% 28%);background:linear-gradient(135deg,hsl(var(--h) 80% 96%),hsl(var(--h) 70% 90%));border:1px solid hsl(var(--h) 55% 80%);box-shadow:0 2px 6px hsla(var(--h),50%,40%,.12);transition:transform .15s,box-shadow .2s}
+.cbchip:hover{transform:translateY(-1px);box-shadow:0 4px 12px hsla(var(--h),55%,40%,.22)}
+.cbchip i{font-style:normal;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);font-size:13px}
+@media (max-width:560px){.catbar .goldbtn{margin-left:auto}}
+.prdr2{display:inline-block;margin:0 0 10px;padding:5px 12px;border-radius:99px;font-size:13px;background:color-mix(in srgb,var(--surface) 85%,transparent);color:var(--fg);border:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -1328,6 +1358,7 @@ async function startData(){
   db.collection('purchases').where('at','>=',since).onSnapshot(s=>{S.purch=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
   db.collection('lists').onSnapshot(s=>{const L={};s.docs.forEach(d=>L[d.id]=d.data());S.lists=L;refreshSheet();render()},onErr);
   db.collection('incomes').where('at','>=',since).onSnapshot(s=>{S.inc=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back'||S.tab==='report')render()},onErr);
+  db.collection('stockwd').where('at','>=',since).onSnapshot(s=>{S.wdN=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back'||S.tab==='report')render()},()=>{});
   db.collection('expenses').where('at','>=',since).onSnapshot(s=>{S.exp=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
 }
 const CALL_DEF=[{id:'staff',label:'เรียกพนักงาน'},{id:'pay',label:'ขอชำระเงิน / เช็คบิล',pay:true},{id:'water',label:'ขอน้ำ / น้ำแข็ง'}];
@@ -1569,22 +1600,24 @@ function viewMenu(){
 }
 
 function viewBack(){
-  const BT=isPo()?{stock:can('stock'),dstock:can('stock'),purch:can('stock'),exp:can('expenses'),inc:can('expenses')}:{stock:can('stock'),purch:can('stock'),consign:can('stock'),exp:can('expenses'),inc:can('expenses'),mem:can('members')};
+  const BT=isPo()?{stock:can('stock'),dstock:can('stock'),purch:can('stock'),exp:can('expenses'),inc:can('expenses')}:{stock:can('stock'),dstock:can('stock'),purch:can('stock'),consign:can('stock'),exp:can('expenses'),inc:can('expenses'),mem:can('members')};
   if(!BT[S.backTab])S.backTab=Object.keys(BT).find(k=>BT[k])||'stock';
   const t=S.backTab;
-  let h=`<div class="subtabs" role="group">${BT.stock?`<button aria-pressed="${t==='stock'}" data-act="backTab" data-v="stock" type="button"><i>${isPo()?'🍚':'📦'}</i>${isPo()?'วัตถุดิบอาหาร':'สต็อกวัตถุดิบ'}</button>${BT.dstock?`<button aria-pressed="${t==='dstock'}" data-act="backTab" data-v="dstock" type="button"><i>🥤</i>วัตถุดิบเครื่องดื่ม</button>`:''}<button aria-pressed="${t==='purch'}" data-act="backTab" data-v="purch" type="button"><i>🛒</i>ซื้อของเข้า</button>`:''}${BT.exp?`<button aria-pressed="${t==='exp'}" data-act="backTab" data-v="exp" type="button"><i>💸</i>รายจ่ายร้าน</button>`:''}${BT.exp?`<button aria-pressed="${t==='inc'}" data-act="backTab" data-v="inc" type="button"><i>💰</i>รายรับอื่นๆ</button>`:''}${BT.consign?`<button aria-pressed="${t==='consign'}" data-act="backTab" data-v="consign" type="button"><i>🤝</i>ฝากขาย</button>`:''}${BT.mem?`<button aria-pressed="${t==='mem'}" data-act="backTab" data-v="mem" type="button"><i>👥</i>สมาชิก</button>`:''}</div>`;
+  let h=`<div class="subtabs" role="group">${BT.stock?`<button aria-pressed="${t==='stock'}" data-act="backTab" data-v="stock" type="button"><i>🍚</i>วัตถุดิบอาหาร</button>${BT.dstock?`<button aria-pressed="${t==='dstock'}" data-act="backTab" data-v="dstock" type="button"><i>🥤</i>วัตถุดิบเครื่องดื่ม</button>`:''}<button aria-pressed="${t==='purch'}" data-act="backTab" data-v="purch" type="button"><i>🛒</i>ซื้อของเข้า</button>`:''}${BT.exp?`<button aria-pressed="${t==='exp'}" data-act="backTab" data-v="exp" type="button"><i>💸</i>รายจ่ายร้าน</button>`:''}${BT.exp?`<button aria-pressed="${t==='inc'}" data-act="backTab" data-v="inc" type="button"><i>💰</i>รายรับอื่นๆ</button>`:''}${BT.consign?`<button aria-pressed="${t==='consign'}" data-act="backTab" data-v="consign" type="button"><i>🤝</i>ฝากขาย</button>`:''}${BT.mem?`<button aria-pressed="${t==='mem'}" data-act="backTab" data-v="mem" type="button"><i>👥</i>สมาชิก</button>`:''}</div>`;
   if(t==='consign')return h+viewConsign();
   if(t==='inc')return h+viewIncome();
   if(t==='mem')return h+viewMembers();
-  if(t==='stock'||t==='dstock'){const gD=t==='dstock',SL=isPo()?stockList().filter(x=>stGrp(x)===(gD?'drink':'food')):stockList();
+  if(t==='stock'||t==='dstock'){const gD=t==='dstock',SL=stockList().filter(x=>stGrp(x)===(gD?'drink':'food'));
     const low=SL.filter(isLow);h+=wdCard(gD?'drink':'food');const q0=String(S.stQ||'').trim().toLowerCase(),hid=s=>q0&&!String(s.name||'').toLowerCase().includes(q0)?' hidden':'';
     if(SL.length)h+=`<div class="stsearch"><input id="stQ" type="search" placeholder="🔍 ค้นหาวัตถุดิบ ${gD?'เช่น นม ผงชา แก้ว':'เช่น ไก่ น้ำปลา กล่อง'}" value="${esc(S.stQ||'')}" autocomplete="off" aria-label="ค้นหาวัตถุดิบ"><span class="muted" id="stQn"></span></div>`;
     h+=`<div class="sec-h"><h2>ของที่ต้องเติม</h2><span class="hint">คงเหลือต่ำกว่าหรือเท่าจุดสั่งซื้อ</span></div>`;
-    h+=low.length?'<div class="list">'+low.map(s=>`<div class="row" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)}</div><div class="s">เหลือ ${num(s.qty)} ${esc(s.unit)} · จุดสั่งซื้อ ${num(s.min)} ${esc(s.unit)}</div></div><button class="btn sm pri" data-act="purchase" data-id="${s.id}" type="button">ซื้อเติม</button></div>`).join('')+'</div>':`<div class="empty"><b>ของยังพอใช้ทุกรายการ</b>รายการที่ใกล้หมดจะขึ้นที่นี่ให้ซื้อเติมได้ทันที</div>`;
-    h+=`<div class="sec-h"><h2>${gD?'วัตถุดิบเครื่องดื่มทั้งหมด':'วัตถุดิบทั้งหมด'}</h2><button class="btn sm" data-act="stockEdit" data-g="${gD?'drink':'food'}" type="button">+ เพิ่มวัตถุดิบ${gD?'เครื่องดื่ม':''}</button></div>`;
+    h+=low.length?'<div class="stl">'+low.map(s=>{const q=+s.qty||0;return `<div class="str low${q<=0?' out':''}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stAva(s)}<div class="wdm"><div class="wdt"><b>${esc(s.name)}</b><span class="stp ${q<=0?'out':'low'}">${q<=0?'หมด':'ใกล้หมด'}</span></div><div class="wds"><span class="wdchip${q<=0?' bad':''}">เหลือ ${num(q)} ${esc(s.unit)}</span><span class="wdchip">จุดสั่งซื้อ ${num(s.min)} ${esc(s.unit)}</span></div></div><button class="btn sm pri" data-act="purchase" data-id="${s.id}" type="button">🛒 ซื้อเติม</button></div>`}).join('')+'</div>':`<div class="empty"><b>ของยังพอใช้ทุกรายการ</b>รายการที่ใกล้หมดจะขึ้นที่นี่ให้ซื้อเติมได้ทันที</div>`;
+    h+=`<div class="sec-h"><h2>${gD?'วัตถุดิบเครื่องดื่มทั้งหมด':'วัตถุดิบทั้งหมด'}</h2><button class="btn sm goldbtn" data-act="stockEdit" data-g="${gD?'drink':'food'}" type="button">＋ เพิ่มวัตถุดิบ${gD?'เครื่องดื่ม':''}</button></div>`;
     if(!SL.length)return h+`<div class="empty"><b>ยังไม่มีวัตถุดิบ</b>${gD?"เพิ่ม นม ผงชา น้ำเชื่อม แก้ว หลอด ฝา":isPo()?"เพิ่มข้าวสาร ไก่ ซอส แตงกวา กล่อง":"เพิ่มเส้น ลูกชิ้น เนื้อสัตว์ ผัก"} เพื่อติดตามของคงเหลือและต้นทุน</div>`;
-    h+='<div class="list">'+SL.map(s=>{const q=+s.qty||0,m=+s.min||0,pct=Math.min(100,m>0?q/(m*3)*100:100);
-      return `<div class="row click" data-act="stockEdit" data-id="${s.id}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stThumb(s)}<div class="grow"><div class="t">${esc(s.name)} ${isLow(s)?'<span class="pill bad">ต้องเติม</span>':''}</div><div class="s">ทุนล่าสุด ${baht(s.unitCost||0)}/${esc(s.unit)}${s.buyPer&&s.buyUnit?` · 1 ${esc(s.buyUnit)} ≈ ${num(s.buyPer)} ${esc(s.unit)}`:''}</div><div class="meter ${isLow(s)?'low':''}"><i style="width:${Math.max(3,pct)}%"></i></div></div><div class="r"><b class="num">${num(q)}</b> <span class="muted">${esc(s.unit)}</span></div></div>`}).join('')+'</div>';
+    h+='<div class="stl">'+SL.map(s=>{const q=+s.qty||0,m=+s.min||0,pct=Math.min(100,m>0?q/(m*3)*100:100),lw=isLow(s),val=q*(+s.unitCost||0);
+      return `<div class="str click${lw?' low':''}${q<=0?' out':''}" data-act="stockEdit" data-id="${s.id}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stAva(s)}<div class="wdm"><div class="wdt"><b>${esc(s.name)}</b>${lw?`<span class="stp ${q<=0?'out':'low'}">${q<=0?'หมด':'ต้องเติม'}</span>`:''}</div>
+       <div class="wds"><span class="wdchip">ทุน ${baht(s.unitCost||0)}/${esc(s.unit)}</span>${isPo()?`<span class="wdchip ${stCut(s)==='sale'?'sale':'use'}">${stCut(s)==='sale'?'ตัดตามยอดขาย':'เบิกใช้'}</span>`:''}${s.buyPer&&s.buyUnit?`<span class="wdchip">1 ${esc(s.buyUnit)} ≈ ${num(s.buyPer)} ${esc(s.unit)}</span>`:''}</div>
+       <div class="wdmeter${lw?' lw':''}"><i style="width:${Math.max(3,pct)}%"></i></div></div><div class="stq"><b>${num(q)}</b><small>${esc(s.unit)}</small>${val>0?`<em>${baht(val)}</em>`:''}</div></div>`}).join('')+'</div>';
     return h;}
   if(t==='purch'){
     const sum=purchList().filter(p=>p.at>=sod()-29*DAY).reduce((s,p)=>s+(+p.amount||0),0);
@@ -1600,81 +1633,78 @@ function viewBack(){
 }
 
 /* ---------- report ---------- */
-const RANGES={today:'วันนี้',yesterday:'เมื่อวาน',week:'7 วัน',month:'เดือนนี้',lastmonth:'เดือนก่อน'};
+const RANGES={today:'วันนี้',yesterday:'เมื่อวาน',d3:'3 วัน',d5:'5 วัน',d30:'1 เดือน',month:'เดือนนี้',custom:'📅 กำหนดเอง'};
+const dKey=t=>new Date(t).toLocaleDateString('sv-SE');
 function rangeOf(k){const t0=sod(),d=new Date(t0);
   if(k==='yesterday')return [t0-DAY,t0];
-  if(k==='week')return [t0-6*DAY,t0+DAY];
+  if(k==='d3')return [t0-2*DAY,t0+DAY];if(k==='d5')return [t0-4*DAY,t0+DAY];if(k==='d30'||k==='week')return [t0-(k==='week'?6:29)*DAY,t0+DAY];
   if(k==='month')return [new Date(d.getFullYear(),d.getMonth(),1).getTime(),new Date(d.getFullYear(),d.getMonth()+1,1).getTime()];
   if(k==='lastmonth')return [new Date(d.getFullYear(),d.getMonth()-1,1).getTime(),new Date(d.getFullYear(),d.getMonth(),1).getTime()];
+  if(k==='custom'){const f=S.report.from||dKey(t0-6*DAY),to=S.report.to||dKey(t0);let a=new Date(f+'T00:00:00').getTime(),b=new Date(to+'T00:00:00').getTime()+DAY;if(a>b-DAY)[a,b]=[b-DAY,a+DAY];if(b-a>92*DAY)a=b-92*DAY;return [a,b]}
   return [t0,t0+DAY];}
+const nIsDrink=l=>{const m=(S.nMenu||S.menu||[]).find(x=>x.id===l.menuId);return m?PO_DRINK.test(m.cat||''):/^(น้ำ|นม|ชา(?!ม)|กาแฟ|โกโก้)|drink|milk/i.test(l.name||'')};
 async function loadReport(){
-  if(!S.db)return;const key=S.report.range,[a,b]=rangeOf(key);S.report.loading=true;render();
+  if(!S.db)return;const key=S.report.range+(S.report.range==='custom'?(S.report.from||'')+(S.report.to||''):''),[a,b]=rangeOf(S.report.range),pa=a-(b-a);S.report.loading=true;render();
   try{const [os,ps,es,is]=await Promise.all([
-      S.db.collection('orders').where('status','==','paid').where('paidAt','>=',a).get(),
+      S.db.collection('orders').where('status','==','paid').where('paidAt','>=',pa).get(),
       S.db.collection('purchases').where('at','>=',a).get(),
       S.db.collection('expenses').where('at','>=',a).get(),
       S.db.collection('incomes').where('at','>=',a).get().catch(()=>({docs:[]}))]);
-    const f=(snap,k)=>snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x[k]<b);
-    if(S.report.range===key)S.report.data={key,a,b,orders:f(os,'paidAt').sort((x,y)=>y.paidAt-x.paidAt),purch:f(ps,'at').filter(x=>x.shop!=='po'),exp:f(es,'at').filter(x=>x.shop!=='po'),inc:f(is,'at').filter(x=>x.shop!=='po')};
+    const f=(snap,k)=>snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x[k]<b),all=f(os,'paidAt');
+    const ck=S.report.range+(S.report.range==='custom'?(S.report.from||'')+(S.report.to||''):'');
+    if(ck===key)S.report.data={key,a,b,orders:all.filter(o=>o.paidAt>=a).sort((x,y)=>y.paidAt-x.paidAt),prev:all.filter(o=>o.paidAt<a),purch:f(ps,'at').filter(x=>x.shop!=='po'),exp:f(es,'at').filter(x=>x.shop!=='po'),inc:f(is,'at').filter(x=>x.shop!=='po')};
   }catch(e){toast(errMsg(e),'bad')}
   S.report.loading=false;render();}
-function viewReport(){
-  let h=`<div class="sec-h"><h2>สรุปการเงิน</h2><button class="btn sm" data-act="reload" type="button">${S.report.loading?'กำลังโหลด…':'โหลดใหม่'}</button></div>
-  <div class="chips">${Object.entries(RANGES).map(([k,v])=>`<button class="chip" aria-pressed="${S.report.range===k}" data-act="range" data-v="${k}" type="button">${v}</button>`).join('')}</div>`;
-  const D=S.report.data;
-  if(!D||D.key!==S.report.range){if(!S.report.loading)setTimeout(loadReport,0);return h+`<div class="empty"><b>กำลังรวมยอด…</b>คำนวณยอดขาย ต้นทุน และรายจ่ายของช่วงที่เลือก</div>`}
-  const sales=D.orders.reduce((s,o)=>s+(+o.total||0),0);
-  const disc=D.orders.reduce((s,o)=>s+(+o.discount||0),0);
-  const cogs=D.orders.reduce((s,o)=>s+(+o.cost||0),0);
-  const sumBy=f=>D.orders.filter(f).reduce((s,o)=>s+(+o.total||0),0);
-  const cash=sumBy(o=>o.method==='cash'),pp=sumBy(o=>o.method==='promptpay');
+function nAgg(orders,a,b){const D={},I={};const T={o:0,q:0,f:0,dr:0,s:0,c:0,u:0};
+  for(let t=a;t<b&&t<=sod();t+=DAY)D[dKey(t)]={d:dKey(t),o:0,q:0,f:0,dr:0,s:0,c:0,u:0};
+  orders.forEach(o=>{const r=D[dKey(o.paidAt)],c=(+o.cost||0)+(+o.gp||0);let f=0,dr=0;(o.items||[]).filter(l=>!l.fee).forEach(l=>{const dk=nIsDrink(l),q=+l.qty||0;if(dk)dr+=q;else f+=q;
+      const it=I[l.name]=I[l.name]||{n:l.name,q:0,s:0,c:0,dk};it.q+=q;it.s+=lineAmt(l);it.c+=(+l.cost||0)*q});
+    [r,T].forEach(x=>{if(!x)return;x.o++;x.q+=f+dr;x.f+=f;x.dr+=dr;x.s+=+o.total||0;x.c+=c})});
+  return {D:Object.values(D),I:Object.values(I),T}}
+function nCostCard(D,A){if(!can('stock')&&!can('report'))return '';const W=(S.wdN||[]).filter(w=>w.at>=D.a&&w.at<D.b),ag=g=>{const X={};W.filter(w=>(w.g||'food')===g).forEach(w=>(w.items||[]).forEach(x=>{const a=X[x.sid]=X[x.sid]||{n:x.n,u:x.u,q:0,c:0};a.q+=+x.q||0;a.c+=(+x.q||0)*(+x.uc||0)}));return Object.values(X)};
+  const F=ag('food'),Dk=ag('drink'),BF=F.reduce((a,x)=>a+x.c,0),BD=Dk.reduce((a,x)=>a+x.c,0),bowls=A.T.f,cups=A.T.dr;
+  const recF=A.I.filter(x=>!x.dk).reduce((a,x)=>a+x.c,0),recD=A.I.filter(x=>x.dk).reduce((a,x)=>a+x.c,0);
+  const box=(t,ic,L,B,n,u,rec)=>`<div class="cpbox"><h4>${ic} ${t} (${n} ${u})</h4>${L.length?L.map(b=>`<div class="kv"><span>${esc(b.n)} ${num(b.q)} ${esc(b.u||'')}</span><span>${baht(b.c)}</span></div>`).join('')+`<div class="kv tot"><span>เบิกใช้ ${baht(B)} ÷ ${n} ${u}</span><b>${n?baht(B/n):'-'}/${u}</b></div>`:`<p class="help" style="margin:0">ยังไม่ได้ตัดสต็อกแบบเบิกใช้ในช่วงนี้</p>`}
+     <div class="kv"><span class="muted">ต้นทุนตามสูตรเมนู</span><span class="muted">${n?baht(rec/n):'-'}/${u}</span></div>
+     ${L.length&&n?`<div class="kv tot"><span>ต้นทุนจริงเฉลี่ย (เบิกใช้ + ตามสูตร)</span><b${PRANIM?cntB((B+rec)/n):''}>${baht((B+rec)/n)}/${u}</b></div>`:''}</div>`;
+  return `<div class="card cpc"><div class="prh"><h3>🧮 ต้นทุนเฉลี่ยต่อชาม</h3>${can('stock')?'<button class="btn sm wdbtn" data-act="nGoWd" type="button">✂️ ตัดสต็อกขายวันนี้</button>':''}</div>
+   <div class="cp2">${box('อาหาร','🍜',F,BF,bowls,'ชาม',recF)}${box('เครื่องดื่ม','🥤',Dk,BD,cups,'แก้ว',recD)}</div>
+   <p class="help" style="margin:0">ของ "เบิกใช้" (ตั้งที่หน้าแก้วัตถุดิบ) ตัดด้วย ✂️ แล้วหารด้วยชาม/แก้วที่ขายได้ · ของอื่นตัดตามสูตรตอนรับเงินเหมือนเดิม</p></div>`}
+function viewReport(){const RK=S.report.range in RANGES?S.report.range:'today';if(RK!==S.report.range)S.report.range=RK;
+  let h=`<div class="sec-h"><h2>สรุปการเงิน</h2><button class="btn sm" data-act="reload" type="button">${S.report.loading?'กำลังโหลด…':'🔄 โหลดใหม่'}</button></div>
+  <div class="prbar"><div class="chips prrange">${Object.entries(RANGES).map(([k,v])=>`<button class="chip" aria-pressed="${RK===k}" data-act="range" data-v="${k}" type="button">${v}</button>`).join('')}</div>
+   ${RK==='custom'?`<div class="prdates"><input type="date" id="rpF" value="${S.report.from||dKey(sod()-6*DAY)}" max="${dKey(sod())}" aria-label="ตั้งแต่"><span>ถึง</span><input type="date" id="rpT" value="${S.report.to||dKey(sod())}" max="${dKey(sod())}" aria-label="ถึง"></div>`:''}</div>`;
+  const D=S.report.data,key=RK+(RK==='custom'?(S.report.from||'')+(S.report.to||''):'');
+  if(!D||D.key!==key){if(!S.report.loading)setTimeout(loadReport,0);return h+`<div class="empty"><b>กำลังรวมยอด…</b>คำนวณยอดขาย ต้นทุน และรายจ่ายของช่วงที่เลือก</div>`}
+  const ak='n'+key+D.orders.length,anim=ak!==PRAK;PRAK=ak;PRANIM=anim;if(anim&&!matchMedia('(prefers-reduced-motion: reduce)').matches)setTimeout(prCount,30);
+  const A=nAgg(D.orders,D.a,D.b),B=nAgg(D.prev||[],D.a-(D.b-D.a),D.a);PRD=A.D;
+  const sales=A.T.s,disc=D.orders.reduce((s,o)=>s+(+o.discount||0),0),cogs=D.orders.reduce((s,o)=>s+(+o.cost||0),0);
+  const sumBy=f=>D.orders.filter(f).reduce((s,o)=>s+(+o.total||0),0),cash=sumBy(o=>o.method==='cash'),pp=sumBy(o=>o.method==='promptpay');
   const gpT=D.orders.reduce((s,o)=>s+(+o.gp||0),0),platGross=sumBy(o=>DELIV.includes(o.method)),platNet=r2(platGross-gpT);
-  const buy=D.purch.reduce((s,p)=>s+(+p.amount||0),0);
-  const exp=D.exp.reduce((s,e)=>s+(+e.amount||0),0);
-  const vatT=D.orders.reduce((s,o)=>s+(+o.vat||0),0);
-  const oinc=(D.inc||[]).reduce((s,e)=>s+(+e.amount||0),0);
-  const gross=sales-vatT-cogs-gpT,net=gross+oinc-exp,flow=cash+pp+platNet+oinc-buy-exp-vatT;
-  const gm=sales?Math.round(gross/sales*100):0;
-  h+=`<p class="muted" style="margin:0">${dshort(D.a)}${D.b-D.a>DAY?' – '+dshort(D.b-1):''} · ${D.orders.length} บิล${disc?' · ส่วนลดรวม '+baht(disc):''}</p>
-  <div class="kpis">
-    <div class="kpi"><span>ยอดขาย</span><b>${baht(sales)}</b></div>
-    ${vatT?`<div class="kpi"><span>VAT ในยอดขาย</span><b>${baht(vatT)}</b></div>`:''}
-    <div class="kpi"><span>ต้นทุนอาหาร${gpT?' + GP':''}</span><b>${baht(cogs+gpT)}</b></div>
-    <div class="kpi"><span>กำไรขั้นต้น · ${gm}%</span><b>${baht(gross)}</b></div>
-    ${oinc?`<div class="kpi"><span>รายรับอื่นๆ</span><b>${baht(oinc)}</b></div>`:''}
-    <div class="kpi"><span>รายจ่ายร้าน</span><b>${baht(exp)}</b></div>
-    <div class="kpi hero ${net<0?'neg':''}"><span>กำไรสุทธิ</span><b>${baht(net)}</b></div></div>
-  <div class="two">
-   <div class="card"><h3>เงินเข้า–ออกจริง</h3>
-    <div class="kv"><span>รับเงินสด</span><span>${baht(cash)}</span></div>
-    <div class="kv"><span>รับพร้อมเพย์</span><span>${baht(pp)}</span></div>
-    ${platGross?`<div class="kv"><span>รับจากแอปเดลิเวอรี่ (หัก GP แล้ว)</span><span>${baht(platNet)}</span></div>`:''}
-    ${vatT?`<div class="kv"><span>ภาษีขาย (VAT) ที่ต้องนำส่ง</span><span>${baht(-vatT)}</span></div>`:''}
-    ${oinc?`<div class="kv"><span>รายรับอื่นๆ</span><span>${baht(oinc)}</span></div>`:''}
-    <div class="kv"><span>จ่ายซื้อของ</span><span>${baht(-buy)}</span></div>
-    <div class="kv"><span>จ่ายรายจ่ายร้าน</span><span>${baht(-exp)}</span></div>
-    <div class="kv tot"><span>เงินคงเหลือสุทธิ</span><span style="color:var(${flow<0?'--chili':'--jade'})">${baht(flow)}</span></div>
-    <p class="help" style="margin:0">กำไรสุทธิคิดต้นทุนจาก "ต้นทุน" ของเมนูที่ขายได้ ส่วนเงินคงเหลือนับค่าซื้อของที่จ่ายจริงในช่วงนี้ ของที่ซื้อตุนไว้จึงทำให้สองตัวเลขต่างกัน</p></div>`;
-  // by channel
+  const buy=D.purch.reduce((s,p)=>s+(+p.amount||0),0),wasteT=D.exp.filter(e=>e.waste||e.cat===WASTE_CAT).reduce((s,e)=>s+(+e.amount||0),0),exp=D.exp.reduce((s,e)=>s+(+e.amount||0),0);
+  const vatT=D.orders.reduce((s,o)=>s+(+o.vat||0),0),oinc=(D.inc||[]).reduce((s,e)=>s+(+e.amount||0),0);
+  const gross=sales-vatT-cogs-gpT,net=gross+oinc-exp,gm=sales?Math.round(gross/sales*100):0,cmp=B.T.o>=Math.max(3,A.T.o*.3),len=Math.round((D.b-D.a)/DAY);
+  const sp=(f,c)=>prSpark(A.D.map(f),c);
+  h+=`<p class="prdr2">📅 ${dshort(D.a)}${D.b-D.a>DAY?' – '+dshort(D.b-1):''} · ${D.orders.length} บิล${disc?' · ส่วนลดรวม '+baht(disc):''}</p>
+  <div class="prk${anim?' anim':''}"><div class="stat"><span>ยอดขาย</span><b class="num"${anim?cntB(sales):''}>${baht(sales)}</b>${cmp?prDelta(sales,B.T.s):''}${sp(r=>r.s,PRC.s)}</div>
+   <div class="stat"><span>ต้นทุนอาหาร${gpT?' + GP':''}</span><b class="num"${anim?cntB(cogs+gpT):''}>${baht(cogs+gpT)}</b>${cmp?prDelta(cogs+gpT,B.T.c,1):''}${sp(r=>r.c,PRC.c)}</div>
+   <div class="stat"><span>กำไรขั้นต้น</span><b class="num"${anim?cntB(gross):''} style="color:${gross>=0?'var(--ok,#2e7d32)':'var(--chili)'}">${baht(gross)}</b><small class="muted">ส่วนต่าง ${gm}%${vatT?' · หัก VAT '+baht(vatT):''}</small>${sp(r=>r.s-r.c,PRC.p)}</div>
+   <div class="stat"><span>บิล</span><b class="num"${anim?cntB(A.T.o,'i'):''}>${A.T.o}</b><small class="muted">🍜 ${A.T.f} ชาม${A.T.dr?' · 🥤 น้ำ '+A.T.dr:''}</small></div></div>
+  <div class="card prcard"><div class="prh"><h3>💎 กำไรสุทธิ</h3><b style="font-size:22px;color:${net>=0?'#1a8a5c':'var(--chili)'}"${anim?cntB(net):''}>${baht(net)}</b></div>
+   <div class="kv"><span>กำไรขั้นต้น</span><b>${baht(gross)}</b></div>${oinc?`<div class="kv"><span>รายรับอื่นๆ</span><b>+${baht(oinc)}</b></div>`:''}<div class="kv"><span>รายจ่ายร้าน${wasteT?' (รวมของเสีย '+baht(wasteT)+')':''}</span><b>−${baht(exp)}</b></div></div>
+  ${nCostCard(D,A)}
+  ${A.D.length>1?`<div class="card prcard"><div class="prh"><h3>ยอดขายรายวัน</h3><div class="prlg"><span><i style="background:${PRC.s}"></i>ยอดขาย</span><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="ln" style="background:${PRC.p}"></i>กำไร</span></div></div>${prDayChart(A.D,anim)}<p class="help" style="margin:0">แตะ/ชี้ที่วันเพื่อดูตัวเลข${cmp?' · % เทียบกับ '+len+' วันก่อนหน้า':''}</p></div>`:''}`;
+  const hasFD=A.I.some(x=>x.dk)&&A.I.some(x=>!x.dk),gg=hasFD?prGrp():'all',gI=A.I.filter(x=>gg==='all'||((gg==='d')===!!x.dk)),gA=anim||PRGA;PRGA=false;PRANIM=gA;
+  const dn=prDonut([...gI].sort((x,y)=>y.s-x.s).map(x=>[x.n,x.s]),gI.reduce((s,x)=>s+x.s,0),gg==='d'?'ยอดขายน้ำ':gg==='f'?'ยอดขายอาหาร':'สัดส่วนยอดขาย'),ih=prItems(A.I);PRANIM=anim;if(gA&&!anim)setTimeout(prCount,30);
+  h+=`<div class="card prcard"><div class="prh"><h3>แยกตามเมนู · ขายดี</h3><div class="prlg"><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i style="background:${PRC.p}"></i>กำไร</span></div></div><div class="prsplit${gA?' anim':''}">${dn}<div>${ih}</div></div></div>`;
   const chs=['dinein','walkin','takeaway',...DELIV].map(c=>{const os=D.orders.filter(o=>chOf(o)===c);return [c,os.length,os.reduce((s,o)=>s+(+o.total||0),0),os.reduce((s,o)=>s+(+o.gp||0),0)]}).filter(x=>x[1]);
-  if(chs.length)h=h.replace('<div class="two">',`<div class="two"><div class="card"><h3>ยอดขายแยกช่องทาง</h3>${chs.map(([c,n,v,g])=>`<div class="kv"><span><span class="chip-ch" style="--chc:${CH[c].c}">${CH[c].n}</span> ${n} บิล</span><span>${baht(v)}${g?` <small class="muted">GP ${baht(g)}</small>`:''}</span></div>`).join('')}</div>`);
-  // top items
-  const agg={};D.orders.forEach(o=>(o.items||[]).forEach(l=>{const k=l.name;agg[k]=agg[k]||{q:0,v:0};agg[k].q+=l.qty;agg[k].v+=lineAmt(l)}));
-  const top=Object.entries(agg).sort((a,b)=>b[1].q-a[1].q).slice(0,8);
-  h+=`<div class="card"><h3>เมนูขายดี</h3>${top.length?top.map(([n,x])=>`<div class="kv"><span>${esc(n)}</span><span>${x.q} จาน · ${baht(x.v)}</span></div>`).join(''):'<p class="muted" style="margin:0">ยังไม่มีการขายในช่วงนี้</p>'}</div>`;
-  // by day
-  if(D.b-D.a>DAY){const days=[];for(let t=D.a;t<D.b&&t<=sod();t+=DAY){const e=t+DAY;days.push([t,D.orders.filter(o=>o.paidAt>=t&&o.paidAt<e).reduce((s,o)=>s+(+o.total||0),0)])}
-    const mx=Math.max(1,...days.map(d=>d[1]));
-    h+=`<div class="card"><h3>ยอดขายรายวัน</h3><div class="bars">${days.map(([t,v])=>`<div class="bar"><span class="d">${dshort(t)}</span><div class="track"><i style="width:${v/mx*100}%"></i></div><span class="v">${baht(v)}</span></div>`).join('')}</div></div>`}
-  // other income
-  if((D.inc||[]).length)h+=`<div class="card"><h3>รายรับอื่นๆ</h3>${D.inc.sort((x,y)=>y.at-x.at).map(e=>`<div class="kv"><span>${esc(e.cat||'รายรับอื่นๆ')}<small class="muted" style="display:block">${dshort(e.at)}${e.note?' · '+esc(e.note):''}</small></span><span>${baht(e.amount)}</span></div>`).join('')}<div class="kv tot"><span>รวม</span><span>${baht(oinc)}</span></div></div>`;
-  // expenses by cat
-  const ec={};D.exp.forEach(e=>ec[e.cat]=(ec[e.cat]||0)+(+e.amount||0));
-  h+=`<div class="card"><h3>รายจ่ายตามหมวด</h3>${Object.keys(ec).length?Object.entries(ec).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="kv"><span>${esc(k)}</span><span>${baht(v)}</span></div>`).join(''):'<p class="muted" style="margin:0">ไม่มีรายจ่ายร้านในช่วงนี้</p>'}${buy?`<div class="kv tot"><span>ค่าซื้อวัตถุดิบ (${D.purch.length} รายการ)</span><span>${baht(buy)}</span></div>`:''}</div></div>`;
-  h+=`<div class="sec-h"><h2>บิลที่ชำระแล้ว</h2><span class="hint">แตะเพื่อดูรายละเอียด</span></div>`;
-  h+=D.orders.length?'<div class="list">'+D.orders.slice(0,100).map(o=>`<div class="row click" data-act="bill" data-id="${o.id}"><div class="grow"><div class="t">${esc(tableLabel(o))} <span class="pill ${o.method==='cash'?'mute':'ok'}">${methodName(o.method)}</span></div><div class="s">${o.orderNo?esc(o.orderNo)+' · ':''}${dshort(o.paidAt)} ${hm(o.paidAt)} · ${linesCount(o.items)} รายการ</div></div><div class="r"><b>${baht(o.total)}</b></div></div>`).join('')+'</div>':`<div class="empty"><b>ยังไม่มีบิลในช่วงนี้</b>บิลจะขึ้นที่นี่หลังกดรับเงิน</div>`;
+  if(chs.length>1||(chs[0]&&chs[0][0]!=='dinein'))h+=`<div class="card prcard"><div class="prh"><h3>ยอดขายแยกช่องทาง</h3></div><div class="prsplit">${prDonut(chs.map(([c,n,v])=>[CH[c].n+' ('+n+')',v]),chs.reduce((s,x)=>s+x[2],0),'ทุกช่องทาง')}<div class="pri">${chs.map(([c,n,v,g])=>`<div class="kv"><span><span class="chip-ch" style="--chc:${CH[c].c}">${CH[c].n}</span> ${n} บิล</span><span>${baht(v)}${g?` <small class="muted">GP ${baht(g)}</small>`:''}</span></div>`).join('')}</div></div></div>`;
+  h+=cashCardG({out:{buy,exp:exp-wasteT},got:cash+pp+platNet+oinc,gotTxt:`เงินสด ${baht(cash)} · พร้อมเพย์ ${baht(pp)}${platGross?' · แอป(หัก GP) '+baht(platNet):''}${oinc?' · รายรับอื่น '+baht(oinc):''}`,owe:0,vat:vatT,len,rec:{purch:D.purch,exp:D.exp.filter(e=>!(e.waste||e.cat===WASTE_CAT)),inc:D.inc||[]},stock:stockList()});
+  h+=prExpG(D.exp,buy,D.purch.length);
+  h+=`<details class="card prtbl"><summary><b>🧾 บิลที่ชำระแล้ว (${D.orders.length})</b></summary>${D.orders.length?'<div class="list">'+D.orders.slice(0,100).map(o=>`<div class="row click" data-act="bill" data-id="${o.id}"><div class="grow"><div class="t">${esc(tableLabel(o))} <span class="pill ${o.method==='cash'?'mute':'ok'}">${methodName(o.method)}</span></div><div class="s">${o.orderNo?esc(o.orderNo)+' · ':''}${dshort(o.paidAt)} ${hm(o.paidAt)} · ${linesCount(o.items)} รายการ</div></div><div class="r"><b>${baht(o.total)}</b></div></div>`).join('')+'</div>':`<div class="empty"><b>ยังไม่มีบิลในช่วงนี้</b>บิลจะขึ้นที่นี่หลังกดรับเงิน</div>`}</details>`;
   return h;
 }
+if(!window.__rpEv){window.__rpEv=1;document.addEventListener('change',e=>{const id=e.target&&e.target.id;if(id!=='rpF'&&id!=='rpT')return;S.report.from=$('#rpF').value;S.report.to=$('#rpT').value;S.report.data=null;render()})}
 
 /* ---------- sheets ---------- */
 function openSheet(s){S.sheet=s;renderSheet();$('#sheet').hidden=false;document.body.classList.add('sheet-on')}
@@ -1973,7 +2003,7 @@ const incList=()=>(S.inc||[]).filter(x=>isPo()?x.shop==='po':x.shop!=='po');
 const shopTag=()=>isPo()?{shop:'po'}:{};
 function deductStock(items,menus,sign){const need={},M=menus||S.menu,k=sign||1;
   (items||[]).forEach(l=>{const m=M.find(x=>x.id===l.menuId);(m?.recipe||[]).forEach(g=>{if(g.stockId)need[g.stockId]=(need[g.stockId]||0)+(+g.qty||0)*(+l.qty||0)})});
-  Object.entries(need).forEach(([sid,q])=>{q*=k;const s=S.stock.find(x=>x.id===sid);if(!s)return;s.qty=r2((+s.qty||0)-q);write('stock/'+sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))});}
+  Object.entries(need).forEach(([sid,q])=>{q*=k;const s=S.stock.find(x=>x.id===sid);if(!s||stCut(s)==='use')return;s.qty=r2((+s.qty||0)-q);write('stock/'+sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))});}
 // ข้าวมันไก่: ตัดสต็อกรวมตอน "ปิดยอดรอบนี้" (po_close_round) · ออร์เดอร์ที่ตัดแล้วถูกยกเลิก = คืนสต็อก
 const poCutWant=st=>st==='ready'||st==='done';
 
@@ -2202,6 +2232,7 @@ function sheetMember(){const m=S.members.find(x=>x.id===S.sheet.id);if(!m)return
    <div class="sh-foot"><button class="btn danger" data-act="memDel" data-confirm="1" type="button">ลบสมาชิก</button><button class="btn pri wide" data-act="memSave" type="button">บันทึก</button></div>`;}
 
 /* stock */
+const stAva=s=>{const hue=[...String(s.name||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360,cam=can('stock')&&s.id?`<button class="stcam" data-act="stPhoto" data-id="${s.id}" type="button" title="${s.img?'เปลี่ยนรูป':'ใส่รูป'}" aria-label="${s.img?'เปลี่ยนรูป':'ใส่รูป'} ${esc(s.name)}">📷</button>`:'';return `<div class="wda stava${s.img?' has':''}" style="--h:${hue}">${s.img?`<span data-act="imgv" data-src="${esc(s.img)}" data-cap="${esc(s.name)}" class="zoomable">${thumb(s,'thumb')}</span>`:`<span class="stini" data-act="stPhoto" data-id="${s.id||''}">${esc(String(s.name||'?').slice(0,1))}</span>`}${cam}</div>`};
 const stThumb=s=>s.img?`<span data-act="imgv" data-src="${esc(s.img)}" data-cap="${esc(s.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(s,'thumb')}</span>`:thumb(s,'thumb');
 function sheetStock(){const s=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit:'กก.',qty:'',min:'',unitCost:''};
   if(!S.sheet.sphoto)S.sheet.sphoto={url:s.img||'',path:s.imgPath||'',file:null,removed:false};
@@ -2213,8 +2244,8 @@ function sheetStock(){const s=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit:
   <div class="field"><label for="sName">ชื่อ</label><input id="sName" value="${esc(s.name)}" placeholder="เช่น เส้นเล็ก" autocomplete="off"></div>
   <div class="grid2"><div class="field"><label for="sUnit">หน่วย</label><input id="sUnit" value="${esc(s.unit)}" placeholder="กก. / ถุง / ก้อน"></div><div class="field"><label for="sQty">คงเหลือตอนนี้</label><input id="sQty" inputmode="decimal" value="${s.qty??''}"></div></div>
   <div class="grid2"><div class="field"><label for="sMin">จุดสั่งซื้อ (เหลือเท่านี้ให้เตือน)</label><input id="sMin" inputmode="decimal" value="${s.min??''}"></div><div class="field"><label for="sCost">ต้นทุนต่อหน่วย (บาท)</label><input id="sCost" inputmode="decimal" value="${s.unitCost??''}"></div></div>
-  ${isPo()?`<div class="field"><label for="sGrp">หมวด</label><select id="sGrp"><option value="food" ${(S.sheet.g||stGrp(s))!=='drink'?'selected':''}>🍚 วัตถุดิบอาหาร</option><option value="drink" ${(S.sheet.g||(s.name?stGrp(s):''))==='drink'?'selected':''}>🥤 วัตถุดิบเครื่องดื่ม</option></select></div>`:''}
-  ${isPo()?`<div class="field"><label for="sCut">วิธีตัดสต็อก (ร้านข้าวมันไก่)</label><select id="sCut"><option value="sale" ${stCut(s)==='sale'?'selected':''}>ตัดตามยอดขายตอนปิดยอด — ของนับชิ้น เช่น กล่อง ช้อน ขวดน้ำ (ใส่ในสูตรเมนู)</option><option value="use" ${stCut(s)==='use'?'selected':''}>เบิกใช้ (✂️ ตัดสต็อกขายวันนี้) — ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน</option></select><span class="help">ค่าเริ่มต้นตามหน่วย: ใบ/คู่/ชิ้น/ขวด = ตามยอดขาย · กก./ลิตร = เบิกใช้</span></div>`:''}
+  ${true?`<div class="field"><label for="sGrp">หมวด</label><select id="sGrp"><option value="food" ${(S.sheet.g||stGrp(s))!=='drink'?'selected':''}>🍚 วัตถุดิบอาหาร</option><option value="drink" ${(S.sheet.g||(s.name?stGrp(s):''))==='drink'?'selected':''}>🥤 วัตถุดิบเครื่องดื่ม</option></select></div>`:''}
+  ${true?`<div class="field"><label for="sCut">วิธีตัดสต็อก</label><select id="sCut"><option value="sale" ${stCut({...s,shop:s.shop||(isPo()?'po':'')})==='sale'?'selected':''}>${isPo()?'ตัดตามยอดขายตอนปิดยอด — ของนับชิ้น เช่น กล่อง ช้อน ขวดน้ำ (ใส่ในสูตรเมนู)':'ตัดตามสูตรเมนูทุกครั้งที่รับเงิน (ค่าเดิม)'}</option><option value="use" ${stCut({...s,shop:s.shop||(isPo()?'po':'')})==='use'?'selected':''}>เบิกใช้ (✂️ ตัดสต็อกขายวันนี้) — ${isPo()?'ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน':'กระดูกต้มน้ำซุป ผัก เครื่องปรุง ที่ใช้ทั้งหม้อ'}</option></select><span class="help">${isPo()?'ค่าเริ่มต้นตามหน่วย: ใบ/คู่/ชิ้น/ขวด = ตามยอดขาย · กก./ลิตร = เบิกใช้':'เบิกใช้ = ไม่ตัดตามสูตรตอนรับเงิน แต่ตัดด้วย ✂️ แล้วเฉลี่ยต้นทุนต่อชาม'}</span></div>`:''}
   <p class="help" style="margin:0">นับของจริงแล้วแก้ "คงเหลือ" ได้ตลอด ต้นทุนต่อหน่วยจะอัปเดตเองทุกครั้งที่บันทึกการซื้อ</p></form>
   <div class="sh-foot">${S.sheet.id?`<button class="btn danger" data-act="delStock" data-confirm="1" type="button">ลบ</button><button class="btn" data-act="purchase" data-id="${S.sheet.id}" type="button">ซื้อเติม</button>`:''}<button class="btn pri wide" data-act="saveStock" type="button">บันทึก</button></div>`;
   renderSPhoto();
@@ -2678,6 +2709,9 @@ const ACT={
   photoRemove:()=>{const ph=S.sheet.photo;if(ph.preview)URL.revokeObjectURL(ph.preview);ph.preview='';ph.file=null;ph.removed=true;$('#mPhoto').value='';renderPhoto()},
   backTab:d=>{S.backTab=d.v;render()},
   stockEdit:d=>openSheet({type:'stockEdit',id:d.id||null,g:d.g||null}),
+  stPhoto:d=>{if(!can('stock'))return deny();const s=S.stock.find(x=>x.id===d.id);if(!s)return;const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+    inp.onchange=async()=>{const f=inp.files&&inp.files[0];if(!f)return;if(!/^image\//.test(f.type))return toast('เลือกไฟล์รูปภาพ','bad');toast('กำลังอัปโหลดรูป '+s.name+'…');
+      try{const up=await uploadMenuPhoto('stock/'+s.id,f),old=s.imgPath||'';const ok=await write('stock/'+s.id,r=>r.update({img:up.url,imgPath:up.path}));if(ok){s.img=up.url;s.imgPath=up.path;if(old&&old!==up.path)removePhoto(old);render();toast('📷 ใส่รูป '+s.name+' แล้ว')}}catch(e){toast('อัปโหลดรูปไม่สำเร็จ','bad')}};inp.click()},
   saveStock,
   delStock:async()=>{const old=S.stock.find(x=>x.id===S.sheet.id)||{};const ok=await write('stock/'+S.sheet.id,r=>r.delete());if(ok){if(old.imgPath)removePhoto(old.imgPath);closeSheet();toast('ลบแล้ว')}},
   purchase:d=>!can('stock')?deny():openSheet({type:'purchase',id:d.id||null}),
@@ -2741,6 +2775,7 @@ const ACT={
   qrPrint:()=>{sheetQr();setTimeout(()=>window.print(),50)},
   qrRotate:async()=>{const k=newQrKey();const ok=await write('config/settings',r=>r.update({qrKey:k}));if(ok){S.settings={...S.settings,qrKey:k};sheetQr();toast('สร้างรหัส QR ใหม่แล้ว พิมพ์ชุดใหม่ไปติดโต๊ะ')}},
   range:d=>{S.report.range=d.v;S.report.data=null;render()},
+  nGoWd:()=>{S.tab='back';S.backTab='stock';render();scrollTo(0,0);ACT.poWd({g:'food'})},
   reload:()=>{S.report.data=null;loadReport()},
   bill:d=>openSheet({type:'bill',id:d.id}),
   voidPaid:async d=>{if(!can('void'))return deny();const ok=await write('orders/'+d.id,r=>r.update({status:'void',voidedAt:Date.now()}));if(ok){closeSheet();S.report.data=null;loadReport();toast('ยกเลิกบิลแล้ว')}},
@@ -3317,6 +3352,19 @@ function viewPoReport(){const N=prRange(),lastDel=(()=>{const t=bkkDay(0),L=(S.p
    <details class="card prtbl"><summary><b>ตารางรายวัน</b></summary><div class="list">${[...A.D].reverse().filter(r=>r.o).map(r=>`<div class="row"><div class="grow"><div class="t">ส่ง${poDayName(r.d)}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(r.d))?' · '+esc(poDate(r.d)):''}</div><div class="s">${r.o} ออร์เดอร์ · ${r.f} กล่อง${r.dr?' · น้ำ '+r.dr:''}${r.u?' · ค้างจ่าย '+baht(r.u):''}</div></div><div style="text-align:right"><b>${baht(r.s)}</b><div class="s muted">ทุน ${baht(r.c)} · กำไร ${baht(r.s-r.c)}</div></div></div>`).join('')||'<div class="empty">ไม่มียอด</div>'}</div></details>`;
   return h}
 Object.assign(ACT,{cashAll:()=>{S.cashAll=!S.cashAll;render()},cashOpen:()=>{S.cashOpen=!S.cashOpen;render()},prGrp:d=>{if(prGrp()===d.v)return;S.prGrp=d.v;prLS('nl_prg',d.v);PRGA=true;render()},prRange:d=>{S.prRange=d.v==='c'?'c':+d.v;prLS('nl_prr',String(d.v));render()},prSort:d=>{S.prSort=d.v;render()}});
+function cashCardG(o){const out=o.out.buy+o.out.exp,got=o.got,owe=o.owe||0,net=got-out,stv=(o.stock||[]).reduce((a,x)=>a+Math.max(0,+x.qty||0)*(+x.unitCost||0),0),pct=out>0?Math.min(100,got/out*100):100,mx=Math.max(1,out,got+owe),col=v=>`color:${v>=0?'#1a8a5c':'var(--chili)'}`;
+  const R0=o.rec,rec=[...R0.purch.map(x=>({at:x.at,n:'🛒 ซื้อ '+(x.name||'')+(x.qty?' '+num(x.qty)+' '+(x.unit||''):''),a:-(+x.amount||0),note:x.note})),...R0.exp.map(x=>({at:x.at,n:'💸 '+(x.cat||'รายจ่าย'),a:-(+x.amount||0),note:x.note})),...R0.inc.map(x=>({at:x.at,n:'💰 '+(x.cat||'รายรับ'),a:+x.amount||0,note:x.note}))].sort((a,b)=>b.at-a.at),sh=S.cashAll?rec:rec.slice(0,6),dd=t=>{const d=new Date(t);return d.getDate()+'/'+(d.getMonth()+1)};
+  return `<div class="card prcard cash"><div class="prh"><h3>💰 ลงทุน vs ขายได้ (${o.len} วัน)</h3><div class="inrow" style="gap:6px;flex-wrap:wrap">${can('stock')?'<button class="btn sm" data-act="purchase" type="button">🛒 + ซื้อของเข้า</button>':''}${can('expenses')?'<button class="btn sm" data-act="expense" type="button">💸 + รายจ่าย</button><button class="btn sm" data-act="income" type="button">💰 + รายรับ</button>':''}</div></div>
+   <div class="cashk"><div class="cashb out"><small>เงินลงทุน (จ่ายออก)</small><b${PRANIM?cntB(out):''}>${baht(out)}</b><span>ซื้อของเข้า ${baht(o.out.buy)} · รายจ่ายร้าน ${baht(o.out.exp)}</span></div>
+    <div class="cashb in"><small>เงินที่ได้รับแล้ว</small><b${PRANIM?cntB(got):''}>${baht(got)}</b><span>${o.gotTxt}${owe?' · ค้างเก็บ '+baht(owe):''}</span></div>
+    <div class="cashb net"><small>เงินเหลือ (ได้รับ − ลงทุน${o.vat?' − VAT':''})</small><b${PRANIM?cntB(net-(o.vat||0)):''} style="${col(net-(o.vat||0))}">${baht(net-(o.vat||0))}</b><span>${owe?'ถ้าเก็บค้างครบ '+baht(net+owe):o.vat?'หัก VAT ที่ต้องนำส่ง '+baht(o.vat):'เก็บเงินครบแล้ว'}</span></div></div>
+   <div class="cashbar"><div><small>ลงทุน</small><i style="width:${out/mx*100}%;background:linear-gradient(90deg,#f6915f,#eb6834)"></i></div><div><small>ได้รับ</small><i style="width:${got/mx*100}%;background:linear-gradient(90deg,#3cc795,#1baf7a)"></i>${owe?`<i class="owe" style="width:${owe/mx*100}%"></i>`:''}</div></div>
+   <div class="cpbe"><div class="kv"><span>🎯 คืนทุนแล้ว</span><b>${Math.round(out>0?got/out*100:100)}%</b></div><div class="cpbe-m"><i style="width:${pct}%"></i></div></div>
+   <div class="kv"><span class="muted">📦 ของยังเหลือในคลัง (มูลค่าตามทุน)</span><b class="muted">${baht(stv)}</b></div>
+   <details class="cashrec" ${S.cashOpen?'open':''}><summary data-act="cashOpen"><b>📒 รายการรับ-จ่าย (${rec.length})</b></summary>
+    ${rec.length?`<div class="list">${sh.map(x=>`<div class="row"><div class="grow"><div class="t">${esc(x.n)}</div><div class="s">${dd(x.at)}${x.note?' · '+esc(x.note):''}</div></div><b style="${col(x.a)}">${x.a>0?'+':'−'}${baht(Math.abs(x.a))}</b></div>`).join('')}</div>${rec.length>6?`<button class="lnk" data-act="cashAll" type="button">${S.cashAll?'ย่อ':'ดูทั้งหมด '+rec.length+' รายการ'}</button>`:''}`:'<p class="help" style="margin:0">ยังไม่มีรายการในช่วงนี้</p>'}</details></div>`}
+function prExpG(list,buy,nb){const G={};(list||[]).forEach(x=>{const c=x.waste?WASTE_CAT:(x.cat||'อื่นๆ');G[c]=(G[c]||0)+(+x.amount||0)});const L=Object.entries(G).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...L.map(x=>x[1])),tot=L.reduce((a,x)=>a+x[1],0);
+  return `<div class="card prcard"><div class="prh"><h3>รายจ่ายร้าน</h3><b>${baht(tot)}</b></div>${L.length?`<div class="prsplit">${prDonut(L.map(([c,v])=>[(c===WASTE_CAT?'🗑 ':'')+c,v]),tot,'รายจ่ายรวม')}<div class="pri">${L.map(([c,v],i)=>`<div class="prr" title="${esc(c)} ${baht(v)}"><div class="prn"><b>${c===WASTE_CAT?'🗑 ':''}${esc(c)}</b><span class="muted">${tot?Math.round(v/tot*100):0}%</span></div><div class="prb"><span style="width:${v/mx*100}%;background:${i<6?PRCAT[i]:PROTH}"></span></div><div class="prv"><b>${baht(v)}</b></div></div>`).join('')}</div></div>`:'<p class="help" style="margin:0">ไม่มีรายจ่ายร้านในช่วงนี้</p>'}${buy?`<div class="kv tot"><span>ค่าซื้อวัตถุดิบ (${nb} รายการ)</span><span>${baht(buy)}</span></div>`:''}</div>`}
 function poCashCard(T,t0,t1,N){if(!can('expenses')&&!can('stock'))return '';const P=x=>x.shop==='po'&&x.at>=t0&&x.at<t1,sm=a=>a.reduce((s,x)=>s+(+x.amount||0),0);
   const PU=(S.purch||[]).filter(P),EX=(S.exp||[]).filter(x=>P(x)&&!x.waste&&x.cat!==WASTE_CAT),IN=(S.inc||[]).filter(P);
   const bu=sm(PU),ex=sm(EX),ic=sm(IN),out=bu+ex,got=(T.p||0)+ic,owe=T.u||0,net=got-out,stv=(S.stock||[]).filter(x=>x.shop==='po').reduce((a,x)=>a+Math.max(0,+x.qty||0)*(+x.unitCost||0),0);
@@ -3435,14 +3483,16 @@ Object.assign(ACT,{
 });
 /* ===== ข้าวมันไก่: ✂️ ตัดสต็อกขายวันนี้ (เบิกของจากคลัง → ต้นทุนต่อรอบ) ===== */
 const WASTE_CAT='ของเสีย / ตัดจำหน่าย';
-const wasteRound=()=>{const cut=+poCfg().cutAt||0;return (S.exp||[]).filter(x=>x.shop==='po'&&x.waste&&+x.at>cut)};
+const wdOK=()=>isPo()?poAdmin():can('stock');
+const wdTodayN=g=>(S.wdN||[]).filter(w=>(w.g||'food')===g&&+w.at>=sod());
+const wasteRound=()=>{if(!isPo())return (S.exp||[]).filter(x=>x.shop!=='po'&&x.waste&&+x.at>=sod());const cut=+poCfg().cutAt||0;return (S.exp||[]).filter(x=>x.shop==='po'&&x.waste&&+x.at>cut)};
 // วิธีคิดต้นทุนตามหน่วยนำเข้า: หน่วยนับเป็นชิ้น (ใบ คู่ ชิ้น ถุง…) = ใช้กล่องละ 1 · หน่วยชั่ง/ตวง (กก. กรัม ลิตร…) = เฉลี่ยตามปริมาณ
 const wdUnitM=t=>{const u=String((t&&t.unit)||'').replace(/\s|\./g,'');return /^(ใบ|คู่|ชิ้น|ถุง|อัน|ฝา|ชุด|แพ็ค|แพค|ห่อ|ซอง|ขวด|แก้ว|กล่อง|ด้าม|คัน|ม้วน|แผ่น|ลูก|ตัว|pcs|pc|ea)$/i.test(u)?'each':'share'};
 const DRINK_ST=/นม|ชา(?!ม)|กาแฟ|โกโก้|น้ำแข็ง|แก้ว|หลอด|ไซรัป|น้ำเชื่อม|โซดา|ผงชา|ฝาแก้ว|ขวดเปล่า|มัทฉะ|ช็อก|syrup|milk|tea|coffee|cup|straw/i;
 const stGrp=t=>t&&(t.grp==='drink'||t.grp==='food')?t.grp:(DRINK_ST.test((t&&t.name)||'')?'drink':'food');
 const wdRound=()=>wdOf(poRounds()[0]);
 // ===== วิธีตัดสต็อกของแต่ละรายการ: 'sale' = ตัดตามยอดขายตอนปิดยอด (ของนับชิ้น) · 'use' = เบิกใช้ (✂️ ตัดสต็อกขายวันนี้)
-const stCut=t=>t&&(t.cut==='sale'||t.cut==='use')?t.cut:(wdUnitM(t)==='each'?'sale':'use');
+const stCut=t=>t&&(t.cut==='sale'||t.cut==='use')?t.cut:(t&&t.shop!=='po'?'sale':(wdUnitM(t)==='each'?'sale':'use'));
 // ต้นทุนของนับชิ้นต่อ 1 ชิ้นของเมนู (จากสูตรเมนู เฉพาะของที่ตัดตามยอดขาย)
 function cpUnit(menuId){const m=(S.poMenu||[]).find(x=>x.id===menuId);const L=[];let c=0;(m&&m.recipe||[]).forEach(g=>{const t=(S.stock||[]).find(x=>x.id===g.stockId);if(!t||stCut(t)!=='sale')return;const v=(+g.qty||0)*(+t.unitCost||0);c+=v;L.push({n:t.name,q:+g.qty||0,u:t.unit||'',v})});return {c,L}}
 // รอบ: ปัจจุบัน / ที่ปิดยอดล่าสุด
@@ -3463,34 +3513,34 @@ function cpActual(r){const cp=cpPlan()||cpDefault(),P=cp.prod||[],L=roundOrders(
   const sb=sold.reduce((a,b)=>a+b,0),costTot=(est?per*W:B)+rows.reduce((a,x)=>a+x.sold*(x.unit+C.each),0)+oc;
   return {r,rows,bulk,B,W,sb,per,est,rev,cost:costTot,profit:rev-costTot,other,orders:L.length,nWd:W0.length,C,bulkD,BD,dq,perD}}
 
-function wdCard(g='food'){if(!isPo()||!poAdmin())return '';const gD=g==='drink',W=[...wdOf(poRounds()[0],g),...(poRounds()[1]?wdOf(poRounds()[1],g):[])],A={};
+function wdCard(g='food'){if(!wdOK())return '';const gD=g==='drink',W=isPo()?[...wdOf(poRounds()[0],g),...(poRounds()[1]?wdOf(poRounds()[1],g):[])]:wdTodayN(g),A={};
   W.forEach(w=>(w.items||[]).forEach(x=>{const a=A[x.sid]=A[x.sid]||{n:x.n,u:x.u,q:0,c:0};a.q+=+x.q||0;a.c+=(+x.q||0)*(+x.uc||0)}));
   const L=Object.values(A),tot=L.reduce((a,x)=>a+x.c,0);
-  return `<div class="card wdc"><div class="inrow" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div class="grow"><h3 style="margin:0">✂️ ตัดสต็อก${gD?'เครื่องดื่ม':''}</h3><small class="muted">${gD?'ของเบิกใช้ทำน้ำ (นม ผงชา น้ำเชื่อม…) ตัดที่นี่ แล้วหารด้วยแก้ว/ขวดที่ขายได้ · แก้ว หลอด ฝา ขวด ตัดตามยอดขายตอนปิดยอดเอง':'ของเบิกใช้ (ไก่ ข้าว น้ำปลา…) ตัดที่นี่ · ของนับชิ้น (กล่อง ช้อน ขวด) ตัดตามยอดขายตอนปิดยอดเอง'} · ของเสียกดแท็บ "ของเสีย"</small></div><button class="btn wdbtn" data-act="poWd" data-g="${g}" type="button">✂️ ตัดสต็อก${gD?'เครื่องดื่ม':'ขายวันนี้'}</button></div>
-   ${L.length?`<div class="wdl">${L.map(x=>`<div class="kv"><span>${esc(x.n)} <b>${num(x.q)}</b> ${esc(x.u||'')}</span><span>${baht(x.c)}</span></div>`).join('')}<div class="kv tot"><span>เบิกใช้แล้ว (${W.length} ครั้ง · รอบนี้+รอบที่ปิดล่าสุด)</span><b>${baht(tot)}</b></div></div>
-   <div class="inrow" style="gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="poCost" type="button">🧮 ดูต้นทุนต่อกล่อง</button><button class="btn sm danger" data-act="wdUndo" data-confirm="1" type="button">↩ ยกเลิกการตัดครั้งล่าสุด</button></div>`:''}
-   ${(()=>{const X=wasteRound();if(!X.length)return '';const t=X.reduce((a,x)=>a+(+x.amount||0),0);return `<div class="wdw"><div class="kv"><b>🗑 ตัดจำหน่าย (ของเสีย) รอบนี้</b><b style="color:var(--chili)">−${baht(t)}</b></div>${X.map(x=>`<div class="kv"><span class="muted">${esc((x.waste.items||[]).map(i=>i.n+' '+num(i.q)+' '+(i.u||'')).join(', '))}${x.waste.reason?' · '+esc(x.waste.reason):''}</span><span style="color:var(--chili)">−${baht(+x.amount||0)}</span></div>`).join('')}<button class="btn sm danger" data-act="wsUndo" data-confirm="1" type="button" style="align-self:flex-start">↩ ยกเลิกตัดจำหน่ายครั้งล่าสุด</button></div>`})()}</div>`}
-function sheetPoWd(){const s=S.sheet,gD=s.g==='drink',STA=stockList().filter(t=>stGrp(t)===(gD?'drink':'food')),ws=s.mode==='waste',ST=ws?STA:STA.filter(t=>stCut(t)==='use'),RS=poRounds();
-  if(!s.rk){const cur=RS[0];s.rk=s.r0&&RS.some(x=>x.k===s.r0)?s.r0:(RS[1]&&!roundOrders(cur).length?'last':'cur')}
+  return `<div class="card wdc"><div class="inrow" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div class="grow"><h3 style="margin:0">✂️ ตัดสต็อก${gD?'เครื่องดื่ม':''}</h3><small class="muted">${gD?'ของเบิกใช้ทำน้ำ (นม ผงชา น้ำเชื่อม…) ตัดที่นี่ แล้วหารด้วยแก้ว/ขวดที่ขายได้ · แก้ว หลอด ฝา ขวด ตัด'+(isPo()?'ตามยอดขายตอนปิดยอดเอง':'ตามสูตรตอนรับเงิน'):isPo()?'ของเบิกใช้ (ไก่ ข้าว น้ำปลา…) ตัดที่นี่ · ของนับชิ้น (กล่อง ช้อน ขวด) ตัดตามยอดขายตอนปิดยอดเอง':'ของเบิกใช้ (กระดูกต้มซุป ผัก เครื่องปรุงทั้งหม้อ) ตัดที่นี่ แล้วเฉลี่ยต่อชาม · ของอื่นตัดตามสูตรเมนูตอนรับเงินเหมือนเดิม'} · ของเสียกดแท็บ "ของเสีย"</small></div><button class="btn wdbtn" data-act="poWd" data-g="${g}" type="button">✂️ ตัดสต็อก${gD?'เครื่องดื่ม':'ขายวันนี้'}</button></div>
+   ${L.length?`<div class="wdl">${L.map(x=>`<div class="kv"><span>${esc(x.n)} <b>${num(x.q)}</b> ${esc(x.u||'')}</span><span>${baht(x.c)}</span></div>`).join('')}<div class="kv tot"><span>เบิกใช้แล้ว (${W.length} ครั้ง · ${isPo()?'รอบนี้+รอบที่ปิดล่าสุด':'วันนี้'})</span><b>${baht(tot)}</b></div></div>
+   <div class="inrow" style="gap:6px;flex-wrap:wrap">${isPo()?'<button class="btn sm" data-act="poCost" type="button">🧮 ดูต้นทุนต่อกล่อง</button>':'<button class="btn sm" data-act="tab" data-v="report" type="button">🧮 ดูต้นทุนต่อชาม</button>'}<button class="btn sm danger" data-act="wdUndo" data-confirm="1" type="button">↩ ยกเลิกการตัดครั้งล่าสุด</button></div>`:''}
+   ${(()=>{const X=wasteRound();if(!X.length)return '';const t=X.reduce((a,x)=>a+(+x.amount||0),0);return `<div class="wdw"><div class="kv"><b>🗑 ตัดจำหน่าย (ของเสีย) ${isPo()?'รอบนี้':'วันนี้'}</b><b style="color:var(--chili)">−${baht(t)}</b></div>${X.map(x=>`<div class="kv"><span class="muted">${esc((x.waste.items||[]).map(i=>i.n+' '+num(i.q)+' '+(i.u||'')).join(', '))}${x.waste.reason?' · '+esc(x.waste.reason):''}</span><span style="color:var(--chili)">−${baht(+x.amount||0)}</span></div>`).join('')}<button class="btn sm danger" data-act="wsUndo" data-confirm="1" type="button" style="align-self:flex-start">↩ ยกเลิกตัดจำหน่ายครั้งล่าสุด</button></div>`})()}</div>`}
+function sheetPoWd(){const s=S.sheet,gD=s.g==='drink',STA=stockList().filter(t=>stGrp(t)===(gD?'drink':'food')),ws=s.mode==='waste',ST=ws?STA:STA.filter(t=>stCut(t)==='use'),RS=isPo()?poRounds():[{k:'cur',start:sod(),label:'วันนี้'}];
+  if(!s.rk){const cur=RS[0];s.rk=s.r0&&RS.some(x=>x.k===s.r0)?s.r0:(RS[1]&&isPo()&&!roundOrders(cur).length?'last':'cur')}
   if(!s.rows&&ws)s.rows=[];
-  if(!s.rows){const cp=cpPlan()||{},prev=gD?[]:(cp.ing||[]).filter(x=>x.sid&&ST.some(t=>t.id===x.sid)).map(x=>x.sid),ids=prev.length?prev:ST.map(t=>t.id);s.rows=ids.map(id=>({sid:id,q:'',m:'share'}))}
+  if(!s.rows){const cp=(isPo()&&cpPlan())||{},prev=gD||!isPo()?[]:(cp.ing||[]).filter(x=>x.sid&&ST.some(t=>t.id===x.sid)).map(x=>x.sid),ids=prev.length?prev:ST.map(t=>t.id);s.rows=ids.map(id=>({sid:id,q:'',m:'share'}))}
   const R=s.rows,used=new Set(R.map(r=>r.sid)),tot=R.reduce((a,r)=>{const t=ST.find(x=>x.id===r.sid);return a+(t?(+r.q||0)*(+t.unitCost||0):0)},0);
   $('#panel').innerHTML=head('✂️ ตัดสต็อก'+(gD?'เครื่องดื่ม':''),ws?'ของเสีย / ขายไม่ได้ · ตัดออกจากคลังและบันทึกเป็นเงินที่เสียไป':'เลือกของในคลังที่เอาไปทำขาย · ใส่จำนวนที่เบิก · กดตัดสต็อก')+`<form class="sh-body" id="wdForm" onsubmit="return false" autocomplete="off">
    <div class="seg wdseg" role="group"><button type="button" data-act="wdMode" data-v="sell" aria-pressed="${!ws}">🍚 ใช้ขายวันนี้</button><button type="button" data-act="wdMode" data-v="waste" aria-pressed="${ws}">🗑 ของเสีย</button></div>
    ${!ws&&RS.length>1?`<div class="field"><label>คิดต้นทุนให้รอบไหน</label><div class="seg prgrp" role="group">${RS.map(x=>`<button type="button" data-act="wdRk" data-v="${x.k}" aria-pressed="${s.rk===x.k}">${esc(x.label)}</button>`).join('')}</div></div>`:''}
-   ${!ws?(gD?'<p class="help" style="margin:0">เฉพาะ<b>ของเบิกใช้ทำน้ำ</b> (นม ผงชา น้ำเชื่อม น้ำแข็ง) · แก้ว หลอด ฝา ขวด ตัดตามยอดขายตอนปิดยอดให้แล้ว · ต้นทุนหารด้วยจำนวนแก้ว/ขวดที่ขายได้</p>':'<p class="help" style="margin:0">เฉพาะ<b>ของเบิกใช้</b> (ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน) · ของนับชิ้น (กล่อง ช้อน ขวด) ระบบตัดตามยอดขายตอนปิดยอดให้แล้ว</p>'):''}
+   ${!ws?(gD?'<p class="help" style="margin:0">เฉพาะ<b>ของเบิกใช้ทำน้ำ</b> (นม ผงชา น้ำเชื่อม น้ำแข็ง) · แก้ว หลอด ฝา ขวด ตัดตามยอดขายตอนปิดยอดให้แล้ว · ต้นทุนหารด้วยจำนวนแก้ว/ขวดที่ขายได้</p>':(isPo()?'<p class="help" style="margin:0">เฉพาะ<b>ของเบิกใช้</b> (ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน) · ของนับชิ้น (กล่อง ช้อน ขวด) ระบบตัดตามยอดขายตอนปิดยอดให้แล้ว</p>':'<p class="help" style="margin:0">เฉพาะ<b>ของเบิกใช้</b> (เช่น กระดูกต้มน้ำซุป ผัก เครื่องปรุงที่ใช้ทั้งหม้อ) · ของที่ตัดตามสูตรเมนูตอนรับเงินอยู่แล้วไม่แสดงที่นี่ · ต้นทุนหารด้วยชามที่ขายวันนี้</p>')):''}
    ${R.length>5?`<div class="wdsrch"><input id="wdQ" type="search" placeholder="🔍 ค้นหารายการ" autocomplete="off" aria-label="ค้นหารายการ"></div>`:''}
    <div class="wdlist">${R.length?R.map((r,i)=>{const t=ST.find(x=>x.id===r.sid)||{},q=+r.q||0,left=+t.qty||0,over=q>left,pc=left>0?Math.min(100,q/left*100):(q>0?100:0),hue=[...String(t.name||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360;return `<div class="wdr2${q>0?' on':''}${over?' over':''}${left<=0?' empty':''}" data-wr="${i}" data-wn="${esc(String(t.name||'').toLowerCase())}">
-     <div class="wda" style="--h:${hue}">${t.img?thumb(t,'thumb'):esc(String(t.name||'?').slice(0,1))}</div>
+     <div class="wda stava${t.img?' has':''}" style="--h:${hue}">${t.img?thumb(t,'thumb'):esc(String(t.name||'?').slice(0,1))}</div>
      <div class="wdm"><div class="wdt"><b>${esc(t.name||'?')}</b><button class="wdx" data-act="wdDel" data-v="${i}" type="button" aria-label="เอาออก">✕</button></div>
       <div class="wds"><span class="wdchip${left<=0?' bad':''}">คลัง ${num(left)} ${esc(t.unit||'')}</span><span class="wdchip">ทุน ${baht(+t.unitCost||0)}/${esc(t.unit||'หน่วย')}</span></div>
       <div class="wdmeter"><i style="width:${pc}%"></i></div></div>
      <div class="wdctl"><div class="wdstep"><button type="button" data-act="wdStep" data-i="${i}" data-d="-1" aria-label="ลด">−</button><input data-wq="${i}" inputmode="decimal" value="${esc(r.q??'')}" placeholder="0" aria-label="จำนวน ${esc(t.name||'')}"><button type="button" data-act="wdStep" data-i="${i}" data-d="1" aria-label="เพิ่ม">+</button></div>
-      <small class="wdu">${esc(t.unit||'')}</small><b class="wdc${ws?' neg':''}" data-wc="${i}">${ws?'−':''}${baht(q*(+t.unitCost||0))}</b></div></div>`}).join(''):'<div class="empty"><b>ยังไม่ได้เลือกรายการ</b>เลือกของจากคลังด้านล่าง</div>'}</div>
+      <small class="wdu">${esc(t.unit||'')}</small><b class="wdc${ws?' neg':''}" data-wc="${i}">${ws?'−':''}${baht(q*(+t.unitCost||0))}</b></div></div>`}).join(''):(!ws&&!ST.length?'<div class="empty"><b>ยังไม่มีวัตถุดิบแบบ "เบิกใช้"</b>ตั้งที่หน้าแก้วัตถุดิบ → วิธีตัดสต็อก = เบิกใช้ (ของที่ตัดตามสูตรอยู่แล้วไม่ต้องตัดที่นี่)</div>':'<div class="empty"><b>ยังไม่ได้เลือกรายการ</b>เลือกของจากคลังด้านล่าง</div>')}</div>
    <div class="field"><label for="wdAdd">+ เพิ่มรายการจากสต็อก</label><select id="wdAdd"><option value="">— เลือกของในคลัง —</option>${ST.filter(t=>!used.has(t.id)).map(t=>`<option value="${esc(t.id)}">${esc(t.name)} · เหลือ ${num(+t.qty||0)} ${esc(t.unit||'')}</option>`).join('')}</select></div>
    ${ws?`<div class="field"><label for="wsWhy">เหตุผล</label><input id="wsWhy" maxlength="60" value="${esc(s.why||'')}" placeholder="เช่น ผักเสีย / หมดอายุ / ทำหก"><div class="chips" style="margin-top:6px">${['ผักเสีย','หมดอายุ','ของเหลือขายไม่ได้','ทำหก / ตกพื้น','ชิมทดลอง'].map(x=>`<button type="button" class="chip" data-act="wsWhy" data-v="${x}">${x}</button>`).join('')}</div></div>`:''}
    <div class="wdsum${ws?' neg':''}"><div><small>${ws?'รวมเสียเงิน (ลงรายจ่าย "'+WASTE_CAT+'")':'รวมต้นทุนที่เบิก'}</small><span id="wdCnt">${R.filter(r=>+r.q>0).length} รายการ</span></div><b id="wdTot">${ws?'−':''}${baht(tot)}</b></div>
-   ${ws?'<p class="help" style="margin:0">ตัดออกจากคลังทันที และบันทึกเป็นรายจ่ายร้าน (ติดลบในกำไรสุทธิ) · ไม่นำไปคิดต้นทุนต่อกล่อง · ตัดผิดกด "ยกเลิกตัดจำหน่ายครั้งล่าสุด"</p>':`<p class="help" style="margin:0">กดตัดแล้วสต็อกลดทันที แล้วระบบเอาไปหารกับกล่องที่ขายได้จริงของรอบที่เลือก = ต้นทุนเบิกใช้ต่อกล่อง · ไม่ใส่จำนวน = ไม่ตัด · ตัดผิดกด "ยกเลิกการตัดครั้งล่าสุด"</p>${STA.some(t=>stCut(t)==='sale')?'<p class="help" style="margin:0">ของที่ตั้งเป็น "ตัดตามยอดขาย" ไม่แสดงในรายการนี้ (เปลี่ยนได้ที่หน้าแก้วัตถุดิบ)</p>':''}`}
+   ${ws?'<p class="help" style="margin:0">ตัดออกจากคลังทันที และบันทึกเป็นรายจ่ายร้าน (ติดลบในกำไรสุทธิ) · ไม่นำไปคิดต้นทุนต่อกล่อง · ตัดผิดกด "ยกเลิกตัดจำหน่ายครั้งล่าสุด"</p>':`<p class="help" style="margin:0">กดตัดแล้วสต็อกลดทันที แล้วระบบเอาไปหารกับ${isPo()?'กล่องที่ขายได้จริงของรอบที่เลือก = ต้นทุนเบิกใช้ต่อกล่อง':'ชามที่ขายได้วันนี้ = ต้นทุนเบิกใช้ต่อชาม'} · ไม่ใส่จำนวน = ไม่ตัด · ตัดผิดกด "ยกเลิกการตัดครั้งล่าสุด"</p>${STA.some(t=>stCut(t)==='sale')?'<p class="help" style="margin:0">ของที่ตั้งเป็น "ตัดตามยอดขาย" ไม่แสดงในรายการนี้ (เปลี่ยนได้ที่หน้าแก้วัตถุดิบ)</p>':''}`}
    <p class="err" id="wdErr" role="alert"></p></form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn ${ws?'danger':'pri'} wide" data-act="wdSave" type="button">${ws?'🗑 ตัดจำหน่าย':'✂️ ตัดสต็อก'}</button></div>`;
   const F=$('#wdForm');F.addEventListener('input',wdUpd);F.addEventListener('change',e=>{if(e.target.id==='wdAdd'&&e.target.value){wdRead();const t=ST.find(x=>x.id===e.target.value);s.rows.push({sid:e.target.value,q:'',m:'share'});sheetPoWd();setTimeout(()=>{const q=document.querySelector(`[data-wq="${s.rows.length-1}"]`);if(q)q.focus()},50)}else wdUpd()})}
@@ -3502,29 +3552,30 @@ async function wdApply(items,sign){for(const x of items){const q=r2((+x.q||0)*si
 function wdIng(cp,W){const A={};W.forEach(w=>(w.items||[]).forEach(x=>{const a=A[x.sid]=A[x.sid]||{sid:x.sid,n:x.n,u:x.u,q:0,p:0,m:x.m};a.q=r2(a.q+(+x.q||0));a.p=r2(a.p+(+x.q||0)*(+x.uc||0));a.m=x.m}));
   return [...(cp.ing||[]).filter(x=>!x.sid),...Object.values(A).map(a=>({...a,m:a.m==='each'?'each':'share',...(a.m==='each'?{use:1}:{})}))]}
 Object.assign(ACT,{
-  poWd:d=>{if(!poAdmin())return deny();if(!stockList().filter(t=>stGrp(t)===(d&&d.g==='drink'?'drink':'food')).length)return toast('ยังไม่มีของในคลังหมวดนี้ — กด "+ เพิ่มวัตถุดิบ" ก่อน','bad');openSheet({type:'poWd',mode:d&&d.v==='waste'?'waste':'sell',r0:d&&d.r,g:d&&d.g==='drink'?'drink':'food'})},
+  poWd:d=>{if(!wdOK())return deny();if(!stockList().filter(t=>stGrp(t)===(d&&d.g==='drink'?'drink':'food')).length)return toast('ยังไม่มีของในคลังหมวดนี้ — กด "+ เพิ่มวัตถุดิบ" ก่อน','bad');openSheet({type:'poWd',mode:d&&d.v==='waste'?'waste':'sell',r0:d&&d.r,g:d&&d.g==='drink'?'drink':'food'})},
   wdStep:d=>{const i=+d.i,inp=document.querySelector(`[data-wq="${i}"]`);if(!inp)return;const r=S.sheet.rows[i],t=stockList().find(x=>x.id===r.sid),st=wdUnitM(t)==='each'?1:0.5;inp.value=String(Math.max(0,r2((parseFloat(inp.value)||0)+st*(+d.d))))||'';if(inp.value==='0')inp.value='';wdUpd()},
   wdRk:d=>{wdRead();S.sheet.rk=d.v;sheetPoWd()},
   wdMode:d=>{wdRead();const s=S.sheet;if(s.mode===(d.v==='waste'?'waste':'sell'))return;s.mode=d.v==='waste'?'waste':'sell';s.rows=null;sheetPoWd()},
   wsWhy:d=>{const w=$('#wsWhy');if(w){w.value=d.v;S.sheet.why=d.v}},
-  wsUndo:async()=>{if(!poAdmin())return deny();const X=wasteRound().sort((a,b)=>b.at-a.at);if(!X.length)return;const x=X[0];
+  wsUndo:async()=>{if(!wdOK())return deny();const X=wasteRound().sort((a,b)=>b.at-a.at);if(!X.length)return;const x=X[0];
     await wdApply((x.waste&&x.waste.items)||[],-1);const ok=await write('expenses/'+x.id,r=>r.delete());if(ok)S.exp=(S.exp||[]).filter(e=>e.id!==x.id);render();toast('↩ ยกเลิกตัดจำหน่ายแล้ว คืนของเข้าคลัง')},
   wdDel:d=>{wdRead();S.sheet.rows.splice(+d.v,1);sheetPoWd()},
-  wdSave:async()=>{if(!poAdmin())return deny();wdRead();const ST=stockList(),e=$('#wdErr');
+  wdSave:async()=>{if(!wdOK())return deny();wdRead();const ST=stockList(),e=$('#wdErr');
     const items=S.sheet.rows.filter(r=>+r.q>0).map(r=>{const t=ST.find(x=>x.id===r.sid)||{};return {sid:r.sid,n:t.name||'',u:t.unit||'',q:r2(+r.q),uc:+t.unitCost||0,m:r.m==='each'?'each':'share'}});
     if(!items.length)return e.textContent='ใส่จำนวนที่เบิกอย่างน้อย 1 รายการ';
     if(S.sheet.mode==='waste'){const why=String(S.sheet.why||'').trim().slice(0,60),amt=r2(items.reduce((a,x)=>a+x.q*x.uc,0));
       if(!confirm('ตัดจำหน่าย (ของเสีย)?\n\n'+items.map(x=>'• '+x.n+' '+num(x.q)+' '+x.u+' (−'+baht(x.q*x.uc)+')').join('\n')+'\n\nรวมเสียเงิน −'+baht(amt)+(why?'\nเหตุผล: '+why:'')))return;
       const b=$('[data-act=wdSave]');if(b)b.disabled=true;await wdApply(items,1);
-      const ref=S.db.collection('expenses').doc(),doc={cat:WASTE_CAT,amount:amt,note:items.map(x=>x.n+' '+num(x.q)+' '+x.u).join(', ')+(why?' · '+why:''),at:Date.now(),shop:'po',waste:{reason:why,items:items.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc})),by:S.me||''}};
+      const ref=S.db.collection('expenses').doc(),doc={cat:WASTE_CAT,amount:amt,note:items.map(x=>x.n+' '+num(x.q)+' '+x.u).join(', ')+(why?' · '+why:''),at:Date.now(),...(isPo()?{shop:'po'}:{}),waste:{reason:why,items:items.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc})),by:S.me||''}};
       const ok=await write('expenses/'+ref.id,r=>r.set(doc));if(ok&&!(S.exp||[]).some(x=>x.id===ref.id))S.exp=[{id:ref.id,...doc},...(S.exp||[])];closeSheet();render();toast('🗑 ตัดจำหน่ายแล้ว −'+baht(amt));return}
     if(!confirm('ตัดสต็อก?\n\n'+items.map(x=>'• '+x.n+' '+num(x.q)+' '+x.u+' ('+baht(x.q*x.uc)+')').join('\n')))return;
     const b=$('[data-act=wdSave]');if(b)b.disabled=true;
     await wdApply(items,1);
+    if(!isPo()){const ref=S.db.collection('stockwd').doc(),doc={at:Date.now(),g:S.sheet.g==='drink'?'drink':'food',by:S.me||'',items:items.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc}))};const ok=await write('stockwd/'+ref.id,r=>r.set(doc));if(ok&&!(S.wdN||[]).some(x=>x.id===ref.id))S.wdN=[{id:ref.id,...doc},...(S.wdN||[])];closeSheet();render();toast('✂️ ตัดสต็อกแล้ว '+items.length+' รายการ · ต้นทุนต่อชามวันนี้อัปเดตแล้ว');return}
     const RS=poRounds(),rr=RS.find(x=>x.k===S.sheet.rk)||RS[0],cp0=cpPlan()||{...cpDefault(),ing:[]},keep=RS.map(x=>x.start),gg=S.sheet.g==='drink'?'drink':'food',all=[...(cp0.wd||[]).filter(w=>w.r!=null?keep.includes(+w.r):+w.at>RS[0].start),{at:Date.now(),r:rr.start,g:gg,by:S.me||'',items}];
     const plan={...cp0,ing:gg==='food'?wdIng(cp0,all.filter(w=>(w.g||'food')==='food'&&(w.r!=null?+w.r:RS[0].start)===rr.start)):cp0.ing,wd:all,at:Date.now()};const ok=await write('config/po',r=>r.update({costPlan:plan}));
     if(ok)S.po={...poCfg(),costPlan:plan};closeSheet();render();S.cpRk=rr.k;toast('✂️ ตัดสต็อกแล้ว '+items.length+' รายการ · ต้นทุน'+(rr.k==='last'?'รอบที่ปิดแล้ว':'รอบนี้')+'อัปเดตแล้ว')},
-  wdUndo:async()=>{if(!poAdmin())return deny();const cp0=cpPlan(),W=[...((cp0&&cp0.wd)||[])].sort((a,b)=>a.at-b.at);if(!W.length)return toast('ยังไม่มีการตัด');const last=W[W.length-1];
+  wdUndo:async()=>{if(!wdOK())return deny();if(!isPo()){const L=[...(S.wdN||[])].filter(w=>+w.at>=sod()).sort((a,b)=>b.at-a.at);if(!L.length)return toast('ยังไม่มีการตัดวันนี้');const x=L[0];await wdApply(x.items||[],-1);const ok=await write('stockwd/'+x.id,r=>r.delete());if(ok)S.wdN=(S.wdN||[]).filter(w=>w.id!==x.id);render();return toast('↩ คืนสต็อกครั้งล่าสุดแล้ว')}const cp0=cpPlan(),W=[...((cp0&&cp0.wd)||[])].sort((a,b)=>a.at-b.at);if(!W.length)return toast('ยังไม่มีการตัด');const last=W[W.length-1];
     await wdApply(last.items||[],-1);const W2=(cp0.wd||[]).filter(w=>w!==last&&!(w.at===last.at&&w.by===last.by));const rs=last.r,same=W2.filter(w=>w.r===rs&&(w.g||'food')==='food');
     const plan={...cp0,ing:(last.g||'food')!=='food'?cp0.ing:same.length?wdIng(cp0,same):(cp0.ing||[]).map(x=>x.sid?{...x,q:0,p:0}:x),wd:W2,at:Date.now()};
     const ok=await write('config/po',r=>r.update({costPlan:plan}));if(ok)S.po={...poCfg(),costPlan:plan};render();toast('↩ คืนสต็อกครั้งล่าสุดแล้ว')}
@@ -3869,7 +3920,9 @@ function sheetIncome(){const cats=incCats();
    <div class="field"><label for="iWho">รับเงินจาก (ถ้ามี)</label><input id="iWho" maxlength="60" placeholder="ชื่อผู้เช่า / ผู้จ่าย" autocomplete="off"></div></form>
    <div class="sh-foot"><button class="btn pri wide" data-act="saveInc" type="button">บันทึกรายรับ</button></div>`;
   $('#iCat').addEventListener('change',e=>{$('#iNewWrap').hidden=e.target.value!=='__new';if(!$('#iNewWrap').hidden)$('#iNew').focus()});setTimeout(()=>$('#iAmt')?.focus(),60)}
-const catBar=k=>`<div class="catbar"><span class="muted">${k==='incCats'?'ประเภท':'หมวด'}:</span>${listCur(k).map(c=>`<span class="chip">${esc(c)}</span>`).join('')}<button class="btn sm" data-act="catList" data-k="${k}" type="button">⚙ จัดการ${k==='incCats'?'ประเภท':'หมวด'}</button></div>`;
+const CAT_IC=[[/เช่า/,'🏠'],[/แรง|เงินเดือน|ลูกจ้าง|พนักงาน/,'👷'],[/ไฟ|น้ำ(?!มัน)|ประปา/,'💡'],[/แก๊ส|ก๊าซ|ถ่าน/,'🔥'],[/อุปกรณ์|เครื่องมือ|ภาชนะ/,'🧰'],[/คอมมิชชั่น|ฝากขาย/,'🤝'],[/ขายของเหลือ|ของเก่า|รีไซเคิล/,'♻️'],[/สนับสนุน|สปอนเซอร์/,'🎗️'],[/ของเสีย|ตัดจำหน่าย/,'🗑️'],[/ส่ง|ขนส่ง|น้ำมัน|เดินทาง/,'🛵'],[/โฆษณา|การตลาด|โปรโมท/,'📣'],[/ภาษี|vat/i,'🧾'],[/ซ่อม|บำรุง/,'🔧'],[/เน็ต|โทรศัพท์|อินเทอร์เน็ต|wifi/i,'📶'],[/ทิป|tip/i,'💝'],[/ดอกเบี้ย|ธนาคาร/,'🏦'],[/อื่น/,'✨']];
+const catIcon=c=>{for(const [re,ic] of CAT_IC)if(re.test(c||''))return ic;return '🏷️'};
+const catBar=k=>`<div class="catbar"><span class="cblabel">${k==='incCats'?'💰 ประเภท':'💸 หมวด'}</span><div class="cbchips">${listCur(k).map((c,i)=>`<span class="cbchip" style="--h:${(i*47+(k==='incCats'?150:12))%360}"><i>${catIcon(c)}</i>${esc(c)}</span>`).join('')}</div><button class="btn sm goldbtn" data-act="catList" data-k="${k}" type="button">⚙️ จัดการ${k==='incCats'?'ประเภท':'หมวด'}</button></div>`;
 const LIST_NAME={expCats:'หมวดรายจ่าย',incCats:'ประเภทรายรับอื่นๆ'};
 const listCur=k=>k==='incCats'?incCats():expCats();
 const setList=(k,items)=>{S.lists=S.lists||{};S.lists[k]={items}};
