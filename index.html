@@ -1021,6 +1021,22 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 .prv .dscl{color:#b45309!important;font-weight:600}.prv .dscl s{color:var(--muted);font-weight:400}
 .prr2 .prn b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3;word-break:break-word}
 .prn .hot{white-space:nowrap;display:inline-block}
+.stava.tap{cursor:pointer}.stava .stcam2{position:absolute;inset:0;border-radius:13px;display:grid;place-items:center;font-size:18px;background:rgba(0,0,0,.38);opacity:0;transition:opacity .2s}
+.stava.tap:hover .stcam2,.stava.tap:focus-visible .stcam2{opacity:1}.stava.tap:active{transform:scale(.95)}
+@media (hover:none){.stava.tap:not(.has) .stcam2{opacity:0}}
+.stbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 8px}.stbar .muted{font-size:12.5px}
+.sttw{overflow-x:auto;border-radius:16px;border:1px solid var(--line);background:var(--surface);box-shadow:0 6px 18px rgba(0,0,0,.06)}
+.stt{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;font-variant-numeric:tabular-nums}
+.stt thead th{position:sticky;top:0;z-index:1;text-align:left;padding:10px 10px;font-size:12px;font-weight:600;color:var(--muted);background:color-mix(in srgb,var(--surface) 92%,#14b8a6);border-bottom:1px solid var(--line);white-space:nowrap}
+.stt th button{border:0;background:none;font:inherit;color:inherit;cursor:pointer;padding:0}.stt th button.on{color:#0f766e;font-weight:700}
+.stt td{padding:8px 10px;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);white-space:nowrap;vertical-align:middle}
+.stt .r{text-align:right}.stt td.av{width:46px;padding:6px 4px 6px 10px}.stt td.av .wda{width:38px;height:38px;font-size:15px;border-radius:11px}
+.stt tbody tr{transition:background .15s}.stt tbody tr.click{cursor:pointer}.stt tbody tr:hover{background:rgba(20,184,166,.07)}
+.stt tbody tr:nth-child(even){background:color-mix(in srgb,var(--surface) 96%,var(--fg))}.stt tbody tr:nth-child(even):hover{background:rgba(20,184,166,.09)}
+.stt tr.low td:first-child{box-shadow:inset 3px 0 0 #eda100}.stt tr.out td:first-child{box-shadow:inset 3px 0 0 #e34948}
+.stt tr.out .qn{color:#c62828}.stt tr.low:not(.out) .qn{color:#b45309}.stt .qn{font-size:16px}
+.stp.ok{color:#14805a;background:rgba(27,175,122,.14)}
+.stt tbody tr:last-child td{border-bottom:0}
 </style>
 </head>
 <body>
@@ -1624,6 +1640,13 @@ function viewBack(){
     h+=low.length?'<div class="stl">'+low.map(s=>{const q=+s.qty||0;return `<div class="str low${q<=0?' out':''}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stAva(s)}<div class="wdm"><div class="wdt"><b>${esc(s.name)}</b><span class="stp ${q<=0?'out':'low'}">${q<=0?'หมด':'ใกล้หมด'}</span></div><div class="wds"><span class="wdchip${q<=0?' bad':''}">เหลือ ${num(q)} ${esc(s.unit)}</span><span class="wdchip">จุดสั่งซื้อ ${num(s.min)} ${esc(s.unit)}</span></div></div><button class="btn sm pri" data-act="purchase" data-id="${s.id}" type="button">🛒 ซื้อเติม</button></div>`}).join('')+'</div>':`<div class="empty"><b>ของยังพอใช้ทุกรายการ</b>รายการที่ใกล้หมดจะขึ้นที่นี่ให้ซื้อเติมได้ทันที</div>`;
     h+=`<div class="sec-h"><h2>${gD?'วัตถุดิบเครื่องดื่มทั้งหมด':'วัตถุดิบทั้งหมด'}</h2><button class="btn sm goldbtn" data-act="stockEdit" data-g="${gD?'drink':'food'}" type="button">＋ เพิ่มวัตถุดิบ${gD?'เครื่องดื่ม':''}</button></div>`;
     if(!SL.length)return h+`<div class="empty"><b>ยังไม่มีวัตถุดิบ</b>${gD?"เพิ่ม นม ผงชา น้ำเชื่อม แก้ว หลอด ฝา":isPo()?"เพิ่มข้าวสาร ไก่ ซอส แตงกวา กล่อง":"เพิ่มเส้น ลูกชิ้น เนื้อสัตว์ ผัก"} เพื่อติดตามของคงเหลือและต้นทุน</div>`;
+    const lay=(()=>{try{return localStorage.getItem('nl_stlay')||'card'}catch(e){return 'card'}})();
+    h+=`<div class="stbar"><div class="seg prgrp" role="group"><button type="button" data-act="stLay" data-v="card" aria-pressed="${lay!=='table'}">▦ การ์ด</button><button type="button" data-act="stLay" data-v="table" aria-pressed="${lay==='table'}">☰ ตาราง</button></div><span class="muted">${SL.length} รายการ · มูลค่าคลัง ${baht(SL.reduce((a,x)=>a+Math.max(0,+x.qty||0)*(+x.unitCost||0),0))}</span></div>`;
+    if(lay==='table'){const k=S.stSort||'name',dir=S.stDir||1,V={name:x=>String(x.name||''),qty:x=>+x.qty||0,cost:x=>+x.unitCost||0,val:x=>(+x.qty||0)*(+x.unitCost||0),st:x=>(+x.qty||0)<=0?0:isLow(x)?1:2},f=V[k]||V.name;
+      const L=[...SL].sort((a,b)=>{const A=f(a),B=f(b);return (typeof A==='string'?A.localeCompare(B,'th'):A-B)*dir});
+      const th=(key,t,cl='')=>`<th class="${cl}"><button type="button" data-act="stSort" data-v="${key}" class="${k===key?'on':''}">${t}${k===key?(dir>0?' ▲':' ▼'):''}</button></th>`;
+      h+=`<div class="sttw"><table class="stt"><thead><tr><th></th>${th('name','วัตถุดิบ')}${th('qty','คงเหลือ','r')}<th class="r">จุดสั่งซื้อ</th>${th('cost','ทุน/หน่วย','r')}${th('val','มูลค่า','r')}${isPo()?'<th>วิธีตัด</th>':''}${th('st','สถานะ')}</tr></thead><tbody>${L.map(s=>{const q=+s.qty||0,lw=isLow(s);return `<tr class="click${lw?' low':''}${q<=0?' out':''}" data-act="stockEdit" data-id="${s.id}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}><td class="av">${stAva(s)}</td><td><b>${esc(s.name)}</b></td><td class="r"><b class="qn">${num(q)}</b> <small>${esc(s.unit||'')}</small></td><td class="r muted">${num(+s.min||0)}</td><td class="r">${baht(+s.unitCost||0)}</td><td class="r">${baht(q*(+s.unitCost||0))}</td>${isPo()?`<td><span class="wdchip ${stCut(s)==='sale'?'sale':'use'}">${stCut(s)==='sale'?'ตามยอดขาย':'เบิกใช้'}</span></td>`:''}<td>${q<=0?'<span class="stp out">หมด</span>':lw?'<span class="stp low">ต้องเติม</span>':'<span class="stp ok">พอ</span>'}</td></tr>`}).join('')}</tbody></table></div>`;
+      return h}
     h+='<div class="stl">'+SL.map(s=>{const q=+s.qty||0,m=+s.min||0,pct=Math.min(100,m>0?q/(m*3)*100:100),lw=isLow(s),val=q*(+s.unitCost||0);
       return `<div class="str click${lw?' low':''}${q<=0?' out':''}" data-act="stockEdit" data-id="${s.id}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stAva(s)}<div class="wdm"><div class="wdt"><b>${esc(s.name)}</b>${lw?`<span class="stp ${q<=0?'out':'low'}">${q<=0?'หมด':'ต้องเติม'}</span>`:''}</div>
        <div class="wds"><span class="wdchip">ทุน ${baht(s.unitCost||0)}/${esc(s.unit)}</span>${isPo()?`<span class="wdchip ${stCut(s)==='sale'?'sale':'use'}">${stCut(s)==='sale'?'ตัดตามยอดขาย':'เบิกใช้'}</span>`:''}${s.buyPer&&s.buyUnit?`<span class="wdchip">1 ${esc(s.buyUnit)} ≈ ${num(s.buyPer)} ${esc(s.unit)}</span>`:''}</div>
@@ -2242,7 +2265,7 @@ function sheetMember(){const m=S.members.find(x=>x.id===S.sheet.id);if(!m)return
    <div class="sh-foot"><button class="btn danger" data-act="memDel" data-confirm="1" type="button">ลบสมาชิก</button><button class="btn pri wide" data-act="memSave" type="button">บันทึก</button></div>`;}
 
 /* stock */
-const stAva=s=>{const hue=[...String(s.name||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360,cam=can('stock')&&s.id?`<button class="stcam" data-act="stPhoto" data-id="${s.id}" type="button" title="${s.img?'เปลี่ยนรูป':'ใส่รูป'}" aria-label="${s.img?'เปลี่ยนรูป':'ใส่รูป'} ${esc(s.name)}">📷</button>`:'';return `<div class="wda stava${s.img?' has':''}" style="--h:${hue}">${s.img?`<span data-act="imgv" data-src="${esc(s.img)}" data-cap="${esc(s.name)}" class="zoomable">${thumb(s,'thumb')}</span>`:`<span class="stini" data-act="stPhoto" data-id="${s.id||''}">${esc(String(s.name||'?').slice(0,1))}</span>`}${cam}</div>`};
+const stAva=s=>{const hue=[...String(s.name||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360,ok=can('stock')&&s.id,lb=(s.img?'เปลี่ยนรูป ':'ใส่รูป ')+(s.name||'');return `<div class="wda stava${s.img?' has':''}${ok?' tap':''}" style="--h:${hue}"${ok?` data-act="stPhoto" data-id="${s.id}" role="button" tabindex="0" title="${esc(lb)}" aria-label="${esc(lb)}"`:''}>${s.img?thumb(s,'thumb'):`<span class="stini">${esc(String(s.name||'?').slice(0,1))}</span>`}${ok?'<span class="stcam2" aria-hidden="true">📷</span>':''}</div>`};
 const stThumb=s=>s.img?`<span data-act="imgv" data-src="${esc(s.img)}" data-cap="${esc(s.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(s,'thumb')}</span>`:thumb(s,'thumb');
 function sheetStock(){const s=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit:'กก.',qty:'',min:'',unitCost:''};
   if(!S.sheet.sphoto)S.sheet.sphoto={url:s.img||'',path:s.imgPath||'',file:null,removed:false};
@@ -2718,6 +2741,8 @@ const ACT={
   sPhotoRemove:()=>{const ph=S.sheet.sphoto;if(ph.preview)URL.revokeObjectURL(ph.preview);ph.preview='';ph.file=null;ph.removed=true;S.sheet.dirty=true;$('#sPhoto').value='';renderSPhoto()},
   photoRemove:()=>{const ph=S.sheet.photo;if(ph.preview)URL.revokeObjectURL(ph.preview);ph.preview='';ph.file=null;ph.removed=true;$('#mPhoto').value='';renderPhoto()},
   backTab:d=>{S.backTab=d.v;render()},
+  stLay:d=>{try{localStorage.setItem('nl_stlay',d.v)}catch(e){}render()},
+  stSort:d=>{if(S.stSort===d.v)S.stDir=-(S.stDir||1);else{S.stSort=d.v;S.stDir=d.v==='name'?1:-1}render()},
   stockEdit:d=>openSheet({type:'stockEdit',id:d.id||null,g:d.g||null}),
   stPhoto:d=>{if(!can('stock'))return deny();const s=S.stock.find(x=>x.id===d.id);if(!s)return;const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
     inp.onchange=async()=>{const f=inp.files&&inp.files[0];if(!f)return;if(!/^image\//.test(f.type))return toast('เลือกไฟล์รูปภาพ','bad');toast('กำลังอัปโหลดรูป '+s.name+'…');
