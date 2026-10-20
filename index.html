@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1050">
+<meta name="app-version" content="2026.10.20-1105">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -2841,8 +2841,8 @@ function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
   const why=st.open?`รับออร์เดอร์ถึง ${st.closeDate!==bkkDay(0)?esc(poDate(st.closeDate))+' ':''}${esc(c.cutoff)} น. · ส่ง${[bkkDay(0),bkkDay(1)].includes(st.deliverDate)?poDayName(st.deliverDate)+' '+esc(poDate(st.deliverDate)):' '+esc(poDate(st.deliverDate))}${c.window?' · '+esc(c.window):''}`
     :st.reason==='after'?(st.round?`ปิดรับรอบส่ง ${esc(poDate(st.deliverDate))} แล้ว · กด "กำหนดรอบส่ง" เพื่อเปิดรอบใหม่`:`เลยเวลาปิดรับ ${esc(c.cutoff)} น. ของวันนี้แล้ว · เปิดรับอัตโนมัติพรุ่งนี้${c.openFrom?' '+esc(c.openFrom)+' น.':''}`)
     :st.reason==='before'?`จะเปิดรับ${st.openDate?' '+esc(poDate(st.openDate)):''} เวลา ${esc(c.openFrom||'00:00')} น.`:'ลูกค้าเข้ามาดูเมนูได้ แต่สั่งไม่ได้';
-  return `<div class="card pohead ${st.open?'on':'off'}"><div class="pohead-r"><div class="grow"><b>${st.open?'● เปิดรับพรีออเดอร์':c.open?'● ปิดรับชั่วคราว (นอกเวลา)':'● ปิดรับออร์เดอร์'}</b><small>${why}</small></div>
-    ${own?`<button class="btn ${c.open?'danger':'pri'}" data-act="poOpen" type="button">${c.open?'ปิดรับ':'เปิดรับออร์เดอร์'}</button>`:''}</div>
+  return `<div class="card pohead ${st.open?'on':'off'}"><div class="pohead-r"><div class="grow"><b>${st.open?'● เปิดรับออร์เดอร์อยู่':'● ปิดรับออร์เดอร์'}</b><small>${why}</small></div>
+    ${own?`<button class="btn ${st.open?'danger':'pri'}" data-act="poOpen" type="button">${st.open?'ปิดรับ':'เปิดรับออร์เดอร์'}</button>`:''}</div>
     ${['owner','chef'].includes(S.role)?`<div class="inrow" style="gap:6px;flex-wrap:wrap;align-items:center"><button class="btn sm" data-act="poRound" type="button">📅 กำหนดรอบส่ง</button><span class="help" style="margin:0">${st.round?'รอบส่ง '+esc(poDate(st.deliverDate))+' · ปิดรับ '+esc(poDate(st.closeDate))+' '+esc(c.cutoff||'20:00')+' น.':'อัตโนมัติ: สั่งวันนี้ ส่ง'+(+c.leadDays?'อีก '+(+c.leadDays)+' วัน':'วันนี้')}</span></div>`:''}
     ${st.reason==='after'&&['owner','chef'].includes(S.role)?`<div class="inrow" style="gap:6px;flex-wrap:wrap"><a class="btn pri sm" href="preorder.html?staff=1" target="_blank" rel="noopener">➕ สั่งเพิ่มให้ลูกค้า (หลังปิดรับ)</a><span class="help" style="margin:0">เฉพาะแม่ครัว / แอดมิน · รอบส่ง${poDayName(st.deliverDate)}</span></div>`:''}
     ${own?`<div class="inrow" style="gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="poQr" type="button">ลิงก์ / QR ให้ลูกค้า</button><button class="btn sm" data-act="poSet" type="button">ตั้งค่าร้านพรีออเดอร์</button></div>`:''}
@@ -3108,7 +3108,18 @@ Object.assign(ACT,{
     S.po={...poCfg(),roundDate:d,closeDate:cd||'',cutoff:t||poCfg().cutoff,openDate:od,openFrom:of,...(w!==null?{window:w}:{})};closeSheet();render();toast('📅 ตั้งรอบส่ง '+poDate(d)+' แล้ว')},
   poRoundClear:async()=>{await poSaveCancel();const w=poWinArg();const {error}=await SB.rpc('po_set_round',{p_round:'',p_close:'',p_cutoff:'',p_window:w,p_open_date:''});if(error)return toast('ทำไม่สำเร็จ: '+error.message,'bad');
     S.po={...poCfg(),roundDate:'',closeDate:'',openDate:'',...(w!==null?{window:w}:{})};closeSheet();render();toast('กลับไปใช้รอบส่งอัตโนมัติแล้ว')},
-  poOpen:async()=>{if(S.role!=='owner')return deny();const on=!poCfg().open;if(on&&shopClosed('po'))return toast('🔒 ร้านข้าวมันไก่ปิดอยู่ · กด "เปิดร้าน" ด้านบนก่อน','bad');const ok=await write('config/po',r=>r.set({...poCfg(),open:on}));if(ok){S.po={...poCfg(),open:on};render();toast(on?'เปิดรับออร์เดอร์แล้ว':'ปิดรับออร์เดอร์แล้ว')}},
+  poOpen:async()=>{if(S.role!=='owner')return deny();const c=poCfg(),st=poState();
+    if(st.open){const ok=await write('config/po',r=>r.set({...poCfg(),open:false}));if(ok){S.po={...poCfg(),open:false};render();toast('ปิดรับออร์เดอร์แล้ว · ลูกค้าสั่งไม่ได้จนกว่าจะกดเปิดรับ')}return}
+    if(shopClosed('po'))return toast('🔒 ร้านข้าวมันไก่ปิดอยู่ · กด "เปิดร้าน" ด้านบนก่อน','bad');
+    let st2=st;if(!c.open){const ok=await write('config/po',r=>r.set({...poCfg(),open:true}));if(!ok)return;S.po={...poCfg(),open:true};st2=poState()}
+    if(!st2.open&&st2.reason==='after'){const today=bkkDay(0),rd=st2.deliverDate>=today?st2.deliverDate:today;
+      if(!confirm('เลยเวลาปิดรับแล้ว\nเปิดรับต่อถึง 23:59 น. คืนนี้ (รอบส่ง '+poDate(rd)+') ใช่ไหม?\n\nรับพอแล้วกด "ปิดรับ" ได้ทันที'))return render();
+      const {error}=await SB.rpc('po_set_round',{p_round:rd,p_close:today,p_cutoff:'23:59',p_window:null,p_open_date:null,p_open_from:null});if(error)return toast('เปิดรับไม่สำเร็จ: '+error.message,'bad');
+      S.po={...poCfg(),roundDate:rd,closeDate:today,cutoff:'23:59'}}
+    else if(!st2.open&&st2.reason==='before'){if(!confirm('ยังไม่ถึงเวลาเปิดรับที่ตั้งไว้\nเปิดรับเลยตอนนี้ใช่ไหม?'))return render();
+      const {error}=await SB.rpc('po_set_round',{p_round:c.roundDate||'',p_close:c.closeDate||'',p_cutoff:null,p_window:null,p_open_date:'',p_open_from:''});if(error)return toast('เปิดรับไม่สำเร็จ: '+error.message,'bad');
+      S.po={...poCfg(),openDate:'',openFrom:''}}
+    render();toast(poState().open?'เปิดรับออร์เดอร์แล้ว':'ยังเปิดรับไม่ได้ · ตรวจวัน/เวลาใน "กำหนดรอบส่ง"',poState().open?'':'bad')},
   poSet:()=>{if(S.role!=='owner')return deny();openSheet({type:'poSet'})},
   poQr:()=>openSheet({type:'poQr'}),
   poQrPrint:()=>{sheetPoQr();setTimeout(()=>window.print(),50)},
