@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1932">
+<meta name="app-version" content="2026.10.20-1935">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1096,6 +1096,13 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 .sb-out i{background:#fff;animation:sbPulse 1s ease-in-out infinite}
 @keyframes sbPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}50%{box-shadow:0 0 0 5px rgba(255,255,255,0)}}
 @media (prefers-reduced-motion:reduce){.sb-out i{animation:none}}
+.top .hbtn,.top .modesel{border-radius:13px;min-height:38px;border:1px solid color-mix(in srgb,var(--line) 70%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 92%,#fff),color-mix(in srgb,var(--surface) 82%,var(--sunk)));box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 3px 10px rgba(0,0,0,.08);font-weight:600;transition:transform .15s,box-shadow .2s,border-color .2s}
+.top .hbtn:hover,.top .modesel:hover{transform:translateY(-1px);border-color:rgba(20,184,166,.6);box-shadow:0 0 0 3px rgba(20,184,166,.14),0 6px 16px rgba(13,148,136,.18)}
+.top .modesel{padding:2px 6px 2px 12px;color:var(--muted)}.top .modesel span{font-weight:600}
+.top .modesel select{color:#fff;font-weight:700;padding:5px 26px 5px 12px;border-radius:9px;background:linear-gradient(135deg,#14b8a6,#0f766e) no-repeat;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='white' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"),linear-gradient(135deg,#14b8a6,#0f766e);background-repeat:no-repeat;background-position:right 9px center,0 0;box-shadow:0 0 0 1px rgba(45,212,191,.5),0 2px 8px rgba(13,148,136,.3)}
+.top .modesel select option{color:#222;background:#fff}
+.top .hbtn.hout{color:#c62828}.top .hbtn.hout:hover{border-color:rgba(227,73,72,.6);box-shadow:0 0 0 3px rgba(227,73,72,.12),0 6px 16px rgba(227,73,72,.18)}
+.top .hbtn.hout[data-armed]{color:#fff!important;background:linear-gradient(135deg,#f0525a,#c62828)!important;border:0!important;box-shadow:0 0 0 3px rgba(229,56,59,.25),0 4px 14px rgba(229,56,59,.4)!important;animation:armpulse 1s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -1103,11 +1110,11 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 <header class="top"><div class="top-in">
   <img id="brandLogo" class="brandlogo" src="images/logo-nl.png?v=20261016b" alt="" hidden><div class="brand"><h1 id="shopName">เนื้อล้วนๆ</h1><small id="conn"><span class="dot"></span>กำลังเชื่อมต่อ…</small></div>
   <div class="shopsw" id="shopSw" role="group" aria-label="เลือกร้าน" hidden><button type="button" data-act="shopSw" data-v="noodle"><img class="swlogo" src="images/logo-nl.png?v=20261016b" alt="">เนื้อล้วนๆ</button><button type="button" data-act="shopSw" data-v="po"><img class="swlogo" src="images/logo-po.png" alt="">ข้าวมันไก่</button></div>
-  <label class="modesel" id="hdrModeWrap" hidden><span>โหมด</span><select id="hdrMode" aria-label="โหมดหน้าจอ"><option value="">Admin</option><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">แม่ครัว</option><option value="partner">หุ้นส่วน</option></select></label>
-  <button class="btn sm" id="hdrMe" data-act="myAcct" type="button" hidden>👤 บัญชี</button>
-  <button class="btn sm" data-act="settings" type="button">ตั้งค่าร้าน</button>
+  <label class="modesel" id="hdrModeWrap" hidden><span>🛡️ โหมด</span><select id="hdrMode" aria-label="โหมดหน้าจอ"><option value="">Admin</option><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">แม่ครัว</option><option value="partner">หุ้นส่วน</option></select></label>
+  <button class="btn sm hbtn" id="hdrMe" data-act="myAcct" type="button" hidden>👤 บัญชี</button>
+  <button class="btn sm hbtn" data-act="settings" type="button">⚙️ ตั้งค่าร้าน</button>
   <button class="btn sm" id="hdrShop" data-act="shopSession" type="button" hidden>🔒 ปิดร้าน</button>
-  <button class="btn sm" id="hdrLogout" data-act="logout" data-confirm="1" type="button">ออกจากระบบ</button>
+  <button class="btn sm hbtn hout" id="hdrLogout" data-act="logout" data-confirm="1" type="button">🚪 ออกจากระบบ</button>
 </div></header>
 
 <div class="viewas" id="viewAs" hidden></div>
@@ -1564,7 +1571,7 @@ function render(){
   if(S.state==='ready'&&isPo()&&!canPo())S.shop='noodle';
   {const sw=$('#shopSw');sw.hidden=!(S.state==='ready'&&canPo());if(!sw.hidden)sw.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.shop)));document.body.classList.toggle('shop-po',S.state==='ready'&&isPo());}
   const isOwner=S.role==='owner';
-  document.querySelector('[data-act="settings"]').textContent=isOwner?'ตั้งค่าร้าน':'บัญชีของฉัน';
+  document.querySelector('[data-act="settings"]').textContent=isOwner?'⚙️ ตั้งค่าร้าน':'👤 บัญชีของฉัน';
   let nTab=0;document.querySelectorAll('.tab').forEach(t=>{const ok=S.state!=='ready'||TAB_OK[t.dataset.v]();t.hidden=!ok;if(ok)nTab++});
   $('#tabs').style.gridTemplateColumns=`repeat(${Math.max(1,nTab)},1fr)`;
   if(S.state==='ready'&&!TAB_OK[S.tab]())S.tab=Object.keys(TAB_OK).find(k=>TAB_OK[k]())||'menu';
