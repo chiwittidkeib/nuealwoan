@@ -308,6 +308,11 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 @keyframes myGlow{0%,100%{box-shadow:0 0 0 0 rgba(6,182,212,.6),0 0 6px rgba(6,182,212,.4)}50%{box-shadow:0 0 0 8px rgba(6,182,212,0),0 0 20px rgba(6,182,212,.85);border-color:#22d3ee}}
 @keyframes myShine{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
 @media (prefers-reduced-motion:reduce){.mybtn,.mybtn::after{animation:none}}
+.lfask{padding:20px 16px;display:flex;flex-direction:column;gap:10px;align-items:stretch;text-align:center}.lfask h2{margin:4px 0 0}.lfask p{margin:0 0 6px;color:var(--muted)}
+.lfask .lf-ic{align-self:center;background:#06c755;color:#fff;font-weight:900;border-radius:12px;padding:8px 12px;letter-spacing:.5px}.lfask .lf-add{background:#06c755;border-color:#06c755;color:#fff;font-weight:800;font-size:17px;padding:13px}
+.lineadd{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#06c755,#04a547);color:#fff;text-decoration:none;box-shadow:0 4px 14px rgba(6,199,85,.35)}
+.lineadd .la-ic{background:#fff;color:#06c755;font-weight:900;font-size:13px;border-radius:8px;padding:4px 7px;letter-spacing:.5px}
+.lineadd .la-t{flex:1;display:flex;flex-direction:column;min-width:0}.lineadd .la-t b{font-size:17px}.lineadd .la-t small{font-size:13px;opacity:.95}.lineadd .la-go{font-size:26px;font-weight:700}
 .recvbox{border-radius:18px;padding:14px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid #e0b04a;background:#fff8e1}
 .recvbox .rt{font-size:19px}.recvbox span{color:var(--muted);font-size:14px}.recvbox small{color:var(--muted);font-size:12.5px}
 .recvbox .rok{width:100%;font-size:18px;padding:14px;margin-top:4px}.recvbox .lnk{background:none;border:0;color:#b71c1c;text-decoration:underline;font:inherit;font-size:14px;padding:4px;cursor:pointer}
@@ -456,6 +461,23 @@ function arriveBox(o){const a=o.arrive;if(!a||!['confirmed','ready'].includes(o.
   const t=new Date(+a.at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Bangkok'});
   return `<div class="arrbox"><b class="rt">🛵 อาหารมาถึงแล้ว!</b><span class="an">ณ ${esc(a.name||'จุดส่ง')}</span><small>${t} น.${a.note?' · '+esc(a.note):''}</small>
     ${a.lat!=null?`<a class="btn pri wide" href="https://www.google.com/maps/search/?api=1&query=${+a.lat},${+a.lng}" target="_blank" rel="noopener">📍 เปิดแผนที่นำทาง</a>`:''}<small>แสดงเลข KMK ด้านล่างให้แม่ครัวดูตอนรับของ</small></div>`}
+// ส่งลิงก์ติดตามเข้า LINE ลูกค้า
+function doShareLine(){const o=S.order||{},c=S.cfg||{};const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('o',S.cur.id);u.searchParams.set('t',S.cur.token);const link=u.href;
+  const txt=[`🍗 ออร์เดอร์${c.shopName||'ข้าวมันไก่'} ${o.orderNo||''}`,`รับ${thDate(o.deliverDate)}${o.window?' · เวลา '+o.window:''}`,`ยอด ${baht(+o.total||0)}`,`เช็กสถานะ / แนบสลิป / ใบเสร็จ:`,link].join('\n');
+  location.href='https://line.me/R/share?text='+encodeURIComponent(txt)}
+// ถามก่อนส่งลิงก์: เพิ่มเพื่อน LINE ร้านไหม (ตรวจสถานะเพื่อนจริงไม่ได้ถ้าไม่ใช้ LIFF → จำคำตอบไว้ในเครื่อง)
+function askLineFriend(lu){const el=document.createElement('div');el.className='opop';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+  el.innerHTML=`<div class="op-card lfask"><div class="lf-ic">LINE</div><h2>เพิ่มเพื่อน LINE ร้านไหม?</h2><p>รับแจ้งเตือน<b>โปรโมชั่นดีๆ</b> และข่าวรอบส่งจากร้าน</p>
+    <button class="btn lf-add" data-lf="add" type="button">➕ เพิ่มเพื่อน แล้วไปต่อ</button>
+    <button class="btn" data-lf="already" type="button">✓ เป็นเพื่อนแล้ว · ไปต่อ</button>
+    <button class="btn ghost" data-lf="skip" type="button">ไม่ใช่ตอนนี้ · เปิดลิงก์ติดตามสถานะ</button></div>`;
+  document.body.appendChild(el);const close=()=>el.remove();
+  el.addEventListener('click',e=>{if(e.target===el)return close();const b=e.target.closest('[data-lf]');if(!b)return;const k=b.dataset.lf;close();
+    if(k==='add'){lsSet('po_line_ok',true);const back=()=>{if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',back);setTimeout(doShareLine,400)}};
+      document.addEventListener('visibilitychange',back);const w=window.open(lu,'_blank');if(!w)location.href=lu;else setTimeout(()=>{if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',back);toast('เพิ่มเพื่อนแล้ว กดอีกครั้งเพื่อเปิดลิงก์ติดตามสถานะ')}},4000);return}
+    if(k==='already'){lsSet('po_line_ok',true);return doShareLine()}
+    lsSet('po_line_skip',Date.now());doShareLine()})}
+function lineAddBox(url){return url?`<a class="lineadd" href="${esc(url)}" target="_blank" rel="noopener" data-a="lineAdd"><span class="la-ic">LINE</span><span class="la-t"><b>➕ เพิ่มเพื่อน LINE ร้าน</b><small>ไว้จะได้ติดตามโปรโมชั่นดีๆ</small></span><span class="la-go">›</span></a>`:''}
 function recvBox(o){const r=o.recvState||'';const at=t=>t?new Date(+t).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Bangkok'})+' น.':'';
   if(r==='wait'||r==='issue')return `<div class="recvbox ${r}">${r==='wait'?`<b class="rt">🛵 ร้านส่งของให้คุณแล้ว</b><span>ได้รับของครบแล้ว กดยืนยันด้วยนะคะ</span>`:`<b class="rt">⚠️ แจ้งร้านแล้วว่ายังไม่ได้รับของ</b><span>ร้านจะรีบติดต่อกลับ${o.recvIssue?` · "${esc(o.recvIssue)}"`:''}</span>`}
     <button class="btn pri wide rok" data-a="recvOk" type="button" ${S.recvBusy?'disabled':''}>✅ ได้รับของแล้ว</button>
@@ -543,7 +565,7 @@ function renderBoard(){const box=$('#bList');if(!box)return;const b=S.board;
   const L=b.orders||[];if(!L.length){box.innerHTML=`<p class="muted" style="text-align:center">ไม่พบออร์เดอร์ของเบอร์นี้ · ตรวจเบอร์ให้ตรงกับที่ใช้สั่ง</p>`;return}
   const days=[...new Set(L.map(o=>o.deliverDate))];
   box.innerHTML=days.map(d=>`<h3 class="cath">รับ${esc((thDate(d)+tmW(d)))}</h3><div class="list">${L.filter(o=>o.deliverDate===d).map(o=>{const s1=BST(o),s2=BPAY(o);
-    return `<button class="row rowb brow" data-a="open" data-id="${esc(o.id)}" data-t="${esc(o.token||'')}" type="button"><div class="g"><b>#${esc(o.no)} · ${esc(o.name||'')}</b><div class="tm">${baht(o.total)}</div>
+    return `<button class="row rowb brow" data-a="open" data-id="${esc(o.id)}" data-t="${esc(o.token||'')}" type="button"><div class="g"><b>KMK ${esc(String(o.no||'').slice(-3))} · ${esc(o.name||'')}</b><div class="tm">${baht(o.total)}</div>
       <div class="bpills"><span class="pill ${s1[1]}">${s1[0]}</span><span class="pill ${s2[1]}">${s2[0]}</span></div></div><div class="r">${o.payStatus==='paid'?'':'<span class="bslip">แนบสลิป ›</span>'}</div></button>`}).join('')}</div>`).join('')}
 function myListHtml(a,M){const MST=x=>{const m=M[x.id];if(!m)return '';if(m.status==='cancelled')return '';const t={new:['รอร้านยืนยัน','warn'],confirmed:['ร้านรับออร์เดอร์แล้ว','ok'],ready:['อยู่ระหว่างจัดส่ง','info'],done:['ส่งอาหารสำเร็จ','ok']}[m.status]||['',''];
     return `<span class="pill ${t[1]}">${t[0]}</span>${m.payStatus==='paid'?' <span class="pill ok">ชำระแล้ว</span>':m.payStatus==='slip'?' <span class="pill warn">รอตรวจสอบยอด</span>':' <span class="pill bad">ค้างชำระ</span>'}`};
@@ -610,6 +632,7 @@ function render(){
     ${poHero(st)}
     ${S.staff&&st.reason==='after'?`<div class="notice">👩‍🍳 โหมด${S.staff==='owner'?'แอดมิน':'แม่ครัว'}: สั่งเพิ่มให้ลูกค้าหลังปิดรับได้ (รอบส่ง${esc((thDate(st.deliverDate)+tmW(st.deliverDate)))})</div>`:''}
     ${!st.open&&!S.staff?`<button class="btn pri" data-a="view" data-v="board" type="button">📋 เช็กสถานะออร์เดอร์ / โอนเงิน + แนบสลิป</button>`:''}
+    ${lineAddBox(c.line)}
     ${mine.length?`<button class="btn mybtn big" data-a="mine" type="button"><span>📋 ออร์เดอร์ของฉัน <b class="mycnt">${mine.length}</b></span><small>แตะเพื่อเช็กสถานะ / แนบสลิป / ใบเสร็จ</small></button>`:''}
     ${((c.promos)||[]).length?`<div class="probanner">${c.promos.map(p=>`<div><b>🎁 ${esc(p.name)}</b><span>เลือกคละได้ ${(p.items||[]).map(id=>(S.menu.find(m=>m.id===id)||{}).name).filter(Boolean).map(esc).join(' · ')}${p.end?' · ถึง '+esc(thDate(p.end)):''}</span></div>`).join('')}</div>`:''}
     ${(()=>{const pn=S.menu.filter(m=>promoIds().has(m.id)).length,ks=['all',...(pn?['__promo']:[]),...S.cats];return ks.length>2||(S.cats.length>1)?`<div class="chips">${ks.map(x=>`<button class="chip${x==='__promo'?' chip-promo':''}" aria-pressed="${S.cat===x}" data-a="cat" data-v="${esc(x)}" type="button">${x==='all'?'ทั้งหมด':x==='__promo'?'📢 '+esc(promoTab()):esc(x)}</button>`).join('')}</div>`:''})()}
@@ -655,13 +678,14 @@ function render(){
         :o.pay==='after'?'<span class="pill warn">ชำระเงินตอนรับของ</span>':'<span class="pill bad">ยังไม่ได้โอน</span>';
       h=`${S.justSent?`<div class="msg" style="padding:12px 8px 0"><h2>${S.justMerged?'เพิ่มรายการในออร์เดอร์เดิมแล้ว':'สั่งเรียบร้อย ขอบคุณครับ'}</h2>${S.justMerged?`<p class="muted" style="margin:0">รวมเป็นออร์เดอร์เดียว ยอดสรุปใหม่ด้านล่าง · ${poDue(o)>0?'โอนเพิ่ม '+baht(poDue(o))+' แล้วแนบสลิปเพิ่มได้':''}</p>`:''}<p class="muted" style="margin:0">บันทึกหน้านี้ไว้ หรือกลับมาดูได้ที่ "ออร์เดอร์ของฉัน"</p></div>`:''}
       ${cx?`<div class="cxwrap"><span class="cxstamp"><b>ยกเลิกออร์เดอร์</b><i>Cancelled</i></span><p class="muted" style="margin:0">${o.cancelledBy==='customer'?'คุณยกเลิกออร์เดอร์นี้':'ร้านยกเลิกออร์เดอร์นี้'}${o.cancelReason?`<br><b style="color:var(--chili)">เหตุผล: ${esc(o.cancelReason)}</b>`:''}${o.cancelledAt?' · '+esc(new Date(+o.cancelledAt).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}))+' น.':''}</p></div>`:''}
-      ${!cx&&o.status!=='done'?`<div class="pickbox"><small>แสดงหน้านี้ตอนรับของ</small><div class="kmk">KMK ${esc(String(o.orderNo||'').slice(-4))}</div><div class="pst ${o.payStatus==='paid'?'ok':o.payStatus==='slip'?'chk':'due'}">${o.payStatus==='paid'?'✓ ชำระแล้ว':o.payStatus==='slip'?'⏳ รอร้านตรวจสลิป':'ค้างชำระ '+baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0)))+' · จ่ายตอนรับได้ (เงินสด / สแกน)'}</div>
+      ${!cx&&o.status!=='done'?`<div class="pickbox"><small>แสดงหน้านี้ตอนรับของ</small><div class="kmk">KMK ${esc(String(o.orderNo||'').slice(-3))}</div><div class="pst ${o.payStatus==='paid'?'ok':o.payStatus==='slip'?'chk':'due'}">${o.payStatus==='paid'?'✓ ชำระแล้ว':o.payStatus==='slip'?'⏳ รอร้านตรวจสลิป':'ค้างชำระ '+baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0)))+' · จ่ายตอนรับได้ (เงินสด / สแกน)'}</div>
         <button class="pqbtn" data-a="pickQr" type="button">📲 แสดง QR รับของ</button><div class="pq" id="pickQr" hidden>${qrSvg(location.origin+location.pathname+'?o='+encodeURIComponent(S.cur.id)+'&t='+encodeURIComponent(S.cur.token))}<span>ให้พนักงานสแกน</span></div></div>`:''}
       ${!cx?arriveBox(o):''}
       ${!cx&&(o.changes||[]).length?`<div class="chgbox"><b>🔄 ร้านเปลี่ยนแปลงรายการในออร์เดอร์ของคุณ</b>${o.changes.map(c=>`<div><span>${esc(c.list.join(' · '))}</span>${c.why?`<small>เหตุผล: ${esc(c.why)}</small>`:''}</div>`).join('')}<small>ยอดและรายการด้านล่างเป็นข้อมูลล่าสุดแล้ว · สงสัยโทรหาร้านได้เลย</small></div>`:''}
       ${!cx&&o.status==='done'?recvBox(o):''}
       <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b class="qs-${cx?'cx':esc(o.status)}">${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc(thDate(o.deliverDate)+(o.window?' · เวลา '+o.window:tmW(o.deliverDate)))}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
-      ${cx?'':`<div class="shr"><button class="btn lineshr" data-a="shareLine" type="button"><b>LINE</b> แชร์ลิงก์ไว้เช็กสถานะ</button><button class="btn" data-a="copyLink" type="button" aria-label="คัดลอกลิงก์">📋 คัดลอก</button></div><p class="muted" style="margin:-4px 0 0;font-size:12.5px;text-align:center">ส่งเข้า Keep memo หรือแชทตัวเอง · เปิดเช็กสถานะ แนบสลิป ดูใบเสร็จ ได้จากทุกเครื่อง</p>`}
+      ${cx?'':`<div class="shr"><button class="btn lineshr" data-a="shareLine" type="button" style="flex:1"><b>LINE</b> เปิดลิงก์ติดตามสถานะ</button></div><p class="muted" style="margin:-4px 0 0;font-size:12.5px;text-align:center">ส่งเข้า Keep memo หรือแชทตัวเอง · เปิดเช็กสถานะ แนบสลิป ดูใบเสร็จ ได้จากทุกเครื่อง</p>`}
+      ${cx?'':lineAddBox(o.line)}
       ${cx?'':`<ol class="steps">${STEPS.map((s,i)=>`<li class="st-${s[0]}${i<=idx?' on':''}${i===idx?' cur':''}">${esc(s[1])}</li>`).join('')}</ol>`}
       <div class="list">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="row rnd"><div class="g">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div></div>`:''}<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opts&&l.opts.length?`<div class="optx">${esc(optPx(l.opts))}</div>`:''}${l.note?`<div class="who">${esc(l.note)}</div>`:''}${l.swapFrom?`<div class="who" style="color:#c2410c">🔄 แทน ${esc(l.swapFrom)}</div>`:''}</div><div class="r">${baht(l.price*l.qty)}</div></div>`).join('')}
         ${+o.promoDisc?`<div class="row"><div class="g">รวมก่อนลด</div><div class="r">${baht(o.subtotal)}</div></div>${(o.promos||[]).map(x=>`<div class="row"><div class="g prodisc">🎁 ${esc(x.name)}${x.sets>1?' ×'+x.sets:''}</div><div class="r prodisc">−${baht(x.disc)}</div></div>`).join('')}`:''}
@@ -736,7 +760,10 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
       if(error){const m=String(error.message||'');return toast(/points_off/.test(m)?'ร้านปิดระบบสะสมแต้มอยู่':/po_member|function|PGRST20/i.test(m)?'ร้านยังไม่ได้เปิดระบบสมาชิก':'ทำรายการไม่สำเร็จ ลองอีกครั้ง')}
       showMemberCard({...data,note:data.paid?(+data.earned?`ได้รับ +${+data.earned} แต้มจากออร์เดอร์นี้ 🎉`:''):'แต้มจะเข้าเมื่อร้านยืนยันรับเงิน · ใช้ได้ทั้ง 2 ร้าน'});await loadOrder();render()}catch(x){b.disabled=false;toast('เชื่อมต่อไม่ได้ ลองอีกครั้ง')}return}
   if(a==='pickQr'){const q=$('#pickQr');if(q){q.hidden=!q.hidden;b.textContent=q.hidden?'📲 แสดง QR รับของ':'ซ่อน QR'}return}
-  if(a==='shareLine'||a==='copyLink'){const o=S.order||{},c=S.cfg||{};const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('o',S.cur.id);u.searchParams.set('t',S.cur.token);const link=u.href;
+  if(a==='shareLine'){const lu=(S.order&&S.order.line)||(S.cfg&&S.cfg.line)||'';const sk=+lsGet('po_line_skip',0)||0;
+    if(lu&&!lsGet('po_line_ok',false)&&Date.now()-sk>3*86400e3)return askLineFriend(lu);return doShareLine()}
+  if(a==='lineAdd'){lsSet('po_line_ok',true)}
+  if(a==='copyLink'){const o=S.order||{},c=S.cfg||{};const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('o',S.cur.id);u.searchParams.set('t',S.cur.token);const link=u.href;
     if(a==='copyLink'){try{await navigator.clipboard.writeText(link);toast('คัดลอกลิงก์แล้ว')}catch(x){window.prompt('คัดลอกลิงก์นี้',link)}return}
     const txt=[`🍗 ออร์เดอร์${c.shopName||'ข้าวมันไก่'} ${o.orderNo||''}`,`รับ${thDate(o.deliverDate)}${o.window?' · เวลา '+o.window:''}`,`ยอด ${baht(+o.total||0)}`,`เช็กสถานะ / แนบสลิป / ใบเสร็จ:`,link].join('\n');
     location.href='https://line.me/R/share?text='+encodeURIComponent(txt);return}

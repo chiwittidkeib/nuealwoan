@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1315">
+<meta name="app-version" content="2026.10.20-1340">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -802,6 +802,7 @@ body.kb .tabs{display:none}
 .porow .pr-l{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.porow .pr-h{display:flex;gap:4px;align-items:center;flex-wrap:wrap}.porow .pr-h b{font-size:16px}
 .porow .pr-n{font-size:13.5px}.porow .pr-i{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .porow .pr-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}.porow .pr-r .btn{white-space:nowrap}
+.closeround{border-color:#7c3aed;color:#5b21b6;font-weight:700}
 .bulkgo{width:100%;font-size:16px;padding:12px}
 .arrbtn{margin-left:auto;background:#e3f2fd;border-color:#64b5f6;color:#0d47a1;font-weight:700}.spotrow{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px dashed var(--line)}.spotrow:last-child{border:0}.spotrow.on{font-weight:700}
 .porecv{margin:8px 0 2px;padding:8px 10px;border-radius:10px;font-size:13.5px;font-weight:600;display:flex;flex-direction:column;gap:1px}.porecv small{font-weight:400;color:var(--muted);font-size:12px}
@@ -1018,7 +1019,8 @@ const DEFAULT_PERMS={waiter:{tables:true,move:true,kitchen:true,pay:true,members
 const roleKey=r=>r==='staff'?'waiter':r;
 const roleName=r=>ROLES[roleKey(r)]||'พนักงาน';
 const effRole=()=>S.role==='owner'&&S.viewAs?S.viewAs:S.role;
-function can(k){const r=effRole();if(r==='owner')return true;const dp=DEFAULT_PERMS[roleKey(r)]||{},rp=(S.perms&&S.perms[roleKey(r)])||dp;return !!(k in rp?rp[k]:dp[k])}
+const poAdmin=()=>['owner','chef'].includes(S.role);
+function can(k){const r=effRole();if(r==='owner')return true;if(r==='chef'&&isPo())return true;const dp=DEFAULT_PERMS[roleKey(r)]||{},rp=(S.perms&&S.perms[roleKey(r)])||dp;return !!(k in rp?rp[k]:dp[k])}
 const isPo=()=>S.shop==='po';
 const homeTab=r=>r==='chef'?(isPo()?'po':'kitchen'):(isPo()?'po':'tables');
 const TAB_OK={tables:()=>!isPo()&&can('tables'),kitchen:()=>!isPo()&&can('kitchen'),po:()=>isPo(),poprep:()=>isPo(),menu:()=>true,back:()=>isPo()?(can('stock')||can('expenses')):(can('stock')||can('expenses')||can('members')),report:()=>!isPo()&&can('report'),poreport:()=>isPo()&&can('report')};
@@ -1271,7 +1273,7 @@ function render(){
   c.innerHTML=S.state==='ready'?'<span class="dot on"></span>ออนไลน์ · '+esc(dlong(Date.now())):['noconfig','offline','nostaff'].includes(S.state)?'<span class="dot off"></span>ไม่ได้เชื่อมฐานข้อมูล':S.state==='login'?'<span class="dot"></span>ยังไม่ได้เข้าสู่ระบบ':'<span class="dot"></span>กำลังเชื่อมต่อ…';
   document.querySelector('[data-act="settings"]').hidden=S.state!=='ready';
   $('#hdrLogout').hidden=S.state!=='ready';$('#hdrMe').hidden=S.state!=='ready';
-  {const hb=$('#hdrShop');if(hb){const own=S.state==='ready'&&S.role==='owner',cl=shopClosed();hb.hidden=!own;hb.innerHTML=cl?'<span class="dot"></span>ร้านปิดอยู่ · <b>เปิดร้าน</b>':'<span class="dot"></span>เปิดอยู่ · <b>ปิดร้าน</b>';hb.classList.toggle('closed',cl);hb.title=cl?'ร้านปิดอยู่ · กดเพื่อเปิดร้าน':'ปิดร้าน: หยุดขายทุกช่องทาง'}}if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!((S.calls.length&&canCall())||dlWaiting().length);
+  {const hb=$('#hdrShop');if(hb){const own=S.state==='ready'&&(S.role==='owner'||(isPo()&&S.role==='chef')),cl=shopClosed();hb.hidden=!own;hb.innerHTML=cl?'<span class="dot"></span>ร้านปิดอยู่ · <b>เปิดร้าน</b>':'<span class="dot"></span>เปิดอยู่ · <b>ปิดร้าน</b>';hb.classList.toggle('closed',cl);hb.title=cl?'ร้านปิดอยู่ · กดเพื่อเปิดร้าน':'ปิดร้าน: หยุดขายทุกช่องทาง'}}if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!((S.calls.length&&canCall())||dlWaiting().length);
   const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){{const sel=$('#hdrMode'),want=isPo()?'po':'all';if(sel.dataset.set!==want){sel.dataset.set=want;sel.innerHTML=(isPo()?[['','Admin'],['chef','แม่ครัว']]:[['','Admin'],['waiter','พนักงานเสิร์ฟ'],['chef','แม่ครัว'],['partner','หุ้นส่วน']]).map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}}$('#hdrMode').value=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs);mw.dataset.r=S.viewAs||'owner'}
   const va=$('#viewAs');va.hidden=!(S.state==='ready'&&S.viewAs);if(!va.hidden)va.innerHTML=`<span>โหมด <b>${roleName(S.viewAs)}</b> · ใช้งานจริงตามสิทธิ์ของตำแหน่งนี้</span><button class="btn sm" data-act="viewAsOff" type="button">กลับโหมดแอดมิน</button>`;
   $('#tabs').parentElement.hidden=S.state!=='ready';
@@ -1379,7 +1381,7 @@ function poLivePromoIds(){const ids=new Set();poPromos().filter(p=>poPromoState(
 function viewMenu(){
   const cats=curCats(),pIds=poLivePromoIds(),pN=S.menu.filter(m=>pIds.has(m.id)).length;
   if(S.menuCat==='__promo'&&!pN)S.menuCat='all';
-  let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+(isPo()?'':'<button class="btn sm combob" data-act="combos" type="button">🎁 Combo เซ็ต</button>')+(promoCan()?'<button class="btn sm combob" data-act="poPromos" type="button">🎁 โปรโมชั่น</button>':'')+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
+  let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'||(isPo()&&poAdmin())?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+(isPo()?'':'<button class="btn sm combob" data-act="combos" type="button">🎁 Combo เซ็ต</button>')+(promoCan()?'<button class="btn sm combob" data-act="poPromos" type="button">🎁 โปรโมชั่น</button>':'')+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
   <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${pN?`<button class="chip chip-promo" aria-pressed="${S.menuCat==='__promo'}" data-act="menuCat" data-v="__promo" type="button">📢 ${esc(poPromoTab())} (${pN})</button>`:''}${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div><div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
   const list=S.menu.filter(m=>S.menuCat==='__promo'?pIds.has(m.id):S.menuCat==='all'||m.cat===S.menuCat);
   if(pIds.size){const ci=c=>{const i=cats.indexOf(c);return i<0?999:i};list.sort((a,b)=>(S.menuCat==='all'?ci(a.cat)-ci(b.cat):0)||(pIds.has(b.id)-pIds.has(a.id)))}
@@ -2471,7 +2473,7 @@ const ACT={
     if(await write('menu/'+m.id,r=>r.update({active:on}))){m.active=on;render();toast(on?'เปิดขาย "'+m.name+'" แล้ว':'"'+m.name+'" ขึ้นตรา หมดแล้ว')}},
   imgv:(d,b,e)=>{if(e)e.stopPropagation();viewImg(d.src,d.cap)},
   obSave:optBulkSave,
-  catOpen:()=>{if(S.role!=='owner')return deny();openSheet({type:'cats',back:S.sheet&&S.sheet.type==='optBulk'?{...S.sheet}:null})},
+  catOpen:()=>{if(S.role!=='owner'&&!(isPo()&&poAdmin()))return deny();openSheet({type:'cats',back:S.sheet&&S.sheet.type==='optBulk'?{...S.sheet}:null})},
   catBack:()=>{const b=S.sheet.back;if(b)openSheet(b);else closeSheet()},
   catAdd:async()=>{if(await addCat())sheetCats()},
   catMove:async d=>{const c=curCats().slice(),i=+d.i,j=i+ +d.d;if(j<0||j>=c.length)return;[c[i],c[j]]=[c[j],c[i]];if(await saveCats(c)){sortMenu();sheetCats();render()}},
@@ -2610,8 +2612,8 @@ const PO_NEXT={new:['confirmed','ยืนยันออร์เดอร์']
 const PO_PREV={confirmed:'new',ready:'confirmed',done:'ready',cancelled:'new'};
 const poLive=o=>o.status!=='cancelled';
 const poQty=o=>(o.items||[]).reduce((a,l)=>a+(+l.qty||0),0);
-const poShort=o=>'KMK '+String(o.orderNo||o.id).slice(-4);
-function poSold(mid){const d=poState().deliverDate;let n=0;(S.poOrders||[]).forEach(o=>{if(poLive(o)&&o.deliverDate===d)(o.items||[]).forEach(l=>{if(l.menuId===mid)n+=+l.qty||0})});return n}
+const poShort=o=>'KMK '+String(o.orderNo||o.id).slice(-3);
+function poSold(mid){const d=poState().deliverDate;let n=0;(S.poAll||S.poOrders||[]).forEach(o=>{if(poLive(o)&&o.deliverDate===d)(o.items||[]).forEach(l=>{if(l.menuId===mid)n+=+l.qty||0})});return n}
 function poPayPill(o){if(o.payStatus==='paid')return '<span class="pill ok">จ่ายแล้ว ✓</span>';
   if(o.payStatus==='slip')return '<span class="pill warn">⏳ รอตรวจสอบยอดชำระ</span>';
   if(o.slipBad)return '<span class="pill bad" title="'+esc(o.slipBad)+'">❌ สลิปไม่ถูกต้อง · รอแนบใหม่</span>';
@@ -2619,9 +2621,9 @@ function poPayPill(o){if(o.payStatus==='paid')return '<span class="pill ok">จ�
   return '<span class="pill bad">ยังไม่โอน</span>'}
 let poSeen=null;
 function poBoot(db){
-  db.doc('config/po').onSnapshot(s=>{S.po=s.exists?s.data():null;if(isPo()){sortMenu();render()}if(S.sheet&&S.sheet.type==='poSet'&&!S.sheet.dirty)sheetPoSet()},onErr);
+  db.doc('config/po').onSnapshot(s=>{S.po=s.exists?s.data():null;poApplyCut();if(isPo()){sortMenu();render()}if(S.sheet&&S.sheet.type==='poSet'&&!S.sheet.dirty)sheetPoSet()},onErr);
   db.collection('po_orders').where('at','>=',sod()-40*DAY).onSnapshot(s=>{
-    S.poOrders=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.at-b.at);
+    S.poAll=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.at-b.at);poApplyCut();
     const ids=new Set(S.poOrders.map(o=>o.id));
     if(poSeen&&canPo()){const fresh=S.poOrders.filter(o=>!poSeen.has(o.id)&&o.status==='new'&&Date.now()-o.at<180000);
       if(fresh.length){toast('🛒 พรีออเดอร์ใหม่ '+fresh.map(o=>o.name).join(', '));try{Bell.ring('staff',null,'มีพรีออเดอร์ใหม่ค่ะ')}catch(e){}}}
@@ -2637,6 +2639,8 @@ function poBoot(db){
     const b=$('#bPo');if(b){const n=S.poOrders.filter(o=>o.status==='new').length;b.hidden=!n;b.textContent=n}
     if(isPo())render()},onErr);
 }
+// ปิดยอด: แสดงเฉพาะออร์เดอร์รอบปัจจุบัน (สั่งหลัง config/po.cutAt) · S.poAll = ทั้งหมด (สรุปยอด / นับขายต่อวัน)
+function poApplyCut(){const c=+((S.po||{}).cutAt)||0;S.poOrders=(S.poAll||S.poOrders||[]).filter(o=>(+o.at||0)>c)}
 function poDays(){const st=poState(),set=new Set([st.deliverDate,bkkDay(0)]);(S.poOrders||[]).forEach(o=>{if(o.deliverDate>=bkkDay(-2))set.add(o.deliverDate)});return [...set].sort()}
 function poPickDay(){const days=poDays();if(S.poDay&&days.includes(S.poDay))return S.poDay;
   const act=(S.poOrders||[]).filter(o=>['new','confirmed','ready'].includes(o.status)&&o.deliverDate>=bkkDay(0)).map(o=>o.deliverDate).sort()[0];
@@ -2869,7 +2873,7 @@ function sheetPoCx(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(
    ${o.payStatus==='paid'||o.payStatus==='slip'?'<p class="pwreq" style="margin:0">⚠️ ลูกค้าโอนเงินแล้ว อย่าลืมคืนเงินให้ลูกค้า</p>':''}
    ${o.phone?`<a class="btn" href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a>`:''}</form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ไม่ยกเลิก</button><button class="btn danger wide" data-act="poCxGo" type="button">ยืนยันยกเลิกออร์เดอร์</button></div>`}
-function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
+function poHeadCard(){const c=poCfg(),st=poState(),own=poAdmin();
   const why=st.open?`รับออร์เดอร์ถึง ${st.closeDate!==bkkDay(0)?esc(poDate(st.closeDate))+' ':''}${esc(c.cutoff)} น. · ส่ง${[bkkDay(0),bkkDay(1)].includes(st.deliverDate)?poDayName(st.deliverDate)+' '+esc(poDate(st.deliverDate)):' '+esc(poDate(st.deliverDate))}${c.window?' · '+esc(c.window):''}`
     :st.reason==='after'?(st.round?`ปิดรับรอบส่ง ${esc(poDate(st.deliverDate))} แล้ว · กด "กำหนดรอบส่ง" เพื่อเปิดรอบใหม่`:`เลยเวลาปิดรับ ${esc(c.cutoff)} น. ของวันนี้แล้ว · เปิดรับอัตโนมัติพรุ่งนี้${c.openFrom?' '+esc(c.openFrom)+' น.':''}`)
     :st.reason==='before'?`จะเปิดรับ${st.openDate?' '+esc(poDate(st.openDate)):''} เวลา ${esc(c.openFrom||'00:00')} น.`:'ลูกค้าเข้ามาดูเมนูได้ แต่สั่งไม่ได้';
@@ -2877,6 +2881,7 @@ function poHeadCard(){const c=poCfg(),st=poState(),own=S.role==='owner';
     ${own?`<button class="btn ${st.open?'danger':'pri'}" data-act="poOpen" type="button">${st.open?'ปิดรับ':'เปิดรับออร์เดอร์'}</button>`:''}</div>
     ${['owner','chef'].includes(S.role)?`<div class="inrow" style="gap:6px;flex-wrap:wrap;align-items:center"><button class="btn sm" data-act="poRound" type="button">📅 กำหนดรอบส่ง</button><span class="help" style="margin:0">${st.round?'รอบส่ง '+esc(poDate(st.deliverDate))+' · ปิดรับ '+esc(poDate(st.closeDate))+' '+esc(c.cutoff||'20:00')+' น.':'อัตโนมัติ: สั่งวันนี้ ส่ง'+(+c.leadDays?'อีก '+(+c.leadDays)+' วัน':'วันนี้')}</span></div>`:''}
     ${st.reason==='after'&&['owner','chef'].includes(S.role)?`<div class="inrow" style="gap:6px;flex-wrap:wrap"><a class="btn pri sm" href="preorder.html?staff=1" target="_blank" rel="noopener">➕ สั่งเพิ่มให้ลูกค้า (หลังปิดรับ)</a><span class="help" style="margin:0">เฉพาะแม่ครัว / แอดมิน · รอบส่ง${poDayName(st.deliverDate)}</span></div>`:''}
+    ${own?`<div class="inrow" style="gap:6px;flex-wrap:wrap;align-items:center"><button class="btn sm closeround" data-act="poCloseRound" type="button">🧾 ปิดยอดรอบนี้</button><span class="help" style="margin:0">${c.lastClose?'ปิดยอดล่าสุด '+esc(poDate(new Date(+c.lastClose.at+7*3600e3).toISOString().slice(0,10)))+' '+hm(c.lastClose.at)+' น. · ':''}รอบนี้ ${(S.poOrders||[]).filter(poLive).length} ออร์เดอร์</span></div>`:''}
     ${own?`<div class="inrow" style="gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="poQr" type="button">ลิงก์ / QR ให้ลูกค้า</button><button class="btn sm" data-act="poSet" type="button">ตั้งค่าร้านพรีออเดอร์</button></div>`:''}
     ${!S.po&&own?'<p class="help" style="margin:0">ยังไม่ได้ตั้งค่าร้าน กด "ตั้งค่าร้านพรีออเดอร์" เพื่อใส่เวลาปิดรับ จุดส่ง และพร้อมเพย์</p>':''}</div>`}
 function poRecvLine(o){const r=poRecvSt(o);if(!r)return '';const ed=['owner','chef'].includes(S.role);
@@ -3024,7 +3029,7 @@ async function poSumImg(day,btn){const L=poSumLive(day),t=poSumTot(L),c=poCfg();
   }catch(e){toast('สร้างรูปไม่สำเร็จ ลองกดพิมพ์หรือคัดลอกแทน','bad')}
   box.remove();if(btn&&btn.isConnected){btn.disabled=false;btn.textContent='🖼 บันทึกเป็นรูป'}}
 function viewPoReport(){const from=bkkDay(-29),rows={};let T={o:0,q:0,s:0,c:0,u:0};const M={};
-  (S.poOrders||[]).filter(o=>poLive(o)&&o.deliverDate>=from&&o.deliverDate<=bkkDay(7)).forEach(o=>{const r=rows[o.deliverDate]=rows[o.deliverDate]||{o:0,q:0,s:0,c:0,u:0};
+  (S.poAll||S.poOrders||[]).filter(o=>poLive(o)&&o.deliverDate>=from&&o.deliverDate<=bkkDay(7)).forEach(o=>{const r=rows[o.deliverDate]=rows[o.deliverDate]||{o:0,q:0,s:0,c:0,u:0};
     const q=poQty(o),cost=(o.items||[]).reduce((a,l)=>a+(+l.cost||0)*(+l.qty||0),0),u=o.payStatus==='paid'?0:(+o.total||0);
     [r,T].forEach(x=>{x.o++;x.q+=q;x.s+=+o.total||0;x.c+=cost;x.u+=u});(o.items||[]).forEach(l=>{const m=M[l.name]=M[l.name]||{q:0,s:0};m.q+=+l.qty||0;m.s+=(+l.price||0)*(+l.qty||0)})});
   let h=`<div class="sec-h"><h2>สรุปยอดร้านพรีออเดอร์</h2><span class="hint">30 วันล่าสุด ตามวันส่ง · ไม่รวมที่ยกเลิก</span></div>
@@ -3080,7 +3085,7 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
   poRenderPts();$('#poForm').addEventListener('input',()=>{S.sheet.dirty=true});$('#poForm').addEventListener('submit',e=>e.preventDefault())}
 function poRenderPts(){const L=S.sheet.d.points;$('#pPts').innerHTML=L.map((p,i)=>`<div class="oc-row" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 40px;margin-bottom:8px"><input data-pt="${i}" data-k="name" value="${esc(p.name)}" maxlength="50" placeholder="ชื่อจุด เช่น ตึก A ล็อบบี้" aria-label="ชื่อจุดส่ง"><input data-pt="${i}" data-k="note" value="${esc(p.note||'')}" maxlength="60" placeholder="รายละเอียด (ถ้ามี)" aria-label="รายละเอียดจุดส่ง"><button class="btn sm ghost" data-act="poPtDel" data-i="${i}" type="button" aria-label="ลบ">×</button></div>`).join('')||'<p class="help" style="margin:0">ยังไม่มีจุดส่ง ถ้าไม่ใส่ ลูกค้าเลือกได้แค่บริการจัดส่ง</p>'}
 function poReadPts(){document.querySelectorAll('[data-pt]').forEach(e=>{const p=S.sheet.d.points[+e.dataset.pt];if(p)p[e.dataset.k]=e.value.trim()})}
-async function poSave(){if(S.role!=='owner')return deny();poReadPts();const d=S.sheet.d;
+async function poSave(){if(!poAdmin())return deny();poReadPts();const d=S.sheet.d;
   const data={...(S.po||{}),open:$('#pOpen').checked,shopName:val('pShop')||'ข้าวมันไก่',openFrom:val('pFrom'),cutoff:val('pCut')||'20:00',leadDays:+val('pLead')||0,window:val('pWin'),
     pickup:$('#pPick').checked,pickupText:val('pPickT'),payBefore:$('#pPB').checked,payAfter:$('#pPA').checked,promptpay:val('pPP').replace(/\D/g,'')||String(S.settings.promptpay||'').replace(/\D/g,''),
     phone:val('pPhone'),ppName:val('pPPN').trim().slice(0,60),line:(v=>/^https?:\/\//i.test(v)?v:'')(val('pLine').trim()),logo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),notice:val('pNotice'),rcLogo:rcLogoVal('poRcLogo',(S.po||{}).rcLogo||(S.po||{}).logo),rcName:val('poRcName'),rcNameEn:val('poRcNameEn'),rcTag:val('poRcTag'),rcFb:val('poRcFb'),rcFbUrl:val('poRcFbUrl'),rcMap:val('poRcMap'),rcMapUrl:val('poRcMapUrl'),rcThanks:val('poRcThanks'),rcThanks2:val('poRcThanks2'),
@@ -3142,6 +3147,11 @@ Object.assign(ACT,{
     if(o.stockCut){deductStock(o.items,S.poMenu,-1);deductStock(items,S.poMenu,1)}
     Object.assign(o,patch);closeSheet();render();toast('บันทึกการแก้ไขแล้ว · ลูกค้าเห็นในหน้าติดตามออร์เดอร์')},
   poFind:()=>openSheet({type:'poFind'}),
+  poCloseRound:async()=>{if(!poAdmin())return deny();const L=(S.poOrders||[]).filter(poLive),nd=L.filter(o=>o.status!=='done').length,un=L.filter(o=>o.payStatus!=='paid').reduce((a,o)=>a+Math.max(0,(+o.total||0)-(+o.paidAmt||0)),0);
+    if(!confirm('ปิดยอดรอบนี้?\n\n• ออร์เดอร์รอบนี้ '+L.length+' รายการ จะหายจากหน้าออร์เดอร์ (ข้อมูลยังอยู่ ดูได้ในสรุปยอด/ใบเสร็จ)'+(nd?'\n• ⚠️ ยังไม่ส่งสำเร็จ '+nd+' ออร์เดอร์':'')+(un>0?'\n• ⚠️ ยังไม่ได้เงิน '+baht(un):'')+'\n• ปิดรับออร์เดอร์ · รอบใหม่เลข KMK เริ่ม 001'))return;
+    if(nd&&!confirm('ยังมี '+nd+' ออร์เดอร์ที่ยังไม่ส่งสำเร็จ ยืนยันปิดยอดเลยไหม?'))return;
+    const {data,error}=await SB.rpc('po_close_round');if(error)return toast('ปิดยอดไม่สำเร็จ: '+error.message,'bad');
+    S.po={...poCfg(),cutAt:data.cutAt,open:false,lastClose:{at:data.cutAt,orders:data.orders}};poApplyCut();S.poQ='';render();toast('🧾 ปิดยอดแล้ว '+data.orders+' ออร์เดอร์ · กด "เปิดรับออร์เดอร์" เพื่อเริ่มรอบใหม่')},
   poLay:d=>{try{localStorage.setItem('nl_polay',d.v)}catch(e){}render()},
   poShipAll:async()=>{if(!['owner','chef'].includes(S.role))return deny();const day=poPickDay(),L=(S.poOrders||[]).filter(o=>o.deliverDate===day&&o.status==='confirmed');if(!L.length)return toast('ไม่มีออร์เดอร์ที่ยืนยันแล้ว');
     if(!confirm('เริ่มจัดส่งทั้งหมด '+L.length+' ออร์เดอร์ (ส่ง'+poDayName(day)+')?\nสถานะจะเปลี่ยนเป็น "อยู่ระหว่างจัดส่ง" และตัดสต็อก'))return;
@@ -3190,7 +3200,7 @@ Object.assign(ACT,{
     S.po={...poCfg(),roundDate:d,closeDate:cd||'',cutoff:t||poCfg().cutoff,openDate:od,openFrom:of,...(w!==null?{window:w}:{})};closeSheet();render();toast('📅 ตั้งรอบส่ง '+poDate(d)+' แล้ว')},
   poRoundClear:async()=>{await poSaveCancel();const w=poWinArg();const {error}=await SB.rpc('po_set_round',{p_round:'',p_close:'',p_cutoff:'',p_window:w,p_open_date:''});if(error)return toast('ทำไม่สำเร็จ: '+error.message,'bad');
     S.po={...poCfg(),roundDate:'',closeDate:'',openDate:'',...(w!==null?{window:w}:{})};closeSheet();render();toast('กลับไปใช้รอบส่งอัตโนมัติแล้ว')},
-  poOpen:async()=>{if(S.role!=='owner')return deny();const c=poCfg(),st=poState();
+  poOpen:async()=>{if(!poAdmin())return deny();const c=poCfg(),st=poState();
     if(st.open){const ok=await write('config/po',r=>r.set({...poCfg(),open:false}));if(ok){S.po={...poCfg(),open:false};render();toast('ปิดรับออร์เดอร์แล้ว · ลูกค้าสั่งไม่ได้จนกว่าจะกดเปิดรับ')}return}
     if(shopClosed('po'))return toast('🔒 ร้านข้าวมันไก่ปิดอยู่ · กด "เปิดร้าน" ด้านบนก่อน','bad');
     let st2=st;if(!c.open){const ok=await write('config/po',r=>r.set({...poCfg(),open:true}));if(!ok)return;S.po={...poCfg(),open:true};st2=poState()}
@@ -3202,7 +3212,7 @@ Object.assign(ACT,{
       const {error}=await SB.rpc('po_set_round',{p_round:c.roundDate||'',p_close:c.closeDate||'',p_cutoff:null,p_window:null,p_open_date:'',p_open_from:''});if(error)return toast('เปิดรับไม่สำเร็จ: '+error.message,'bad');
       S.po={...poCfg(),openDate:'',openFrom:''}}
     render();toast(poState().open?'เปิดรับออร์เดอร์แล้ว':'ยังเปิดรับไม่ได้ · ตรวจวัน/เวลาใน "กำหนดรอบส่ง"',poState().open?'':'bad')},
-  poSet:()=>{if(S.role!=='owner')return deny();openSheet({type:'poSet'})},
+  poSet:()=>{if(!poAdmin())return deny();openSheet({type:'poSet'})},
   poQr:()=>openSheet({type:'poQr'}),
   poQrPrint:()=>{sheetPoQr();setTimeout(()=>window.print(),50)},
   poCopy:async()=>{const u=poUrl();try{await navigator.clipboard.writeText(u);toast('คัดลอกลิงก์แล้ว')}catch(e){const i=$('#poLink');if(i){i.select();document.execCommand&&document.execCommand('copy')}toast('คัดลอกลิงก์แล้ว')}},
@@ -3857,7 +3867,7 @@ Object.assign(ACT,{
       if(ok&&done){toast('แจ้งลูกค้าให้แนบสลิปใหม่แล้ว');s.rej=null;sheetDlReq()}else if(ok)toast('สถานะเปลี่ยนไปแล้ว','bad');return}
     let done=false;const ok=await write('dl_req/'+id,r=>r.transform(q=>['new','accepted','slip'].includes(q.status)?(done=true,{status:'rejected',reason:why,rejectAt:Date.now(),rejectBy:S.me||''}):null));
     if(ok&&done){toast('ยกเลิกออร์เดอร์แล้ว ระบบแจ้งลูกค้าให้');closeSheet()}else if(ok)toast('สถานะเปลี่ยนไปแล้ว','bad')},
-  shopSession:async()=>{if(S.role!=='owner')return deny();const sh=S.shop==='po'?'po':'noodle',cl=shopClosed(sh),nm=sh==='po'?(poCfg().shopName||'ข้าวมันไก่'):'เนื้อล้วนๆ';
+  shopSession:async()=>{if(S.role!=='owner'&&!(S.shop==='po'&&S.role==='chef'))return deny();const sh=S.shop==='po'?'po':'noodle',cl=shopClosed(sh),nm=sh==='po'?(poCfg().shopName||'ข้าวมันไก่'):'เนื้อล้วนๆ';
     if(!cl){const n=sh==='po'?0:Object.keys(S.open||{}).length;
       if(!confirm('ปิดร้าน "'+nm+'"?\n\n'+(sh==='po'?'• ลูกค้าสั่งพรีออเดอร์ใหม่ไม่ได้ (ปิดรับพรีออเดอร์ด้วย)\n• ออร์เดอร์ที่รับไว้แล้วยังจัดการได้ตามปกติ':'• ทุกคนยังเข้าระบบได้ แต่เปิดบิลใหม่ / เพิ่มรายการไม่ได้\n• ลูกค้าสแกน QR สั่งเองไม่ได้ · ปิดรับออร์เดอร์ออนไลน์ด้วย\n• บิลที่ค้างอยู่ยังเก็บเงินได้')+'\n• อีกร้านไม่โดนปิดด้วย'+(n?'\n\n⚠️ ยังมีบิลเปิดอยู่ '+n+' บิล':'')))return}
     const {error}=await SB.rpc('shop_session',{p_closed:!cl,p_shop:sh});if(error)return toast(/function|PGRST20/i.test(error.message)?'ยังไม่ได้รัน SQL ล่าสุด (nuealwoan-update.sql)':'ทำไม่สำเร็จ: '+error.message,'bad');
