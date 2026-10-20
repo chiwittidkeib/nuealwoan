@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1140">
+<meta name="app-version" content="2026.10.20-1150">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -2780,7 +2780,7 @@ function poPickCard(o,q){const due=poDue(o),paid=o.payStatus==='paid',slip=o.pay
    <div class="pickpay"><div><small>${paid?'ชำระแล้ว':'ยอดที่ต้องเก็บ'}</small><b class="${paid?'':'due'}">${baht(paid?+o.total||0:due)}</b></div>
     ${paid?'':slip?`<button class="btn" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button><button class="btn" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">✓ สลิปถูกต้อง · รับเงินแล้ว</button>`
       :`<button class="btn cash" data-act="poCash" data-id="${esc(o.id)}" data-confirm="1" type="button">💵 รับเงินสด</button><button class="btn scan" data-act="poPayQr" data-id="${esc(o.id)}" type="button">📱 สแกนจ่าย</button>`}</div>
-   <button class="btn pri wide pickdone" data-act="poDeliver" data-id="${esc(o.id)}" type="button">✅ ส่งอาหารสำเร็จ</button>${poRecvMins()?`<p class="help" style="margin:6px 0 0;text-align:center">ลูกค้ากด "ได้รับของแล้ว" ในหน้าของตัวเอง · ไม่กดใน ${poRecvMins()} นาที = ยืนยันอัตโนมัติ</p>`:''}</div>`}
+   <button class="btn pri wide pickdone" data-act="poDeliver" data-id="${esc(o.id)}" data-confirm="1" type="button">✅ ส่งอาหารสำเร็จ</button>${poRecvMins()?`<p class="help" style="margin:6px 0 0;text-align:center">ลูกค้ากด "ได้รับของแล้ว" ในหน้าของตัวเอง · ไม่กดใน ${poRecvMins()} นาที = ยืนยันอัตโนมัติ</p>`:''}</div>`}
 function poPickRefresh(){const s=S.sheet;if(s&&s.type==='poPick'){sheetPoPick();return}const r=$('#poRes');if(r)r.innerHTML=poResHtml()}
 function sheetPoPick(){const o=(S.poOrders||[]).find(x=>x.id===S.sheet.id);if(!o){closeSheet();return toast('ไม่พบออร์เดอร์นี้','bad')}
   $('#panel').innerHTML=head('📦 รับของ · '+esc(poShort(o)),o.status==='done'?'ออร์เดอร์นี้ส่งสำเร็จแล้ว':'ตรวจรายการ เก็บเงิน แล้วกดส่งอาหารสำเร็จ')+`<div class="sh-body">${o.status==='done'?'<div class="notice">✅ ส่งอาหารสำเร็จไปแล้ว</div>':''}${poPickCard(o,'')}</div>
@@ -2869,7 +2869,7 @@ function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=P
     ${poRecvLine(o)}
     <div class="poc-f"><b>${baht(+o.total||0)}</b>${+o.paidAmt>0&&o.payStatus!=='paid'?`<small class="muted">จ่ายแล้ว ${baht(o.paidAmt)} · ค้าง <b style="color:var(--chili)">${baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0)))}</b></small>`:''}${poPayPill(o)}<span class="grow"></span>${(o.pay==='before'&&o.payStatus!=='waiting')||o.payStatus==='slip'?`<button class="btn sm" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button>`:''}${o.payStatus==='slip'&&['owner','chef'].includes(S.role)?`<button class="btn sm danger" data-act="poSlipBad" data-id="${esc(o.id)}" type="button">❌ สลิปไม่ถูกต้อง</button>`:''}${o.payStatus==='paid'&&poLive(o)?`<button class="btn sm" data-act="poRc" data-id="${esc(o.id)}" type="button">🧾 ใบเสร็จ</button>`:''}${o.payStatus!=='paid'&&poLive(o)&&(o.payStatus==='slip'||['ready','done'].includes(o.status))?`<button class="btn sm" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">รับเงินแล้ว</button>`:''}</div>
     ${o.status==='cancelled'?`<div class="poc-a"><span class="pocx">ยกเลิกออร์เดอร์<i>Cancelled</i></span><span class="muted grow">${o.cancelledBy==='customer'?'ลูกค้ายกเลิกเอง':'ร้านยกเลิก'}${o.cancelledAt?' '+hm(o.cancelledAt):''}${o.cancelReason?`<br><b style="color:var(--chili)">เหตุผล: ${esc(o.cancelReason)}</b>`:''}</span>${o.cancelSeen===false?`<button class="btn sm" data-act="poCxSeen" data-id="${esc(o.id)}" type="button">รับทราบ</button>`:''}<button class="btn sm" data-act="poBack" data-id="${esc(o.id)}" type="button">กู้คืน</button></div>`
-      :`<div class="poc-a">${pv?`<button class="btn sm ghost" data-act="poBack" data-id="${esc(o.id)}" type="button" aria-label="ย้อนสถานะ" title="ย้อนสถานะ">↩</button>`:''}${o.status!=='done'?`<button class="btn sm ghost" data-act="poCancel" data-id="${esc(o.id)}" data-confirm="1" type="button">ยกเลิก</button>`:''}<span class="grow"></span>${nx?`<button class="btn pri" data-act="poStep" data-id="${esc(o.id)}" type="button">${nx[1]}</button>`:''}</div>`}</div>`}
+      :`<div class="poc-a">${pv?`<button class="btn sm ghost" data-act="poBack" data-id="${esc(o.id)}" type="button" aria-label="ย้อนสถานะ" title="ย้อนสถานะ">↩</button>`:''}${o.status!=='done'?`<button class="btn sm ghost" data-act="poCancel" data-id="${esc(o.id)}" data-confirm="1" type="button">ยกเลิก</button>`:''}<span class="grow"></span>${nx?`<button class="btn pri" data-act="poStep" data-id="${esc(o.id)}"${nx[0]==='done'?' data-confirm="1"':''} type="button">${nx[1]}</button>`:''}</div>`}</div>`}
 // ===== แจ้งลูกค้า "ถึงจุดส่งแล้ว" + หมุด (po_orders.arrive · push ลูกค้าด้วย trigger docs_push_po_arrive)
 const poGrpKey=o=>o.method==='pickup'?'~บริการจัดส่ง':(o.pointName||'ไม่ระบุจุด');
 const poArriveTargets=(k,day)=>(S.poOrders||[]).filter(o=>o.deliverDate===day&&poGrpKey(o)===k&&['confirmed','ready'].includes(o.status));
