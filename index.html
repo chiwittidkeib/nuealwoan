@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1840">
+<meta name="app-version" content="2026.10.20-1900">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -914,6 +914,34 @@ body.kb .tabs{display:none}
 .pickdone{width:100%;font-size:17px;padding:12px}
 .scanbox{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:1;border-radius:18px;overflow:hidden;background:#000}.scanbox video{width:100%;height:100%;object-fit:cover}
 .scfr{position:absolute;inset:16%;border:4px solid #4ade80;border-radius:18px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
+
+/* ===== ปุ่มสไตล์ใหม่ (เขียวทะเลเรืองแสง + แสงปาด) ===== */
+.btn{position:relative;isolation:isolate;background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 86%,var(--sunk)));box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 2px 6px rgba(30,20,10,.07);transition:transform .15s ease,box-shadow .2s ease,border-color .2s ease,filter .2s}
+.btn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%) no-repeat;background-size:250% 100%;background-position:150% 0;opacity:0}
+.btn:hover:not(:disabled){border-color:rgba(20,184,166,.6);box-shadow:0 0 0 3px rgba(20,184,166,.13),0 6px 16px rgba(13,148,136,.18);transform:translateY(-1px)}
+.btn:hover:not(:disabled)::after{opacity:1;animation:btnSheen .8s ease-out}
+.btn:active:not(:disabled){transform:translateY(0) scale(.97)}
+.btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(20,184,166,.45)}
+.btn.pri,.btn.wdbtn{color:#fff;border:0;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.18);background:linear-gradient(135deg,#14b8a6 0%,#0d9488 55%,#0f766e 100%);box-shadow:0 0 0 1px rgba(45,212,191,.55),0 4px 14px rgba(13,148,136,.4),0 0 16px rgba(45,212,191,.45)}
+.btn.pri:hover:not(:disabled){filter:brightness(1.06);box-shadow:0 0 0 1px rgba(94,234,212,.9),0 6px 20px rgba(13,148,136,.5),0 0 26px rgba(45,212,191,.75)}
+main .btn.pri:not(.sm),.view .btn.pri:not(.sm){animation:wdglow 2.4s ease-in-out infinite}
+#panel .btn.pri,#sheet .btn.pri{animation:none}
+.btn.pri:disabled{filter:grayscale(.5);box-shadow:none}
+.btn.danger{color:#c22b2b;border-color:rgba(227,73,72,.45);background:linear-gradient(180deg,#fff,#fff1f1)}
+.btn.danger:hover:not(:disabled){border-color:#e34948;box-shadow:0 0 0 3px rgba(227,73,72,.14),0 6px 16px rgba(227,73,72,.22)}
+.btn.danger.wide,.sh-foot .btn.danger.wide{color:#fff;border:0;background:linear-gradient(135deg,#f0525a,#e5383b 55%,#b91c1c);box-shadow:0 0 0 1px rgba(248,113,113,.5),0 4px 14px rgba(229,56,59,.35),0 0 14px rgba(248,113,113,.35)}
+.btn.ghost{background:none;box-shadow:none}
+.closeround{border:0!important;color:#fff!important;background:linear-gradient(135deg,#8b5cf6,#7c3aed 55%,#5b21b6)!important;box-shadow:0 0 0 1px rgba(167,139,250,.6),0 4px 14px rgba(124,58,237,.35),0 0 14px rgba(167,139,250,.45)!important;text-shadow:0 1px 1px rgba(0,0,0,.2)}
+.closeround:hover{box-shadow:0 0 0 1px rgba(196,181,253,.9),0 6px 20px rgba(124,58,237,.45),0 0 24px rgba(167,139,250,.7)!important}
+.btn.lineb{border:0;background:linear-gradient(135deg,#22d36b,#06c755 55%,#05a346);box-shadow:0 0 0 1px rgba(74,222,128,.5),0 4px 14px rgba(6,199,85,.35)}
+.btn.offsale{border:0;background:linear-gradient(135deg,#ef4444,#c62828);box-shadow:0 4px 14px rgba(198,40,40,.35)}
+.chip{transition:transform .15s,box-shadow .2s,border-color .2s,background .2s;box-shadow:0 1px 3px rgba(30,20,10,.05)}
+.chip:hover{border-color:rgba(20,184,166,.55);box-shadow:0 0 0 3px rgba(20,184,166,.12);transform:translateY(-1px)}
+.chip[aria-pressed="true"]{box-shadow:0 4px 12px rgba(0,0,0,.18)}
+body.shop-po .chip[aria-pressed="true"]{border-color:transparent;background:linear-gradient(135deg,#ef3b4f,#c8102e 60%,#9b0d23);box-shadow:0 0 0 1px rgba(248,113,113,.45),0 4px 12px rgba(200,16,46,.35),0 0 12px rgba(248,113,113,.35)}
+.prgrp button[aria-pressed=true]{background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff;box-shadow:0 0 0 1px rgba(45,212,191,.5),0 3px 10px rgba(13,148,136,.35)}
+@keyframes btnSheen{from{background-position:150% 0}to{background-position:-60% 0}}
+@media (prefers-reduced-motion:reduce){.btn,.btn::after,.chip{transition:none;animation:none!important}}
 </style>
 </head>
 <body>
