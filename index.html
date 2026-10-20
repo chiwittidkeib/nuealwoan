@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-2210">
+<meta name="app-version" content="2026.10.20-2230">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1016,6 +1016,9 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 .prsplit .prr.lnk{opacity:1;transform:scale(1.025);background:linear-gradient(90deg,rgba(20,184,166,.14),rgba(20,184,166,.04));box-shadow:0 0 0 2px rgba(20,184,166,.55),0 8px 20px rgba(13,148,136,.18);border-radius:12px;position:relative;z-index:1}
 .prsplit .prr.lnk .prb span{filter:brightness(1.08) saturate(1.15)}
 .dnt-r{transition:background .2s,transform .2s}.dnt-r.on{transform:translateX(4px);background:rgba(20,184,166,.12)!important;box-shadow:inset 3px 0 0 #14b8a6}
+.dsc{background:repeating-linear-gradient(135deg,#e87ba4 0 5px,#f4b3cb 5px 10px)!important}.dsc.pro{background:repeating-linear-gradient(135deg,#eda100 0 5px,#f8d26b 5px 10px)!important}
+.prlg i.dsc{display:inline-block;width:12px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.prv .dscl{color:#b45309!important;font-weight:600}.prv .dscl s{color:var(--muted);font-weight:400}
 </style>
 </head>
 <body>
@@ -1662,8 +1665,8 @@ async function loadReport(){
   S.report.loading=false;render();}
 function nAgg(orders,a,b){const D={},I={};const T={o:0,q:0,f:0,dr:0,s:0,c:0,u:0};
   for(let t=a;t<b&&t<=sod();t+=DAY)D[dKey(t)]={d:dKey(t),o:0,q:0,f:0,dr:0,s:0,c:0,u:0};
-  orders.forEach(o=>{const r=D[dKey(o.paidAt)],c=(+o.cost||0)+(+o.gp||0);let f=0,dr=0;(o.items||[]).filter(l=>!l.fee).forEach(l=>{const dk=nIsDrink(l),q=+l.qty||0;if(dk)dr+=q;else f+=q;
-      const it=I[l.name]=I[l.name]||{n:l.name,q:0,s:0,c:0,dk};it.q+=q;it.s+=lineAmt(l);it.c+=(+l.cost||0)*q});
+  orders.forEach(o=>{const r=D[dKey(o.paidAt)],c=(+o.cost||0)+(+o.gp||0);let f=0,dr=0;const LD=lineDisc(o,Math.max(0,(+o.discount||0)-(+o.promoDisc||0)));(o.items||[]).forEach((l,li)=>{if(l.fee)return;const dk=nIsDrink(l),q=+l.qty||0;if(dk)dr+=q;else f+=q;
+      const it=I[l.name]=I[l.name]||{n:l.name,q:0,s:0,c:0,pd:0,dd:0,dk};it.q+=q;it.s+=lineAmt(l);it.c+=(+l.cost||0)*q;it.pd+=LD[li].p;it.dd+=LD[li].d});
     [r,T].forEach(x=>{if(!x)return;x.o++;x.q+=f+dr;x.f+=f;x.dr+=dr;x.s+=+o.total||0;x.c+=c})});
   return {D:Object.values(D),I:Object.values(I),T}}
 function nCostCard(D,A){if(!can('stock')&&!can('report'))return '';const W=(S.wdN||[]).filter(w=>w.at>=D.a&&w.at<D.b),ag=g=>{const X={};W.filter(w=>(w.g||'food')===g).forEach(w=>(w.items||[]).forEach(x=>{const a=X[x.sid]=X[x.sid]||{n:x.n,u:x.u,q:0,c:0};a.q+=+x.q||0;a.c+=(+x.q||0)*(+x.uc||0)}));return Object.values(X)};
@@ -1700,8 +1703,8 @@ function viewReport(){const RK=S.report.range in RANGES?S.report.range:'today';i
   ${nCostCard(D,A)}
   ${A.D.length>1?`<div class="card prcard"><div class="prh"><h3>ยอดขายรายวัน</h3><div class="prlg"><span><i style="background:${PRC.s}"></i>ยอดขาย</span><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="ln" style="background:${PRC.p}"></i>กำไร</span></div></div>${prDayChart(A.D,anim)}<p class="help" style="margin:0">แตะ/ชี้ที่วันเพื่อดูตัวเลข${cmp?' · % เทียบกับ '+len+' วันก่อนหน้า':''}</p></div>`:''}`;
   const hasFD=A.I.some(x=>x.dk)&&A.I.some(x=>!x.dk),gg=hasFD?prGrp():'all',gI=A.I.filter(x=>gg==='all'||((gg==='d')===!!x.dk)),gA=anim||PRGA;PRGA=false;PRANIM=gA;
-  const dn=prDonut([...gI].sort((x,y)=>y.s-x.s).map(x=>[x.n,x.s]),gI.reduce((s,x)=>s+x.s,0),gg==='d'?'ยอดขายน้ำ':gg==='f'?'ยอดขายอาหาร':'สัดส่วนยอดขาย'),ih=prItems(A.I);PRANIM=anim;if(gA&&!anim)setTimeout(prCount,30);
-  h+=`<div class="card prcard"><div class="prh"><h3>แยกตามเมนู · ขายดี</h3><div class="prlg"><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i style="background:${PRC.p}"></i>กำไร</span></div></div><div class="prsplit${gA?' anim':''}">${dn}<div>${ih}</div></div></div>`;
+  const dn=prDonut([...gI].map(x=>({...x,s:x.s-(x.pd||0)-(x.dd||0)})).sort((x,y)=>y.s-x.s).map(x=>[x.n,x.s]),gI.reduce((s,x)=>s+x.s-(x.pd||0)-(x.dd||0),0),gg==='d'?'ยอดขายน้ำ':gg==='f'?'ยอดขายอาหาร':'สัดส่วนยอดขาย'),ih=prItems(A.I);PRANIM=anim;if(gA&&!anim)setTimeout(prCount,30);
+  h+=`<div class="card prcard"><div class="prh"><h3>แยกตามเมนู · ขายดี</h3><div class="prlg"><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="dsc pro"></i>โปรโมชั่น</span><span><i class="dsc"></i>ส่วนลด</span><span><i style="background:${PRC.p}"></i>กำไร</span></div></div><div class="prsplit${gA?' anim':''}">${dn}<div>${ih}</div></div></div>`;
   const chs=['dinein','walkin','takeaway',...DELIV].map(c=>{const os=D.orders.filter(o=>chOf(o)===c);return [c,os.length,os.reduce((s,o)=>s+(+o.total||0),0),os.reduce((s,o)=>s+(+o.gp||0),0)]}).filter(x=>x[1]);
   if(chs.length>1||(chs[0]&&chs[0][0]!=='dinein'))h+=`<div class="card prcard"><div class="prh"><h3>ยอดขายแยกช่องทาง</h3></div><div class="prsplit">${prDonut(chs.map(([c,n,v])=>[CH[c].n+' ('+n+')',v]),chs.reduce((s,x)=>s+x[2],0),'ทุกช่องทาง')}<div class="pri">${chs.map(([c,n,v,g])=>`<div class="kv"><span><span class="chip-ch" style="--chc:${CH[c].c}">${CH[c].n}</span> ${n} บิล</span><span>${baht(v)}${g?` <small class="muted">GP ${baht(g)}</small>`:''}</span></div>`).join('')}</div></div></div>`;
   h+=cashCardG({out:{buy,exp:exp-wasteT},got:cash+pp+platNet+oinc,gotTxt:`เงินสด ${baht(cash)} · พร้อมเพย์ ${baht(pp)}${platGross?' · แอป(หัก GP) '+baht(platNet):''}${oinc?' · รายรับอื่น '+baht(oinc):''}`,owe:0,vat:vatT,len,rec:{purch:D.purch,exp:D.exp.filter(e=>!(e.waste||e.cat===WASTE_CAT)),inc:D.inc||[]},stock:stockList()});
@@ -3263,13 +3266,18 @@ const prRange=()=>{let v=S.prRange||prLS('nl_prr');if(v==='c')return 'c';v=+v;re
 const dAdd=(d,n)=>new Date(Date.parse(d+'T00:00:00Z')+n*DAY).toISOString().slice(0,10);
 const dDiff=(a,b)=>Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/DAY);
 const kfmt=n=>{const a=Math.abs(n);return (n<0?'−':'')+(a>=1e6?r2(a/1e6)+'M':a>=1e4?Math.round(a/1e3)+'k':a>=1e3?(Math.round(a/100)/10)+'k':Math.round(a))};
+// แบ่งส่วนลดลงแต่ละบรรทัด: โปร = ตามกลุ่มที่เข้าโปร (สัดส่วนราคา) · ส่วนลดอื่น = สัดส่วนยอดทุกบรรทัด
+function lineDisc(o,extra){const L=o.items||[],P=L.map(()=>0),Dd=L.map(()=>0),amt=L.map(l=>l.fee?0:lineAmt(l));let used=0;
+  (o.promos||[]).forEach(p=>{const pr=+p.price||0;(p.groups||[]).forEach(g=>{const reg=+g.reg||0,gd=Math.max(reg-pr,0);if(!(reg>0)||!gd)return;Object.entries(g.c||{}).forEach(([k,n])=>{const i=+k-1,l=L[i];if(!l)return;const v=(+l.price||0)*(+n||0)/reg*gd;P[i]+=v;used+=v})})});
+  const tot=amt.reduce((a,b)=>a+b,0),lp=Math.max(0,(+o.promoDisc||0)-used),ld=Math.max(0,+extra||0);if(tot>0&&(lp>0.01||ld>0))amt.forEach((a,i)=>{P[i]+=a/tot*(lp>0.01?lp:0);Dd[i]+=a/tot*ld});
+  return L.map((_,i)=>({p:P[i],d:Dd[i]}))}
 function prAgg(from,to,CC){const D={},I={};let T={o:0,q:0,s:0,c:0,u:0};const cp=cpPlan(),M=S.poMenu||[];
   for(let d=from;d<=to;d=dAdd(d,1))D[d]={d,o:0,q:0,f:0,dr:0,s:0,c:0,u:0};T.f=0;T.dr=0;
   (S.poAll||S.poOrders||[]).filter(o=>poLive(o)&&o.deliverDate>=from&&o.deliverDate<=to).forEach(o=>{const r=D[o.deliverDate];if(!r)return;
     const q=poQty(o),cost=(o.items||[]).reduce((a,l)=>a+cpLineCost(l,CC),0),u=o.payStatus==='paid'?0:(+o.total||0);
     const fd=poQtyFD([o]),pd=o.payStatus==='paid'?(+o.total||0):Math.min(+o.total||0,+o.paidAmt||0);T.p=(T.p||0)+pd;[r,T].forEach(x=>{x.o++;x.q+=q;x.f+=fd.f;x.dr+=fd.d;x.s+=+o.total||0;x.c+=cost;x.u+=u});
-    (o.items||[]).forEach(l=>{let nm=l.name||'?';if(cp){const k=cpMatch(cp,l);if(k>=0&&cp.prod[k].opt)nm=(M.find(m=>m.id===l.menuId)||l).name+' · '+cp.prod[k].n}
-      const it=I[nm]=I[nm]||{n:nm,q:0,s:0,c:0,dk:poIsDrink(l)};it.q+=+l.qty||0;it.s+=lineAmt(l);it.c+=cpLineCost(l,CC)})});
+    const LD=lineDisc(o,0);(o.items||[]).forEach((l,li)=>{let nm=l.name||'?';if(cp){const k=cpMatch(cp,l);if(k>=0&&cp.prod[k].opt)nm=(M.find(m=>m.id===l.menuId)||l).name+' · '+cp.prod[k].n}
+      const it=I[nm]=I[nm]||{n:nm,q:0,s:0,c:0,pd:0,dd:0,dk:poIsDrink(l)};it.q+=+l.qty||0;it.s+=lineAmt(l);it.c+=cpLineCost(l,CC);it.pd+=LD[li].p;it.dd+=LD[li].d})});
   return {D:Object.values(D),I:Object.values(I),T}}
 function prDelta(a,b,inv){if(!(b>0))return '';const p=Math.round((a-b)/b*100);return `<small class="dlt ${(p>=0)!==!!inv?'up':'dn'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</small>`}
 function prSpark(v,c){if(v.length<2)return '';const mx=Math.max(...v),mn=Math.min(0,...v),W=120,H=30,x=i=>i*W/(v.length-1),y=a=>H-2-(H-4)*(a-mn)/((mx-mn)||1);
@@ -3332,16 +3340,16 @@ if(!window.__prEv){window.__prEv=1;
     const sp=e.target.closest('.prsplit');if(sp&&(e.target.closest('.dnt')||e.target.closest('.prr'))){const ok=rt&&rt.closest&&(rt.closest('.prsplit .dnt [data-dn]')||rt.closest('.prsplit .prr[data-pn]'))&&rt.closest('.prsplit')===sp;if(!ok){const w=sp.querySelector('.dnt');if(w)dnOff(w)}}});
   document.addEventListener('change',e=>{const id=e.target&&e.target.id;if(id!=='prF'&&id!=='prT')return;const f=$('#prF').value,t=$('#prT').value;if(!f||!t)return;let a=f<=t?f:t,b=f<=t?t:f;if(dDiff(a,b)>91)a=dAdd(b,-91);S.prFrom=a;S.prTo=b;prLS('nl_prf',a);prLS('nl_prt',b);render()})}
 function prItemsBody(I0){return prItems(I0,1)}
-function prItems(I0,raw){const g=raw?'all':prGrp(),I=I0.filter(x=>g==='all'||(g==='d')===!!x.dk),k=S.prSort||'s',key={s:x=>x.s,q:x=>x.q,p:x=>x.s-x.c,m:x=>x.s?(x.s-x.c)/x.s:0}[k]||(x=>x.s);const L=[...I].sort((a,b)=>key(b)-key(a)),mx=Math.max(1,...L.map(x=>x.s)),top=[...I].sort((a,b)=>b.q-a.q)[0];
+function prItems(I0,raw){const g=raw?'all':prGrp(),I=I0.filter(x=>g==='all'||(g==='d')===!!x.dk),k=S.prSort||'s',DS=x=>(x.pd||0)+(x.dd||0),key={s:x=>x.s,q:x=>x.q,p:x=>x.s-x.c-DS(x),m:x=>x.s-DS(x)>0?(x.s-x.c-DS(x))/(x.s-DS(x)):0}[k]||(x=>x.s);const L=[...I].sort((a,b)=>key(b)-key(a)),mx=Math.max(1,...L.map(x=>x.s)),top=[...I].sort((a,b)=>b.q-a.q)[0];
   const st=x=>x.s<=0?'':x.c<=0.005?'nc':x.c>=x.s-0.005?'eq':'';const nc=L.filter(x=>st(x)==='nc').length,eq=L.filter(x=>st(x)==='eq').length;
   const pill=(x,pc)=>{const t=st(x);if(t==='nc')return '<span class="mgp warn">ยังไม่ใส่ต้นทุน</span>';if(t==='eq')return '<span class="mgp bad">ทุน = ราคาขาย</span>';return `<span class="mgp ${pc>=50?'ok':pc>=20?'mid':'bad'}"${PRANIM?cntB(pc,'p'):''}>${pc}%</span>`};
   const nF=I0.filter(x=>!x.dk).length,nD=I0.filter(x=>x.dk).length;if(!raw&&!(nD&&nF))return prItems(I0,1);
   return `${!raw?`<div class="seg prgrp" role="group">${[['f','🍚 อาหาร'],['d','🥤 น้ำ / เครื่องดื่ม'],['all','ทั้งหมด']].map(([v,t])=>`<button type="button" data-act="prGrp" data-v="${v}" aria-pressed="${g===v}">${t}</button>`).join('')}</div>`:''}<div class="chips prsort" role="group">${[['s','ยอดขาย'],['q','จำนวน'],['p','กำไร'],['m','ส่วนต่าง %']].map(([v,t])=>`<button class="chip" aria-pressed="${k===v}" data-act="prSort" data-v="${v}" type="button">${t}</button>`).join('')}</div>
-   <div class="pri">${L.map((x,i)=>{const p=x.s-x.c,pc=x.s?Math.round(p/x.s*100):0,t=st(x),rk=i<3?['🥇','🥈','🥉'][i]:'#'+(i+1);return `<div class="prr prr2${t?' '+t:''}" data-pn="${esc(x.n)}" style="--d:${Math.min(i*60,700)}ms" title="${esc(x.n)} · ขาย ${x.q} · ยอด ${baht(x.s)} · ต้นทุน ${baht(x.c)} · กำไร ${baht(p)}">
+   <div class="pri">${L.map((x,i)=>{const ds=DS(x),net=x.s-ds,p=net-x.c,pc=net>0?Math.round(p/net*100):0,t=st(x),rk=i<3?['🥇','🥈','🥉'][i]:'#'+(i+1);return `<div class="prr prr2${t?' '+t:''}" data-pn="${esc(x.n)}" style="--d:${Math.min(i*60,700)}ms" title="${esc(x.n)} · ขาย ${x.q} · ยอด ${baht(x.s)} · ต้นทุน ${baht(x.c)} · กำไร ${baht(p)}">
      <span class="prk2">${rk}</span>
      <div class="prn"><b>${esc(x.n)}${top&&top.n===x.n&&k!=='q'?' <small class="hot">ขายดี</small>':''}</b><span class="muted">${x.q} ชิ้น · ทุน ${baht(x.c)}</span></div>
-     <div class="prb2"><div class="prb">${t==='nc'?`<span class="unk" style="width:${x.s/mx*100}%"></span>`:`<span style="width:${x.c/mx*100}%;background:linear-gradient(90deg,#f6915f,${PRC.c})"></span>${p>0?`<span style="width:${p/mx*100}%;background:linear-gradient(90deg,#3cc795,${PRC.p})"></span>`:''}`}</div></div>
-     <div class="prv"><b${PRANIM?cntB(x.s):''}>${baht(x.s)}</b><small>กำไร <b style="color:${p>0&&!t?'#1a8a5c':t?'var(--muted)':'var(--chili)'}">${t==='nc'?'?':baht(p)}</b> ${pill(x,pc)}</small></div></div>`}).join('')||'<div class="empty"><b>ยังไม่มียอดในช่วงนี้</b></div>'}</div>
+     <div class="prb2"><div class="prb">${t==='nc'?`<span class="unk" style="width:${x.s/mx*100}%"></span>`:`<span style="width:${x.c/mx*100}%;background:linear-gradient(90deg,#f6915f,${PRC.c})"></span>${ds>0.005?`<span class="dsc${x.pd>=x.dd?' pro':''}" style="width:${Math.min(ds,Math.max(0,x.s-x.c))/mx*100}%" title="${x.pd>=x.dd?'โปรโมชั่น':'ส่วนลด'} −${baht(ds)}"></span>`:''}${p>0?`<span style="width:${p/mx*100}%;background:linear-gradient(90deg,#3cc795,${PRC.p})"></span>`:''}`}</div></div>
+     <div class="prv"><b${PRANIM?cntB(net):''}>${baht(net)}</b>${ds>0.005?`<small class="dscl">${x.s>net?'<s>'+baht(x.s)+'</s> ':''}${x.pd>0.005?'🎁 โปร −'+baht(x.pd):''}${x.pd>0.005&&x.dd>0.005?' · ':''}${x.dd>0.005?'🏷️ ส่วนลด −'+baht(x.dd):''}</small>`:''}<small>กำไร <b style="color:${p>0&&!t?'#1a8a5c':t?'var(--muted)':'var(--chili)'}">${t==='nc'?'?':baht(p)}</b> ${pill(x,pc)}</small></div></div>`}).join('')||'<div class="empty"><b>ยังไม่มียอดในช่วงนี้</b></div>'}</div>
    ${nc||eq?`<div class="prwarn"><span>⚠️ ${nc?`<b>${nc}</b> เมนูยังไม่ใส่ต้นทุน (กำไรจะสูงเกินจริง)`:''}${nc&&eq?' · ':''}${eq?`<b>${eq}</b> เมนูต้นทุนเท่าราคาขาย`:''} — แก้ที่แท็บ เมนู → ช่อง "ต้นทุน"${cpPlan()?'':' หรือบันทึก 🧮 ต้นทุนเฉลี่ยต่อรอบ'}</span><button class="btn sm" data-act="tab" data-v="menu" type="button">ไปหน้าเมนู</button></div>`:''}`}
 function prExp(t0,t1){if(!can('expenses'))return '';const P=x=>x.shop==='po'&&x.at>=t0&&x.at<t1,G={};(S.exp||[]).filter(P).forEach(x=>{const c=x.waste?WASTE_CAT:(x.cat||'อื่นๆ');G[c]=(G[c]||0)+(+x.amount||0)});
   const L=Object.entries(G).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...L.map(x=>x[1])),tot=L.reduce((a,x)=>a+x[1],0);
@@ -3353,13 +3361,13 @@ function viewPoReport(){const N=prRange(),lastDel=(()=>{const t=bkkDay(0),L=(S.p
   const cmp=B.T.o>=Math.max(3,A.T.o*.3),t0=Date.parse(from+'T00:00:00+07:00'),t1=Date.parse(to+'T00:00:00+07:00')+DAY;
   const sp=k=>prSpark(A.D.map(k),k===spS?PRC.s:k===spC?PRC.c:PRC.p),spS=r=>r.s,spC=r=>r.c,spP=r=>r.s-r.c;
   const hasFD=A.I.some(x=>x.dk)&&A.I.some(x=>!x.dk),gg=hasFD?prGrp():'all',gI=A.I.filter(x=>gg==='all'||((gg==='d')===!!x.dk)),gA=anim||PRGA;PRGA=false;PRANIM=gA;
-  const itemsDonut=prDonut([...gI].sort((a,b)=>b.s-a.s).map(x=>[x.n,x.s]),gI.reduce((a,x)=>a+x.s,0),gg==='d'?'ยอดขายน้ำ':gg==='f'?'ยอดขายอาหาร':'สัดส่วนยอดขาย'),itemsHtml=prItems(A.I);PRANIM=anim;if(gA&&!anim)setTimeout(prCount,30);
+  const itemsDonut=prDonut([...gI].map(x=>({...x,s:x.s-(x.pd||0)-(x.dd||0)})).sort((a,b)=>b.s-a.s).map(x=>[x.n,x.s]),gI.reduce((a,x)=>a+x.s-(x.pd||0)-(x.dd||0),0),gg==='d'?'ยอดขายน้ำ':gg==='f'?'ยอดขายอาหาร':'สัดส่วนยอดขาย'),itemsHtml=prItems(A.I);PRANIM=anim;if(gA&&!anim)setTimeout(prCount,30);
   let h=`<div class="sec-h"><h2>สรุปยอดร้านพรีออเดอร์</h2><span class="hint">ตามวันส่ง · ไม่รวมที่ยกเลิก</span></div>${cpRoundCard()}
    <div class="prbar"><div class="chips prrange" role="group" aria-label="ช่วงเวลา">${PR_RANGES.map(([v,t])=>`<button class="chip" aria-pressed="${N===v}" data-act="prRange" data-v="${v}" type="button">${t}</button>`).join('')}<button class="chip" aria-pressed="${N==='c'}" data-act="prRange" data-v="c" type="button">📅 กำหนดเอง</button></div>
     ${N==='c'?`<div class="prdates"><input type="date" id="prF" value="${from}" max="${bkkDay(7)}" aria-label="ตั้งแต่"><span>ถึง</span><input type="date" id="prT" value="${to}" max="${bkkDay(7)}" aria-label="ถึง"></div>`:`<span class="muted prdr">${from===to?esc(poDate(from)):esc(poDate(from))+' – '+esc(poDate(to))}</span>`}</div>
    <div class="prk${anim?' anim':''}"><div class="stat"><span>ยอดขาย</span><b class="num"${anim?cntB(T.s):''}>${baht(T.s)}</b>${cmp?prDelta(T.s,B.T.s):''}${sp(spS)}</div><div class="stat"><span>ต้นทุน</span><b class="num"${anim?cntB(T.c):''}>${baht(T.c)}</b>${cmp?prDelta(T.c,B.T.c,1):''}${sp(spC)}</div><div class="stat"><span>กำไรขั้นต้น</span><b class="num"${anim?cntB(pf):''} style="color:${pf>=0?'var(--ok,#2e7d32)':'var(--chili)'}">${baht(pf)}</b><small class="muted">ส่วนต่าง ${T.s?Math.round(pf/T.s*100):0}%</small>${sp(spP)}</div><div class="stat"><span>ออร์เดอร์</span><b class="num"${anim?cntB(T.o,'i'):''}>${T.o}</b><small class="muted">🍚 ${T.f} กล่อง${T.dr?' · 🥤 น้ำ '+T.dr:''}${T.u?' · ค้าง '+baht(T.u):''}</small></div></div>
    <div class="card prcard"><div class="prh"><h3>ยอดขายรายวัน</h3><div class="prlg"><span><i style="background:${PRC.s}"></i>ยอดขาย</span><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="ln" style="background:${PRC.p}"></i>กำไร</span></div></div>${prDayChart(A.D,anim)}<p class="help" style="margin:0">แตะ/ชี้ที่วันเพื่อดูตัวเลข${cmp?' · % เทียบกับ'+(len===1?'เมื่อวาน':' '+len+' วันก่อนหน้า'):''}</p></div>
-   <div class="card prcard"><div class="prh"><h3>แยกตามเมนู · ขายดี</h3><div class="prlg"><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i style="background:${PRC.p}"></i>กำไร</span></div></div><div class="prsplit${gA?' anim':''}">${itemsDonut}<div>${itemsHtml}</div></div><p class="help" style="margin:0">ความยาวแท่ง = ยอดขาย (ต้นทุน + กำไร) · ยอดก่อนหักส่วนลดโปร · แตะวงกลมเพื่อดูแต่ละเมนู</p></div>
+   <div class="card prcard"><div class="prh"><h3>แยกตามเมนู · ขายดี</h3><div class="prlg"><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="dsc pro"></i>โปรโมชั่น</span><span><i class="dsc"></i>ส่วนลด</span><span><i style="background:${PRC.p}"></i>กำไร</span></div></div><div class="prsplit${gA?' anim':''}">${itemsDonut}<div>${itemsHtml}</div></div><p class="help" style="margin:0">ความยาวแท่ง = ราคาเต็ม (ต้นทุน + ส่วนลด/โปร + กำไร) · ตัวเลขใหญ่ = ยอดหลังหักส่วนลด · แตะวงกลมเพื่อดูแต่ละเมนู</p></div>
    ${poCashCard(T,t0,t1,len)}${prExp(t0,t1)}${poFinCard(T,t0,t1,len)}
    <details class="card prtbl"><summary><b>ตารางรายวัน</b></summary><div class="list">${[...A.D].reverse().filter(r=>r.o).map(r=>`<div class="row"><div class="grow"><div class="t">ส่ง${poDayName(r.d)}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(r.d))?' · '+esc(poDate(r.d)):''}</div><div class="s">${r.o} ออร์เดอร์ · ${r.f} กล่อง${r.dr?' · น้ำ '+r.dr:''}${r.u?' · ค้างจ่าย '+baht(r.u):''}</div></div><div style="text-align:right"><b>${baht(r.s)}</b><div class="s muted">ทุน ${baht(r.c)} · กำไร ${baht(r.s-r.c)}</div></div></div>`).join('')||'<div class="empty">ไม่มียอด</div>'}</div></details>`;
   return h}
