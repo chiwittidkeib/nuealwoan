@@ -1045,6 +1045,21 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 @keyframes stOut{0%,100%{background:rgba(239,68,68,.08)}50%{background:rgba(239,68,68,.24)}}
 @keyframes stOutC{0%,100%{box-shadow:0 2px 8px rgba(30,20,10,.05)}50%{box-shadow:0 0 0 3px rgba(239,68,68,.25),0 4px 14px rgba(239,68,68,.25)}}
 @media (prefers-reduced-motion:reduce){.stt tbody tr.out,.str.out{animation:none}}
+.stl{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.stl .str{grid-template-columns:76px minmax(0,1fr) auto;gap:14px;padding:14px 16px;border-radius:18px}
+.stl .str .wda{width:76px;height:76px;border-radius:18px;font-size:28px}.stl .str .wda .thumb,.stl .str .wda img,.stl .str .stcam2{border-radius:18px}
+.stl .str .wdt b{font-size:18px;line-height:1.3;white-space:normal}
+.stl .str .wdm{gap:7px}.stl .str .wdchip{font-size:13px;padding:3px 10px}.stl .str .stp{font-size:12.5px;padding:2px 10px}
+.stl .str .wdmeter{height:7px}
+.stl .str .stq b{font-size:30px}.stl .str .stq small{font-size:14px}.stl .str .stq em{font-size:13px}
+@media (max-width:560px){.stl{grid-template-columns:1fr;gap:10px}.stl .str{grid-template-columns:64px minmax(0,1fr) auto;gap:12px;padding:12px 14px}.stl .str .wda{width:64px;height:64px;font-size:24px}.stl .str .wdt b{font-size:17px}.stl .str .stq b{font-size:26px}}
+.stt tbody tr.low:not(.out),.stt tbody tr.low:not(.out):nth-child(even){background:rgba(245,140,11,.24)}
+.stt tbody tr.low:not(.out):hover{background:rgba(245,140,11,.32)}
+.stt tbody tr.out,.stt tbody tr.out:nth-child(even){animation:stOut2 1s ease-in-out infinite}
+.str.low:not(.out){background:linear-gradient(135deg,rgba(245,140,11,.18),var(--surface) 65%);border-color:rgba(245,140,11,.7)}
+.str.out{animation:stOutC 1s ease-in-out infinite}
+@keyframes stOut2{0%,100%{background:rgba(239,68,68,.16)}50%{background:rgba(239,68,68,.38)}}
+@media (prefers-reduced-motion:reduce){.stt tbody tr.out{animation:none;background:rgba(239,68,68,.25)}}
 </style>
 </head>
 <body>
