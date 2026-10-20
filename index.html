@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1940">
+<meta name="app-version" content="2026.10.20-2000">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -945,6 +945,12 @@ body.shop-po .chip[aria-pressed="true"]{border-color:transparent;background:line
 .stsearch{position:sticky;top:6px;z-index:5;display:flex;align-items:center;gap:10px;margin:10px 0 4px;padding:6px;border-radius:14px;background:rgba(255,255,255,.75);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(30,20,10,.08)}
 .stsearch input{flex:1;min-width:0;padding:11px 14px;border-radius:11px;border:1.5px solid rgba(20,184,166,.45);font:inherit;font-size:16px;background:var(--surface)}
 .stsearch input:focus{outline:none;border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,.18)}.stsearch span{font-size:12.5px;white-space:nowrap;padding-right:6px}
+.cashk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cashb{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:14px;border:1px solid var(--line)}.cashb small{font-size:12px;color:var(--muted)}.cashb b{font-size:21px;font-variant-numeric:tabular-nums}.cashb span{font-size:12px;color:var(--muted)}
+.cashb.out{background:linear-gradient(160deg,rgba(235,104,52,.09),transparent)}.cashb.in{background:linear-gradient(160deg,rgba(27,175,122,.10),transparent)}.cashb.net{background:linear-gradient(160deg,rgba(42,120,214,.09),transparent)}
+.cashbar{display:flex;flex-direction:column;gap:6px}.cashbar>div{display:flex;align-items:center;gap:8px}.cashbar small{width:46px;font-size:12px;color:var(--muted)}.cashbar i{display:block;height:14px;border-radius:6px;min-width:2px}.cashbar i.owe{background:repeating-linear-gradient(135deg,rgba(27,175,122,.45) 0 6px,rgba(27,175,122,.15) 6px 12px);margin-left:-6px}
+.cashrec summary{cursor:pointer;padding:4px 0}.cashrec .list{margin-top:6px}
+@media (max-width:620px){.cashk{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1277,7 +1283,7 @@ async function startData(){
   db.collection('rewards').onSnapshot(s=>{S.rewards=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(+a.pts||0)-(+b.pts||0));if(S.tab==='back')render();if(S.sheet&&S.sheet.type==='pay')renderMem()},onErr);
   setTimeout(expireRun,6000);
   db.collection('members').onSnapshot(s=>{S.members=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.lastAt||0)-(a.lastAt||0));if(S.tab==='back')render()},onErr);
-  const since=sod()-30*DAY;
+  const since=sod()-95*DAY;
   if(S.role==='owner')db.collection('notices').where('at','>=',sod()-7*DAY).onSnapshot(s=>{const prev=new Set((S.notices||[]).map(n=>n.id));const first=!S.notices;S.notices=s.docs.map(d=>({id:d.id,...d.data()}));
     if(!first)S.notices.filter(n=>!prev.has(n.id)&&!n.seen).forEach(n=>toast(n.kind==='gmap'?(n.level==='max'?'⛔ Google Maps ถึงเพดานแล้ว':'⚠️ Google Maps ใกล้ครบโควตาฟรี')+' · '+(n.label||''):'🔑 ไรเดอร์ '+(n.name||'')+' รีเซตรหัสผ่านเอง','bad'));if(S.tab==='tables')render()},onErr);
   db.collection('riders').onSnapshot(s=>{S.riders=s.docs.map(d=>({id:d.id,...d.data()}));if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet)render();if(S.sheet&&S.sheet.type==='riders')sheetRiders()},onErr);
@@ -3190,7 +3196,7 @@ function prAgg(from,to,CC){const D={},I={};let T={o:0,q:0,s:0,c:0,u:0};const cp=
   for(let d=from;d<=to;d=dAdd(d,1))D[d]={d,o:0,q:0,f:0,dr:0,s:0,c:0,u:0};T.f=0;T.dr=0;
   (S.poAll||S.poOrders||[]).filter(o=>poLive(o)&&o.deliverDate>=from&&o.deliverDate<=to).forEach(o=>{const r=D[o.deliverDate];if(!r)return;
     const q=poQty(o),cost=(o.items||[]).reduce((a,l)=>a+cpLineCost(l,CC),0),u=o.payStatus==='paid'?0:(+o.total||0);
-    const fd=poQtyFD([o]);[r,T].forEach(x=>{x.o++;x.q+=q;x.f+=fd.f;x.dr+=fd.d;x.s+=+o.total||0;x.c+=cost;x.u+=u});
+    const fd=poQtyFD([o]),pd=o.payStatus==='paid'?(+o.total||0):Math.min(+o.total||0,+o.paidAmt||0);T.p=(T.p||0)+pd;[r,T].forEach(x=>{x.o++;x.q+=q;x.f+=fd.f;x.dr+=fd.d;x.s+=+o.total||0;x.c+=cost;x.u+=u});
     (o.items||[]).forEach(l=>{let nm=l.name||'?';if(cp){const k=cpMatch(cp,l);if(k>=0&&cp.prod[k].opt)nm=(M.find(m=>m.id===l.menuId)||l).name+' · '+cp.prod[k].n}
       const it=I[nm]=I[nm]||{n:nm,q:0,s:0,c:0,dk:poIsDrink(l)};it.q+=+l.qty||0;it.s+=lineAmt(l);it.c+=cpLineCost(l,CC)})});
   return {D:Object.values(D),I:Object.values(I),T}}
@@ -3276,10 +3282,26 @@ function viewPoReport(){const N=prRange(),lastDel=(()=>{const t=bkkDay(0),L=(S.p
    <div class="prk${anim?' anim':''}"><div class="stat"><span>ยอดขาย</span><b class="num"${anim?cntB(T.s):''}>${baht(T.s)}</b>${cmp?prDelta(T.s,B.T.s):''}${sp(spS)}</div><div class="stat"><span>ต้นทุน</span><b class="num"${anim?cntB(T.c):''}>${baht(T.c)}</b>${cmp?prDelta(T.c,B.T.c,1):''}${sp(spC)}</div><div class="stat"><span>กำไรขั้นต้น</span><b class="num"${anim?cntB(pf):''} style="color:${pf>=0?'var(--ok,#2e7d32)':'var(--chili)'}">${baht(pf)}</b><small class="muted">ส่วนต่าง ${T.s?Math.round(pf/T.s*100):0}%</small>${sp(spP)}</div><div class="stat"><span>ออร์เดอร์</span><b class="num"${anim?cntB(T.o,'i'):''}>${T.o}</b><small class="muted">🍚 ${T.f} กล่อง${T.dr?' · 🥤 น้ำ '+T.dr:''}${T.u?' · ค้าง '+baht(T.u):''}</small></div></div>
    <div class="card prcard"><div class="prh"><h3>ยอดขายรายวัน</h3><div class="prlg"><span><i style="background:${PRC.s}"></i>ยอดขาย</span><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="ln" style="background:${PRC.p}"></i>กำไร</span></div></div>${prDayChart(A.D,anim)}<p class="help" style="margin:0">แตะ/ชี้ที่วันเพื่อดูตัวเลข${cmp?' · % เทียบกับ'+(len===1?'เมื่อวาน':' '+len+' วันก่อนหน้า'):''}</p></div>
    <div class="card prcard"><div class="prh"><h3>แยกตามเมนู · ขายดี</h3><div class="prlg"><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i style="background:${PRC.p}"></i>กำไร</span></div></div><div class="prsplit${gA?' anim':''}">${itemsDonut}<div>${itemsHtml}</div></div><p class="help" style="margin:0">ความยาวแท่ง = ยอดขาย (ต้นทุน + กำไร) · ยอดก่อนหักส่วนลดโปร · แตะวงกลมเพื่อดูแต่ละเมนู</p></div>
-   ${prExp(t0,t1)}${poFinCard(T,t0,t1,len)}
+   ${poCashCard(T,t0,t1,len)}${prExp(t0,t1)}${poFinCard(T,t0,t1,len)}
    <details class="card prtbl"><summary><b>ตารางรายวัน</b></summary><div class="list">${[...A.D].reverse().filter(r=>r.o).map(r=>`<div class="row"><div class="grow"><div class="t">ส่ง${poDayName(r.d)}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(r.d))?' · '+esc(poDate(r.d)):''}</div><div class="s">${r.o} ออร์เดอร์ · ${r.f} กล่อง${r.dr?' · น้ำ '+r.dr:''}${r.u?' · ค้างจ่าย '+baht(r.u):''}</div></div><div style="text-align:right"><b>${baht(r.s)}</b><div class="s muted">ทุน ${baht(r.c)} · กำไร ${baht(r.s-r.c)}</div></div></div>`).join('')||'<div class="empty">ไม่มียอด</div>'}</div></details>`;
   return h}
-Object.assign(ACT,{prGrp:d=>{if(prGrp()===d.v)return;S.prGrp=d.v;prLS('nl_prg',d.v);PRGA=true;render()},prRange:d=>{S.prRange=d.v==='c'?'c':+d.v;prLS('nl_prr',String(d.v));render()},prSort:d=>{S.prSort=d.v;render()}});
+Object.assign(ACT,{cashAll:()=>{S.cashAll=!S.cashAll;render()},cashOpen:()=>{S.cashOpen=!S.cashOpen;render()},prGrp:d=>{if(prGrp()===d.v)return;S.prGrp=d.v;prLS('nl_prg',d.v);PRGA=true;render()},prRange:d=>{S.prRange=d.v==='c'?'c':+d.v;prLS('nl_prr',String(d.v));render()},prSort:d=>{S.prSort=d.v;render()}});
+function poCashCard(T,t0,t1,N){if(!can('expenses')&&!can('stock'))return '';const P=x=>x.shop==='po'&&x.at>=t0&&x.at<t1,sm=a=>a.reduce((s,x)=>s+(+x.amount||0),0);
+  const PU=(S.purch||[]).filter(P),EX=(S.exp||[]).filter(x=>P(x)&&!x.waste&&x.cat!==WASTE_CAT),IN=(S.inc||[]).filter(P);
+  const bu=sm(PU),ex=sm(EX),ic=sm(IN),out=bu+ex,got=(T.p||0)+ic,owe=T.u||0,net=got-out,stv=(S.stock||[]).filter(x=>x.shop==='po').reduce((a,x)=>a+Math.max(0,+x.qty||0)*(+x.unitCost||0),0);
+  const pct=out>0?Math.min(100,got/out*100):100,mx=Math.max(1,out,got+owe),col=v=>`color:${v>=0?'#1a8a5c':'var(--chili)'}`;
+  const rec=[...PU.map(x=>({t:'buy',at:x.at,n:'🛒 ซื้อ '+(x.name||'')+(x.qty?' '+num(x.qty)+' '+(x.unit||''):''),a:-(+x.amount||0),note:x.note})),...EX.map(x=>({t:'exp',at:x.at,n:'💸 '+(x.cat||'รายจ่าย'),a:-(+x.amount||0),note:x.note})),...IN.map(x=>({t:'inc',at:x.at,n:'💰 '+(x.cat||'รายรับ'),a:+x.amount||0,note:x.note}))].sort((a,b)=>b.at-a.at);
+  const sh=S.cashAll?rec:rec.slice(0,6),dd=t=>{const d=new Date(t);return d.getDate()+'/'+(d.getMonth()+1)};
+  return `<div class="card prcard cash"><div class="prh"><h3>💰 ลงทุน vs ขายได้ (${N} วัน)</h3><div class="inrow" style="gap:6px;flex-wrap:wrap">${can('stock')?'<button class="btn sm" data-act="purchase" type="button">🛒 + ซื้อของเข้า</button>':''}${can('expenses')?'<button class="btn sm" data-act="expense" type="button">💸 + รายจ่าย</button><button class="btn sm" data-act="income" type="button">💰 + รายรับ</button>':''}</div></div>
+   <div class="cashk"><div class="cashb out"><small>เงินลงทุน (จ่ายออก)</small><b${PRANIM?cntB(out):''}>${baht(out)}</b><span>ซื้อของเข้า ${baht(bu)} · รายจ่ายร้าน ${baht(ex)}</span></div>
+    <div class="cashb in"><small>เงินที่ได้รับแล้ว</small><b${PRANIM?cntB(got):''}>${baht(got)}</b><span>ขาย ${baht(T.p||0)}${ic?' · รายรับอื่น '+baht(ic):''}${owe?' · ค้างเก็บ '+baht(owe):''}</span></div>
+    <div class="cashb net"><small>เงินเหลือ (ได้รับ − ลงทุน)</small><b${PRANIM?cntB(net):''} style="${col(net)}">${baht(net)}</b><span>${owe?'ถ้าเก็บค้างครบ '+baht(net+owe):'เก็บเงินครบแล้ว'}</span></div></div>
+   <div class="cashbar"><div><small>ลงทุน</small><i style="width:${out/mx*100}%;background:linear-gradient(90deg,#f6915f,#eb6834)"></i></div><div><small>ได้รับ</small><i style="width:${got/mx*100}%;background:linear-gradient(90deg,#3cc795,#1baf7a)"></i>${owe?`<i class="owe" style="width:${owe/mx*100}%"></i>`:''}</div></div>
+   <div class="cpbe"><div class="kv"><span>🎯 คืนทุนแล้ว</span><b>${Math.round(out>0?got/out*100:100)}%</b></div><div class="cpbe-m"><i style="width:${pct}%"></i></div></div>
+   <div class="kv"><span class="muted">📦 ของยังเหลือในคลัง (มูลค่าตามทุน)</span><b class="muted">${baht(stv)}</b></div>
+   <p class="help" style="margin:0">เงินเหลือ + ของในคลัง = มูลค่าที่มีอยู่จริง ${baht(net+stv)} · ของเสียไม่นับซ้ำ (จ่ายไปแล้วตอนซื้อของเข้า)</p>
+   <details class="cashrec" ${S.cashOpen?'open':''}><summary data-act="cashOpen"><b>📒 รายการรับ-จ่าย (${rec.length})</b></summary>
+    ${rec.length?`<div class="list">${sh.map(x=>`<div class="row"><div class="grow"><div class="t">${esc(x.n)}</div><div class="s">${dd(x.at)}${x.note?' · '+esc(x.note):''}</div></div><b style="${col(x.a)}">${x.a>0?'+':'−'}${baht(Math.abs(x.a))}</b></div>`).join('')}</div>${rec.length>6?`<button class="lnk" data-act="cashAll" type="button">${S.cashAll?'ย่อ':'ดูทั้งหมด '+rec.length+' รายการ'}</button>`:''}`:'<p class="help" style="margin:0">ยังไม่มีรายการในช่วงนี้</p>'}</details></div>`}
 function poFinCard(T,t0,t1,N){if(!can('expenses'))return '';t0=t0||sod()-29*DAY;t1=t1||Infinity;const P=x=>x.shop==='po'&&x.at>=t0&&x.at<t1,sm=a=>a.reduce((s,x)=>s+(+x.amount||0),0);
   const ws=sm((S.exp||[]).filter(x=>P(x)&&(x.waste||x.cat===WASTE_CAT))),ex=sm((S.exp||[]).filter(P))-ws,ic=sm((S.inc||[]).filter(P)),bu=sm((S.purch||[]).filter(P)),net=T.s-T.c+ic-ex-ws;
   return `<div class="card" style="margin-top:8px"><h3>การเงินข้าวมันไก่ (${N||30} วัน)</h3>
@@ -3287,7 +3309,7 @@ function poFinCard(T,t0,t1,N){if(!can('expenses'))return '';t0=t0||sod()-29*DAY;
    <div class="kv"><span>รายรับอื่นๆ</span><b>+${baht(ic)}</b></div><div class="kv"><span>รายจ่ายร้าน</span><b>−${baht(ex)}</b></div>${ws?`<div class="kv"><span>🗑 ของเสีย / ตัดจำหน่าย</span><b style="color:var(--chili)">−${baht(ws)}</b></div>`:''}
    <div class="kv" style="border-top:1px solid var(--line);padding-top:6px"><span><b>กำไรสุทธิ</b></span><b style="color:${net>=0?'var(--ok,#2e7d32)':'var(--chili)'}">${baht(net)}</b></div>
    <div class="kv"><span class="muted">ซื้อของเข้า (เงินสดจ่ายจริง)</span><span class="muted">${baht(bu)}</span></div>
-   <p class="help" style="margin:4px 0 0">บันทึกรายจ่าย/รายรับ/ซื้อของได้ที่แท็บ "สต็อกสินค้า" · แยกจากร้านเนื้อล้วนๆ</p></div>`}
+   <p class="help" style="margin:4px 0 0">กำไรตามต้นทุนอาหารที่ขายไป (ไม่ใช่เงินสด) · ดูเงินสดที่การ์ด 💰 ด้านบน · แยกจากร้านเนื้อล้วนๆ</p></div>`}
 /* ===== ข้าวมันไก่: ต้นทุนเฉลี่ยต่อรอบ (costPlan ใน config/po) ===== */
 function cpDefault(){const M=S.poMenu||[],m=M.find(x=>/ไก่ต้ม/.test(x.name||''))||M[0]||{};
   let sp=10;(m.options||[]).forEach(g=>(g.choices||[]).forEach(c=>{if(/พิเศษ/.test(c.name||'')&&+c.price>0)sp=+c.price}));
