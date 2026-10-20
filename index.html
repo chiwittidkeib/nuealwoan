@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-2000">
+<meta name="app-version" content="2026.10.20-2030">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -951,6 +951,36 @@ body.shop-po .chip[aria-pressed="true"]{border-color:transparent;background:line
 .cashbar{display:flex;flex-direction:column;gap:6px}.cashbar>div{display:flex;align-items:center;gap:8px}.cashbar small{width:46px;font-size:12px;color:var(--muted)}.cashbar i{display:block;height:14px;border-radius:6px;min-width:2px}.cashbar i.owe{background:repeating-linear-gradient(135deg,rgba(27,175,122,.45) 0 6px,rgba(27,175,122,.15) 6px 12px);margin-left:-6px}
 .cashrec summary{cursor:pointer;padding:4px 0}.cashrec .list{margin-top:6px}
 @media (max-width:620px){.cashk{grid-template-columns:1fr}}
+.wdlist{display:flex;flex-direction:column;gap:8px}
+.wdsrch input{width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid rgba(20,184,166,.4);font:inherit;font-size:16px;background:var(--surface)}
+.wdr2{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);box-shadow:0 2px 8px rgba(30,20,10,.05);transition:border-color .2s,box-shadow .2s,background .2s}
+.wdr2.on{border-color:rgba(20,184,166,.7);background:linear-gradient(135deg,rgba(20,184,166,.08),var(--surface) 60%);box-shadow:0 0 0 3px rgba(20,184,166,.12),0 6px 16px rgba(13,148,136,.14)}
+.wdr2.over{border-color:#e34948;box-shadow:0 0 0 3px rgba(227,73,72,.14)}.wdr2.empty:not(.on){opacity:.6}
+.wda{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-weight:700;font-size:18px;color:#fff;background:linear-gradient(135deg,hsl(var(--h) 55% 58%),hsl(calc(var(--h) + 30) 55% 42%));overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}.wda .thumb{width:44px;height:44px;border-radius:13px}
+.wdm{min-width:0;display:flex;flex-direction:column;gap:4px}.wdt{display:flex;align-items:center;gap:6px}.wdt b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wdx{margin-left:auto;border:0;background:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 6px;border-radius:8px}.wdx:hover{background:rgba(227,73,72,.1);color:#e34948}
+.wds{display:flex;gap:4px;flex-wrap:wrap}.wdchip{font-size:11.5px;padding:1px 8px;border-radius:99px;background:rgba(0,0,0,.05);color:var(--muted);white-space:nowrap}.wdchip.bad{background:rgba(227,73,72,.12);color:#c22b2b}
+.wdmeter{height:4px;border-radius:9px;background:rgba(0,0,0,.06);overflow:hidden}.wdmeter i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#14b8a6,#0f766e);transition:width .25s}.wdr2.over .wdmeter i{background:#e34948}
+.wdctl{display:grid;grid-template-columns:auto auto;grid-template-areas:"s s" "u c";gap:2px 6px;justify-items:end;align-items:center}
+.wdstep{grid-area:s;display:flex;align-items:center;border-radius:12px;border:1px solid var(--line);background:var(--surface);overflow:hidden}
+.wdstep button{width:34px;height:38px;border:0;background:rgba(20,184,166,.08);color:#0f766e;font-size:18px;font-weight:700;cursor:pointer}.wdstep button:active{background:rgba(20,184,166,.22)}
+.wdstep input{width:58px;height:38px;border:0;text-align:center;font:inherit;font-size:16px;font-weight:700;background:transparent;padding:0}.wdstep input:focus{outline:none;background:rgba(20,184,166,.06)}
+.wdu{grid-area:u;font-size:11px;color:var(--muted)}.wdc{grid-area:c;font-size:14px;font-variant-numeric:tabular-nums;color:#0f766e}.wdc.neg{color:#c22b2b}
+.wdsum{position:sticky;bottom:-1px;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-radius:16px;color:#fff;background:linear-gradient(135deg,#14b8a6,#0d9488 55%,#0f766e);box-shadow:0 6px 18px rgba(13,148,136,.35)}
+.wdsum.neg{background:linear-gradient(135deg,#f0525a,#e5383b 55%,#b91c1c);box-shadow:0 6px 18px rgba(229,56,59,.3)}
+.wdsum small{display:block;font-size:12px;opacity:.9}.wdsum span{font-size:12.5px;opacity:.85}.wdsum b{font-size:22px;font-variant-numeric:tabular-nums}
+.wdseg button[aria-pressed=true][data-v=sell]{background:linear-gradient(135deg,#14b8a6,#0f766e);box-shadow:0 0 0 1px rgba(45,212,191,.5),0 4px 12px rgba(13,148,136,.35);color:#fff}
+.wdseg button[aria-pressed=true][data-v=waste]{background:linear-gradient(135deg,#f0525a,#b91c1c);box-shadow:0 4px 12px rgba(229,56,59,.3);color:#fff}
+@media (max-width:420px){.wdr2{grid-template-columns:40px minmax(0,1fr);grid-template-areas:"a m" "c c"}.wdr2 .wda{grid-area:a;width:40px;height:40px}.wdr2 .wdm{grid-area:m}.wdr2 .wdctl{grid-area:c;grid-template-columns:1fr auto auto;grid-template-areas:"u s c";justify-items:start}.wdr2 .wdc{justify-self:end;min-width:64px;text-align:right}}
+.subtabs{gap:6px;padding:6px;border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.5));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.7);box-shadow:0 8px 24px rgba(60,35,20,.10),inset 0 1px 0 rgba(255,255,255,.8)}
+.subtabs button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 16px;border-radius:13px;font-weight:600;color:#6b5a4c;transition:background .25s,color .25s,box-shadow .25s,transform .15s}
+.subtabs button i{font-style:normal;font-size:17px;line-height:1;display:inline-grid;place-items:center;width:28px;height:28px;border-radius:9px;background:rgba(0,0,0,.05);transition:background .25s,transform .25s}
+.subtabs button:hover:not([aria-pressed="true"]){background:rgba(20,184,166,.08);color:#0f766e}.subtabs button:hover i{transform:scale(1.08)}
+.subtabs button[aria-pressed="true"]{color:#fff;background:linear-gradient(135deg,#14b8a6,#0d9488 55%,#0f766e);box-shadow:0 0 0 1px rgba(45,212,191,.55),0 6px 16px rgba(13,148,136,.35),0 0 18px rgba(45,212,191,.35);text-shadow:0 1px 1px rgba(0,0,0,.15)}
+.subtabs button[aria-pressed="true"] i{background:rgba(255,255,255,.22)}
+.subtabs button[aria-pressed="true"]::after{content:"";position:absolute;left:50%;bottom:-3px;width:26px;height:3px;margin-left:-13px;border-radius:3px;background:#5eead4;box-shadow:0 0 8px #5eead4}
+.subtabs button:active{transform:scale(.97)}
+@media (max-width:560px){.subtabs button{padding:8px 12px}.subtabs button i{width:24px;height:24px;font-size:15px}}
 </style>
 </head>
 <body>
@@ -1542,7 +1572,7 @@ function viewBack(){
   const BT=isPo()?{stock:can('stock'),purch:can('stock'),exp:can('expenses'),inc:can('expenses')}:{stock:can('stock'),purch:can('stock'),consign:can('stock'),exp:can('expenses'),inc:can('expenses'),mem:can('members')};
   if(!BT[S.backTab])S.backTab=Object.keys(BT).find(k=>BT[k])||'stock';
   const t=S.backTab;
-  let h=`<div class="subtabs" role="group">${BT.stock?`<button aria-pressed="${t==='stock'}" data-act="backTab" data-v="stock" type="button">สต็อกวัตถุดิบ</button><button aria-pressed="${t==='purch'}" data-act="backTab" data-v="purch" type="button">ซื้อของเข้า</button>`:''}${BT.exp?`<button aria-pressed="${t==='exp'}" data-act="backTab" data-v="exp" type="button">รายจ่ายร้าน</button>`:''}${BT.exp?`<button aria-pressed="${t==='inc'}" data-act="backTab" data-v="inc" type="button">รายรับอื่นๆ</button>`:''}${BT.consign?`<button aria-pressed="${t==='consign'}" data-act="backTab" data-v="consign" type="button">ฝากขาย</button>`:''}${BT.mem?`<button aria-pressed="${t==='mem'}" data-act="backTab" data-v="mem" type="button">สมาชิก</button>`:''}</div>`;
+  let h=`<div class="subtabs" role="group">${BT.stock?`<button aria-pressed="${t==='stock'}" data-act="backTab" data-v="stock" type="button"><i>📦</i>สต็อกวัตถุดิบ</button><button aria-pressed="${t==='purch'}" data-act="backTab" data-v="purch" type="button"><i>🛒</i>ซื้อของเข้า</button>`:''}${BT.exp?`<button aria-pressed="${t==='exp'}" data-act="backTab" data-v="exp" type="button"><i>💸</i>รายจ่ายร้าน</button>`:''}${BT.exp?`<button aria-pressed="${t==='inc'}" data-act="backTab" data-v="inc" type="button"><i>💰</i>รายรับอื่นๆ</button>`:''}${BT.consign?`<button aria-pressed="${t==='consign'}" data-act="backTab" data-v="consign" type="button"><i>🤝</i>ฝากขาย</button>`:''}${BT.mem?`<button aria-pressed="${t==='mem'}" data-act="backTab" data-v="mem" type="button"><i>👥</i>สมาชิก</button>`:''}</div>`;
   if(t==='consign')return h+viewConsign();
   if(t==='inc')return h+viewIncome();
   if(t==='mem')return h+viewMembers();
@@ -3179,7 +3209,7 @@ async function poSumImg(day,btn){const L=poSumLive(day),t=poSumTot(L),c=poCfg();
 const PR_RANGES=[[1,'วันนี้'],[3,'3 วัน'],[5,'5 วัน'],[30,'1 เดือน']];
 const PRC={s:'#2a78d6',c:'#eb6834',p:'#1baf7a'},PRCAT=['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#6250d6'],PROTH='#a8a29e';
 function stQApply(){const q=String(S.stQ||'').trim().toLowerCase();let n=0,t=0;document.querySelectorAll('[data-sn]').forEach(e=>{const ok=!q||e.dataset.sn.includes(q);e.hidden=!ok;if(e.closest('.list'))t++;if(ok)n++});const c=$('#stQn');if(c)c.textContent=q?(n?'พบ '+n+' รายการ':'ไม่พบ "'+S.stQ+'"'):''}
-if(!window.__stQ){window.__stQ=1;document.addEventListener('input',e=>{if(e.target&&e.target.id==='stQ'){S.stQ=e.target.value;stQApply()}})}
+if(!window.__stQ){window.__stQ=1;document.addEventListener('input',e=>{if(e.target&&e.target.id==='stQ'){S.stQ=e.target.value;stQApply()}if(e.target&&e.target.id==='wdQ'){const q=e.target.value.trim().toLowerCase();document.querySelectorAll('[data-wn]').forEach(x=>{x.hidden=q&&!x.dataset.wn.includes(q)})}})}
 let PRD=null,PRW=640,PRAK='',PRANIM=false,PRGA=false;
 const prGrp=()=>{const v=S.prGrp||prLS('nl_prg');return ['f','d','all'].includes(v)?v:'f'};
 const cntB=(v,f='b')=>` data-cnt="${r2(v)}" data-f="${f}"`;
@@ -3437,29 +3467,34 @@ function sheetPoWd(){const s=S.sheet,STA=stockList(),ws=s.mode==='waste',ST=ws?S
   if(!s.rows){const cp=cpPlan()||{},prev=(cp.ing||[]).filter(x=>x.sid&&ST.some(t=>t.id===x.sid)).map(x=>x.sid),ids=prev.length?prev:ST.map(t=>t.id);s.rows=ids.map(id=>({sid:id,q:'',m:'share'}))}
   const R=s.rows,used=new Set(R.map(r=>r.sid)),tot=R.reduce((a,r)=>{const t=ST.find(x=>x.id===r.sid);return a+(t?(+r.q||0)*(+t.unitCost||0):0)},0);
   $('#panel').innerHTML=head('✂️ ตัดสต็อก',ws?'ของเสีย / ขายไม่ได้ · ตัดออกจากคลังและบันทึกเป็นเงินที่เสียไป':'เลือกของในคลังที่เอาไปทำขาย · ใส่จำนวนที่เบิก · กดตัดสต็อก')+`<form class="sh-body" id="wdForm" onsubmit="return false" autocomplete="off">
-   <div class="seg wdseg" role="group"><button type="button" data-act="wdMode" data-v="sell" aria-pressed="${!ws}">🍚 ใช้ขายวันนี้</button><button type="button" data-act="wdMode" data-v="waste" aria-pressed="${ws}">🗑 ตัดจำหน่าย (ของเสีย)</button></div>
+   <div class="seg wdseg" role="group"><button type="button" data-act="wdMode" data-v="sell" aria-pressed="${!ws}">🍚 ใช้ขายวันนี้</button><button type="button" data-act="wdMode" data-v="waste" aria-pressed="${ws}">🗑 ของเสีย</button></div>
    ${!ws&&RS.length>1?`<div class="field"><label>คิดต้นทุนให้รอบไหน</label><div class="seg prgrp" role="group">${RS.map(x=>`<button type="button" data-act="wdRk" data-v="${x.k}" aria-pressed="${s.rk===x.k}">${esc(x.label)}</button>`).join('')}</div></div>`:''}
    ${!ws?'<p class="help" style="margin:0">เฉพาะ<b>ของเบิกใช้</b> (ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน) · ของนับชิ้น (กล่อง ช้อน ขวด) ระบบตัดตามยอดขายตอนปิดยอดให้แล้ว</p>':''}
-   ${R.length?R.map((r,i)=>{const t=ST.find(x=>x.id===r.sid)||{},over=(+r.q||0)>(+t.qty||0);return `<div class="wdr">
-     <div class="wdh"><b>${esc(t.name||'?')}</b><small class="muted">เหลือ ${num(+t.qty||0)} ${esc(t.unit||'')} · ทุน ${baht(+t.unitCost||0)}/${esc(t.unit||'หน่วย')}</small><button class="lnk" data-act="wdDel" data-v="${i}" type="button" aria-label="ลบ">✕</button></div>
-     <div class="wdi"><label class="cpl"><small>เบิก (${esc(t.unit||'')})</small><input data-wq="${i}" inputmode="decimal" value="${esc(r.q??'')}" placeholder="0"></label>
-      <span></span>
-      <div class="cpl wdc2"><small>${ws?'เสียเงิน':'เป็นเงิน'}</small><b data-wc="${i}" ${ws?'style="color:var(--chili)"':''}>${ws?'−':''}${baht((+r.q||0)*(+t.unitCost||0))}</b></div></div>
-     ${over?'<p class="help" style="margin:0;color:var(--chili)">⚠️ เบิกเกินของที่เหลือในคลัง</p>':''}</div>`}).join(''):'<div class="empty"><b>ยังไม่ได้เลือกรายการ</b>เลือกของจากคลังด้านล่าง</div>'}
+   ${R.length>5?`<div class="wdsrch"><input id="wdQ" type="search" placeholder="🔍 ค้นหารายการ" autocomplete="off" aria-label="ค้นหารายการ"></div>`:''}
+   <div class="wdlist">${R.length?R.map((r,i)=>{const t=ST.find(x=>x.id===r.sid)||{},q=+r.q||0,left=+t.qty||0,over=q>left,pc=left>0?Math.min(100,q/left*100):(q>0?100:0),hue=[...String(t.name||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360;return `<div class="wdr2${q>0?' on':''}${over?' over':''}${left<=0?' empty':''}" data-wr="${i}" data-wn="${esc(String(t.name||'').toLowerCase())}">
+     <div class="wda" style="--h:${hue}">${t.img?thumb(t,'thumb'):esc(String(t.name||'?').slice(0,1))}</div>
+     <div class="wdm"><div class="wdt"><b>${esc(t.name||'?')}</b><button class="wdx" data-act="wdDel" data-v="${i}" type="button" aria-label="เอาออก">✕</button></div>
+      <div class="wds"><span class="wdchip${left<=0?' bad':''}">คลัง ${num(left)} ${esc(t.unit||'')}</span><span class="wdchip">ทุน ${baht(+t.unitCost||0)}/${esc(t.unit||'หน่วย')}</span></div>
+      <div class="wdmeter"><i style="width:${pc}%"></i></div></div>
+     <div class="wdctl"><div class="wdstep"><button type="button" data-act="wdStep" data-i="${i}" data-d="-1" aria-label="ลด">−</button><input data-wq="${i}" inputmode="decimal" value="${esc(r.q??'')}" placeholder="0" aria-label="จำนวน ${esc(t.name||'')}"><button type="button" data-act="wdStep" data-i="${i}" data-d="1" aria-label="เพิ่ม">+</button></div>
+      <small class="wdu">${esc(t.unit||'')}</small><b class="wdc${ws?' neg':''}" data-wc="${i}">${ws?'−':''}${baht(q*(+t.unitCost||0))}</b></div></div>`}).join(''):'<div class="empty"><b>ยังไม่ได้เลือกรายการ</b>เลือกของจากคลังด้านล่าง</div>'}</div>
    <div class="field"><label for="wdAdd">+ เพิ่มรายการจากสต็อก</label><select id="wdAdd"><option value="">— เลือกของในคลัง —</option>${ST.filter(t=>!used.has(t.id)).map(t=>`<option value="${esc(t.id)}">${esc(t.name)} · เหลือ ${num(+t.qty||0)} ${esc(t.unit||'')}</option>`).join('')}</select></div>
    ${ws?`<div class="field"><label for="wsWhy">เหตุผล</label><input id="wsWhy" maxlength="60" value="${esc(s.why||'')}" placeholder="เช่น ผักเสีย / หมดอายุ / ทำหก"><div class="chips" style="margin-top:6px">${['ผักเสีย','หมดอายุ','ของเหลือขายไม่ได้','ทำหก / ตกพื้น','ชิมทดลอง'].map(x=>`<button type="button" class="chip" data-act="wsWhy" data-v="${x}">${x}</button>`).join('')}</div></div>`:''}
-   <div class="kv tot"><span>${ws?'รวมเสียเงิน (ลงรายจ่าย "'+WASTE_CAT+'")':'รวมต้นทุนที่เบิก'}</span><b id="wdTot" ${ws?'style="color:var(--chili)"':''}>${ws?'−':''}${baht(tot)}</b></div>
+   <div class="wdsum${ws?' neg':''}"><div><small>${ws?'รวมเสียเงิน (ลงรายจ่าย "'+WASTE_CAT+'")':'รวมต้นทุนที่เบิก'}</small><span id="wdCnt">${R.filter(r=>+r.q>0).length} รายการ</span></div><b id="wdTot">${ws?'−':''}${baht(tot)}</b></div>
    ${ws?'<p class="help" style="margin:0">ตัดออกจากคลังทันที และบันทึกเป็นรายจ่ายร้าน (ติดลบในกำไรสุทธิ) · ไม่นำไปคิดต้นทุนต่อกล่อง · ตัดผิดกด "ยกเลิกตัดจำหน่ายครั้งล่าสุด"</p>':`<p class="help" style="margin:0">กดตัดแล้วสต็อกลดทันที แล้วระบบเอาไปหารกับกล่องที่ขายได้จริงของรอบที่เลือก = ต้นทุนเบิกใช้ต่อกล่อง · ไม่ใส่จำนวน = ไม่ตัด · ตัดผิดกด "ยกเลิกการตัดครั้งล่าสุด"</p>${STA.some(t=>stCut(t)==='sale')?'<p class="help" style="margin:0">ของที่ตั้งเป็น "ตัดตามยอดขาย" ไม่แสดงในรายการนี้ (เปลี่ยนได้ที่หน้าแก้วัตถุดิบ)</p>':''}`}
    <p class="err" id="wdErr" role="alert"></p></form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn ${ws?'danger':'pri'} wide" data-act="wdSave" type="button">${ws?'🗑 ตัดจำหน่าย':'✂️ ตัดสต็อก'}</button></div>`;
   const F=$('#wdForm');F.addEventListener('input',wdUpd);F.addEventListener('change',e=>{if(e.target.id==='wdAdd'&&e.target.value){wdRead();const t=ST.find(x=>x.id===e.target.value);s.rows.push({sid:e.target.value,q:'',m:'share'});sheetPoWd();setTimeout(()=>{const q=document.querySelector(`[data-wq="${s.rows.length-1}"]`);if(q)q.focus()},50)}else wdUpd()})}
 function wdRead(){const s=S.sheet;if(!s||s.type!=='poWd')return;{const w=$('#wsWhy');if(w)s.why=w.value}document.querySelectorAll('[data-wq]').forEach(e=>{const r=s.rows[+e.dataset.wq];if(r)r.q=e.value.replace(/[^0-9.]/g,'')});document.querySelectorAll('[data-wm]').forEach(e=>{const r=s.rows[+e.dataset.wm];if(r)r.m=e.value})}
-function wdUpd(){if(!S.sheet||S.sheet.type!=='poWd')return;wdRead();const ST=stockList();let tot=0;S.sheet.rows.forEach((r,i)=>{const t=ST.find(x=>x.id===r.sid),c=t?(+r.q||0)*(+t.unitCost||0):0;tot+=c;const el=document.querySelector(`[data-wc="${i}"]`);if(el)el.textContent=(S.sheet.mode==='waste'?'−':'')+baht(c)});const T=$('#wdTot');if(T)T.textContent=(S.sheet.mode==='waste'?'−':'')+baht(tot)}
+function wdUpd(){if(!S.sheet||S.sheet.type!=='poWd')return;wdRead();const ST=stockList(),ng=S.sheet.mode==='waste'?'−':'';let tot=0,n=0;S.sheet.rows.forEach((r,i)=>{const t=ST.find(x=>x.id===r.sid),q=+r.q||0,left=t?+t.qty||0:0,c=t?q*(+t.unitCost||0):0;tot+=c;if(q>0)n++;const el=document.querySelector(`[data-wc="${i}"]`);if(el)el.textContent=ng+baht(c);
+    const row=document.querySelector(`[data-wr="${i}"]`);if(row){row.classList.toggle('on',q>0);row.classList.toggle('over',q>left);const m=row.querySelector('.wdmeter i');if(m)m.style.width=(left>0?Math.min(100,q/left*100):(q>0?100:0))+'%'}});
+  const T=$('#wdTot');if(T)T.textContent=ng+baht(tot);const C=$('#wdCnt');if(C)C.textContent=n+' รายการ'}
 async function wdApply(items,sign){for(const x of items){const q=r2((+x.q||0)*sign);const s=S.stock.find(t=>t.id===x.sid);if(s)s.qty=r2((+s.qty||0)-q);await write('stock/'+x.sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))}}
 function wdIng(cp,W){const A={};W.forEach(w=>(w.items||[]).forEach(x=>{const a=A[x.sid]=A[x.sid]||{sid:x.sid,n:x.n,u:x.u,q:0,p:0,m:x.m};a.q=r2(a.q+(+x.q||0));a.p=r2(a.p+(+x.q||0)*(+x.uc||0));a.m=x.m}));
   return [...(cp.ing||[]).filter(x=>!x.sid),...Object.values(A).map(a=>({...a,m:a.m==='each'?'each':'share',...(a.m==='each'?{use:1}:{})}))]}
 Object.assign(ACT,{
   poWd:d=>{if(!poAdmin())return deny();if(!stockList().length)return toast('ยังไม่มีของในคลัง เพิ่มที่ "สต็อกวัตถุดิบ" ก่อน','bad');openSheet({type:'poWd',mode:d&&d.v==='waste'?'waste':'sell',r0:d&&d.r})},
+  wdStep:d=>{const i=+d.i,inp=document.querySelector(`[data-wq="${i}"]`);if(!inp)return;const r=S.sheet.rows[i],t=stockList().find(x=>x.id===r.sid),st=wdUnitM(t)==='each'?1:0.5;inp.value=String(Math.max(0,r2((parseFloat(inp.value)||0)+st*(+d.d))))||'';if(inp.value==='0')inp.value='';wdUpd()},
   wdRk:d=>{wdRead();S.sheet.rk=d.v;sheetPoWd()},
   wdMode:d=>{wdRead();const s=S.sheet;if(s.mode===(d.v==='waste'?'waste':'sell'))return;s.mode=d.v==='waste'?'waste':'sell';s.rows=null;sheetPoWd()},
   wsWhy:d=>{const w=$('#wsWhy');if(w){w.value=d.v;S.sheet.why=d.v}},
