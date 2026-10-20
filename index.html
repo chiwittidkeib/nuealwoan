@@ -1636,9 +1636,7 @@ function viewBack(){
   if(t==='stock'||t==='dstock'){const gD=t==='dstock',SL=stockList().filter(x=>stGrp(x)===(gD?'drink':'food'));
     const low=SL.filter(isLow);h+=wdCard(gD?'drink':'food');const q0=String(S.stQ||'').trim().toLowerCase(),hid=s=>q0&&!String(s.name||'').toLowerCase().includes(q0)?' hidden':'';
     if(SL.length)h+=`<div class="stsearch"><input id="stQ" type="search" placeholder="🔍 ค้นหาวัตถุดิบ ${gD?'เช่น นม ผงชา แก้ว':'เช่น ไก่ น้ำปลา กล่อง'}" value="${esc(S.stQ||'')}" autocomplete="off" aria-label="ค้นหาวัตถุดิบ"><span class="muted" id="stQn"></span></div>`;
-    h+=`<div class="sec-h"><h2>ของที่ต้องเติม</h2><span class="hint">คงเหลือต่ำกว่าหรือเท่าจุดสั่งซื้อ</span></div>`;
-    h+=low.length?'<div class="stl">'+low.map(s=>{const q=+s.qty||0;return `<div class="str low${q<=0?' out':''}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stAva(s)}<div class="wdm"><div class="wdt"><b>${esc(s.name)}</b><span class="stp ${q<=0?'out':'low'}">${q<=0?'หมด':'ใกล้หมด'}</span></div><div class="wds"><span class="wdchip${q<=0?' bad':''}">เหลือ ${num(q)} ${esc(s.unit)}</span><span class="wdchip">จุดสั่งซื้อ ${num(s.min)} ${esc(s.unit)}</span></div></div><button class="btn sm pri" data-act="purchase" data-id="${s.id}" type="button">🛒 ซื้อเติม</button></div>`}).join('')+'</div>':`<div class="empty"><b>ของยังพอใช้ทุกรายการ</b>รายการที่ใกล้หมดจะขึ้นที่นี่ให้ซื้อเติมได้ทันที</div>`;
-    h+=`<div class="sec-h"><h2>${gD?'วัตถุดิบเครื่องดื่มทั้งหมด':'วัตถุดิบทั้งหมด'}</h2><button class="btn sm goldbtn" data-act="stockEdit" data-g="${gD?'drink':'food'}" type="button">＋ เพิ่มวัตถุดิบ${gD?'เครื่องดื่ม':''}</button></div>`;
+    h+=`<div class="sec-h"><h2>${gD?'วัตถุดิบเครื่องดื่มทั้งหมด':'วัตถุดิบทั้งหมด'}${low.length?` <span class="stp low" style="font-size:12px;vertical-align:middle">⚠️ ต้องเติม ${low.length}</span>`:''}</h2><button class="btn sm goldbtn" data-act="stockEdit" data-g="${gD?'drink':'food'}" type="button">＋ เพิ่มวัตถุดิบ${gD?'เครื่องดื่ม':''}</button></div>`;
     if(!SL.length)return h+`<div class="empty"><b>ยังไม่มีวัตถุดิบ</b>${gD?"เพิ่ม นม ผงชา น้ำเชื่อม แก้ว หลอด ฝา":isPo()?"เพิ่มข้าวสาร ไก่ ซอส แตงกวา กล่อง":"เพิ่มเส้น ลูกชิ้น เนื้อสัตว์ ผัก"} เพื่อติดตามของคงเหลือและต้นทุน</div>`;
     const lay=(()=>{try{return localStorage.getItem('nl_stlay')||'card'}catch(e){return 'card'}})();
     h+=`<div class="stbar"><div class="seg prgrp" role="group"><button type="button" data-act="stLay" data-v="card" aria-pressed="${lay!=='table'}">▦ การ์ด</button><button type="button" data-act="stLay" data-v="table" aria-pressed="${lay==='table'}">☰ ตาราง</button></div><span class="muted">${SL.length} รายการ · มูลค่าคลัง ${baht(SL.reduce((a,x)=>a+Math.max(0,+x.qty||0)*(+x.unitCost||0),0))}</span></div>`;
@@ -1746,7 +1744,12 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
   if((s.type==='order'||s.type==='pay')&&kind!=='menu'){if(!S.open[s.id]){closeSheet();return}
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
-function renderSheet(){const s=S.sheet;if(!s)return;
+// ตัวเลข ≥ 1,000 ใส่จุลภาคเสมอ (ช่องตัวเลขที่อ่านด้วย nval ซึ่งตัด , ออกให้อยู่แล้ว)
+const NUM_IDS=['sQty','sMin','sCost','pAmt','pQty','pBuy','pPer','eAmt','iAmt','mPrice','mCost','ppP','cbPrice'];
+const fmtIn=el=>{if(!el||document.activeElement===el)return;const raw=String(el.value||'').replace(/,/g,'').trim();if(!/^-?\d+(\.\d+)?$/.test(raw))return;const n=+raw;el.value=Math.abs(n)>=1000?n.toLocaleString('en-US',{maximumFractionDigits:4}):raw};
+const fmtNums=()=>NUM_IDS.forEach(id=>fmtIn(document.getElementById(id)));
+if(!window.__fmtN){window.__fmtN=1;document.addEventListener('focusout',e=>{if(e.target&&NUM_IDS.includes(e.target.id))fmtIn(e.target)});document.addEventListener('focusin',e=>{const t=e.target;if(t&&NUM_IDS.includes(t.id)&&/,/.test(t.value))t.value=t.value.replace(/,/g,'')})}
+function renderSheet(){const s=S.sheet;if(!s)return;setTimeout(fmtNums,0);
   {const pn=$('#panel');if(pn&&pn.parentElement)pn.parentElement.classList.toggle('findmode',s.type==='poFind')}
   ({poWd:sheetPoWd,poCost:sheetPoCost,poFind:sheetPoFind,poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
@@ -2267,7 +2270,11 @@ function sheetMember(){const m=S.members.find(x=>x.id===S.sheet.id);if(!m)return
 /* stock */
 const stAva=s=>{const hue=[...String(s.name||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360,ok=can('stock')&&s.id,lb=(s.img?'เปลี่ยนรูป ':'ใส่รูป ')+(s.name||'');return `<div class="wda stava${s.img?' has':''}${ok?' tap':''}" style="--h:${hue}"${ok?` data-act="stPhoto" data-id="${s.id}" role="button" tabindex="0" title="${esc(lb)}" aria-label="${esc(lb)}"`:''}>${s.img?thumb(s,'thumb'):`<span class="stini">${esc(String(s.name||'?').slice(0,1))}</span>`}${ok?'<span class="stcam2" aria-hidden="true">📷</span>':''}</div>`};
 const stThumb=s=>s.img?`<span data-act="imgv" data-src="${esc(s.img)}" data-cap="${esc(s.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(s,'thumb')}</span>`:thumb(s,'thumb');
-function sheetStock(){const s=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit:'กก.',qty:'',min:'',unitCost:''};
+const UNITS=[['น้ำหนัก',['กก.','กรัม','ขีด']],['ปริมาตร',['ลิตร','มล.']],['นับชิ้น',['ชิ้น','ใบ','คู่','ขวด','กระป๋อง','ถุง','ซอง','แพ็ค','ห่อ','กล่อง','ลัง','ฟอง','หัว','ลูก','ตัว','ไม้','กำ','ม้วน','แผ่น','ชุด','แกลลอน','กระสอบ']]];
+const unitList=()=>{const l=S.lists&&S.lists.units&&S.lists.units.items;return Array.isArray(l)&&l.length?l:null};
+const unitOpts=(v,blank)=>{const UL=unitList(),all=UL||UNITS.flatMap(g=>g[1]),cur=String(v||'').trim(),norm=cur.replace(/\.$/,'')===('กก')?'กก.':cur;return (blank?`<option value="">${blank}</option>`:'')+(norm&&!all.includes(norm)?`<option value="${esc(norm)}" selected>${esc(norm)} (เดิม)</option>`:'')+(UL?UL.map(u=>`<option value="${esc(u)}" ${u===norm?'selected':''}>${esc(u)}</option>`).join(''):UNITS.map(([g,L])=>`<optgroup label="${g}">${L.map(u=>`<option value="${u}" ${u===norm?'selected':''}>${u}</option>`).join('')}</optgroup>`).join(''))};
+const setUnitSel=(el,v)=>{if(!el)return;v=v||'';if(v&&![...el.options].some(o=>o.value===v)){const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o)}el.value=v};
+function sheetStock(){const s0=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit:'กก.',qty:'',min:'',unitCost:''},s=S.sheet.draft?{...s0,...S.sheet.draft}:s0;
   if(!S.sheet.sphoto)S.sheet.sphoto={url:s.img||'',path:s.imgPath||'',file:null,removed:false};
   $('#panel').innerHTML=head(S.sheet.id?'แก้ไขวัตถุดิบ':'เพิ่มวัตถุดิบ')+
   `<form class="sh-body"><div class="photo-edit"><div class="photo-box" id="sPhotoBox"></div><div class="photo-act">
@@ -2275,12 +2282,12 @@ function sheetStock(){const s=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit:
      <button class="btn sm ghost" data-act="sPhotoRemove" type="button" id="sPhotoDel">ลบรูป</button>
      <small class="muted">ถ่ายจากมือถือได้เลย ระบบย่อรูปให้อัตโนมัติ</small></div></div>
   <div class="field"><label for="sName">ชื่อ</label><input id="sName" value="${esc(s.name)}" placeholder="เช่น เส้นเล็ก" autocomplete="off"></div>
-  <div class="grid2"><div class="field"><label for="sUnit">หน่วย</label><input id="sUnit" value="${esc(s.unit)}" placeholder="กก. / ถุง / ก้อน"></div><div class="field"><label for="sQty">คงเหลือตอนนี้</label><input id="sQty" inputmode="decimal" value="${s.qty??''}"></div></div>
+  <div class="grid2"><div class="field"><label for="sUnit" style="display:flex;justify-content:space-between;align-items:center;gap:6px">หน่วย<button class="lnk" data-act="catList" data-k="units" type="button" style="font-size:12px">⚙️ จัดการหน่วย</button></label><select id="sUnit">${unitOpts(s.unit||(S.sheet.id?'':'กก.'))}</select></div><div class="field"><label for="sQty">คงเหลือตอนนี้</label><input id="sQty" inputmode="decimal" value="${s.qty??''}"></div></div>
   <div class="grid2"><div class="field"><label for="sMin">จุดสั่งซื้อ (เหลือเท่านี้ให้เตือน)</label><input id="sMin" inputmode="decimal" value="${s.min??''}"></div><div class="field"><label for="sCost">ต้นทุนต่อหน่วย (บาท)</label><input id="sCost" inputmode="decimal" value="${s.unitCost??''}"></div></div>
   ${true?`<div class="field"><label for="sGrp">หมวด</label><select id="sGrp"><option value="food" ${(S.sheet.g||stGrp(s))!=='drink'?'selected':''}>🍚 วัตถุดิบอาหาร</option><option value="drink" ${(S.sheet.g||(s.name?stGrp(s):''))==='drink'?'selected':''}>🥤 วัตถุดิบเครื่องดื่ม</option></select></div>`:''}
   ${true?`<div class="field"><label for="sCut">วิธีตัดสต็อก</label><select id="sCut"><option value="sale" ${stCut({...s,shop:s.shop||(isPo()?'po':'')})==='sale'?'selected':''}>${isPo()?'ตัดตามยอดขายตอนปิดยอด — ของนับชิ้น เช่น กล่อง ช้อน ขวดน้ำ (ใส่ในสูตรเมนู)':'ตัดตามสูตรเมนูทุกครั้งที่รับเงิน (ค่าเดิม)'}</option><option value="use" ${stCut({...s,shop:s.shop||(isPo()?'po':'')})==='use'?'selected':''}>เบิกใช้ (✂️ ตัดสต็อกขายวันนี้) — ${isPo()?'ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน':'กระดูกต้มน้ำซุป ผัก เครื่องปรุง ที่ใช้ทั้งหม้อ'}</option></select><span class="help">${isPo()?'ค่าเริ่มต้นตามหน่วย: ใบ/คู่/ชิ้น/ขวด = ตามยอดขาย · กก./ลิตร = เบิกใช้':'เบิกใช้ = ไม่ตัดตามสูตรตอนรับเงิน แต่ตัดด้วย ✂️ แล้วเฉลี่ยต้นทุนต่อชาม'}</span></div>`:''}
   <p class="help" style="margin:0">นับของจริงแล้วแก้ "คงเหลือ" ได้ตลอด ต้นทุนต่อหน่วยจะอัปเดตเองทุกครั้งที่บันทึกการซื้อ</p></form>
-  <div class="sh-foot">${S.sheet.id?`<button class="btn danger" data-act="delStock" data-confirm="1" type="button">ลบ</button><button class="btn" data-act="purchase" data-id="${S.sheet.id}" type="button">ซื้อเติม</button>`:''}<button class="btn pri wide" data-act="saveStock" type="button">บันทึก</button></div>`;
+  <div class="sh-foot">${S.sheet.id?`<button class="btn danger" data-act="delStock" data-confirm="1" type="button">ลบ</button><button class="btn goldbtn" data-act="purchase" data-id="${S.sheet.id}" type="button">🛒 ซื้อเติม</button>`:''}<button class="btn pri wide" data-act="saveStock" type="button">บันทึก</button></div>`;
   renderSPhoto();
   $('#sPhoto').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
     if(!/^image\//.test(f.type))return toast('เลือกไฟล์รูปภาพ','bad');
@@ -2302,8 +2309,8 @@ async function saveStock(){const name=val('sName');if(!name)return toast('ใส
 function sheetPurchase(){const sid=S.sheet.id||'';
   $('#panel').innerHTML=head('บันทึกการซื้อของ','ระบบจะเติมจำนวนเข้าสต็อกให้')+
   `<form class="sh-body"><div class="field"><label for="pItem">ซื้ออะไร</label><select id="pItem">${stockList().map(s=>`<option value="${s.id}" ${s.id===sid?'selected':''}>${esc(s.name)} (${esc(s.unit)})</option>`).join('')}<option value="__new" ${!stockList().length?'selected':''}>+ ของใหม่ที่ยังไม่มีในสต็อก</option></select></div>
-  <div class="grid2" id="pNew" hidden><div class="field"><label for="pName">ชื่อของใหม่</label><input id="pName" autocomplete="off"></div><div class="field"><label for="pUnit">หน่วย</label><input id="pUnit" value="กก."></div></div>
-  <div class="grid2"><div class="field"><label for="pBuy">ซื้อมากี่</label><div style="display:flex;gap:8px"><input id="pBuy" inputmode="decimal" placeholder="เช่น 1" style="flex:1;min-width:0"><input id="pBuyU" placeholder="แพ็ค / ถุง / กก." style="flex:1;min-width:0"></div></div>
+  <div class="grid2" id="pNew" hidden><div class="field"><label for="pName">ชื่อของใหม่</label><input id="pName" autocomplete="off"></div><div class="field"><label for="pUnit">หน่วย</label><select id="pUnit">${unitOpts('กก.')}</select></div></div>
+  <div class="grid2"><div class="field"><label for="pBuy">ซื้อมากี่</label><div style="display:flex;gap:8px"><input id="pBuy" inputmode="decimal" placeholder="เช่น 1" style="flex:1;min-width:0"><select id="pBuyU" style="flex:1;min-width:0">${unitOpts('','— หน่วยซื้อ —')}</select></div></div>
   <div class="field"><label for="pAmt">ราคารวม (บาท)</label><input id="pAmt" inputmode="decimal" placeholder="เช่น 150"></div></div>
   <div class="grid2"><div class="field" id="pPerF"><label for="pPer">1 <span id="pPerBU">แพ็ค</span> มีกี่ <span class="pQU">หน่วย</span></label><input id="pPer" inputmode="decimal" placeholder="เช่น 100"><span class="help">ซื้อเป็นหน่วยเดียวกับสต็อก ใส่ 1</span></div>
   <div class="field"><label for="pQty">เข้าสต็อกทั้งหมด (<span id="pQU" class="pQU">หน่วย</span>)</label><input id="pQty" inputmode="decimal" placeholder="คำนวณให้อัตโนมัติ"><span class="help">= ซื้อมากี่ × 1 หน่วยมีกี่ · แก้เองได้</span></div></div>
@@ -2313,15 +2320,15 @@ function sheetPurchase(){const sid=S.sheet.id||'';
   let qMan=false,lastItem=null;
   const upd=e=>{const isN=$('#pItem').value==='__new';$('#pNew').hidden=!isN;const st=S.stock.find(x=>x.id===$('#pItem').value);const u=isN?(val('pUnit')||'หน่วย'):(st?st.unit:'หน่วย');
     document.querySelectorAll('.pQU').forEach(x=>x.textContent=u);
-    if(lastItem!==$('#pItem').value){lastItem=$('#pItem').value;qMan=false;$('#pBuyU').value=st&&st.buyUnit?st.buyUnit:'';$('#pPer').value=st&&st.buyPer?st.buyPer:''}
+    if(lastItem!==$('#pItem').value){lastItem=$('#pItem').value;qMan=false;setUnitSel($('#pBuyU'),st&&st.buyUnit?st.buyUnit:'');$('#pPer').value=st&&st.buyPer?st.buyPer:''}
     if(e&&e.target&&e.target.id==='pQty')qMan=$('#pQty').value.trim()!=='';
     const bu=val('pBuyU')||u;$('#pPerBU').textContent=bu;
     const same=!val('pBuyU')||val('pBuyU')===u;$('#pPerF').style.opacity=same?.6:1;
-    const bq=nval('pBuy'),per=same?1:nval('pPer');if(!qMan){$('#pQty').value=bq&&per?String(r2(bq*per)):''}
+    const bq=nval('pBuy'),per=same?1:nval('pPer');if(!qMan){$('#pQty').value=bq&&per?String(r2(bq*per)):'';fmtIn($('#pQty'))}
     const q=nval('pQty'),a=nval('pAmt');const t=[];
     if(q&&a)t.push(`💡 ตก <b>${esc(u)}ละ ${baht(a/q)}</b>`);if(bq&&a&&!same)t.push(`${esc(bu)}ละ ${baht(a/bq)}`);if(q)t.push(`เข้าสต็อก +${num(q)} ${esc(u)}`);
     const box=$('#pUnitCost');box.hidden=!t.length;box.innerHTML=t.join(' · ')};
-  ['pItem','pQty','pAmt','pBuy','pBuyU','pUnit','pPer'].forEach(i=>$('#'+i).addEventListener('input',upd));$('#pItem').addEventListener('change',upd);upd();}
+  ['pItem','pQty','pAmt','pBuy','pBuyU','pUnit','pPer'].forEach(i=>{$('#'+i).addEventListener('input',upd);$('#'+i).addEventListener('change',upd)});upd();}
 async function savePurch(){let sid=val('pItem');const qty=nval('pQty'),amount=nval('pAmt');
   if(!(qty>0))return toast('ใส่จำนวนที่ซื้อ','bad');
   let s=S.stock.find(x=>x.id===sid);
@@ -3285,7 +3292,7 @@ let PRD=null,PRW=640,PRAK='',PRANIM=false,PRGA=false;
 const prGrp=()=>{const v=S.prGrp||prLS('nl_prg');return ['f','d','all'].includes(v)?v:'f'};
 const cntB=(v,f='b')=>` data-cnt="${r2(v)}" data-f="${f}"`;
 function prCount(){const els=document.querySelectorAll('[data-cnt]:not([data-cd])');if(!els.length)return;const t0=performance.now(),D=950,ease=x=>1-Math.pow(1-x,3);
-  const fm=(f,v,end)=>f==='b'?baht(end?v:Math.round(v)):f==='p'?Math.round(v)+'%':String(Math.round(v));
+  const fm=(f,v,end)=>f==='b'?baht(end?v:Math.round(v)):f==='p'?Math.round(v)+'%':Math.round(v).toLocaleString('en-US');
   els.forEach(e=>{e.dataset.cd=1;e.textContent=fm(e.dataset.f,0)});
   const step=t=>{const k=Math.min(1,(t-t0)/D),e2=ease(k);els.forEach(e=>{if(!e.isConnected)return;const v=+e.dataset.cnt;e.textContent=fm(e.dataset.f,v*e2,k>=1)});if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)}
 const prLS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
@@ -3970,21 +3977,21 @@ function sheetIncome(){const cats=incCats();
 const CAT_IC=[[/เช่า/,'🏠'],[/แรง|เงินเดือน|ลูกจ้าง|พนักงาน/,'👷'],[/ไฟ|น้ำ(?!มัน)|ประปา/,'💡'],[/แก๊ส|ก๊าซ|ถ่าน/,'🔥'],[/อุปกรณ์|เครื่องมือ|ภาชนะ/,'🧰'],[/คอมมิชชั่น|ฝากขาย/,'🤝'],[/ขายของเหลือ|ของเก่า|รีไซเคิล/,'♻️'],[/สนับสนุน|สปอนเซอร์/,'🎗️'],[/ของเสีย|ตัดจำหน่าย/,'🗑️'],[/ส่ง|ขนส่ง|น้ำมัน|เดินทาง/,'🛵'],[/โฆษณา|การตลาด|โปรโมท/,'📣'],[/ภาษี|vat/i,'🧾'],[/ซ่อม|บำรุง/,'🔧'],[/เน็ต|โทรศัพท์|อินเทอร์เน็ต|wifi/i,'📶'],[/ทิป|tip/i,'💝'],[/ดอกเบี้ย|ธนาคาร/,'🏦'],[/อื่น/,'✨']];
 const catIcon=c=>{for(const [re,ic] of CAT_IC)if(re.test(c||''))return ic;return '🏷️'};
 const catBar=k=>`<div class="catbar"><span class="cblabel">${k==='incCats'?'💰 ประเภท':'💸 หมวด'}</span><div class="cbchips">${listCur(k).map((c,i)=>`<span class="cbchip" style="--h:${(i*47+(k==='incCats'?150:12))%360}"><i>${catIcon(c)}</i>${esc(c)}</span>`).join('')}</div><button class="btn sm goldbtn" data-act="catList" data-k="${k}" type="button">⚙️ จัดการ${k==='incCats'?'ประเภท':'หมวด'}</button></div>`;
-const LIST_NAME={expCats:'หมวดรายจ่าย',incCats:'ประเภทรายรับอื่นๆ'};
-const listCur=k=>k==='incCats'?incCats():expCats();
+const LIST_NAME={expCats:'หมวดรายจ่าย',incCats:'ประเภทรายรับอื่นๆ',units:'หน่วยวัตถุดิบ'};
+const listCur=k=>k==='units'?(unitList()||UNITS.flatMap(g=>g[1])):k==='incCats'?incCats():expCats();
 const setList=(k,items)=>{S.lists=S.lists||{};S.lists[k]={items}};
 function addListItem(k,name){const cur=listCur(k);if(cur.includes(name))return;const items=[...cur,name];setList(k,items);write('lists/'+k,r=>r.set({items}))}
 function sheetCatList(){const k=S.sheet.k;if(!S.sheet.items)S.sheet.items=listCur(k).map(n=>({n,o:n}));const it=S.sheet.items;
   $('#panel').innerHTML=head('จัดการ'+LIST_NAME[k],'แก้ชื่อในช่องได้เลย · เลื่อนลำดับด้วยปุ่ม ↑ ↓')+`<div class="sh-body">
    <div class="list">${it.map((x,i)=>`<div class="row" style="gap:6px"><input data-cl="${i}" value="${esc(x.n)}" maxlength="40" style="flex:1;min-width:0" aria-label="ชื่อ"><button class="btn sm ghost" data-act="clMove" data-i="${i}" data-d="-1" type="button" ${i?'':'disabled'} aria-label="เลื่อนขึ้น">↑</button><button class="btn sm ghost" data-act="clMove" data-i="${i}" data-d="1" type="button" ${i<it.length-1?'':'disabled'} aria-label="เลื่อนลง">↓</button><button class="btn sm danger" data-act="clDel" data-i="${i}" type="button">ลบ</button></div>`).join('')||'<div class="empty">ยังไม่มีรายการ</div>'}</div>
-   <div style="display:flex;gap:8px"><input id="clNew" maxlength="40" placeholder="ชื่อใหม่ เช่น ค่าน้ำแข็ง" style="flex:1" autocomplete="off"><button class="btn" data-act="clAdd" type="button">+ เพิ่ม</button></div>
-   <p class="help" style="margin:0">ลบหรือแก้ชื่อแล้ว รายการที่บันทึกไว้ 30 วันล่าสุดจะเปลี่ยนชื่อตามให้ · รายการที่ถูกลบหมวด ยังอยู่ครบ ไม่หาย</p></div>
+   <div style="display:flex;gap:8px"><input id="clNew" maxlength="40" placeholder="${k==='units'?'หน่วยใหม่ เช่น ปี๊บ':'ชื่อใหม่ เช่น ค่าน้ำแข็ง'}" style="flex:1" autocomplete="off"><button class="btn" data-act="clAdd" type="button">+ เพิ่ม</button></div>
+   <p class="help" style="margin:0">${k==='units'?'แก้ชื่อหน่วยแล้ว วัตถุดิบที่ใช้หน่วยนั้นจะเปลี่ยนตามให้ · ลบหน่วยแล้ว วัตถุดิบเดิมยังใช้หน่วยเดิมได้ (ขึ้นเป็น "เดิม")':'ลบหรือแก้ชื่อแล้ว รายการที่บันทึกไว้ 30 วันล่าสุดจะเปลี่ยนชื่อตามให้ · รายการที่ถูกลบหมวด ยังอยู่ครบ ไม่หาย'}</p></div>
    <div class="sh-foot"><button class="btn" data-act="clBack" type="button">ยกเลิก</button><button class="btn pri wide" data-act="clSave" type="button">บันทึก</button></div>`;
   $('#clNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ACT.clAdd()}});}
 const clRead=()=>document.querySelectorAll('[data-cl]').forEach(e=>{const x=S.sheet.items[+e.dataset.cl];if(x)x.n=e.value.trim()});
 Object.assign(ACT,{
-  catList:d=>{if(!can('expenses'))return deny();const b=S.sheet?{...S.sheet}:null;
-    if(b)b.draft=b.type==='expense'?{cat:val('eCat'),amt:val('eAmt'),date:val('eDate'),note:val('eNote')}:null;openSheet({type:'catList',k:d.k,back:b})},
+  catList:d=>{if(!(d.k==='units'?can('stock'):can('expenses')))return deny();const b=S.sheet?{...S.sheet}:null;
+    if(b)b.draft=b.type==='expense'?{cat:val('eCat'),amt:val('eAmt'),date:val('eDate'),note:val('eNote')}:b.type==='stockEdit'?{name:val('sName'),unit:val('sUnit'),qty:val('sQty'),min:val('sMin'),unitCost:val('sCost')}:null;openSheet({type:'catList',k:d.k,back:b})},
   clMove:d=>{clRead();const a=S.sheet.items,i=+d.i,j=i+(+d.d);if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];sheetCatList()},
   clDel:d=>{clRead();S.sheet.items.splice(+d.i,1);sheetCatList()},
   clAdd:()=>{clRead();const n=val('clNew');if(!n)return;if(S.sheet.items.some(x=>x.n===n))return toast('มีชื่อนี้แล้ว','bad');S.sheet.items.push({n,o:null});sheetCatList();setTimeout(()=>$('#clNew')?.focus(),30)},
@@ -3993,7 +4000,9 @@ Object.assign(ACT,{
     if(new Set(names).size!==names.length)return toast('มีชื่อซ้ำกัน','bad');
     const ok=await write('lists/'+k,r=>r.set({items:names}));if(!ok)return;setList(k,names);
     const ren=it.filter(x=>x.o&&x.o!==x.n),col=k==='incCats'?'incomes':'expenses',rows=k==='incCats'?S.inc:S.exp;
-    for(const x of ren)for(const e of (rows||[]).filter(e=>e.cat===x.o))write(col+'/'+e.id,r=>r.update({cat:x.n}));
+    if(k==='units'){for(const x of ren)for(const t of (S.stock||[])){const up={};if(t.unit===x.o)up.unit=x.n;if(t.buyUnit===x.o)up.buyUnit=x.n;if(Object.keys(up).length){Object.assign(t,up);write('stock/'+t.id,r=>r.update(up))}}
+      if(S.sheet.back&&S.sheet.back.draft){const x=ren.find(y=>y.o===S.sheet.back.draft.unit);if(x)S.sheet.back.draft.unit=x.n}}
+    else for(const x of ren)for(const e of (rows||[]).filter(e=>e.cat===x.o))write(col+'/'+e.id,r=>r.update({cat:x.n}));
     toast('บันทึก'+LIST_NAME[k]+'แล้ว');const b=S.sheet.back;if(b)openSheet(b);else{closeSheet();render()}},
   income:()=>{if(!can('expenses'))return deny();openSheet({type:'income'})},
   saveInc:async()=>{const amount=nval('iAmt');if(!(amount>0))return toast('ใส่จำนวนเงิน','bad');let cat=val('iCat');if(cat==='__new'){cat=val('iNew');if(!cat)return toast('ใส่ชื่อประเภท','bad');addListItem('incCats',cat)}
