@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1225">
+<meta name="app-version" content="2026.10.20-1235">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -786,7 +786,7 @@ body.sheet-on .callbar{z-index:40;pointer-events:none;opacity:.5}
 .chip.chip-promo{border-color:#e65100;color:#bf360c;font-weight:700;background:#fff3e0}.chip.chip-promo[aria-pressed="true"]{background:#e65100;color:#fff}.pill.promo{background:#e65100;color:#fff}
 .porows{display:flex;flex-direction:column;gap:6px}
 .porow{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer}
-.porow.st-done{opacity:.6}.porow.st-new{border-color:#f0b429;border-width:2px}
+.porow.st-done{opacity:.6}.porows.dv .porow.st-done,.pogrid.dv .poc.st-done{opacity:1}.porow.st-new{border-color:#f0b429;border-width:2px}
 .porow .pr-l{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.porow .pr-h{display:flex;gap:4px;align-items:center;flex-wrap:wrap}.porow .pr-h b{font-size:16px}
 .porow .pr-n{font-size:13.5px}.porow .pr-i{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .porow .pr-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}.porow .pr-r .btn{white-space:nowrap}
@@ -2790,7 +2790,7 @@ function poPickCard(o,q){const due=poDue(o),paid=o.payStatus==='paid',slip=o.pay
    <div class="pickpay"><div><small>${paid?'ชำระแล้ว':'ยอดที่ต้องเก็บ'}</small><b class="${paid?'':'due'}">${baht(paid?+o.total||0:due)}</b></div>
     ${paid?'':slip?`<button class="btn" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button><button class="btn" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">✓ สลิปถูกต้อง · รับเงินแล้ว</button>`
       :`<button class="btn cash" data-act="poCash" data-id="${esc(o.id)}" data-confirm="1" type="button">💵 รับเงินสด</button><button class="btn scan" data-act="poPayQr" data-id="${esc(o.id)}" type="button">📱 สแกนจ่าย</button>`}</div>
-   ${o.status==='done'?`<div class="pickdoneok">✅ ส่งอาหารสำเร็จแล้ว${o.doneAt?' '+hm(o.doneAt)+' น.':''}</div>`:`<button class="btn pri wide pickdone" data-act="poDeliver" data-id="${esc(o.id)}" data-confirm="1" type="button">✅ ส่งอาหารสำเร็จ</button>`}${poRecvMins()&&o.status!=='done'?`<p class="help" style="margin:6px 0 0;text-align:center">ลูกค้ากด "ได้รับของแล้ว" ในหน้าของตัวเอง · ไม่กดใน ${poRecvMins()} นาที = ยืนยันอัตโนมัติ</p>`:''}</div>`}
+   ${o.status==='done'?`<div class="pickdoneok">✅ ส่งอาหารสำเร็จแล้ว${o.doneAt?' '+hm(o.doneAt)+' น.':''}${o.by?` · โดย ${esc(o.by)}`:''}</div>${poRecvLine(o)}`:`<button class="btn pri wide pickdone" data-act="poDeliver" data-id="${esc(o.id)}" data-confirm="1" type="button">✅ ส่งอาหารสำเร็จ</button>`}${poRecvMins()&&o.status!=='done'?`<p class="help" style="margin:6px 0 0;text-align:center">ลูกค้ากด "ได้รับของแล้ว" ในหน้าของตัวเอง · ไม่กดใน ${poRecvMins()} นาที = ยืนยันอัตโนมัติ</p>`:''}</div>`}
 function poPickRefresh(){const s=S.sheet;if(s&&s.type==='poPick'){sheetPoPick();return}const r=$('#poRes');if(r)r.innerHTML=poResHtml()}
 function sheetPoPick(){const o=(S.poOrders||[]).find(x=>x.id===S.sheet.id);if(!o){closeSheet();return toast('ไม่พบออร์เดอร์นี้','bad')}
   $('#panel').innerHTML=head('📦 รับของ · '+esc(poShort(o)),o.status==='done'?'ออร์เดอร์นี้ส่งสำเร็จแล้ว':'ตรวจรายการ เก็บเงิน แล้วกดส่งอาหารสำเร็จ')+`<div class="sh-body">${o.status==='done'?'<div class="notice">✅ ส่งอาหารสำเร็จไปแล้ว</div>':''}${poPickCard(o,'')}</div>
@@ -2928,13 +2928,13 @@ function peDiff(o,items){const out=[];
 const poLay=()=>{try{return localStorage.getItem('nl_polay')||'card'}catch(e){return 'card'}};
 function poRow(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pay=o.payStatus==='paid'?['ชำระแล้ว','ok']:o.payStatus==='slip'?['รอตรวจสลิป','info']:['ค้างชำระ','bad'];
   const items=(o.items||[]).map(l=>l.qty+'× '+l.name+(l.opts&&l.opts.length?' ('+optPx(l.opts)+')':'')).join(', ');
-  return `<div class="porow st-${esc(o.status)}" data-act="poPickBack" data-id="${esc(o.id)}" role="button" tabindex="0"><div class="pr-l"><div class="pr-h"><b>${esc(poShort(o))}</b> <span class="pill ${st[1]}">${st[0]}</span>${(o.changes||[]).length?' <span class="pill warn">🔄 แก้แล้ว</span>':''}${o.arrive&&['confirmed','ready'].includes(o.status)?' <span class="pill info">📍 แจ้งแล้ว</span>':''}</div>
+  return `<div class="porow st-${esc(o.status)}" data-act="poPickBack" data-id="${esc(o.id)}" role="button" tabindex="0"><div class="pr-l"><div class="pr-h"><b>${esc(poShort(o))}</b> <span class="pill ${st[1]}">${st[0]}</span>${(o.changes||[]).length?' <span class="pill warn">🔄 แก้แล้ว</span>':''}${o.arrive&&['confirmed','ready'].includes(o.status)?' <span class="pill info">📍 แจ้งแล้ว</span>':''}${o.status==='done'?(r=>r==='ok'?' <span class="pill ok">✓ ลูกค้ายืนยันรับ</span>':r==='auto'?' <span class="pill mute">ยืนยันอัตโนมัติ</span>':r==='wait'?' <span class="pill warn">⏳ รอลูกค้ายืนยัน</span>':r==='issue'?' <span class="pill bad">⚠️ แจ้งยังไม่ได้รับ</span>':'')(poRecvSt(o)):''}${o.doneAt&&o.status==='done'?` <small class="muted">ส่ง ${hm(o.doneAt)}</small>`:''}</div>
     <div class="pr-n">${esc(o.name||'')} · ${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</div><div class="pr-i">${esc(items)}${o.note?` <i>— ${esc(o.note)}</i>`:''}</div></div>
     <div class="pr-r"><b>${baht(+o.total||0)}</b><span class="pill ${pay[1]}">${pay[0]}</span>${nx&&['owner','chef'].includes(S.role)?`<button class="btn sm pri" data-act="poStep" data-id="${esc(o.id)}"${nx[0]==='done'?' data-confirm="1"':''} type="button">${nx[1]}</button>`:''}</div></div>`}
 function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliverDate===day),live=all.filter(poLive);
   // รอยืนยัน = ทุกวันส่ง (เห็นออร์เดอร์ใหม่ทันที แม้สั่งไว้ส่งวันอื่น) · ที่เหลือ = ตามวันส่งที่เลือก
   const pend=(S.poOrders||[]).filter(o=>o.status==='new').sort((a,b)=>b.at-a.at);
-  const F={new:['รอยืนยัน',null],confirmed:['ยืนยันแล้ว',o=>['confirmed','ready'].includes(o.status)],paid:['ชำระเงินแล้ว',o=>poLive(o)&&o.payStatus==='paid'],unpaid:['ค้างชำระเงิน',o=>poLive(o)&&o.status!=='new'&&o.payStatus!=='paid'],recv:['รอลูกค้ายืนยันรับ',o=>['wait','issue'].includes(poRecvSt(o))],all:['ทั้งหมด',()=>true]};
+  const F={new:['รอยืนยัน',null],confirmed:['ยืนยันแล้ว',o=>['confirmed','ready'].includes(o.status)],done:['✅ ส่งแล้ว',o=>o.status==='done'],paid:['ชำระเงินแล้ว',o=>poLive(o)&&o.payStatus==='paid'],unpaid:['ค้างชำระเงิน',o=>poLive(o)&&o.status!=='new'&&o.payStatus!=='paid'],recv:['รอลูกค้ายืนยันรับ',o=>['wait','issue'].includes(poRecvSt(o))],all:['ทั้งหมด',()=>true]};
   const pf=F[S.poF]?S.poF:(pend.length?'new':'confirmed');const list=pf==='new'?pend:all.filter(F[pf][1]);
   const unpaid=live.filter(o=>o.payStatus!=='paid').reduce((a,o)=>a+(+o.total||0),0);
   let h=poSearchBox()+closedCard()+poHeadCard()+poDayChips(day)+`<div class="strip"><div class="stat"><b class="num">${live.length}</b><span>ออร์เดอร์</span></div><div class="stat"><b class="num">${live.reduce((a,o)=>a+poQty(o),0)}</b><span>กล่อง/ชิ้น</span></div><div class="stat"><b class="num">${baht(live.reduce((a,o)=>a+(+o.total||0),0))}</b><span>ยอดขาย</span></div><div class="stat"><b class="num">${baht(unpaid)}</b><span>ยังไม่ได้เงิน</span></div></div>
@@ -2948,7 +2948,7 @@ function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliver
   const pts=poCfg().points.map(p=>p.name);
   Object.keys(groups).sort((a,b)=>{const ia=pts.indexOf(a),ib=pts.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b,'th')}).forEach(k=>{const g=groups[k];
     const arrN=poArriveTargets(k,day).length;
-    h+=`<div class="sec-h" style="margin-top:6px"><h2>📍 ${esc(k.replace(/^~/,''))}</h2><span class="hint">${g.length} ออร์เดอร์ · ${g.reduce((a,o)=>a+poQty(o),0)} ชิ้น</span>${['owner','chef'].includes(S.role)&&arrN?`<button class="btn sm arrbtn" data-act="poArrive" data-v="${esc(k)}" type="button">📍 ถึงจุดส่งแล้ว · แจ้งลูกค้า</button>`:''}</div>${poLay()==='row'?`<div class="porows">${g.map(poRow).join('')}</div>`:`<div class="pogrid">${g.map(poCard).join('')}</div>`}`});
+    h+=`<div class="sec-h" style="margin-top:6px"><h2>📍 ${esc(k.replace(/^~/,''))}</h2><span class="hint">${g.length} ออร์เดอร์ · ${g.reduce((a,o)=>a+poQty(o),0)} ชิ้น</span>${['owner','chef'].includes(S.role)&&arrN?`<button class="btn sm arrbtn" data-act="poArrive" data-v="${esc(k)}" type="button">📍 ถึงจุดส่งแล้ว · แจ้งลูกค้า</button>`:''}</div>${poLay()==='row'?`<div class="porows${pf==='done'?' dv':''}">${g.map(poRow).join('')}</div>`:`<div class="pogrid${pf==='done'?' dv':''}">${g.map(poCard).join('')}</div>`}`});
   return h}
 function viewPoPrep(){const day=poPickDay(),live=(S.poOrders||[]).filter(o=>o.deliverDate===day&&poLive(o));
   let h=`<div class="sec-h"><h2>เตรียมของ ส่ง${poDayName(day)}</h2><span class="hint">${esc(poDate(day))} · รวมทุกออร์เดอร์ที่ไม่ยกเลิก</span></div>`+poDayChips(day)
