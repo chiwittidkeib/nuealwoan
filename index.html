@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.19-1410">
+<meta name="app-version" content="2026.10.20-1050">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -536,6 +536,14 @@ html,body{max-width:100%;overflow-x:clip}
 .imgview{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;cursor:zoom-out}
 .imgview img{max-width:100%;max-height:calc(100% - 60px);object-fit:contain;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
 .imgview .iv-cap{color:#fff;margin-top:12px;font-size:16px;text-align:center}
+.imgview .iv-close{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));padding:12px 26px;border-radius:99px;border:0;background:#fff;color:#111;font-size:17px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.imgview{cursor:pointer}.imgview img{max-height:calc(100% - 130px)}
+.frmview{position:fixed;inset:0;z-index:125;background:var(--bg,#fff);display:flex;flex-direction:column}
+.frmview .fv-bar{display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px;background:var(--surface,#fff);border-bottom:1px solid var(--line,#ddd)}
+.frmview .fv-bar b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px}
+.frmview .fv-back{border:0;border-radius:99px;padding:10px 18px;font-size:16px;font-weight:700;background:var(--jade,#2e7d32);color:#fff;cursor:pointer}
+.frmview .fv-ext{padding:8px 12px;border-radius:10px;text-decoration:none;color:var(--muted,#666);font-size:18px}
+.frmview iframe{flex:1;width:100%;border:0;background:#fff}
 .imgview .iv-x{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:24px;cursor:pointer}
 .zoomable{cursor:zoom-in}
 .soldwrap{position:relative}
@@ -862,10 +870,25 @@ const optRule=g=>g.req?(+g.max===1?'ต้องเลือก 1':'ต้อง
 const minPrice=m=>(+m.price||0)+optGroups(m).filter(g=>g.req).reduce((s,g)=>s+Math.min(...g.choices.map(c=>+c.price||0)),0);
 
 /* ---------- ดูรูปเต็มจอ ---------- */
+// หน้าต่างซ้อน (รูป / หน้าในแอป) ปิดได้ด้วยปุ่มกลับของ Android และไม่ติดค้างในโหมดแอปบน iPhone
+const OVL=[];let OVL_SKIP=0;
+function ovlPush(close){OVL.push(close);try{history.pushState({ovl:OVL.length},'')}catch(e){}}
+function ovlClose(close){const i=OVL.indexOf(close);if(i<0)return;OVL.splice(i,1);try{if(history.state&&history.state.ovl){OVL_SKIP++;history.back()}}catch(e){}}
+window.addEventListener('popstate',()=>{if(OVL_SKIP){OVL_SKIP--;return}const c=OVL.pop();if(c)c(true)});
 function viewImg(src,cap){if(!src)return;const o=document.getElementById('imgView');if(o)o.remove();const el=document.createElement('div');el.id='imgView';el.className='imgview';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
-  el.innerHTML=`<img src="${esc(src)}" alt="${esc(cap||'')}">${cap?`<div class="iv-cap">${esc(cap)}</div>`:''}<button type="button" class="iv-x" aria-label="ปิด">×</button>`;
-  const close=()=>{el.remove();window.removeEventListener('keydown',k,true)};const k=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};window.addEventListener('keydown',k,true);
-  el.addEventListener('click',e=>{e.stopPropagation();close()});document.body.appendChild(el)}
+  el.innerHTML=`<img src="${esc(src)}" alt="${esc(cap||'')}">${cap?`<div class="iv-cap">${esc(cap)}</div>`:''}<button type="button" class="iv-x" aria-label="ปิด">×</button><button type="button" class="iv-close">✕ ปิด กลับหน้าเดิม</button>`;
+  let done=false;const close=fromPop=>{if(done)return;done=true;el.remove();window.removeEventListener('keydown',k,true);if(fromPop!==true)ovlClose(close)};const k=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};window.addEventListener('keydown',k,true);
+  el.addEventListener('click',e=>{e.stopPropagation();close()});document.body.appendChild(el);ovlPush(close)}
+// เปิดหน้าเว็บของร้าน (ใบเสร็จ / สั่งเพิ่มให้ลูกค้า ฯลฯ) ในหน้าต่างซ้อน มีปุ่ม ← กลับ
+function openFrame(url,title){const old=document.getElementById('frmView');if(old)old.remove();
+  const el=document.createElement('div');el.id='frmView';el.className='frmview';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+  el.innerHTML=`<div class="fv-bar"><button type="button" class="fv-back">← กลับ</button><b>${esc(title||'')}</b></div><iframe src="${esc(url)}" title="${esc(title||'หน้าเว็บ')}"></iframe>`;
+  let done=false;const close=fromPop=>{if(done)return;done=true;el.remove();if(fromPop!==true)ovlClose(close);try{render()}catch(e){}};
+  el.querySelector('.fv-back').addEventListener('click',()=>close());document.body.appendChild(el);ovlPush(close)}
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[target="_blank"]');if(!a||a.dataset.noframe)return;
+  let u;try{u=new URL(a.href,location.href)}catch(x){return}if(u.origin!==location.origin||!/\.html$/.test(u.pathname))return;
+  const mobile=matchMedia('(pointer:coarse)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;if(!mobile)return;
+  e.preventDefault();openFrame(u.href,(a.textContent||'').replace(/\s+/g,' ').trim().slice(0,40))},true);
 function optPick(m,cfg){cfg=cfg||{};const G=optGroups(m);const pick={};G.forEach(g=>pick[g.id]=[]);let qty=1,note='',warn=false;
   const mul=cfg.mul||(x=>x);
   const old=document.getElementById('optPop');if(old)old.remove();
