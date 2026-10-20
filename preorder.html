@@ -323,6 +323,21 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 .pickbox .pst{font-weight:700;font-size:15px}.pickbox .pst.ok{color:#0f9488}.pickbox .pst.chk{color:#0277bd}.pickbox .pst.due{color:#d32f2f}
 .pqbtn{margin-top:8px;border:1px dashed var(--jade);background:none;color:var(--jade);border-radius:12px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer}
 .pickbox .pq{margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:4px}.pickbox .pq svg{width:200px;height:200px;background:#fff;padding:6px;border-radius:12px}.pickbox .pq span{font-size:12.5px;color:var(--muted)}
+
+/* ⭐ เมนูพิเศษประจำวัน */
+.sphero{position:relative;margin:4px 0 14px;padding:14px 12px 12px;border-radius:20px;background:linear-gradient(135deg,rgba(255,215,120,.28),rgba(255,140,60,.14) 55%,rgba(255,215,120,.22));border:1.5px solid rgba(240,180,40,.65);box-shadow:0 0 0 4px rgba(250,204,21,.12),0 10px 30px rgba(200,120,0,.18);overflow:hidden}
+.sphero::before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 70%,rgba(255,236,160,.55) 80%,transparent 90%);animation:spSpin 6s linear infinite;pointer-events:none}
+.sphero>*{position:relative}
+.sph{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:18px;font-weight:800;color:#8a4b00}
+.sph .spstar{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7c2,#fbbf24 55%,#d97706);box-shadow:0 0 14px rgba(251,191,36,.8);animation:spPulse 1.6s ease-in-out infinite}
+.sph small{font-size:12.5px;font-weight:600;color:#b45309;opacity:.85}
+.item.sp{position:relative;border:2px solid #f5b82e!important;box-shadow:0 0 0 3px rgba(250,204,21,.25),0 8px 22px rgba(217,119,6,.28)!important;animation:spGlow 2.2s ease-in-out infinite}
+.spbadge{position:absolute;top:8px;left:8px;z-index:3;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:800;color:#5a2d00;background:linear-gradient(110deg,#fde68a 0%,#fbbf24 40%,#fff5c4 50%,#fbbf24 60%,#f59e0b 100%);background-size:250% 100%;box-shadow:0 2px 8px rgba(180,100,0,.35);animation:spShine 2.4s linear infinite;white-space:nowrap}
+@keyframes spSpin{to{transform:rotate(360deg)}}
+@keyframes spPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@keyframes spGlow{0%,100%{box-shadow:0 0 0 3px rgba(250,204,21,.2),0 8px 22px rgba(217,119,6,.22)}50%{box-shadow:0 0 0 5px rgba(250,204,21,.45),0 8px 28px rgba(217,119,6,.4)}}
+@keyframes spShine{from{background-position:150% 0}to{background-position:-100% 0}}
+@media (prefers-reduced-motion:reduce){.sphero::before,.sph .spstar,.item.sp,.spbadge{animation:none}}
 </style>
 </head>
 <body>
@@ -597,12 +612,14 @@ async function loadOrder(){if(!S.cur)return;try{const {data,error}=await sb.rpc(
 function openOrder(id,token){S.cur={id,token};S.order=null;S.view='status';try{const u=new URL(location.href);u.searchParams.set('o',id);u.searchParams.set('t',token);history.replaceState(null,'',u.href)}catch(e){}
   render();loadOrder().then(render)}
 
-function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}${promoOf(m.id)?PSEAL:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
+function menuCard(m){return `<button class="item${m.soldOut?' is-out':''}${m.special?' sp':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut?'disabled aria-label="'+esc(m.name)+' หมดแล้ว"':''}>${m.special?'<span class="spbadge">⭐ พิเศษวันนี้</span>':''}${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>Sold Out</i></span>':''}<div class="ph">${m.img?`<img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy">`:esc(String(m.name||'?').trim().charAt(0))}</div>${inCart(m.id)?`<em>${inCart(m.id)}</em>`:''}${promoOf(m.id)?PSEAL:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span>${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}${hasOpts(m)?' <small class="muted">· เลือกได้</small>':''}</span>${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
 function menuGrid(empty){const P=promoIds();if(S.cat==='__promo'&&!S.menu.some(m=>P.has(m.id)))S.cat='all';
   const list=S.menu.filter(m=>S.cat==='__promo'?P.has(m.id):S.cat==='all'||m.cat===S.cat).sort((a,b)=>P.has(b.id)-P.has(a.id));if(!list.length)return empty;
+  list.sort((a,b)=>(!!b.special)-(!!a.special));
   if(S.cat!=='all')return `<div class="grid">${list.map(menuCard).join('')}</div>`;
+  const SPx=list.filter(m=>m.special),spH=SPx.length?`<div class="sphero"><h3 class="sph"><span class="spstar">⭐</span>เมนูพิเศษประจำวัน <small>แนะนำวันนี้</small></h3><div class="grid">${SPx.map(menuCard).join('')}</div></div>`:'';
   const order=[...S.cats,...new Set(list.map(m=>m.cat||'').filter(c=>!S.cats.includes(c)))];
-  return order.map(c=>{const g=list.filter(m=>(m.cat||'')===c);return g.length?`${c?`<h3 class="cath">${esc(c)}</h3>`:''}<div class="grid">${g.map(menuCard).join('')}</div>`:''}).join('')}
+  return spH+order.map(c=>{const g=list.filter(m=>!m.special&&(m.cat||'')===c);return g.length?`${c?`<h3 class="cath">${esc(c)}</h3>`:''}<div class="grid">${g.map(menuCard).join('')}</div>`:''}).join('')}
 
 // การ์ดแจ้งรอบส่ง (เด่น) + นับถอยหลังปิดรับ
 const cutAt=st=>{const d=st.closeDate||st.today||new Date(Date.now()+7*3600e3).toISOString().slice(0,10);const t=/^\d\d:\d\d$/.test(st.cutoff||'')?st.cutoff:'20:00';return Date.parse(d+'T'+t+':00+07:00')};

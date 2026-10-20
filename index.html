@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1935">
+<meta name="app-version" content="2026.10.20-1956">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1103,6 +1103,25 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 .top .modesel select option{color:#222;background:#fff}
 .top .hbtn.hout{color:#c62828}.top .hbtn.hout:hover{border-color:rgba(227,73,72,.6);box-shadow:0 0 0 3px rgba(227,73,72,.12),0 6px 16px rgba(227,73,72,.18)}
 .top .hbtn.hout[data-armed]{color:#fff!important;background:linear-gradient(135deg,#f0525a,#c62828)!important;border:0!important;box-shadow:0 0 0 3px rgba(229,56,59,.25),0 4px 14px rgba(229,56,59,.4)!important;animation:armpulse 1s ease-in-out infinite}
+.top .modesel select[data-v="chef"]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='white' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"),linear-gradient(135deg,#38bdf8,#2563eb 60%,#1d4ed8);box-shadow:0 0 0 1px rgba(96,165,250,.6),0 2px 8px rgba(37,99,235,.35)}
+.top .modesel select[data-v="waiter"]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='white' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"),linear-gradient(135deg,#fb923c,#ea580c);box-shadow:0 0 0 1px rgba(251,146,60,.6),0 2px 8px rgba(234,88,12,.3)}
+.top .modesel select[data-v="partner"]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='white' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"),linear-gradient(135deg,#a78bfa,#7c3aed);box-shadow:0 0 0 1px rgba(167,139,250,.6),0 2px 8px rgba(124,58,237,.3)}
+/* สวิตช์สไลด์เลือกร้าน */
+.shopsw{position:relative;isolation:isolate;display:grid!important;grid-template-columns:1fr 1fr;padding:4px;border-radius:999px!important;border:1px solid color-mix(in srgb,var(--line) 70%,transparent)!important;background:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.02))!important;box-shadow:inset 0 2px 5px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);overflow:visible!important}
+.shopsw::before{content:"";position:absolute;z-index:-1;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:999px;background:linear-gradient(135deg,#3b2a1e,#1a120c);box-shadow:0 0 0 1px rgba(226,178,101,.6),0 4px 12px rgba(0,0,0,.3),0 0 14px rgba(226,178,101,.35);transition:transform .45s cubic-bezier(.5,1.6,.4,1),background .3s,box-shadow .3s}
+body.shop-po .shopsw::before{transform:translateX(100%);background:linear-gradient(135deg,#ff6b5e,#e11d2e 55%,#b0101f);box-shadow:0 0 0 1px rgba(255,170,150,.6),0 4px 12px rgba(200,16,46,.35),0 0 14px rgba(255,120,100,.4)}
+.shopsw button{position:relative;justify-content:center;padding:7px 14px!important;border-radius:999px;background:none!important;color:var(--muted)!important;transition:color .3s}
+.shopsw button[aria-pressed="true"]{color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.shopsw button:not([aria-pressed="true"]):hover{color:var(--fg)!important}
+.shopsw .swlogo{transition:transform .3s}.shopsw button[aria-pressed="true"] .swlogo{transform:scale(1.1);border-color:#fff}
+@media (prefers-reduced-motion:reduce){.shopsw::before{transition:none}}
+.top .modesel select{color:#fff!important;-webkit-text-fill-color:#fff}.top .modesel span{white-space:nowrap}
+.shopsw button{padding:6px 11px!important}
+.btn.bluebtn{border:0;color:#fff;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.2);background:linear-gradient(135deg,#38bdf8,#2563eb 60%,#1d4ed8);box-shadow:0 0 0 1px rgba(96,165,250,.6),0 4px 14px rgba(37,99,235,.35),0 0 14px rgba(96,165,250,.4)}
+.btn.bluebtn:hover:not(:disabled){filter:brightness(1.07);box-shadow:0 0 0 1px rgba(147,197,253,.9),0 6px 20px rgba(37,99,235,.45),0 0 24px rgba(96,165,250,.65)}
+.spchk{padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(253,230,138,.35),rgba(251,191,36,.15));border:1px solid rgba(245,184,46,.6)}
+.mtile.sp,.row.sp{box-shadow:0 0 0 2px #f5b82e,0 6px 18px rgba(217,119,6,.25)}
+.sptag{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;color:#5a2d00;background:linear-gradient(135deg,#fde68a,#f59e0b);vertical-align:middle}
 </style>
 </head>
 <body>
@@ -1565,7 +1584,7 @@ function render(){
   document.querySelector('[data-act="settings"]').hidden=S.state!=='ready';
   $('#hdrLogout').hidden=S.state!=='ready';$('#hdrMe').hidden=S.state!=='ready';
   {const hb=$('#hdrShop');if(hb){const own=S.state==='ready'&&(S.role==='owner'||(isPo()&&S.role==='chef')),cl=shopClosed();hb.hidden=!own;hb.innerHTML=cl?'<span class="dot"></span>ร้านปิดอยู่ · <b>เปิดร้าน</b>':'<span class="dot"></span>เปิดอยู่ · <b>ปิดร้าน</b>';hb.classList.toggle('closed',cl);hb.title=cl?'ร้านปิดอยู่ · กดเพื่อเปิดร้าน':'ปิดร้าน: หยุดขายทุกช่องทาง'}}if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!((S.calls.length&&canCall())||dlWaiting().length);
-  const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){{const sel=$('#hdrMode'),want=isPo()?'po':'all';if(sel.dataset.set!==want){sel.dataset.set=want;sel.innerHTML=(isPo()?[['','Admin'],['chef','แม่ครัว']]:[['','Admin'],['waiter','พนักงานเสิร์ฟ'],['chef','แม่ครัว'],['partner','หุ้นส่วน']]).map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}}$('#hdrMode').value=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs);mw.dataset.r=S.viewAs||'owner'}
+  const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){{const sel=$('#hdrMode'),want=isPo()?'po':'all';if(sel.dataset.set!==want){sel.dataset.set=want;sel.innerHTML=(isPo()?[['','Admin'],['chef','แม่ครัว']]:[['','Admin'],['waiter','พนักงานเสิร์ฟ'],['chef','แม่ครัว'],['partner','หุ้นส่วน']]).map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}}$('#hdrMode').value=S.viewAs||'';$('#hdrMode').dataset.v=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs);mw.dataset.r=S.viewAs||'owner'}
   const va=$('#viewAs');va.hidden=!(S.state==='ready'&&S.viewAs);if(!va.hidden)va.innerHTML=`<span>โหมด <b>${roleName(S.viewAs)}</b> · ใช้งานจริงตามสิทธิ์ของตำแหน่งนี้</span><button class="btn sm" data-act="viewAsOff" type="button">กลับโหมดแอดมิน</button>`;
   $('#tabs').parentElement.hidden=S.state!=='ready';
   if(S.state==='ready'&&isPo()&&!canPo())S.shop='noodle';
@@ -1682,8 +1701,8 @@ function viewMenu(){
   const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':' offsale'}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิดการขาย'}</button>`:'';
   if(S.menuLay==='grid'){h+='<div class="mtgrid">';
     list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-      const so=isSoldOut(m)||m.hidden,th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}${pIds.has(m.id)?' haspro':''}" data-act="menuEdit" data-id="${m.id}">${pIds.has(m.id)?PSEAL:''}${so?th.replace(/<\/div>$/,(m.hidden?naStampHtml():stampHtml(false))+'</div>'):th}<div class="tags">${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
-       <div class="mb"><div class="mn">${esc(m.name)}</div><div class="ms">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%</div><div class="mf"><b>${baht(p)}</b>${tog(m)}</div></div></div>`});
+      const so=isSoldOut(m)||m.hidden,th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}${pIds.has(m.id)?' haspro':''}${m.special?' sp':''}" data-act="menuEdit" data-id="${m.id}">${pIds.has(m.id)?PSEAL:''}${so?th.replace(/<\/div>$/,(m.hidden?naStampHtml():stampHtml(false))+'</div>'):th}<div class="tags">${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
+       <div class="mb"><div class="mn">${m.special?'<span class="sptag">⭐ พิเศษ</span> ':''}${esc(m.name)}</div><div class="ms">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%</div><div class="mf"><b>${baht(p)}</b>${tog(m)}</div></div></div>`});
     return h+'</div>';}
   h+='<div class="list">';
   list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
@@ -2197,6 +2216,7 @@ function sheetMenu(){const m=S.menu.find(x=>x.id===S.sheet.id)||{name:'',cat:cur
    <p class="help" style="margin:-6px 0 0">เว้นว่าง = ไม่จำกัด (∞) · ใส่ตัวเลข เช่น 20 ระบบนับจากที่สั่งวันนี้ ครบแล้วขึ้น "หมดแล้ว" เอง · เริ่มนับใหม่ทุกวัน</p>
    <label class="check"><input type="checkbox" id="mActive" ${m.active!==false?'checked':''}> เปิดขาย <small class="muted">(เอาติ๊กออก = ขึ้นตรา "หมดแล้ว")</small></label>
    <label class="check"><input type="checkbox" id="mNote" ${m.noNote?'':'checked'}> ให้ลูกค้าเขียนหมายเหตุ (บอกครัว) ได้ <small class="muted">(ไม่ติ๊ก = ซ่อนช่องหมายเหตุ เช่น เครื่องดื่ม)</small></label>
+   <label class="check spchk"><input type="checkbox" id="mSpecial" ${m.special?'checked':''}> ⭐ <b>เมนูพิเศษประจำวัน</b> <small class="muted">(ขึ้นเป็นเมนูแรก มีป้ายเรืองแสง "พิเศษวันนี้" ในหน้าลูกค้า)</small></label>
    <label class="check"><input type="checkbox" id="mHidden" ${m.hidden?'checked':''}> สินค้า ยังไม่จำหน่าย <small class="muted">(ไม่แสดงในหน้าสั่งอาหารเลย)</small></label>
    <div class="card consigncard"><label class="check"><input type="checkbox" id="mConsign" ${m.consign||S.sheet.consign?'checked':''}> <b>📦 สินค้าฝากขาย</b> <small class="muted">(ของคนอื่นมาฝากร้านขาย)</small></label>
     <div class="field"><label for="mOwner">ผู้ฝากขาย</label><input id="mOwner" list="ownerList" maxlength="40" value="${esc((m.consign&&m.consign.owner)||S.sheet.owner||'')}" placeholder="เช่น ขนมป้าศรี, น้ำสมุนไพรลุงชัย" autocomplete="off"><datalist id="ownerList">${[...new Set(S.menu.filter(x=>x.consign&&x.consign.owner).map(x=>x.consign.owner))].map(o=>`<option value="${esc(o)}">`).join('')}</datalist></div>
@@ -2304,7 +2324,7 @@ const cleanOpts=O=>O.map(g=>({id:g.id,name:g.name,req:g.type==='req1',max:g.type
 function readIng(){document.querySelectorAll('[data-ing]').forEach(e=>{const g=S.sheet.recipe[+e.dataset.ing];if(!g)return;g[e.dataset.k]=e.dataset.k==='qty'?(parseFloat(e.value)||0):e.value})}
 async function saveMenu(){readIng();const name=val('mName');if(!name)return toast('ใส่ชื่อเมนูก่อน','bad');
   readOpts();const bad=S.sheet.opts.find(g=>!g.name&&g.choices.some(c=>c.name))||S.sheet.opts.find(g=>g.name&&!g.choices.some(c=>c.name));if(bad)return toast(bad.name?'กลุ่ม "'+bad.name+'" ยังไม่มีตัวเลือก':'ตั้งชื่อกลุ่มตัวเลือกก่อน','bad');
-  const data={name,desc:val('mDesc'),cat:val('mCat'),price:nval('mPrice'),cost:nval('mCost'),active:$('#mActive').checked,hidden:$('#mHidden').checked,noNote:!$('#mNote').checked,dailyLimit:(v=>v===''?null:Math.max(0,Math.round(+v)||0))(val('mLimit').replace(/[^0-9]/g,'')),recipe:S.sheet.recipe.filter(g=>g.stockId&&g.qty>0),options:cleanOpts(S.sheet.opts)};if(isPo()||(S.menu.find(m=>m.id===S.sheet.id)||{}).shop==='po')data.shop='po';
+  const data={name,desc:val('mDesc'),cat:val('mCat'),price:nval('mPrice'),cost:nval('mCost'),active:$('#mActive').checked,hidden:$('#mHidden').checked,noNote:!$('#mNote').checked,special:$('#mSpecial').checked,dailyLimit:(v=>v===''?null:Math.max(0,Math.round(+v)||0))(val('mLimit').replace(/[^0-9]/g,'')),recipe:S.sheet.recipe.filter(g=>g.stockId&&g.qty>0),options:cleanOpts(S.sheet.opts)};if(isPo()||(S.menu.find(m=>m.id===S.sheet.id)||{}).shop==='po')data.shop='po';
   {const ex=S.menu.find(m=>m.id===S.sheet.id)||{};const cOn=$('#mConsign')&&$('#mConsign').checked;
    if(cOn){const owner=val('mOwner');if(!owner)return toast('ใส่ชื่อผู้ฝากขายก่อน','bad');data.consign={owner:owner.slice(0,40)}}
    ['consignIn','consignSold','consignRet','consignPaidQty'].forEach(k=>{if(ex[k]!=null)data[k]=ex[k]})}
@@ -2353,7 +2373,7 @@ function sheetStock(){const s0=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit
   ${true?`<div class="field"><label for="sGrp">หมวด</label><select id="sGrp"><option value="food" ${(S.sheet.g||stGrp(s))!=='drink'?'selected':''}>🍚 วัตถุดิบอาหาร</option><option value="drink" ${(S.sheet.g||(s.name?stGrp(s):''))==='drink'?'selected':''}>🥤 วัตถุดิบเครื่องดื่ม</option></select></div>`:''}
   ${true?`<div class="field"><label for="sCut">วิธีตัดสต็อก</label><select id="sCut"><option value="sale" ${stCut({...s,shop:s.shop||(isPo()?'po':'')})==='sale'?'selected':''}>${isPo()?'ตัดตามยอดขายตอนปิดยอด — ของนับชิ้น เช่น กล่อง ช้อน ขวดน้ำ (ใส่ในสูตรเมนู)':'ตัดตามสูตรเมนูทุกครั้งที่รับเงิน (ค่าเดิม)'}</option><option value="use" ${stCut({...s,shop:s.shop||(isPo()?'po':'')})==='use'?'selected':''}>เบิกใช้ (✂️ ตัดสต็อกขายวันนี้) — ${isPo()?'ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน':'กระดูกต้มน้ำซุป ผัก เครื่องปรุง ที่ใช้ทั้งหม้อ'}</option></select><span class="help">${isPo()?'ค่าเริ่มต้นตามหน่วย: ใบ/คู่/ชิ้น/ขวด = ตามยอดขาย · กก./ลิตร = เบิกใช้':'เบิกใช้ = ไม่ตัดตามสูตรตอนรับเงิน แต่ตัดด้วย ✂️ แล้วเฉลี่ยต้นทุนต่อชาม'}</span></div>`:''}
   <p class="help" style="margin:0">นับของจริงแล้วแก้ "คงเหลือ" ได้ตลอด ต้นทุนต่อหน่วยจะอัปเดตเองทุกครั้งที่บันทึกการซื้อ</p></form>
-  <div class="sh-foot">${S.sheet.id?`<button class="btn danger" data-act="delStock" data-confirm="1" type="button">ลบ</button><button class="btn goldbtn" data-act="purchase" data-id="${S.sheet.id}" type="button">🛒 ซื้อเติม</button>`:''}<button class="btn pri wide" data-act="saveStock" type="button">บันทึก</button></div>`;
+  <div class="sh-foot">${S.sheet.id?`<button class="btn danger" data-act="delStock" data-confirm="1" type="button">🗑 ลบ</button><button class="btn goldbtn" data-act="purchase" data-id="${S.sheet.id}" type="button">🛒 ซื้อเติม</button>`:''}<button class="btn pri wide" data-act="saveStock" type="button">บันทึก</button></div>`;
   renderSPhoto();
   $('#sPhoto').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
     if(!/^image\//.test(f.type))return toast('เลือกไฟล์รูปภาพ','bad');
@@ -2892,11 +2912,12 @@ document.addEventListener('input',e=>{if(e.target&&e.target.id==='pfQ'){S.poQ=e.
   if(S.poQ.trim()){const sb=document.querySelector('.posrch'),top=r.getBoundingClientRect().top,lim=(sb?sb.getBoundingClientRect().bottom:0)+4;if(top<lim||top>innerHeight*.6)window.scrollBy({top:top-lim,behavior:'smooth'})}}}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
   if(b.closest('form')&&b.tagName==='BUTTON')e.preventDefault();
-  if(b.dataset.confirm&&!b.dataset.armed){b.dataset.armed='1';b.dataset.label=b.textContent;b.textContent='แตะอีกครั้งเพื่อยืนยัน';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent=b.dataset.label}},3500);return}
+  if(b.dataset.confirm&&b.dataset.armed&&Date.now()-(+b.dataset.armAt||0)<450)return;
+  if(b.dataset.confirm&&!b.dataset.armed){b.dataset.armed='1';b.dataset.armAt=Date.now();b.dataset.label=b.textContent;b.textContent='แตะอีกครั้งเพื่อยืนยัน';setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent=b.dataset.label}},3500);return}
   const f=ACT[b.dataset.act];if(f)f({...b.dataset},b,e);});
 document.addEventListener('submit',e=>e.preventDefault());
 document.addEventListener('input',e=>{if(e.target.id!=='fq')return;const was=!!(S.fq||'').trim();S.fq=e.target.value;const now=!!S.fq.trim();if(was!==now)render();else{const r=$('#fqRes');if(r)r.innerHTML=fqResults()}});
-$('#hdrMode').addEventListener('change',e=>{const v=e.target.value;if(v)ACT.viewAs({r:v});else ACT.viewAsOff()});
+$('#hdrMode').addEventListener('change',e=>{const v=e.target.value;e.target.dataset.v=v;if(v)ACT.viewAs({r:v});else ACT.viewAsOff()});
 {let downOnBg=false;$('#sheet').addEventListener('pointerdown',e=>{downOnBg=e.target.id==='sheet'});$('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet'&&downOnBg)closeSheet();downOnBg=false})}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet()});
 setInterval(()=>{if(S.state==='ready'&&(!S.sheet||S.sheet.type!=='pay'))render()},60000);
@@ -3200,10 +3221,10 @@ function poHeadCard(){const c=poCfg(),st=poState(),own=poAdmin();
     :st.reason==='before'?`จะเปิดรับ${st.openDate?' '+esc(poDate(st.openDate)):''} เวลา ${esc(c.openFrom||'00:00')} น.`:'ลูกค้าเข้ามาดูเมนูได้ แต่สั่งไม่ได้';
   return `<div class="card pohead ${st.open?'on':'off'}"><div class="pohead-r"><div class="grow"><b>${st.open?'● เปิดรับออร์เดอร์อยู่':'● ปิดรับออร์เดอร์'}</b><small>${why}</small></div>
     ${own?`<button class="btn ${st.open?'danger':'pri'}" data-act="poOpen" type="button">${st.open?'ปิดรับ':'เปิดรับออร์เดอร์'}</button>`:''}</div>
-    ${['owner','chef'].includes(S.role)?`<div class="inrow ph-l" style="gap:6px;flex-wrap:wrap;align-items:center"><button class="btn sm" data-act="poRound" type="button">📅 กำหนดรอบส่ง</button><span class="help" style="margin:0">${st.round?'รอบส่ง '+esc(poDate(st.deliverDate))+' · ปิดรับ '+esc(poDate(st.closeDate))+' '+esc(c.cutoff||'20:00')+' น.':'อัตโนมัติ: สั่งวันนี้ ส่ง'+(+c.leadDays?'อีก '+(+c.leadDays)+' วัน':'วันนี้')}</span></div>`:''}
+    ${['owner','chef'].includes(S.role)?`<div class="inrow ph-l" style="gap:6px;flex-wrap:wrap;align-items:center"><button class="btn sm goldbtn" data-act="poRound" type="button">📅 กำหนดรอบส่ง</button><span class="help" style="margin:0">${st.round?'รอบส่ง '+esc(poDate(st.deliverDate))+' · ปิดรับ '+esc(poDate(st.closeDate))+' '+esc(c.cutoff||'20:00')+' น.':'อัตโนมัติ: สั่งวันนี้ ส่ง'+(+c.leadDays?'อีก '+(+c.leadDays)+' วัน':'วันนี้')}</span></div>`:''}
     ${st.reason==='after'&&['owner','chef'].includes(S.role)?`<div class="inrow ph-l" style="gap:6px;flex-wrap:wrap"><a class="btn pri sm" href="preorder.html?staff=1" target="_blank" rel="noopener">➕ สั่งเพิ่มให้ลูกค้า (หลังปิดรับ)</a><span class="help" style="margin:0">เฉพาะแม่ครัว / แอดมิน · รอบส่ง${poDayName(st.deliverDate)}</span></div>`:''}
     ${own?`<div class="inrow ph-r" style="gap:6px;flex-wrap:wrap;align-items:center"><button class="btn sm closeround" data-act="poCloseRound" type="button">🧾 ปิดยอดรอบนี้</button><span class="help" style="margin:0">${c.lastClose?'ปิดยอดล่าสุด '+esc(poDate(new Date(+c.lastClose.at+7*3600e3).toISOString().slice(0,10)))+' '+hm(c.lastClose.at)+' น. · ':''}รอบนี้ ${(S.poOrders||[]).filter(poLive).length} ออร์เดอร์</span></div>`:''}
-    ${own?`<div class="inrow ph-r" style="gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="poQr" type="button">ลิงก์ / QR ให้ลูกค้า</button><button class="btn sm" data-act="poSet" type="button">ตั้งค่าร้านพรีออเดอร์</button></div>`:''}
+    ${own?`<div class="inrow ph-r" style="gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="poQr" type="button">ลิงก์ / QR ให้ลูกค้า</button><button class="btn sm bluebtn" data-act="poSet" type="button">ตั้งค่าร้านพรีออเดอร์</button></div>`:''}
     ${!S.po&&own?'<p class="help" style="margin:0">ยังไม่ได้ตั้งค่าร้าน กด "ตั้งค่าร้านพรีออเดอร์" เพื่อใส่เวลาปิดรับ จุดส่ง และพร้อมเพย์</p>':''}</div>`}
 function poRecvLine(o){const r=poRecvSt(o);if(!r)return '';const ed=['owner','chef'].includes(S.role);
   if(r==='wait')return `<div class="porecv wait">⏳ ส่งของแล้ว ${o.handedAt?hm(o.handedAt)+' น. ':''}· รอลูกค้ากดยืนยันรับ<small>ยืนยันอัตโนมัติ ${hm(+o.recvUntil)} น. ถ้าลูกค้าไม่กด</small></div>`;

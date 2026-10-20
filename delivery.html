@@ -171,6 +171,21 @@ footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:cente
 .rnote.lm{border-color:#9be0b6;background:#e9f9ef;color:#0d4f2b}
 .mini img.noimg{object-fit:cover;background:#15120f}
 .cbsv{display:block;font-size:12px;font-weight:700;color:#0f9488}.cbsv s{color:#9a9a9a;font-weight:400;margin-right:4px}
+
+/* ⭐ เมนูพิเศษประจำวัน */
+.sphero{position:relative;margin:4px 0 14px;padding:14px 12px 12px;border-radius:20px;background:linear-gradient(135deg,rgba(255,215,120,.28),rgba(255,140,60,.14) 55%,rgba(255,215,120,.22));border:1.5px solid rgba(240,180,40,.65);box-shadow:0 0 0 4px rgba(250,204,21,.12),0 10px 30px rgba(200,120,0,.18);overflow:hidden}
+.sphero::before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 70%,rgba(255,236,160,.55) 80%,transparent 90%);animation:spSpin 6s linear infinite;pointer-events:none}
+.sphero>*{position:relative}
+.sph{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:18px;font-weight:800;color:#8a4b00}
+.sph .spstar{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7c2,#fbbf24 55%,#d97706);box-shadow:0 0 14px rgba(251,191,36,.8);animation:spPulse 1.6s ease-in-out infinite}
+.sph small{font-size:12.5px;font-weight:600;color:#b45309;opacity:.85}
+.item.sp{position:relative;border:2px solid #f5b82e!important;box-shadow:0 0 0 3px rgba(250,204,21,.25),0 8px 22px rgba(217,119,6,.28)!important;animation:spGlow 2.2s ease-in-out infinite}
+.spbadge{position:absolute;top:8px;left:8px;z-index:3;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:800;color:#5a2d00;background:linear-gradient(110deg,#fde68a 0%,#fbbf24 40%,#fff5c4 50%,#fbbf24 60%,#f59e0b 100%);background-size:250% 100%;box-shadow:0 2px 8px rgba(180,100,0,.35);animation:spShine 2.4s linear infinite;white-space:nowrap}
+@keyframes spSpin{to{transform:rotate(360deg)}}
+@keyframes spPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@keyframes spGlow{0%,100%{box-shadow:0 0 0 3px rgba(250,204,21,.2),0 8px 22px rgba(217,119,6,.22)}50%{box-shadow:0 0 0 5px rgba(250,204,21,.45),0 8px 28px rgba(217,119,6,.4)}}
+@keyframes spShine{from{background-position:150% 0}to{background-position:-100% 0}}
+@media (prefers-reduced-motion:reduce){.sphero::before,.sph .spstar,.item.sp,.spbadge{animation:none}}
 </style>
 </head>
 <body>
@@ -423,11 +438,13 @@ function sumView(){const box=$('#sumBox');if(!box)return;const k=sumCalc();
 
 /* ---------- หน้าจอ ---------- */
 const MENU_PH='images/menu-ph.jpg?v=20261016b';
-function menuCard(m){const n=inCart(m.id),open=S.pub&&S.pub.open;return `<button class="item${m.soldOut?' is-out':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut||!open?'disabled':''}>${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>SOLD OUT</i></span>':''}<div class="ph"><img src="${esc(m.img||MENU_PH)}" alt="" loading="lazy"${m.img?'':' class="noimg"'}></div>${n?`<em>${n}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span class="pr">${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}</span>${m.combo&&+m.combo.regular>(+m.price||0)?`<span class="cbsv"><s>${baht(m.combo.regular)}</s> ประหยัด ${baht(m.combo.regular-(+m.price||0))}</span>`:''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
+function menuCard(m){const n=inCart(m.id),open=S.pub&&S.pub.open;return `<button class="item${m.soldOut?' is-out':''}${m.special?' sp':''}" data-a="add" data-m="${esc(m.id)}" type="button" ${m.soldOut||!open?'disabled':''}>${m.special?'<span class="spbadge">⭐ พิเศษวันนี้</span>':''}${m.soldOut?'<span class="stamp"><b>หมดแล้ว</b><i>SOLD OUT</i></span>':''}<div class="ph"><img src="${esc(m.img||MENU_PH)}" alt="" loading="lazy"${m.img?'':' class="noimg"'}></div>${n?`<em>${n}</em>`:''}<div class="tx"><b>${esc(m.name)}</b>${m.desc?`<p>${esc(m.desc)}</p>`:''}<span class="pr">${hasOpts(m)&&minPrice(m)!==(+m.price||0)?'เริ่ม ':''}${baht(hasOpts(m)?minPrice(m):m.price)}</span>${m.combo&&+m.combo.regular>(+m.price||0)?`<span class="cbsv"><s>${baht(m.combo.regular)}</s> ประหยัด ${baht(m.combo.regular-(+m.price||0))}</span>`:''}${!m.soldOut&&m.left!=null?`<span class="leftq${m.left<=3?' low':''}">เหลือ ${m.left}</span>`:''}</div></button>`}
 function menuGrid(){const list=S.menu.filter(m=>S.cat==='all'||m.cat===S.cat);if(!list.length)return '<p class="muted">ยังไม่มีเมนู</p>';
+  list.sort((a,b)=>(!!b.special)-(!!a.special));
   if(S.cat!=='all')return `<div class="grid">${list.map(menuCard).join('')}</div>`;
+  const SPx=list.filter(m=>m.special),spH=SPx.length?`<div class="sphero"><h3 class="sph"><span class="spstar">⭐</span>เมนูพิเศษประจำวัน <small>แนะนำวันนี้</small></h3><div class="grid">${SPx.map(menuCard).join('')}</div></div>`:'';
   const order=[...S.cats,...new Set(list.map(m=>m.cat||'').filter(c=>!S.cats.includes(c)))];
-  return order.map(c=>{const g=list.filter(m=>(m.cat||'')===c);return g.length?`${c?`<h3 class="cath">${esc(c)}</h3>`:''}<div class="grid">${g.map(menuCard).join('')}</div>`:''}).join('')}
+  return spH+order.map(c=>{const g=list.filter(m=>!m.special&&(m.cat||'')===c);return g.length?`${c?`<h3 class="cath">${esc(c)}</h3>`:''}<div class="grid">${g.map(menuCard).join('')}</div>`:''}).join('')}
 // ไรเดอร์ร้านไม่ว่าง / ติดงาน → แจ้งลูกค้าว่าร้านอาจเรียกไรเดอร์จากแอปส่งแทน
 const riderState=()=>{const r=S.pub&&S.pub.riders;if(!r||!S.pub.open)return '';if(!r.on||(+r.free===0&&+r.busy===0))return 'off';if(+r.free===0)return 'busy';return ''};
 const riderNote=()=>{const st=riderState();if(!st)return '';
