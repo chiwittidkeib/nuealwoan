@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-2230">
+<meta name="app-version" content="2026.10.20-1925">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1077,6 +1077,10 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 .stt .wdchip{font-size:13px;padding:3px 10px}.stt .stp{font-size:13px;padding:3px 12px}
 .stt th:nth-child(2),.stt td:nth-child(2){width:28%}
 @media (max-width:560px){.stt{font-size:15px}.stt td{padding:9px 10px}.stt td.av .wda{width:44px;height:44px}}
+.stl .str.out{animation:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.3)!important;position:relative;isolation:isolate}
+.stl .str.out::after{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 3px rgba(239,68,68,.55),0 4px 16px rgba(239,68,68,.45);opacity:0;animation:stOutGlow 1s ease-in-out infinite;will-change:opacity}
+@keyframes stOutGlow{0%,100%{opacity:0}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.stl .str.out::after{animation:none;opacity:.6}}
 </style>
 </head>
 <body>
