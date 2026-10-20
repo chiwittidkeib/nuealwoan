@@ -50,6 +50,7 @@ tbody tr.pad td{height:26px}
 .sum{display:flex;gap:10px;margin-top:12px;align-items:flex-end}
 .tot .dlab{display:block!important;margin-top:-4px;font-size:11.5px;color:#e65100;text-align:left;border:0!important;padding-top:0!important}
 tr.prow td.i{color:#c2410c;font-weight:600}
+.chgnote{margin-top:8px;font-size:12px;color:#9a3412;background:#fff7ed;border:1px dashed #fb923c;border-radius:8px;padding:6px 8px}
 .sum .no{flex:1;font-size:12.5px;color:var(--muted);padding-bottom:4px}
 .sum .no b{display:block;color:var(--ink);font-weight:600;font-size:13px;word-break:break-all}
 .tot{flex:1.4;display:flex;flex-direction:column;gap:3px}
@@ -193,7 +194,7 @@ function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bi
     items=src.map((l,i)=>({...l,qty:(+l.qty||0)-(used[i]||0)})).filter(l=>l.qty>0).concat(Object.values(P));
     const pd=b.promos.reduce((t,p)=>t+(+p.disc||0),0);b.subtotal=Math.round(((+b.subtotal||+b.total||0)-pd)*100)/100;b.discount=Math.max(0,Math.round(((+b.discount||0)-pd)*100)/100);b.discLabel=''}
   const vat=+b.vat>0;const taxInv=vat&&s.taxId;
-  const rows=items.map((l,i)=>{const opt=(l.opts||[]).map(o=>o.n).filter(Boolean).join(', ');return `<tr${l.promo?' class="prow"':''}><td class="n">${i+1}</td><td class="i">${l.promo?'🎁 ':''}${esc(l.name)}${opt?`<small>${esc(opt)}</small>`:''}${l.note?`<small>${esc(l.note)}</small>`:''}</td><td class="q">${+l.qty||0}</td><td class="p">${num(l.price)}</td><td class="t">${num((+l.price||0)*(+l.qty||0))}</td></tr>`}).join('');
+  const rows=items.map((l,i)=>{const opt=(l.opts||[]).map(o=>o.n).filter(Boolean).join(', ');return `<tr${l.promo?' class="prow"':''}><td class="n">${i+1}</td><td class="i">${l.promo?'🎁 ':''}${esc(l.name)}${opt?`<small>${esc(opt)}</small>`:''}${l.note?`<small>${esc(l.note)}</small>`:''}${l.swap?`<small style="color:#c2410c">แทน ${esc(l.swap)}</small>`:''}</td><td class="q">${+l.qty||0}</td><td class="p">${num(l.price)}</td><td class="t">${num((+l.price||0)*(+l.qty||0))}</td></tr>`}).join('');
   const pad=Array.from({length:Math.max(0,4-items.length)},()=>'<tr class="pad"><td></td><td></td><td></td><td></td><td></td></tr>').join('');
   const disc=(+b.discount||0)+(+b.redeem||0);
   const fbHtml=s.fb?(safeUrl(s.fbUrl)?`<a href="${esc(safeUrl(s.fbUrl))}" target="_blank" rel="noopener">${IC.fb}${esc(s.fb)}</a>`:`<span>${IC.fb}${esc(s.fb)}</span>`):'';
@@ -206,7 +207,7 @@ function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bi
    <hr class="br">
    <div class="head"><div class="title"><h1 class="${taxInv?'long':''}">${taxInv?'ใบเสร็จรับเงิน/<br>ใบกำกับภาษีอย่างย่อ':'ใบเสร็จรับเงิน'}</h1><small>RECEIPT</small><div class="rno">Receipt No. : <b>${esc(b.billNo||'-')}</b></div>${taxInv?`<small class="tax">เลขประจำตัวผู้เสียภาษี ${esc(s.taxId)}</small>`:''}</div>
      <div class="meta"><div><b>วันที่ :</b><span>${esc(date)}</span></div><div><b>เวลา :</b><span>${esc(time)}</span></div>${po?`${dd?`<div><b>รับ :</b><span>${esc(dd)}</span></div>`:''}<div><b>ที่ :</b><span>${esc(where)}</span></div>${b.customer?`<div><b>ลูกค้า :</b><span>${esc(b.customer)}</span></div>`:''}`:`<div><b>โต๊ะ :</b><span>${esc(where)}</span></div>`}</div></div>
-   <table><thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>ราคา</th><th>รวมเงิน</th></tr></thead><tbody>${rows}${pad}</tbody></table>
+   <table><thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>ราคา</th><th>รวมเงิน</th></tr></thead><tbody>${rows}${pad}</tbody></table>${(b.changes||[]).length?`<div class="chgnote">🔄 <b>มีการเปลี่ยนแปลงรายการ</b> ${b.changes.map(c=>esc(c.list.join(' · '))+(c.why?' ('+esc(c.why)+')':'')).join(' · ')}</div>`:''}
    <div class="sum"><div class="no"><div class="stamp" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></div></div><div class="tot">
      <div><span>รวมเงิน</span><span>${num(b.subtotal)}</span></div>
      ${disc?`<div><span>ส่วนลด${+b.redeem?` (ใช้ ${+b.ptsUsed||0} แต้ม)`:''}</span><span>-${num(disc)}</span></div>${b.discLabel?`<div class="dlab">🎁 ${esc(b.discLabel)}</div>`:''}`:''}

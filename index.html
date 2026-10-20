@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1105">
+<meta name="app-version" content="2026.10.20-1115">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1486,7 +1486,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 function renderSheet(){const s=S.sheet;if(!s)return;
-  ({poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -2857,7 +2857,8 @@ function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=P
   return `<div class="card poc st-${esc(o.status)}${poRecvSt(o)==='issue'?' recv-issue':poRecvSt(o)==='wait'?' recv-wait':''}${(o.payStatus==='paid'||o.payStatus==='slip')&&poLive(o)?' paid':''}">${o.payStatus==='paid'&&poLive(o)?'<span class="pocpaid" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></span>':o.payStatus==='slip'&&poLive(o)?'<span class="pocpaid chk" aria-label="รอตรวจสอบยอด">รอตรวจ<br>สอบยอด<i>CHECKING</i></span>':''}<div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${st[1]}">${st[0]}</span><span class="grow"></span><small class="muted">สั่ง ${hm(o.at)}${o.at<sod()?' · '+esc(poDate(new Date(o.at+7*3600e3).toISOString().slice(0,10))):''}</small></div>
     <div class="poc-who"><b>${esc(o.name)}</b>${o.memberPhone?` <span class="pill ok" title="สมาชิกสะสมแต้ม">⭐${+o.ptsEarned?' +'+o.ptsEarned:''}</span>`:''} · <a href="tel:${esc(o.phone)}">${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a></div>
     ${(o.rounds||1)>1&&!o.addSeen?`<div class="poc-note" style="color:#1565c0;font-weight:700">➕ ลูกค้าสั่งเพิ่ม (ครั้งที่ ${o.rounds-1}) ${o.addedAt?hm(o.addedAt):''} <button class="btn sm" data-act="poAddSeen" data-id="${esc(o.id)}" type="button">รับทราบ</button></div>`:''}
-    <div class="poc-items">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="muted" style="font-size:12px;font-weight:700;margin-top:4px">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div>`:''}<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
+    <div class="poc-items">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="muted" style="font-size:12px;font-weight:700;margin-top:4px">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div>`:''}<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}${l.swapFrom?` <small style="color:#c2410c">(แทน ${esc(l.swapFrom)})</small>`:''}</div>`).join('')}${poEditable(o)?`<button class="lnk" data-act="poEdit" data-id="${esc(o.id)}" type="button" style="margin-top:4px;display:block">✏️ แก้รายการ (ของหมด / เปลี่ยนเมนู)</button>`:''}</div>
+    ${(o.changes||[]).length?(c=>`<div class="poc-note" style="color:#c2410c;background:#fff3e0;border-radius:8px;padding:6px 8px">🔄 แก้รายการแล้ว ${hm(c.at)} น.: ${esc(c.list.join(' · '))}${c.why?`<br><small>เหตุผล: ${esc(c.why)}</small>`:''}</div>`)(o.changes[o.changes.length-1]):''}
     ${+o.promoDisc?`<div class="poc-note" style="color:#e65100;font-weight:700">🎁 ${(o.promos||[]).map(x=>esc(x.name)+(x.sets>1?' ×'+x.sets:'')).join(', ')} · ลด ${baht(o.promoDisc)} <small class="muted" style="font-weight:400">(ปกติ ${baht(o.subtotal)})</small></div>`:''}
     ${o.note||ed?`<div class="poc-note">${o.note?`📝 ${esc(o.note)}`:''}${ed?` <button class="lnk" data-act="poNote" data-id="${esc(o.id)}" type="button">✏️ ${o.note?'แก้ไขโน้ต':'เพิ่มโน้ต'}</button>`:''}${o.noteBy?` <small class="muted">(แก้โดย ${esc(o.noteBy)})</small>`:''}</div>`:''}
     ${o.slipBad&&o.payStatus!=='paid'&&o.payStatus!=='slip'?`<div class="poc-note" style="color:var(--chili)">❌ แจ้งลูกค้าแล้ว: ${esc(o.slipBad)} · <a href="tel:${esc(o.phone)}">📞 โทรหาลูกค้า</a></div>`:''}
@@ -2888,6 +2889,29 @@ function sheetPoArrive(){const s=S.sheet,day=poPickDay(),T=poArriveTargets(s.k,d
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="arGo" type="button" ${T.length?'':'disabled'}>📣 แจ้งลูกค้า ${T.length} คน</button></div>`;
   const pin=$('#arPin');pin.addEventListener('change',()=>{const v=pin.value.trim();if(!v){s.lat=s.lng=null;$('#arPinTxt').textContent='ไม่ใส่หมุด';return}const ll=parseLatLng(v);if(ll){s.lat=ll.lat;s.lng=ll.lng;pin.value=ll.lat+','+ll.lng;$('#arPinTxt').innerHTML=`✓ ปักหมุดแล้ว · <a href="${gmapLink(ll.lat,ll.lng)}" target="_blank" rel="noopener">ดูบนแผนที่</a>`}else $('#arPinTxt').textContent='อ่านพิกัดไม่ได้ · ลิงก์สั้น (maps.app.goo.gl) ให้เปิดในแผนที่แล้วคัดลอกพิกัดมาแทน'})}
 function arKeep(){const s=S.sheet;if(!s||s.type!=='poArrive')return;s.name=val('arName');s.note=val('arNote');s.save=$('#arSave').checked}
+// ===== แก้รายการในออร์เดอร์ (ของหมด / เปลี่ยนเมนู) · บันทึก changes ให้ลูกค้าเห็น + ใบเสร็จ
+const poEditable=o=>['owner','chef'].includes(S.role)&&['new','confirmed','ready'].includes(o.status);
+function sheetPoEdit(){const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(!o){closeSheet();return}
+  if(!s.items)s.items=(o.items||[]).map((l,i)=>({...l,_o:i}));
+  const menu=(S.poMenu||[]).filter(m=>!m.hidden),opt=sel=>menu.map(m=>`<option value="${esc(m.id)}"${sel===m.id?' selected':''}>${esc(m.name)} · ${baht(+m.price||0)}</option>`).join('');
+  const tot=s.items.reduce((a,l)=>a+(+l.price||0)*(+l.qty||0),0),paid=o.payStatus==='paid'||+o.paidAmt>0,pb=+o.paidAmt||+o.total||0;
+  $('#panel').innerHTML=head('✏️ แก้รายการ · '+esc(poShort(o)),esc(o.name||'')+' · เดิม '+baht(+o.total||0))+`<div class="sh-body">
+   <div class="list">${s.items.map((l,i)=>{const orig=l._o!=null?o.items[l._o]:null,chg=!orig?'เพิ่มใหม่':orig.menuId!==l.menuId?'เปลี่ยนจาก '+orig.name:+orig.qty!==+l.qty?'จำนวนเดิม '+orig.qty:'';
+     return `<div class="row" style="flex-wrap:wrap;gap:6px;align-items:center${l.qty?'':';opacity:.5'}"><div class="grow" style="min-width:150px"><div class="t">${esc(l.name)}${l.opts&&l.opts.length?` <small class="muted">${esc(optNames(l.opts))}</small>`:''}</div><div class="s">${baht(+l.price||0)}${chg?` · <b style="color:#c2410c">${esc(chg)}</b>`:''}${l.qty?'':' · <b style="color:var(--chili)">ลบออก</b>'}</div></div>
+       <div class="inrow" style="gap:4px"><button class="btn sm" data-act="peQ" data-v="${i}" data-d="-1" type="button" aria-label="ลด">−</button><b style="min-width:22px;text-align:center">${l.qty}</b><button class="btn sm" data-act="peQ" data-v="${i}" data-d="1" type="button" aria-label="เพิ่ม">+</button></div>
+       <select data-pe="${i}" style="flex:1 1 100%;min-width:0" aria-label="เปลี่ยนเป็นเมนูอื่น"><option value="">🔄 เปลี่ยนเป็นเมนูอื่น…</option>${opt('')}</select></div>`}).join('')}</div>
+   <div class="inrow" style="gap:6px"><select id="peAdd" style="flex:1;min-width:0"><option value="">➕ เพิ่มเมนู…</option>${opt('')}</select><button class="btn sm" data-act="peAdd" type="button">เพิ่ม</button></div>
+   <div class="field"><label for="peWhy">เหตุผล (ลูกค้าเห็น)</label><input id="peWhy" maxlength="120" value="${esc(s.why||'')}" placeholder="เช่น น้ำเผือกหมด เปลี่ยนเป็นนมฮอกไกโดตามที่ตกลงกับลูกค้า"></div>
+   <div class="card" style="padding:10px 12px"><b>ยอดใหม่ ${baht(tot)}</b> <small class="muted">(เดิม ${baht(+o.total||0)}${paid?` · จ่ายแล้ว ${baht(pb)}`:''})</small>${paid&&tot>pb?`<div style="color:var(--chili);font-weight:700">ลูกค้าต้องจ่ายเพิ่ม ${baht(tot-pb)}</div>`:paid&&tot<pb?`<div style="color:#c2410c;font-weight:700">ร้านต้องคืนเงินลูกค้า ${baht(pb-tot)}</div>`:''}</div>
+   <p class="help" style="margin:0">ลูกค้าเห็นการเปลี่ยนแปลง + เหตุผลในหน้าติดตามออร์เดอร์ และในใบเสร็จ · ราคาใช้ราคาเมนูปัจจุบัน${o.stockCut?' · สต็อกปรับให้อัตโนมัติ':''}</p>
+   <p class="err" id="peErr" role="alert"></p></div>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ยกเลิก</button><button class="btn pri wide" data-act="peSave" type="button">บันทึกการแก้ไข</button></div>`;
+  $('#panel').querySelectorAll('select[data-pe]').forEach(el=>el.addEventListener('change',()=>{const m=(S.poMenu||[]).find(x=>x.id===el.value);if(!m)return;s.why=val('peWhy');const l=s.items[+el.dataset.pe];
+    s.items[+el.dataset.pe]={...l,menuId:m.id,name:m.name,price:+m.price||0,cost:+m.cost||0,opts:[],qty:l.qty||1};sheetPoEdit()}))}
+function peDiff(o,items){const out=[];
+  (o.items||[]).forEach((l,i)=>{const n=items.find(x=>x._o===i);if(!n||!n.qty){out.push('ยกเลิก '+l.name+' ×'+l.qty);return}
+    if(n.menuId!==l.menuId)out.push(l.name+(+l.qty>1?' ×'+l.qty:'')+' → '+n.name+(+n.qty>1?' ×'+n.qty:''));else if(+n.qty!==+l.qty)out.push(l.name+' ×'+l.qty+' → ×'+n.qty)});
+  items.filter(x=>x._o==null&&x.qty).forEach(x=>out.push('เพิ่ม '+x.name+' ×'+x.qty));return out}
 function viewPo(){const day=poPickDay(),all=(S.poOrders||[]).filter(o=>o.deliverDate===day),live=all.filter(poLive);
   // รอยืนยัน = ทุกวันส่ง (เห็นออร์เดอร์ใหม่ทันที แม้สั่งไว้ส่งวันอื่น) · ที่เหลือ = ตามวันส่งที่เลือก
   const pend=(S.poOrders||[]).filter(o=>o.status==='new').sort((a,b)=>b.at-a.at);
@@ -3065,6 +3089,19 @@ Object.assign(ACT,{
   poSumPrint:d=>poSumPrint(d.v),
   poSumImg:(d,b)=>poSumImg(d.v,b),
   poSumCopy:async d=>{const t=poSumText(d.v);try{await navigator.clipboard.writeText(t);toast('คัดลอกสรุปแล้ว · วางในไลน์ได้เลย')}catch(e){window.prompt('คัดลอกข้อความนี้',t)}},
+  poEdit:d=>{const o=(S.poOrders||[]).find(x=>x.id===d.id);if(!o||!poEditable(o))return deny();openSheet({type:'poEdit',id:d.id})},
+  peQ:d=>{const s=S.sheet;s.why=val('peWhy');const l=s.items[+d.v];if(!l)return;l.qty=Math.max(0,Math.min(99,(+l.qty||0)+(+d.d)));sheetPoEdit()},
+  peAdd:()=>{const s=S.sheet,m=(S.poMenu||[]).find(x=>x.id===val('peAdd'));if(!m)return;s.why=val('peWhy');const ex=s.items.find(x=>x._o==null&&x.menuId===m.id);if(ex)ex.qty++;else s.items.push({id:Math.random().toString(36).slice(2,12),menuId:m.id,name:m.name,price:+m.price||0,cost:+m.cost||0,qty:1,note:'',at:Date.now(),opts:[]});sheetPoEdit()},
+  peSave:async()=>{const s=S.sheet,o=(S.poOrders||[]).find(x=>x.id===s.id);if(!o)return closeSheet();const why=val('peWhy').trim(),e=$('#peErr');
+    const diff=peDiff(o,s.items);if(!diff.length)return e.textContent='ยังไม่ได้แก้อะไร';const items=s.items.filter(x=>x.qty>0).map(x=>{const y={...x};delete y._o;
+      if(x._o!=null){const ol=o.items[x._o];if(ol.menuId!==x.menuId)y.swapFrom=ol.swapFrom||ol.name}return y});
+    if(!items.length)return e.textContent='ต้องเหลืออย่างน้อย 1 รายการ (ถ้าจะยกเลิกทั้งออร์เดอร์ ใช้ปุ่มยกเลิก)';
+    const tot=r2(items.reduce((a,l)=>a+(+l.price||0)*(+l.qty||0),0)),paidBase=o.payStatus==='paid'?(+o.paidAmt||+o.total||0):(+o.paidAmt||0);
+    const patch={items,total:tot,changes:[...(o.changes||[]),{at:Date.now(),by:S.me||'',list:diff,why}],chgAt:Date.now()};
+    if(paidBase>0){patch.paidAmt=paidBase;if(tot>paidBase+0.001&&o.payStatus==='paid')patch.payStatus=o.pay==='after'?'cod':'waiting'}
+    $('[data-act=peSave]').disabled=true;const ok=await write('po_orders/'+o.id,r=>r.update(patch));if(!ok){$('[data-act=peSave]').disabled=false;return}
+    if(o.stockCut){deductStock(o.items,S.poMenu,-1);deductStock(items,S.poMenu,1)}
+    Object.assign(o,patch);closeSheet();render();toast('บันทึกการแก้ไขแล้ว · ลูกค้าเห็นในหน้าติดตามออร์เดอร์')},
   poArrive:d=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poArrive',k:d.v})},
   arSpot:d=>{arKeep();const s=S.sheet,x=poSpots().find(y=>y.id===d.v);if(!x)return;s.spot=x.id;s.name=x.name;s.lat=x.lat??null;s.lng=x.lng??null;sheetPoArrive()},
   arSpotDel:async d=>{arKeep();const L=poSpots().filter(x=>x.id!==d.v);const {data,error}=await SB.rpc('po_set_spots',{p_spots:L});if(error)return toast('ลบไม่สำเร็จ: '+error.message,'bad');S.po={...poCfg(),spots:(data&&data.spots)||L};if(S.sheet.spot===d.v)S.sheet.spot=null;sheetPoArrive()},
