@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1115">
+<meta name="app-version" content="2026.10.20-1120">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#a0560a">
 <title>สั่งล่วงหน้า · พรีออเดอร์</title>
@@ -350,13 +350,14 @@ function showMemberCard(m){const o=document.getElementById('mCardOv');if(o)o.rem
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const baht=n=>'฿'+(Math.round((+n||0)*100)/100).toLocaleString('th-TH',{maximumFractionDigits:2});
-const optLine=e=>e.opts&&e.opts.length?`<div class="optx">${esc(optNames(e.opts))}</div>`:'';
+const optLine=e=>e.opts&&e.opts.length?`<div class="optx">${esc(optPx(e.opts))}</div>`:'';
 
 /* ---------- ตัวเลือกเมนู (แบบ LINE MAN) ใช้ร่วมกันทั้งหน้าพนักงานและหน้าลูกค้า ---------- */
 const optGroups=m=>Array.isArray(m&&m.options)?m.options.filter(g=>g&&g.name&&(g.choices||[]).length):[];
 const hasOpts=m=>optGroups(m).length>0;
 const optKey=opts=>(opts||[]).map(o=>o.cid||o.n).join(',');
 const optNames=opts=>(opts||[]).map(o=>o.n).join(', ');
+const optPx=opts=>(opts||[]).map(o=>+o.p>0?(/เพิ่ม|ท็อป|topping/i.test(o.g||'')?'เพิ่ม':'')+o.n+' +'+(Math.round(+o.p*100)/100):o.n).join(', ');
 const optRule=g=>g.req?(+g.max===1?'ต้องเลือก 1':'ต้องเลือก'+(+g.max>1?' สูงสุด '+g.max:'อย่างน้อย 1')):(+g.max===1?'เลือกได้ 1':'เลือกได้'+(+g.max>1?' สูงสุด '+g.max:'หลายอย่าง'));
 const minPrice=m=>(+m.price||0)+optGroups(m).filter(g=>g.req).reduce((s,g)=>s+Math.min(...g.choices.map(c=>+c.price||0)),0);
 
@@ -662,7 +663,7 @@ function render(){
       <div class="qcard${cx?' cx':''}"><small>เลขออร์เดอร์ ${esc(o.orderNo||'')}</small><b class="qs-${cx?'cx':esc(o.status)}">${cx?'ยกเลิกแล้ว':esc((STEPS[idx]||STEPS[0])[1])}</b><span class="t">รับ${esc(thDate(o.deliverDate)+(o.window?' · เวลา '+o.window:tmW(o.deliverDate)))}</span><span class="tm">${esc(o.pointName||'')}</span>${!cx&&o.payStatus==='slip'?'<span class="pill warn" style="align-self:center;margin-top:4px">⏳ รอตรวจสอบยอดชำระ</span>':''}</div>
       ${cx?'':`<div class="shr"><button class="btn lineshr" data-a="shareLine" type="button"><b>LINE</b> แชร์ลิงก์ไว้เช็กสถานะ</button><button class="btn" data-a="copyLink" type="button" aria-label="คัดลอกลิงก์">📋 คัดลอก</button></div><p class="muted" style="margin:-4px 0 0;font-size:12.5px;text-align:center">ส่งเข้า Keep memo หรือแชทตัวเอง · เปิดเช็กสถานะ แนบสลิป ดูใบเสร็จ ได้จากทุกเครื่อง</p>`}
       ${cx?'':`<ol class="steps">${STEPS.map((s,i)=>`<li class="st-${s[0]}${i<=idx?' on':''}${i===idx?' cur':''}">${esc(s[1])}</li>`).join('')}</ol>`}
-      <div class="list">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="row rnd"><div class="g">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div></div>`:''}<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opts&&l.opts.length?`<div class="optx">${esc(optNames(l.opts))}</div>`:''}${l.note?`<div class="who">${esc(l.note)}</div>`:''}${l.swapFrom?`<div class="who" style="color:#c2410c">🔄 แทน ${esc(l.swapFrom)}</div>`:''}</div><div class="r">${baht(l.price*l.qty)}</div></div>`).join('')}
+      <div class="list">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="row rnd"><div class="g">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div></div>`:''}<div class="row"><div class="g">${l.qty}× ${esc(l.name)}${l.opts&&l.opts.length?`<div class="optx">${esc(optPx(l.opts))}</div>`:''}${l.note?`<div class="who">${esc(l.note)}</div>`:''}${l.swapFrom?`<div class="who" style="color:#c2410c">🔄 แทน ${esc(l.swapFrom)}</div>`:''}</div><div class="r">${baht(l.price*l.qty)}</div></div>`).join('')}
         ${+o.promoDisc?`<div class="row"><div class="g">รวมก่อนลด</div><div class="r">${baht(o.subtotal)}</div></div>${(o.promos||[]).map(x=>`<div class="row"><div class="g prodisc">🎁 ${esc(x.name)}${x.sets>1?' ×'+x.sets:''}</div><div class="r prodisc">−${baht(x.disc)}</div></div>`).join('')}`:''}
         <div class="row"><div class="g"><b>ยอดรวม${(o.rounds||1)>1?' (รวมที่สั่งเพิ่ม)':''}</b></div><div class="r"><b>${baht(o.total)}</b></div></div>
         ${+o.paidAmt>0&&o.payStatus!=='paid'?`<div class="row"><div class="g">ชำระแล้ว</div><div class="r">${baht(o.paidAmt)}</div></div><div class="row"><div class="g"><b>ค้างชำระ (ยอดที่สั่งเพิ่ม)</b></div><div class="r"><b style="color:var(--chili)">${baht(poDue(o))}</b></div></div>`:''}

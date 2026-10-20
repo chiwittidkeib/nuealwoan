@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1115">
+<meta name="app-version" content="2026.10.20-1120">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -866,6 +866,7 @@ const optGroups=m=>Array.isArray(m&&m.options)?m.options.filter(g=>g&&g.name&&(g
 const hasOpts=m=>optGroups(m).length>0;
 const optKey=opts=>(opts||[]).map(o=>o.cid||o.n).join(',');
 const optNames=opts=>(opts||[]).map(o=>o.n).join(', ');
+const optPx=opts=>(opts||[]).map(o=>+o.p>0?(/เพิ่ม|ท็อป|topping/i.test(o.g||'')?'เพิ่ม':'')+o.n+' +'+(Math.round(+o.p*100)/100):o.n).join(', ');
 const optRule=g=>g.req?(+g.max===1?'ต้องเลือก 1':'ต้องเลือก'+(+g.max>1?' สูงสุด '+g.max:'อย่างน้อย 1')):(+g.max===1?'เลือกได้ 1':'เลือกได้'+(+g.max>1?' สูงสุด '+g.max:'หลายอย่าง'));
 const minPrice=m=>(+m.price||0)+optGroups(m).filter(g=>g.req).reduce((s,g)=>s+Math.min(...g.choices.map(c=>+c.price||0)),0);
 
@@ -2772,7 +2773,7 @@ function poPickCard(o,q){const due=poDue(o),paid=o.payStatus==='paid',slip=o.pay
   return `<div class="card poc pick paid">${stamp}<div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${(PO_ST[o.status]||PO_ST.new)[1]}">${(PO_ST[o.status]||PO_ST.new)[0]}</span></div>
    <div class="poc-who"><b>${esc(o.name)}</b> · ${hl(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</div>
    <div class="muted" style="font-size:13px">ส่ง${esc(poDayName(o.deliverDate))}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(o.deliverDate))?' '+esc(poDate(o.deliverDate)):''} · ${esc(o.method==='pickup'?'บริการจัดส่ง':(o.pointName||''))}</div>
-   <div class="poc-items">${(o.items||[]).map(l=>`<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
+   <div class="poc-items">${(o.items||[]).map(l=>`<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optPx(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}</div>`).join('')}</div>
    ${o.note?`<div class="poc-note">📝 ${esc(o.note)}</div>`:''}
    <div class="pickpay"><div><small>${paid?'ชำระแล้ว':'ยอดที่ต้องเก็บ'}</small><b class="${paid?'':'due'}">${baht(paid?+o.total||0:due)}</b></div>
     ${paid?'':slip?`<button class="btn" data-act="poSlip" data-id="${esc(o.id)}" type="button">ดูสลิป</button><button class="btn" data-act="poPaid" data-id="${esc(o.id)}" data-confirm="1" type="button">✓ สลิปถูกต้อง · รับเงินแล้ว</button>`
@@ -2857,7 +2858,7 @@ function poCard(o){const st=PO_ST[o.status]||PO_ST.new,nx=PO_NEXT[o.status],pv=P
   return `<div class="card poc st-${esc(o.status)}${poRecvSt(o)==='issue'?' recv-issue':poRecvSt(o)==='wait'?' recv-wait':''}${(o.payStatus==='paid'||o.payStatus==='slip')&&poLive(o)?' paid':''}">${o.payStatus==='paid'&&poLive(o)?'<span class="pocpaid" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></span>':o.payStatus==='slip'&&poLive(o)?'<span class="pocpaid chk" aria-label="รอตรวจสอบยอด">รอตรวจ<br>สอบยอด<i>CHECKING</i></span>':''}<div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${st[1]}">${st[0]}</span><span class="grow"></span><small class="muted">สั่ง ${hm(o.at)}${o.at<sod()?' · '+esc(poDate(new Date(o.at+7*3600e3).toISOString().slice(0,10))):''}</small></div>
     <div class="poc-who"><b>${esc(o.name)}</b>${o.memberPhone?` <span class="pill ok" title="สมาชิกสะสมแต้ม">⭐${+o.ptsEarned?' +'+o.ptsEarned:''}</span>`:''} · <a href="tel:${esc(o.phone)}">${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</a></div>
     ${(o.rounds||1)>1&&!o.addSeen?`<div class="poc-note" style="color:#1565c0;font-weight:700">➕ ลูกค้าสั่งเพิ่ม (ครั้งที่ ${o.rounds-1}) ${o.addedAt?hm(o.addedAt):''} <button class="btn sm" data-act="poAddSeen" data-id="${esc(o.id)}" type="button">รับทราบ</button></div>`:''}
-    <div class="poc-items">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="muted" style="font-size:12px;font-weight:700;margin-top:4px">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div>`:''}<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optNames(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}${l.swapFrom?` <small style="color:#c2410c">(แทน ${esc(l.swapFrom)})</small>`:''}</div>`).join('')}${poEditable(o)?`<button class="lnk" data-act="poEdit" data-id="${esc(o.id)}" type="button" style="margin-top:4px;display:block">✏️ แก้รายการ (ของหมด / เปลี่ยนเมนู)</button>`:''}</div>
+    <div class="poc-items">${(o.items||[]).map((l,i,a)=>`${(l.round||1)>1&&(i===0||(a[i-1].round||1)!==l.round)?`<div class="muted" style="font-size:12px;font-weight:700;margin-top:4px">➕ สั่งเพิ่มครั้งที่ ${l.round-1}</div>`:''}<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optPx(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}${l.swapFrom?` <small style="color:#c2410c">(แทน ${esc(l.swapFrom)})</small>`:''}</div>`).join('')}${poEditable(o)?`<button class="lnk" data-act="poEdit" data-id="${esc(o.id)}" type="button" style="margin-top:4px;display:block">✏️ แก้รายการ (ของหมด / เปลี่ยนเมนู)</button>`:''}</div>
     ${(o.changes||[]).length?(c=>`<div class="poc-note" style="color:#c2410c;background:#fff3e0;border-radius:8px;padding:6px 8px">🔄 แก้รายการแล้ว ${hm(c.at)} น.: ${esc(c.list.join(' · '))}${c.why?`<br><small>เหตุผล: ${esc(c.why)}</small>`:''}</div>`)(o.changes[o.changes.length-1]):''}
     ${+o.promoDisc?`<div class="poc-note" style="color:#e65100;font-weight:700">🎁 ${(o.promos||[]).map(x=>esc(x.name)+(x.sets>1?' ×'+x.sets:'')).join(', ')} · ลด ${baht(o.promoDisc)} <small class="muted" style="font-weight:400">(ปกติ ${baht(o.subtotal)})</small></div>`:''}
     ${o.note||ed?`<div class="poc-note">${o.note?`📝 ${esc(o.note)}`:''}${ed?` <button class="lnk" data-act="poNote" data-id="${esc(o.id)}" type="button">✏️ ${o.note?'แก้ไขโน้ต':'เพิ่มโน้ต'}</button>`:''}${o.noteBy?` <small class="muted">(แก้โดย ${esc(o.noteBy)})</small>`:''}</div>`:''}
@@ -2942,7 +2943,7 @@ function viewPoPrep(){const day=poPickDay(),live=(S.poOrders||[]).filter(o=>o.de
   return h}
 // ---------- สรุปออร์เดอร์รายวันส่ง (ดู / พิมพ์ / คัดลอกส่ง LINE) ----------
 const poPayShort=o=>o.payStatus==='paid'?'จ่ายแล้ว':o.payStatus==='slip'?'รอตรวจสลิป':+o.paidAmt>0?'ค้าง '+baht(Math.max(0,(+o.total||0)-(+o.paidAmt||0))):o.pay==='after'?'โอนตอนรับ':'ยังไม่จ่าย';
-const poItemsTxt=o=>(o.items||[]).map(l=>`${l.qty}× ${l.name}${l.opts&&l.opts.length?' ('+optNames(l.opts)+')':''}${l.note?' – '+l.note:''}`);
+const poItemsTxt=o=>(o.items||[]).map(l=>`${l.qty}× ${l.name}${l.opts&&l.opts.length?' ('+optPx(l.opts)+')':''}${l.note?' – '+l.note:''}`);
 const poPlace=o=>o.method==='pickup'?'บริการจัดส่ง':(o.pointName||'ไม่ระบุจุด');
 function poSumTot(L){const t={o:L.length,q:0,s:0,p:0,u:0};L.forEach(o=>{t.q+=poQty(o);t.s+=+o.total||0;if(o.payStatus==='paid')t.p+=+o.total||0;else t.u+=Math.max(0,(+o.total||0)-(+o.paidAmt||0))});return t}
 function poSumList(live){const L=[...live].sort((a,b)=>a.at-b.at),t=poSumTot(L);
@@ -2957,7 +2958,7 @@ function poSumText(day){const L=poSumLive(day),t=poSumTot(L),c=poCfg();
     ...L.map(o=>[`${poShort(o)} ${o.name} ${o.phone||''}`,...poItemsTxt(o).map(x=>'  '+x),...(o.note?['  📝 '+o.note]:[]),`  📍 ${poPlace(o)} · ${baht(+o.total||0)} · ${poPayShort(o)}`].join('\n')),
     '',`จ่ายแล้ว ${baht(t.p)} · ยังไม่ได้เงิน ${baht(t.u)}`].join('\n')}
 function poSumPrint(day){const L=poSumLive(day),t=poSumTot(L),c=poCfg();const pa=$('#printArea');pa.className='posum';
-  const M={};L.forEach(o=>(o.items||[]).forEach(l=>{const k=l.name+(l.opts&&l.opts.length?' ('+optNames(l.opts)+')':'');M[k]=(M[k]||0)+(+l.qty||0)}));
+  const M={};L.forEach(o=>(o.items||[]).forEach(l=>{const k=l.name+(l.opts&&l.opts.length?' ('+optPx(l.opts)+')':'');M[k]=(M[k]||0)+(+l.qty||0)}));
   pa.innerHTML=`<h1>📋 สรุปออร์เดอร์ ${esc(c.shopName||'ข้าวมันไก่')}</h1><p>ส่ง ${esc(poDate(day))}${c.window?' · '+esc(c.window):''} · ${t.o} ออร์เดอร์ · ${t.q} ชิ้น · ยอดรวม ${baht(t.s)} · จ่ายแล้ว ${baht(t.p)} · ยังไม่ได้เงิน ${baht(t.u)}</p>
    <table><thead><tr><th>✓</th><th>#</th><th>ลูกค้า</th><th>รายการ</th><th>จุดรับ</th><th>ยอด</th><th>ชำระ</th></tr></thead><tbody>${L.map(o=>`<tr><td class="ck">☐</td><td>${esc(poShort(o))}</td><td><b>${esc(o.name)}</b><br>${esc(o.phone||'')}</td><td>${poItemsTxt(o).map(esc).join('<br>')}${o.note?`<br><i>📝 ${esc(o.note)}</i>`:''}</td><td>${esc(poPlace(o))}</td><td class="r">${baht(+o.total||0)}</td><td>${esc(poPayShort(o))}</td></tr>`).join('')}</tbody></table>
    <h2>รวมที่ต้องทำ</h2><table class="sm"><tbody>${Object.entries(M).sort((a,b)=>b[1]-a[1]).map(([k,q])=>`<tr><td>${esc(k)}</td><td class="r"><b>${q}</b></td></tr>`).join('')}</tbody></table>
@@ -2967,7 +2968,7 @@ function poSumPrint(day){const L=poSumLive(day),t=poSumTot(L),c=poCfg();const pa
 async function poSumImg(day,btn){const L=poSumLive(day),t=poSumTot(L),c=poCfg();if(btn){btn.disabled=true;btn.textContent='กำลังสร้างรูป…'}
   const box=document.createElement('div');box.style.cssText='position:fixed;left:-10000px;top:0;width:720px;background:#fff;color:#2a1a10;font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:20px;line-height:1.45;padding:28px';
   const pay=o=>{const k=o.payStatus==='paid'?['#0f9488','#e6f7f5']:o.payStatus==='slip'?['#1565c0','#e8f0fd']:['#b45309','#fdf3e1'];return `<span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:16px;font-weight:700;color:${k[0]};background:${k[1]}">${esc(poPayShort(o))}</span>`};
-  const M={};L.forEach(o=>(o.items||[]).forEach(l=>{const k=l.name+(l.opts&&l.opts.length?' ('+optNames(l.opts)+')':'');M[k]=(M[k]||0)+(+l.qty||0)}));
+  const M={};L.forEach(o=>(o.items||[]).forEach(l=>{const k=l.name+(l.opts&&l.opts.length?' ('+optPx(l.opts)+')':'');M[k]=(M[k]||0)+(+l.qty||0)}));
   box.innerHTML=`<div style="display:flex;align-items:center;gap:14px;border-bottom:3px solid #c8102e;padding-bottom:12px;margin-bottom:14px"><img src="images/logo-po.png" style="width:64px;height:64px;border-radius:14px;object-fit:cover" onerror="this.remove()"><div><div style="font-family:Mitr,sans-serif;font-size:30px;font-weight:500;color:#c8102e">📋 สรุปออร์เดอร์ ${esc(c.shopName||'ข้าวมันไก่')}</div><div style="font-size:19px;color:#6b4a2f">ส่ง ${esc(poDate(day))}${c.window?' · '+esc(c.window):''} · ${t.o} ออร์เดอร์ · ${t.q} ชิ้น</div></div></div>
    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">${[['ยอดรวม',t.s,'#2a1a10'],['จ่ายแล้ว',t.p,'#0f9488'],['ยังไม่ได้เงิน',t.u,t.u?'#c8102e':'#2a1a10']].map(([k,v,cl])=>`<div style="border:1px solid #ecd9c0;border-radius:14px;padding:10px 14px"><div style="font-size:26px;font-weight:700;color:${cl}">${baht(v)}</div><div style="font-size:16px;color:#6b4a2f">${k}</div></div>`).join('')}</div>
    ${L.map(o=>`<div style="display:flex;gap:12px;border:1px solid #ecd9c0;border-radius:14px;padding:12px 14px;margin-bottom:8px"><div style="flex:1;min-width:0"><div style="font-weight:700">${esc(poShort(o))} · ${esc(o.name)} <span style="font-weight:400;color:#6b4a2f">${esc(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</span></div>
