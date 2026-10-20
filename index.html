@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1730">
+<meta name="app-version" content="2026.10.20-1800">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -625,10 +625,26 @@ body.shop-po .top{box-shadow:inset 0 -3px 0 #f0a54a}
 .prtip{position:absolute;top:6px;min-width:160px;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);box-shadow:0 10px 28px rgba(0,0,0,.14);font-size:13px;line-height:1.55;pointer-events:none;z-index:2;font-variant-numeric:tabular-nums}
 .prsplit{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:16px;align-items:start}
 .dnt{display:flex;flex-direction:column;align-items:center;gap:10px}.dnt-c{position:relative;width:min(220px,100%);aspect-ratio:1}.dnt-c svg{width:100%;height:100%;overflow:visible}
-.dseg{transition:stroke-width .2s,opacity .2s;cursor:pointer}.dnt.hov .dseg:not(.on){opacity:.35}.dseg.on{stroke-width:30}
-.prsplit.anim .dseg{animation:prFade .5s both;animation-delay:var(--d)}
-.dnt-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 46px}.dnt-in small{font-size:11.5px;color:var(--muted);line-height:1.3;max-height:2.6em;overflow:hidden}.dnt-in b{font-size:18px;font-variant-numeric:tabular-nums}.dnt-in em{font-style:normal;font-size:12px;font-weight:700;color:var(--muted)}
+.dseg{cursor:pointer}.dnt.hov .dseg:not(.on){opacity:.35}
+.dnt-in{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 46px}.dnt-in small{font-size:11.5px;color:var(--muted);line-height:1.3;max-height:2.6em;overflow:hidden}.dnt-in b{font-size:18px;font-variant-numeric:tabular-nums}.dnt-in em{font-style:normal;font-size:12px;font-weight:700;color:var(--muted)}
 .dnt-l{display:flex;flex-direction:column;gap:2px;width:100%}.dnt-r{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px;padding:4px 6px;border-radius:8px;cursor:pointer}.dnt-r i{width:12px;height:12px;border-radius:4px}.dnt-r span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dnt-r.on{background:rgba(0,0,0,.05)}
+.dnt-c svg{position:relative;z-index:1}.dnt-c::before{content:"";position:absolute;inset:23%;z-index:0;border-radius:50%;background:radial-gradient(circle at 50% 35%,#fff,rgba(255,255,255,.75) 60%,rgba(240,232,220,.6));box-shadow:inset 0 2px 8px rgba(59,35,20,.10),0 1px 0 rgba(255,255,255,.8)}
+.dseg{transform-box:view-box;transform-origin:90px 90px;transition:stroke-width .25s,opacity .25s,transform .25s cubic-bezier(.2,.8,.2,1),filter .25s}
+.dseg.on{stroke-width:30;transform:translate(var(--tx),var(--ty));filter:drop-shadow(0 0 6px var(--c))}
+.dnt.anim .dseg{animation:dSweep .9s cubic-bezier(.3,.7,.2,1) both;animation-delay:var(--d)}
+.dnt.anim .dnt-c{animation:dPop .7s cubic-bezier(.2,.9,.25,1.25) both}
+.dsheen{transform-origin:90px 90px;animation:dSpin 7s linear infinite}
+.dnt-in b{transition:transform .2s}.dnt.hov .dnt-in b{transform:scale(1.06)}
+@keyframes dSweep{from{stroke-dasharray:0 var(--C)}}
+@keyframes dPop{from{transform:scale(.7) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes dSpin{to{transform:rotate(360deg)}}
+.prc .col .bar{filter:drop-shadow(0 3px 4px rgba(42,120,214,.18))}
+.prk .stat::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);pointer-events:none}
+.prk.anim .stat::after{animation:kShine 1.4s .5s ease-out both}
+.prk .stat{transition:transform .2s,box-shadow .2s}.prk .stat:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(60,35,20,.12)}
+.cpk1{transition:transform .2s,box-shadow .2s}.cpk1:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(42,120,214,.14)}
+@keyframes kShine{from{left:-60%}to{left:130%}}
+@media (prefers-reduced-motion:reduce){.dsheen,.dnt.anim .dseg,.dnt.anim .dnt-c,.prk.anim .stat::after{animation:none!important}}
 .pri{display:flex;flex-direction:column;gap:2px}
 .prr{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) minmax(0,1.2fr);gap:10px;align-items:center;padding:7px 4px;border-bottom:1px dashed var(--line);border-radius:8px;transition:background .15s}.prr:hover{background:rgba(42,120,214,.05)}
 .prn{display:flex;flex-direction:column;min-width:0}.prn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prn span{font-size:12px}
@@ -3103,11 +3119,16 @@ async function poSumImg(day,btn){const L=poSumLive(day),t=poSumTot(L),c=poCfg();
   }catch(e){toast('สร้างรูปไม่สำเร็จ ลองกดพิมพ์หรือคัดลอกแทน','bad')}
   box.remove();if(btn&&btn.isConnected){btn.disabled=false;btn.textContent='🖼 บันทึกเป็นรูป'}}
 /* ===== สรุปยอดข้าวมันไก่ + กราฟ ===== */
-const PR_RANGES=[[3,'3 วัน'],[5,'5 วัน'],[7,'1 สัปดาห์'],[30,'1 เดือน']];
+const PR_RANGES=[[1,'วันนี้'],[3,'3 วัน'],[5,'5 วัน'],[30,'1 เดือน']];
 const PRC={s:'#2a78d6',c:'#eb6834',p:'#1baf7a'},PRCAT=['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#6250d6'],PROTH='#a8a29e';
-let PRD=null,PRW=640,PRAK='';
+let PRD=null,PRW=640,PRAK='',PRANIM=false;
+const cntB=(v,f='b')=>` data-cnt="${r2(v)}" data-f="${f}"`;
+function prCount(){const els=document.querySelectorAll('[data-cnt]:not([data-cd])');if(!els.length)return;const t0=performance.now(),D=950,ease=x=>1-Math.pow(1-x,3);
+  const fm=(f,v,end)=>f==='b'?baht(end?v:Math.round(v)):f==='p'?Math.round(v)+'%':String(Math.round(v));
+  els.forEach(e=>{e.dataset.cd=1;e.textContent=fm(e.dataset.f,0)});
+  const step=t=>{const k=Math.min(1,(t-t0)/D),e2=ease(k);els.forEach(e=>{if(!e.isConnected)return;const v=+e.dataset.cnt;e.textContent=fm(e.dataset.f,v*e2,k>=1)});if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)}
 const prLS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
-const prRange=()=>{let v=S.prRange||prLS('nl_prr');if(v==='c')return 'c';v=+v;return PR_RANGES.some(r=>r[0]===v)?v:7};
+const prRange=()=>{let v=S.prRange||prLS('nl_prr');if(v==='c')return 'c';v=+v;return PR_RANGES.some(r=>r[0]===v)?v:3};
 const dAdd=(d,n)=>new Date(Date.parse(d+'T00:00:00Z')+n*DAY).toISOString().slice(0,10);
 const dDiff=(a,b)=>Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/DAY);
 const kfmt=n=>{const a=Math.abs(n);return (n<0?'−':'')+(a>=1e6?r2(a/1e6)+'M':a>=1e4?Math.round(a/1e3)+'k':a>=1e3?(Math.round(a/100)/10)+'k':Math.round(a))};
@@ -3138,7 +3159,7 @@ function prDayChart(D,anim){const n=D.length,W=PRW=innerWidth>=900?1040:640,H=in
   D.forEach((r,i)=>{const cx=L+bw*i+bw/2;b+=`<g class="col" data-ci="${i}"><rect class="band" x="${L+bw*i+2}" y="${Tp-6}" width="${bw-4}" height="${ph+6}" rx="8"/>${bar(cx-w-1,r.s,'gS',i)}${bar(cx+1,r.c,'gC',i)}</g>`;pts.push([cx,y(r.s-r.c)]);
     if((i%every===0&&n-1-i>=every*.6)||i===n-1){const dd=new Date(r.d+'T00:00:00+07:00');xl+=`<text x="${cx}" y="${H-10}" class="xl">${dd.getDate()}/${dd.getMonth()+1}</text>`}});
   const lp=prSmooth(pts),area=lp+` L${pts[n-1][0].toFixed(1)},${z} L${pts[0][0].toFixed(1)},${z} Z`,bx=pts[best];
-  const peak=D[best]&&D[best].s>0?`<g class="peak"><rect x="${Math.min(W-R-96,Math.max(L,L+bw*best+bw/2-48))}" y="${Math.max(0,y(D[best].s)-24)}" width="96" height="19" rx="9.5"/><text x="${Math.min(W-R-48,Math.max(L+48,L+bw*best+bw/2))}" y="${Math.max(0,y(D[best].s)-24)+13.5}">สูงสุด ${kfmt(D[best].s)}</text></g>`:'';
+  const peak=n>1&&D[best]&&D[best].s>0?`<g class="peak"><rect x="${Math.min(W-R-96,Math.max(L,L+bw*best+bw/2-48))}" y="${Math.max(0,y(D[best].s)-24)}" width="96" height="19" rx="9.5"/><text x="${Math.min(W-R-48,Math.max(L+48,L+bw*best+bw/2))}" y="${Math.max(0,y(D[best].s)-24)+13.5}">สูงสุด ${kfmt(D[best].s)}</text></g>`:'';
   const hit=D.map((r,i)=>`<rect x="${L+bw*i}" y="${Tp}" width="${bw}" height="${ph}" fill="transparent" data-prd="${i}"/>`).join('');
   return `<div class="prc${anim?' anim':''}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ยอดขาย ต้นทุน กำไร รายวัน"><defs>
     <linearGradient id="gS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5aa0f0"/><stop offset="1" stop-color="${PRC.s}"/></linearGradient>
@@ -3153,8 +3174,16 @@ function prTip(i,el){const r=PRD&&PRD[i];const box=el.closest('.prc');if(!r||!bo
   const p=r.s-r.c;t.innerHTML=`<b>${esc(poDate(r.d))}</b><div><i style="background:${PRC.s}"></i>ยอดขาย <b>${baht(r.s)}</b></div><div><i style="background:${PRC.c}"></i>ต้นทุน <b>${baht(r.c)}</b></div><div><i class="ln" style="background:${PRC.p}"></i>กำไร <b>${baht(p)}</b>${r.s?` <small>(${Math.round(p/r.s*100)}%)</small>`:''}</div><small class="muted">${r.o} ออร์เดอร์ · ${r.q} กล่อง</small>`;
   t.hidden=false;const sc=svg.getBoundingClientRect().width/PRW,cx=(hr.x+hr.width/2)*sc,tw=t.offsetWidth,bw=box.offsetWidth;t.style.left=Math.max(0,Math.min(bw-tw,cx+14>bw-tw?cx-tw-14:cx+14))+'px'}
 function prDonut(L,tot,title,unit){if(!(tot>0))return '';const top=L.slice(0,6),rest=L.slice(6).reduce((a,x)=>a+x[1],0),S2=[...top.map((x,i)=>[x[0],x[1],PRCAT[i]]),...(rest>0?[['อื่นๆ',rest,PROTH]]:[])];
-  const R=62,C=2*Math.PI*R;let off=0;const seg=S2.map(([n,v,c],i)=>{const len=v/tot*C,gap=S2.length>1?Math.min(3,len*.4):0,el=`<circle class="dseg" data-dn="${i}" r="${R}" cx="90" cy="90" fill="none" stroke="${c}" stroke-width="24" stroke-dasharray="${Math.max(0,len-gap).toFixed(2)} ${(C-len+gap).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" style="--d:${i*90}ms"/>`;off+=len;return el}).join('');
-  return `<div class="dnt" data-tot="${esc(baht(tot))}" data-ttl="${esc(title)}"><div class="dnt-c"><svg viewBox="0 0 180 180" role="img" aria-label="${esc(title)}"><g transform="rotate(-90 90 90)">${seg}</g></svg><div class="dnt-in"><small>${esc(title)}</small><b>${baht(tot)}</b></div></div>
+  const R=62,C=2*Math.PI*R,uid='d'+Math.random().toString(36).slice(2,7);let off=0;const seg=S2.map(([n,v,c],i)=>{const len=v/tot*C,gap=S2.length>1?Math.min(3,len*.4):0,mid=(off+len/2)/C*2*Math.PI,tx=(Math.cos(mid)*7).toFixed(2),ty=(Math.sin(mid)*7).toFixed(2),
+    el=`<circle class="dseg" data-dn="${i}" r="${R}" cx="90" cy="90" fill="none" stroke="${c}" stroke-width="24" stroke-dasharray="${Math.max(0,len-gap).toFixed(2)} ${(C-len+gap).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" style="--d:${i*110}ms;--C:${C.toFixed(2)};--tx:${tx}px;--ty:${ty}px;--c:${c}"/>`;off+=len;return el}).join('');
+  return `<div class="dnt${PRANIM?' anim':''}" data-tot="${esc(baht(tot))}" data-ttl="${esc(title)}"><div class="dnt-c"><svg viewBox="0 0 180 180" role="img" aria-label="${esc(title)}"><defs>
+    <filter id="${uid}s" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#3b2314" flood-opacity=".22"/></filter>
+    <radialGradient id="${uid}g" cx="50%" cy="50%" r="50%"><stop offset="72%" stop-color="#fff" stop-opacity="0"/><stop offset="80%" stop-color="#fff" stop-opacity=".38"/><stop offset="88%" stop-color="#fff" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".12"/></radialGradient>
+    <linearGradient id="${uid}h" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+    <g transform="rotate(-90 90 90)" filter="url(#${uid}s)">${seg}</g>
+    <circle cx="90" cy="90" r="74" fill="url(#${uid}g)" pointer-events="none"/>
+    <g class="dsheen" pointer-events="none"><circle r="${R}" cx="90" cy="90" fill="none" stroke="url(#${uid}h)" stroke-width="24" stroke-dasharray="34 ${(C-34).toFixed(2)}" opacity=".55"/></g></svg>
+    <div class="dnt-in"><small>${esc(title)}</small><b${PRANIM?cntB(tot):''}>${baht(tot)}</b></div></div>
    <div class="dnt-l">${S2.map(([n,v,c],i)=>`<div class="dnt-r" data-dn="${i}" data-nm="${esc(n)}" data-v="${esc(baht(v))}" data-pc="${Math.round(v/tot*100)}"><i style="background:${c}"></i><span>${esc(n)}</span><b>${Math.round(v/tot*100)}%</b></div>`).join('')}</div></div>`}
 if(!window.__prEv){window.__prEv=1;
   const clr=b=>{if(!b)return;b.classList.remove('hov');b.querySelectorAll('.on').forEach(x=>x.classList.remove('on'));const t=b.querySelector('.prtip');if(t)t.hidden=true};
@@ -3174,17 +3203,17 @@ function prExp(t0,t1){if(!can('expenses'))return '';const P=x=>x.shop==='po'&&x.
   const L=Object.entries(G).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...L.map(x=>x[1])),tot=L.reduce((a,x)=>a+x[1],0);
   return `<div class="card prcard"><div class="prh"><h3>รายจ่ายร้าน</h3><b>${baht(tot)}</b></div>${L.length?`<div class="prsplit">${prDonut(L.map(([c,v])=>[(c===WASTE_CAT?'🗑 ':'')+c,v]),tot,'รายจ่ายรวม')}<div class="pri">${L.map(([c,v],i)=>`<div class="prr" style="--d:${i*50}ms" title="${esc(c)} ${baht(v)}"><div class="prn"><b>${c===WASTE_CAT?'🗑 ':''}${esc(c)}</b><span class="muted">${tot?Math.round(v/tot*100):0}%</span></div><div class="prb"><span style="width:${v/mx*100}%;background:${i<6?PRCAT[i]:PROTH}"></span></div><div class="prv"><b>${baht(v)}</b></div></div>`).join('')}</div></div>`:'<p class="help" style="margin:0">ไม่มีรายจ่ายในช่วงนี้ · บันทึกที่แท็บ สต็อกสินค้า → รายจ่ายร้าน</p>'}</div>`}
 function viewPoReport(){const N=prRange(),lastDel=(()=>{const t=bkkDay(0),L=(S.poAll||S.poOrders||[]).filter(o=>poLive(o)&&o.deliverDate>t&&o.deliverDate<=bkkDay(7)).map(o=>o.deliverDate).sort();return L.length?L[L.length-1]:t})();
-  let from,to;if(N==='c'){to=S.prTo||prLS('nl_prt')||lastDel;from=S.prFrom||prLS('nl_prf')||dAdd(to,-6);if(from>to)[from,to]=[to,from]}else{to=lastDel;from=dAdd(to,-(N-1))}
+  let from,to;if(N==='c'){to=S.prTo||prLS('nl_prt')||lastDel;from=S.prFrom||prLS('nl_prf')||dAdd(to,-6);if(from>to)[from,to]=[to,from]}else if(N===1){to=from=bkkDay(0)}else{to=lastDel;from=dAdd(to,-(N-1))}
   const len=dDiff(from,to)+1,CP=cpPlan(),CC=CP?cpCalc(CP):null,A=prAgg(from,to,CC),B=prAgg(dAdd(from,-len),dAdd(from,-1),CC),T=A.T,pf=T.s-T.c;PRD=A.D;
-  const ak=from+to,anim=ak!==PRAK;PRAK=ak;
+  const ak=from+to,anim=ak!==PRAK;PRAK=ak;PRANIM=anim;if(anim&&!matchMedia('(prefers-reduced-motion: reduce)').matches)setTimeout(prCount,30);
   const cmp=B.T.o>=Math.max(3,A.T.o*.3),t0=Date.parse(from+'T00:00:00+07:00'),t1=Date.parse(to+'T00:00:00+07:00')+DAY;
   const sp=k=>prSpark(A.D.map(k),k===spS?PRC.s:k===spC?PRC.c:PRC.p),spS=r=>r.s,spC=r=>r.c,spP=r=>r.s-r.c;
   const itemsDonut=prDonut([...A.I].sort((a,b)=>b.s-a.s).map(x=>[x.n,x.s]),A.I.reduce((a,x)=>a+x.s,0),'สัดส่วนยอดขาย');
   let h=`<div class="sec-h"><h2>สรุปยอดร้านพรีออเดอร์</h2><span class="hint">ตามวันส่ง · ไม่รวมที่ยกเลิก</span></div>${cpRoundCard()}
    <div class="prbar"><div class="chips prrange" role="group" aria-label="ช่วงเวลา">${PR_RANGES.map(([v,t])=>`<button class="chip" aria-pressed="${N===v}" data-act="prRange" data-v="${v}" type="button">${t}</button>`).join('')}<button class="chip" aria-pressed="${N==='c'}" data-act="prRange" data-v="c" type="button">📅 กำหนดเอง</button></div>
-    ${N==='c'?`<div class="prdates"><input type="date" id="prF" value="${from}" max="${bkkDay(7)}" aria-label="ตั้งแต่"><span>ถึง</span><input type="date" id="prT" value="${to}" max="${bkkDay(7)}" aria-label="ถึง"></div>`:`<span class="muted prdr">${esc(poDate(from))} – ${esc(poDate(to))}</span>`}</div>
-   <div class="prk${anim?' anim':''}"><div class="stat"><span>ยอดขาย</span><b class="num">${baht(T.s)}</b>${cmp?prDelta(T.s,B.T.s):''}${sp(spS)}</div><div class="stat"><span>ต้นทุน</span><b class="num">${baht(T.c)}</b>${cmp?prDelta(T.c,B.T.c,1):''}${sp(spC)}</div><div class="stat"><span>กำไรขั้นต้น</span><b class="num" style="color:${pf>=0?'var(--ok,#2e7d32)':'var(--chili)'}">${baht(pf)}</b><small class="muted">ส่วนต่าง ${T.s?Math.round(pf/T.s*100):0}%</small>${sp(spP)}</div><div class="stat"><span>ออร์เดอร์</span><b class="num">${T.o}</b><small class="muted">${T.q} กล่อง${T.u?' · ค้าง '+baht(T.u):''}</small></div></div>
-   <div class="card prcard"><div class="prh"><h3>ยอดขายรายวัน</h3><div class="prlg"><span><i style="background:${PRC.s}"></i>ยอดขาย</span><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="ln" style="background:${PRC.p}"></i>กำไร</span></div></div>${prDayChart(A.D,anim)}<p class="help" style="margin:0">แตะ/ชี้ที่วันเพื่อดูตัวเลข${cmp?' · % เทียบกับ '+len+' วันก่อนหน้า':''}</p></div>
+    ${N==='c'?`<div class="prdates"><input type="date" id="prF" value="${from}" max="${bkkDay(7)}" aria-label="ตั้งแต่"><span>ถึง</span><input type="date" id="prT" value="${to}" max="${bkkDay(7)}" aria-label="ถึง"></div>`:`<span class="muted prdr">${from===to?esc(poDate(from)):esc(poDate(from))+' – '+esc(poDate(to))}</span>`}</div>
+   <div class="prk${anim?' anim':''}"><div class="stat"><span>ยอดขาย</span><b class="num"${anim?cntB(T.s):''}>${baht(T.s)}</b>${cmp?prDelta(T.s,B.T.s):''}${sp(spS)}</div><div class="stat"><span>ต้นทุน</span><b class="num"${anim?cntB(T.c):''}>${baht(T.c)}</b>${cmp?prDelta(T.c,B.T.c,1):''}${sp(spC)}</div><div class="stat"><span>กำไรขั้นต้น</span><b class="num"${anim?cntB(pf):''} style="color:${pf>=0?'var(--ok,#2e7d32)':'var(--chili)'}">${baht(pf)}</b><small class="muted">ส่วนต่าง ${T.s?Math.round(pf/T.s*100):0}%</small>${sp(spP)}</div><div class="stat"><span>ออร์เดอร์</span><b class="num"${anim?cntB(T.o,'i'):''}>${T.o}</b><small class="muted">${T.q} กล่อง${T.u?' · ค้าง '+baht(T.u):''}</small></div></div>
+   <div class="card prcard"><div class="prh"><h3>ยอดขายรายวัน</h3><div class="prlg"><span><i style="background:${PRC.s}"></i>ยอดขาย</span><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="ln" style="background:${PRC.p}"></i>กำไร</span></div></div>${prDayChart(A.D,anim)}<p class="help" style="margin:0">แตะ/ชี้ที่วันเพื่อดูตัวเลข${cmp?' · % เทียบกับ'+(len===1?'เมื่อวาน':' '+len+' วันก่อนหน้า'):''}</p></div>
    <div class="card prcard"><div class="prh"><h3>แยกตามเมนู · ขายดี</h3><div class="prlg"><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i style="background:${PRC.p}"></i>กำไร</span></div></div><div class="prsplit${anim?' anim':''}">${itemsDonut}<div>${prItems(A.I)}</div></div><p class="help" style="margin:0">ความยาวแท่ง = ยอดขาย (ต้นทุน + กำไร) · ยอดก่อนหักส่วนลดโปร · แตะวงกลมเพื่อดูแต่ละเมนู</p></div>
    ${prExp(t0,t1)}${poFinCard(T,t0,t1,len)}
    <details class="card prtbl"><summary><b>ตารางรายวัน</b></summary><div class="list">${[...A.D].reverse().filter(r=>r.o).map(r=>`<div class="row"><div class="grow"><div class="t">ส่ง${poDayName(r.d)}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(r.d))?' · '+esc(poDate(r.d)):''}</div><div class="s">${r.o} ออร์เดอร์ · ${r.q} ชิ้น${r.u?' · ค้างจ่าย '+baht(r.u):''}</div></div><div style="text-align:right"><b>${baht(r.s)}</b><div class="s muted">ทุน ${baht(r.c)} · กำไร ${baht(r.s-r.c)}</div></div></div>`).join('')||'<div class="empty">ไม่มียอด</div>'}</div></details>`;
@@ -3236,11 +3265,11 @@ function cpRoundCard(){const saved=cpPlan(),adm=poAdmin();if(!saved&&!adm)return
   const sb=sold.reduce((a,b)=>a+b,0),est=sold.reduce((a,q,i)=>a+q*C.rows[i].cost,0)+oc,real=C.share+C.each*sb+oc,bep=C.be?Math.min(100,sb/C.be*100):0;
   return `<div class="card cpc"><div class="prh"><h3>🧮 ต้นทุนเฉลี่ยต่อรอบ ${saved?'':'<span class="pill info">ตัวอย่าง · ยังไม่บันทึก</span>'}</h3>${adm?`<button class="btn sm${saved?'':' pri'}" data-act="poCost" type="button">${saved?'แก้ต้นทุน':'ตั้งค่าต้นทุนต่อรอบ'}</button>`:''}</div>
    <div class="cpk">${C.rows.map((r,i)=>{const q=+r.qty||0,p=q?Math.min(100,sold[i]/q*100):0;return `<div class="cpk1"><div class="cpk-h"><b>${esc(r.n||'-')}</b><span class="muted">ขาย ${baht(+r.price||0)}</span></div>
-     <div class="cpk-v"><span><small>ต้นทุน/กล่อง</small><b>${baht(r.cost)}</b></span><span><small>กำไร/กล่อง</small><b style="${col(r.profit)}">${baht(r.profit)}</b></span><span class="pc">${Math.round(r.pct)}%</span></div>
+     <div class="cpk-v"><span><small>ต้นทุน/กล่อง</small><b${PRANIM?cntB(r.cost):''}>${baht(r.cost)}</b></span><span><small>กำไร/กล่อง</small><b${PRANIM?cntB(r.profit):''} style="${col(r.profit)}">${baht(r.profit)}</b></span><span class="pc"${PRANIM?cntB(r.pct,'p'):''}>${Math.round(r.pct)}%</span></div>
      ${saved?`<div class="cpk-m"><i style="width:${p}%"></i></div><small class="muted">ขายแล้ว <b>${sold[i]}</b> / ${q} กล่อง${q-sold[i]>0?' · เหลือ '+(q-sold[i]):''}</small>`:`<small class="muted">ผลิต ${q} กล่อง</small>`}</div>`}).join('')}</div>
    <div class="cp2"><div class="cpbox"><h4>ถ้าขายหมด ${C.box} กล่อง</h4>
      <div class="kv"><span>รายได้</span><b>${baht(C.rev)}</b></div><div class="kv"><span>ต้นทุน</span><b>−${baht(C.cost)}</b></div>
-     <div class="kv tot"><span>กำไรขั้นต้น</span><b style="${col(C.profit)}">${baht(C.profit)}</b></div>
+     <div class="kv tot"><span>กำไรขั้นต้น</span><b${PRANIM?cntB(C.profit):''} style="${col(C.profit)}">${baht(C.profit)}</b></div>
      <div class="kv"><span class="muted">เฉลี่ยตามปริมาณ ${baht(C.W?C.share/C.W:0)}/กล่อง + ของใช้ ${baht(C.each)}/กล่อง</span></div></div>
     ${saved?`<div class="cpbox"><h4>รอบนี้ตอนนี้ (${L.length} ออร์เดอร์)</h4>
      <div class="kv"><span>ยอดขาย</span><b>${baht(rev)}</b></div><div class="kv"><span>ต้นทุนของที่ขายไป</span><b>−${baht(est)}</b></div>
