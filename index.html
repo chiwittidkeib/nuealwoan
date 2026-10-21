@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-160317">
+<meta name="app-version" content="2026.10.21-161512">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1205,7 +1205,14 @@ input.ovmax{border-color:#dc2626!important;background:#fef2f2!important;color:#b
 .wii{display:flex;flex-direction:column;gap:2px;font-size:13px}.wii small{opacity:.65}.wiin{display:flex;align-items:center;gap:6px}.wiin input[type=range]{flex:1;accent-color:#0f766e;min-width:0}.wiin input[inputmode]{width:64px;text-align:right;font-weight:700;padding:4px 6px!important;min-height:0!important;border-radius:8px}.wiin em{font-style:normal;font-size:12px;opacity:.7;width:34px}
 .wiadd{align-self:center;justify-self:start}
 .wiw{overflow-x:auto}.wit{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}.wit th{font-size:11.5px;font-weight:600;opacity:.8;padding:6px;border-bottom:1px solid var(--line);text-align:left}.wit td{padding:7px 6px;border-bottom:1px dashed var(--line);vertical-align:top}.wit .r{text-align:right}.wit tr.base td{background:rgba(0,0,0,.03)}.wit tr.low td{background:rgba(239,68,68,.05)}.wit td.lim{box-shadow:inset 0 -3px 0 #f59e0b}.wit small{opacity:.7}.wit .dlt{display:block}
-.wibars{display:flex;flex-direction:column;gap:6px;margin:10px 0}.wib{display:grid;grid-template-columns:64px 1fr auto;gap:8px;align-items:center;font-size:12.5px}.wib i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,#34d399,#059669)}.wib i.b0{background:linear-gradient(90deg,#cbd5e1,#94a3b8)}
+.wibars{display:flex;flex-direction:column;gap:6px;margin:10px 0}.wib{display:grid;grid-template-columns:78px 1fr auto;gap:8px;align-items:center;font-size:12.5px}.wib i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,#34d399,#059669)}.wib i.b0{background:linear-gradient(90deg,#cbd5e1,#94a3b8)}
+.cppl{display:flex;flex-direction:column;gap:10px}
+.cpp2{border:1px solid var(--line);border-radius:16px;padding:12px;background:linear-gradient(135deg,#fff,rgba(255,251,235,.7));box-shadow:0 6px 18px rgba(120,60,10,.06);display:flex;flex-direction:column;gap:10px;transition:box-shadow .2s,border-color .2s}.cpp2:focus-within{border-color:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.15)}
+.cpp2-h{display:flex;align-items:center;gap:10px}.cpp2-av{width:38px;height:38px;flex:none;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:17px;background:linear-gradient(135deg,hsl(var(--h) 70% 58%),hsl(calc(var(--h) + 40) 65% 42%))}
+.cpp2-n{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;padding:0!important;font-size:17px;font-weight:800;min-height:30px}
+.cpp2-m{display:flex;flex-wrap:wrap;gap:8px}.cpp2-chip{flex:1 1 180px;display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;background:rgba(0,0,0,.04);border:1px solid var(--line);min-width:0}.cpp2-chip select,.cpp2-chip input{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;padding:4px 0!important;min-height:0!important;font-size:14px}
+.cpp2-t{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.cpp2-tile{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:12px;background:#fff;border:1px solid rgba(245,158,11,.3)}.cpp2-tile small{font-size:11.5px;font-weight:600;color:#92400e}.cpp2-tile span{display:flex;align-items:baseline;gap:4px}.cpp2-tile input{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;padding:0!important;min-height:0!important;font-size:20px;font-weight:800;color:#451a03;width:100%}.cpp2-tile em{font-style:normal;font-size:12px;opacity:.7}
+.cpp2-tile.sold{background:linear-gradient(135deg,#0f766e,#14b8a6);border:0}.cpp2-tile.sold small,.cpp2-tile.sold em{color:rgba(255,255,255,.85)}.cpp2-tile.sold input{color:#fff}
 </style>
 </head>
 <body>
@@ -3724,20 +3731,20 @@ function wiCalc(B,P,mode){// P = ปริมาณต่อกล่องเ�
   const bulkBox=B.ing.reduce((a,x,i)=>a+per[i]*x.uc,0)*B.fr,cost=bulkBox+B.unit,pb=B.price-cost,tot=pb*boxes;
   const need=mode==='same'?0:0,used=B.ing.map((x,i)=>per[i]*boxes*B.fr);
   return {boxes,cost,bulkBox,pb,tot,can,li,used}}
-function wiResHtml(B,st){const base=wiCalc(B,B.ing.map(x=>x.p0),st.mode),Rr=[{n:'Step 0 · ของจริง',P:B.ing.map(x=>x.p0),c:base},...st.steps.map((P,i)=>({n:'Step '+(i+1),P,c:wiCalc(B,P,st.mode)}))],mx=Math.max(1,...Rr.map(r=>Math.abs(r.c.tot)));
+function wiResHtml(B,st){const base=wiCalc(B,B.ing.map(x=>x.p0),st.mode),Rr=[{n:'📌 ของจริง',P:B.ing.map(x=>x.p0),c:base},...st.steps.map((P,i)=>({n:'แผน '+'ABC'[i],P,c:wiCalc(B,P,st.mode)}))],mx=Math.max(1,...Rr.map(r=>Math.abs(r.c.tot)));
   const dl=(v,b)=>{if(!b)return '';const p=Math.round((v-b)/Math.abs(b)*100);return `<small class="dlt ${p>=0?'up':'dn'}">${p>=0?'▲':'▼'} ${Math.abs(p)}%</small>`};
   return `<div class="wiw"><table class="wit"><thead><tr><th></th>${B.ing.map(x=>`<th class="r">${esc(x.n)}<br><small>${esc(x.du)}/กล่อง</small></th>`).join('')}<th class="r">ทำได้</th><th class="r">ทุน/กล่อง</th><th class="r">กำไร/กล่อง</th><th class="r">กำไรรวม</th></tr></thead><tbody>
    ${Rr.map((r,ri)=>{const c=r.c,low=ri>0&&B.ing.some((x,i)=>(+r.P[i]||0)<x.p0*.7);return `<tr class="${ri?'':'base'}${low?' low':''}"><td><b>${r.n}</b>${low?'<br><small class="neg">⚠️ ลดเกิน 30%</small>':''}</td>${B.ing.map((x,i)=>`<td class="r${ri&&c.li===i&&st.mode==='stock'?' lim':''}">${num(Math.round(+r.P[i]||0))}${ri&&st.mode==='stock'&&isFinite(c.can[i])?`<br><small>พอ ${num(Math.floor(c.can[i]))}</small>`:''}</td>`).join('')}
     <td class="r"><b>${num(c.boxes)}</b> กล่อง${ri?dl(c.boxes,base.boxes):''}</td><td class="r">${baht(r2(c.cost))}</td><td class="r">${baht(r2(c.pb))}</td><td class="r"><b>${baht(Math.round(c.tot))}</b>${ri?dl(c.tot,base.tot):''}</td></tr>`}).join('')}</tbody></table></div>
-   <div class="wibars">${Rr.map((r,ri)=>`<div class="wib"><span>${r.n.replace(' · ของจริง','')}</span><i style="width:${Math.max(2,Math.abs(r.c.tot)/mx*100)}%" class="${ri?'':'b0'}"></i><b>${baht(Math.round(r.c.tot))}</b></div>`).join('')}</div>
+   <div class="wibars">${Rr.map((r,ri)=>`<div class="wib"><span>${r.n}</span><i style="width:${Math.max(2,Math.abs(r.c.tot)/mx*100)}%" class="${ri?'':'b0'}"></i><b>${baht(Math.round(r.c.tot))}</b></div>`).join('')}</div>
    ${st.mode==='stock'?`<p class="help" style="margin:0">ขีดสีส้ม = วัตถุดิบที่หมดก่อน (ตัวกำหนดจำนวนกล่อง) · "พอ n" = ของที่ตัดไปจริงพอทำได้กี่กล่อง · ถ้าขายได้ไม่ถึงจำนวนนี้ กำไรเพิ่มจะน้อยกว่าในตาราง</p>`:`<p class="help" style="margin:0">ขาย ${num(B.sb)} กล่องเท่าเดิม · กำไรเพิ่มมาจากใช้วัตถุดิบน้อยลง</p>`}`}
 function wiCard(){const B=wiBase();if(!B)return '';const head=`<div class="prh"><h3>🧪 จำลองสัดส่วนต้นทุน</h3><small class="muted">${esc(B.R.label)}</small></div>`;
   if(B.none)return `<div class="card prcard wic">${head}<p class="help" style="margin:0">ต้องมียอดขายกล่องข้าว และกด ✂️ ตัดสต็อกขายวันนี้ (ไก่ ข้าว…) ของรอบที่ปิดแล้วก่อน ระบบจะเอาของที่ใช้จริง ÷ กล่องที่ขาย มาเป็น Step 0</p></div>`;
   const st=wiState(B);
   return `<details class="card prcard wic"${st.open?' open':''} ontoggle="if(S.wi)S.wi.open=this.open"><summary>${head}<span class="wisum">ของจริง: ${B.ing.map(x=>`${esc(x.n)} <b>${num(Math.round(x.p0))}</b> ${esc(x.du)}`).join(' · ')} ต่อกล่อง · ขาย ${num(B.sb)} กล่อง · กำไร/กล่อง ${baht(r2(B.price-wiCalc(B,B.ing.map(x=>x.p0),'stock').cost))}</span><i class="cpdet-a">▾</i></summary>
    <div class="seg prgrp" role="group"><button type="button" data-act="wiMode" data-v="stock" aria-pressed="${st.mode==='stock'}">📦 ของเท่าเดิม → ได้กล่องเพิ่ม</button><button type="button" data-act="wiMode" data-v="same" aria-pressed="${st.mode==='same'}">🍱 กล่องเท่าเดิม → ใช้ของน้อยลง</button></div>
-   <div class="wisteps">${st.steps.map((P,si)=>`<div class="wis"><div class="wis-h"><b>Step ${si+1}</b>${st.steps.length>1?`<button type="button" class="lnk" data-act="wiDel" data-v="${si}">ลบ</button>`:''}</div>${B.ing.map((x,i)=>`<label class="wii"><span>${esc(x.n)} <small>(จริง ${num(Math.round(x.p0))})</small></span><span class="wiin"><input type="range" min="${Math.round(x.p0*.5)}" max="${Math.round(x.p0*1.2)}" step="1" value="${+P[i]||0}" data-wi="${si},${i}"><input inputmode="decimal" value="${+P[i]||0}" data-wn="${si},${i}"><em>${esc(x.du)}</em></span></label>`).join('')}
-     <button type="button" class="btn sm" data-act="wiUse" data-v="${si}">✅ ใช้ Step ${si+1} เป็นสูตรมาตรฐาน</button></div>`).join('')}${st.steps.length<3?'<button type="button" class="btn sm wiadd" data-act="wiAdd">+ เพิ่ม Step</button>':''}</div>
+   <div class="wisteps">${st.steps.map((P,si)=>`<div class="wis"><div class="wis-h"><b>แผน ${'ABC'[si]}</b>${st.steps.length>1?`<button type="button" class="lnk" data-act="wiDel" data-v="${si}">ลบ</button>`:''}</div>${B.ing.map((x,i)=>`<label class="wii"><span>${esc(x.n)} <small>(จริง ${num(Math.round(x.p0))})</small></span><span class="wiin"><input type="range" min="${Math.round(x.p0*.5)}" max="${Math.round(x.p0*1.2)}" step="1" value="${+P[i]||0}" data-wi="${si},${i}"><input inputmode="decimal" value="${+P[i]||0}" data-wn="${si},${i}"><em>${esc(x.du)}</em></span></label>`).join('')}
+     <button type="button" class="btn sm" data-act="wiUse" data-v="${si}">✅ ใช้แผน ${'ABC'[si]} เป็นสูตรมาตรฐาน</button></div>`).join('')}${st.steps.length<3?'<button type="button" class="btn sm wiadd" data-act="wiAdd">+ เพิ่มแผน</button>':''}</div>
    <div id="wiRes">${wiResHtml(B,st)}</div></details>`}
 document.addEventListener('input',e=>{const t=e.target;if(!t||!t.dataset||!(t.dataset.wi||t.dataset.wn)||!S.wi)return;const [si,i]=(t.dataset.wi||t.dataset.wn).split(',').map(Number),v=parseFloat(String(t.value).replace(/,/g,''))||0;S.wi.steps[si][i]=v;
   const o=document.querySelector(t.dataset.wi?`[data-wn="${si},${i}"]`:`[data-wi="${si},${i}"]`);if(o)o.value=v;const B=wiBase(),R=$('#wiRes');if(B&&!B.none&&R)R.innerHTML=wiResHtml(B,S.wi)});
@@ -3746,9 +3753,9 @@ Object.assign(ACT,{
   wiAdd:()=>{const B=wiBase();if(!B||B.none)return;const L=S.wi.steps[S.wi.steps.length-1];S.wi.steps.push(L.map(v=>Math.round(v*.9)));S.wi.open=true;render()},
   wiDel:d=>{S.wi.steps.splice(+d.v,1);S.wi.open=true;render()},
   wiUse:async d=>{if(!poAdmin())return deny();const B=wiBase();if(!B||B.none)return;const P=S.wi.steps[+d.v],cp=cpPlan()||{...cpDefault()};
-    if(!confirm('ใช้ Step '+(+d.v+1)+' เป็นสูตรมาตรฐาน?\n\n'+B.ing.map((x,i)=>'• '+x.n+' '+num(Math.round(P[i]))+' '+x.du+'/กล่อง').join('\n')+'\n\nระบบจะตั้ง "วัตถุดิบต่อ 1 รอบ" (ค่าประมาณ) = ปริมาณนี้ × '+num(B.sb)+' กล่อง'))return;
+    if(!confirm('ใช้แผน '+'ABC'[+d.v]+' เป็นสูตรมาตรฐาน?\n\n'+B.ing.map((x,i)=>'• '+x.n+' '+num(Math.round(P[i]))+' '+x.du+'/กล่อง').join('\n')+'\n\nระบบจะตั้ง "วัตถุดิบต่อ 1 รอบ" (ค่าประมาณ) = ปริมาณนี้ × '+num(B.sb)+' กล่อง'))return;
     const ing=[...(cp.ing||[]).filter(x=>!B.ing.some(b=>b.sid===x.sid))];B.ing.forEach((x,i)=>{const q=r2((+P[i]||0)/x.k*B.A.W);ing.push({sid:x.sid,n:x.n,q,u:x.u,p:r2(q*x.uc),m:'share'})});
-    const plan={...cp,ing,at:Date.now()},ok=await write('config/po',r=>r.update({costPlan:plan}));if(ok){S.po={...poCfg(),costPlan:plan};render();toast('✅ ตั้งสูตรมาตรฐานจาก Step '+(+d.v+1)+' แล้ว')}}
+    const plan={...cp,ing,at:Date.now()},ok=await write('config/po',r=>r.update({costPlan:plan}));if(ok){S.po={...poCfg(),costPlan:plan};render();toast('✅ ตั้งสูตรมาตรฐานจากแผน '+'ABC'[+d.v]+' แล้ว')}}
 });
 function cpRoundCard(){const saved=cpPlan(),adm=poAdmin();if(!saved&&!adm)return '';const RS=poRounds(),r=RS.find(x=>x.k===(S.cpRk||'cur'))||RS[0],A=cpActual(r),col=v=>`color:${v>=0?'var(--ok,#2e7d32)':'var(--chili)'}`;
   const tag=A.est?'<span class="pill info">ประมาณการ</span>':'<span class="pill ok">ต้นทุนจริง</span>';
@@ -3794,8 +3801,13 @@ function sheetPoCost(){const s=S.sheet;if(!s.cp)s.cp=JSON.parse(JSON.stringify(c
     <div class="cpsum"><button class="btn sm" data-act="cpAdd" data-v="i" type="button">+ เพิ่มวัตถุดิบ</button><span>รวมต่อรอบ <b id="cpIngT">${baht(cp.ing.reduce((a,x)=>a+cpP(x),0))}</b></span></div>
     <p class="help" style="margin:0">⚖️ เฉลี่ยตามปริมาณ = หารทุกกล่องตามขนาด (พิเศษได้มากกว่า) · 📦 กล่องละ 1 = ของที่ใช้ชิ้นเดียวต่อกล่อง</p></div>
    <div class="card cpsec"><div class="cpsec-h"><span class="cpno">2</span><div class="grow"><h3>เมนู & จำนวนกล่องที่ขาย</h3><small class="muted">จำนวนกล่องดึงจากออร์เดอร์จริงให้เอง</small></div></div><p class="help" style="margin:0">จำนวนกล่องดึงจากออร์เดอร์${RR.k==='cur'?'รอบนี้ (กำลังขาย)':'รอบที่ปิดยอดล่าสุด'}ให้เอง ไม่ต้องใส่ · ใส่ทุกเมนูที่ใช้ของเบิก (เช่น ข้าวมันไก่ทอด) ด้วย "+ เพิ่มแบบ"</p>
-        ${cp.prod.map((r,i)=>`<div class="cpp">${po(i,'n',r.n,'maxlength="24"','ชื่อ')}${F_('เมนู','menuId',`<select data-pi="${i}" data-pk="menuId"><option value="">— เลือกเมนู —</option>${M.map(m=>`<option value="${esc(m.id)}" ${m.id===r.menuId?'selected':''}>${esc(m.name)}</option>`).join('')}</select>`)}${po(i,'opt',r.opt,'maxlength="20" placeholder="เว้นว่าง = ธรรมดา"','ตัวเลือกที่มีคำว่า')}${po(i,'qty',r.qty,'readonly class="ro"','ขายจริง (กล่อง)')}${po(i,'f',r.f,'inputmode="decimal"','ปริมาณ %')}${po(i,'price',r.price,'inputmode="decimal"','ราคาขาย ฿')}<button class="lnk" data-act="cpDel" data-v="p${i}" type="button" aria-label="ลบ">✕</button></div>`).join('')}
-    <button class="lnk" data-act="cpAdd" data-v="p" type="button" style="align-self:flex-start">+ เพิ่มแบบ</button>
+        <div class="cppl">${cp.prod.map((r,i)=>{const hue=[...String(r.n||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360;return `<div class="cpp2">
+      <div class="cpp2-h"><span class="cpp2-av" style="--h:${hue}">${esc(String(r.n||'?').slice(0,1))}</span><input class="cpp2-n" data-pi="${i}" data-pk="n" value="${esc(r.n??'')}" maxlength="24" placeholder="ชื่อแบบ เช่น ธรรมดา"><button class="cpr-x" data-act="cpDel" data-v="p${i}" type="button" aria-label="ลบ">✕</button></div>
+      <div class="cpp2-m"><label class="cpp2-chip">🍚<select data-pi="${i}" data-pk="menuId"><option value="">— เลือกเมนู —</option>${M.map(m=>`<option value="${esc(m.id)}" ${m.id===r.menuId?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label><label class="cpp2-chip">🔎<input data-pi="${i}" data-pk="opt" value="${esc(r.opt??'')}" maxlength="20" placeholder="ตัวเลือกที่มีคำว่า (ว่าง = ธรรมดา)"></label></div>
+      <div class="cpp2-t"><div class="cpp2-tile sold"><small>ขายจริง</small><span><input data-pi="${i}" data-pk="qty" value="${esc(r.qty??'')}" readonly class="ro"><em>กล่อง</em></span></div>
+       <label class="cpp2-tile"><small>ปริมาณ</small><span><input data-pi="${i}" data-pk="f" value="${esc(r.f??'')}" inputmode="decimal"><em>%</em></span></label>
+       <label class="cpp2-tile"><small>ราคาขาย</small><span><em>฿</em><input data-pi="${i}" data-pk="price" value="${esc(r.price??'')}" inputmode="decimal"></span></label></div></div>`}).join('')}</div>
+    <button class="btn sm" data-act="cpAdd" data-v="p" type="button" style="align-self:flex-start">+ เพิ่มแบบ</button>
     <p class="help" style="margin:0">ปริมาณ %: ธรรมดา = 100 · พิเศษเพิ่ม 10–15% ใส่ 110–115 · "ตัวเลือกที่มีคำว่า" ใช้แยกออร์เดอร์ เช่น ลูกค้าเลือก "พิเศษ" จะนับเป็นแถวพิเศษ</p></div>
    <div class="card cpres cpsec" id="cpRes"></div>
    <label class="check"><input type="checkbox" id="cpMenu" checked> ใส่ต้นทุนต่อกล่องลงหน้าเมนูด้วย (แถวธรรมดา)</label>
