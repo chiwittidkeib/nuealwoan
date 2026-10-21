@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-0837">
+<meta name="app-version" content="2026.10.21-084101">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1134,6 +1134,10 @@ body.shop-po .shopsw::before{transform:translateX(100%);background:linear-gradie
 .pfday{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 14px 4px}.pfdate{display:inline-flex;align-items:center;gap:4px;font-size:14px}.pfdate input{padding:6px 10px;border-radius:99px;border:1px solid var(--line);font:inherit;font-size:14px!important;background:var(--surface)}
 .pfdate input{min-width:160px;line-height:1.2}
 .pq .pqrt{display:block;margin-top:4px;font-size:11px;font-weight:700;color:#b45309}
+.pfdate .dwrap{width:178px}.pfdate .dwrap input{width:100%;height:38px;border-radius:99px;padding:0 12px}.pfdate .dwrap .dshow{font-size:14px!important;left:14px;white-space:nowrap}
+.dwrap input::-webkit-datetime-edit{opacity:0}.dwrap input:focus::-webkit-datetime-edit{opacity:1}
+.pfdate .dwrap{width:215px}
+.rcrow{display:flex;gap:6px;margin-top:6px}.rcrow .btn{flex:1}
 </style>
 </head>
 <body>
@@ -3174,7 +3178,7 @@ function poSearchBox(){return `<div class="posrch"><button class="srchbtn" data-
 // หน้าค้นหาแยก (ช่องพิมพ์บนสุด ผลอยู่ใต้ทันที · ไม่พังตอนคีย์บอร์ดเด้งบน iPhone)
 function sheetPoFind(){$('#panel').innerHTML=`<div class="sh-head findhead"><input id="pfQ" type="search" autocomplete="off" enterkeyhint="search" placeholder="🔍 เบอร์ 4 ตัวท้าย / KMK / ชื่อ" value="${esc(S.poQ||'')}"><button class="btn" data-act="close" type="button">ปิด</button></div>
    <div class="pfday"><button type="button" class="chip" data-act="pfDay" data-v="" aria-pressed="${!S.pfDay}">รอบนี้</button>${[1,0,-1].map(k=>bkkDay(k)).filter(d=>(S.poAll||[]).some(o=>o.deliverDate===d)||d===bkkDay(0)).map(d=>`<button type="button" class="chip" data-act="pfDay" data-v="${d}" aria-pressed="${S.pfDay===d}">ส่ง${esc(poDayName(d).trim())}</button>`).join('')}<label class="pfdate">📅 <input id="pfD" type="date" value="${esc(S.pfDay||'')}" max="${bkkDay(7)}" min="${bkkDay(-40)}" aria-label="เลือกวันส่ง"></label></div>
-   <div class="sh-body" id="pfRes">${poFindRes()}</div>`;const i=$('#pfQ');setTimeout(()=>{i.focus();try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}},60)}
+   <div class="sh-body" id="pfRes">${poFindRes()}</div>`;const i=$('#pfQ');try{dShowAll()}catch(e){}setTimeout(()=>{i.focus();try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}},60)}
 function poFindRes(){const q=(S.poQ||'').trim();if(!q&&!S.pfDay)return '<p class="help" style="text-align:center;margin:20px 0">พิมพ์เบอร์ 4 ตัวท้าย, เลข KMK หรือชื่อลูกค้า<br>หรือเลือกวันส่งด้านบน เพื่อดูออร์เดอร์ย้อนหลัง (ไม่เกิน 40 วัน)</p>';return poResHtml()}
 function poResHtml(){const q=(S.poQ||'').trim();if(!q&&!S.pfDay)return '';const L=poMatch(q);
   return `<div class="sec-h" style="margin-top:4px"><h2>${q?'ผลค้นหา "'+esc(q)+'"':''}${S.pfDay?(q?' · ':'')+'ส่ง '+esc(poDate(S.pfDay)):''}</h2><span class="hint">${L.length?'พบ '+L.length+' ออร์เดอร์':'ไม่พบ'} · ไม่รวมที่ยกเลิก · ที่ส่งแล้วอยู่ท้าย</span></div>${L.length?`<div class="pogrid">${L.map(o=>poPickCard(o,q)).join('')}</div>`:'<div class="empty"><b>ไม่พบออร์เดอร์</b>ลองพิมพ์เบอร์ 4 ตัวท้าย หรือเลข KMK</div>'}`}
@@ -3183,7 +3187,7 @@ function poPickCard(o,q){const due=poDue(o),paid=o.payStatus==='paid',slip=o.pay
   return `<div class="card poc pick paid">${stamp}<div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${(PO_ST[o.status]||PO_ST.new)[1]}">${(PO_ST[o.status]||PO_ST.new)[0]}</span></div>
    <div class="poc-who"><b>${esc(o.name)}</b> · ${hl(String(o.phone||'').replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}</div>
    <div class="muted" style="font-size:13px">ส่ง${esc(poDayName(o.deliverDate))}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(o.deliverDate))?' '+esc(poDate(o.deliverDate)):''} · ${esc(o.method==='pickup'?'บริการจัดส่ง':(o.pointName||''))}</div>
-   <div class="poc-items">${(o.items||[]).map(l=>`<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optPx(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}${l.swapFrom?` <small style="color:#c2410c">(แทน ${esc(l.swapFrom)})</small>`:''}</div>`).join('')}${poEditable(o)?`<button class="lnk" data-act="poEdit" data-id="${esc(o.id)}" type="button" style="margin-top:4px;display:block">✏️ แก้รายการ (ของหมด / เปลี่ยนเมนู)</button>`:''}</div>
+   <div class="poc-items">${(o.items||[]).map(l=>`<div><b>${l.qty}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <span class="optx">${esc(optPx(l.opts))}</span>`:''}${l.note?` <i class="muted">— ${esc(l.note)}</i>`:''}${l.swapFrom?` <small style="color:#c2410c">(แทน ${esc(l.swapFrom)})</small>`:''}</div>`).join('')}${paid||o.pay==='before'||(o.slipIds||[]).length||slip?`<div class="rcrow">${paid?`<button class="btn sm rcbtn" data-act="poRc" data-id="${esc(o.id)}" type="button">🧾 ดูใบเสร็จ</button>`:''}${o.pay==='before'||(o.slipIds||[]).length||slip?`<button class="btn sm rcbtn" data-act="poSlip" data-id="${esc(o.id)}" type="button">🖼️ ดูสลิป</button>`:''}</div>`:''}${poEditable(o)?`<button class="lnk" data-act="poEdit" data-id="${esc(o.id)}" type="button" style="margin-top:4px;display:block">✏️ แก้รายการ (ของหมด / เปลี่ยนเมนู)</button>`:''}</div>
    ${(o.changes||[]).length?(c=>`<div class="poc-note" style="color:#c2410c;background:#fff3e0;border-radius:8px;padding:6px 8px">🔄 แก้รายการแล้ว ${hm(c.at)} น.: ${esc(c.list.join(' · '))}${c.why?`<br><small>เหตุผล: ${esc(c.why)}</small>`:''}</div>`)(o.changes[o.changes.length-1]):''}
    ${o.note?`<div class="poc-note">📝 ${esc(o.note)}</div>`:''}
    <div class="pickpay"><div><small>${paid?'ชำระแล้ว':'ยอดที่ต้องเก็บ'}</small><b class="${paid?'':'due'}">${baht(paid?+o.total||0:due)}</b></div>
@@ -3946,7 +3950,7 @@ Object.assign(ACT,{
       try{const bal=await applyPoints(o.memberPhone,o.name||'',0,earn,+o.total||0);const pex=LAST_LOTS?memExpSoon(LAST_LOTS):null;await write('po_orders/'+o.id,r=>r.update({ptsEarned:earn,ptsBalance:bal,ptsDone:true,...(pex?{ptsExp:pex}:{})}));Object.assign(o,{ptsEarned:earn,ptsBalance:bal,ptsDone:true});msg+=' · สมาชิก +'+earn+' แต้ม (รวม '+bal+')'}
       catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
     render();poPickRefresh();toast(msg)},
-  poSlip:async d=>{const o=S.poOrders.find(x=>x.id===d.id);const ids=[...new Set([d.id,...((o&&o.slipIds)||[])])];const L=[];
+  poSlip:async d=>{const o=S.poOrders.find(x=>x.id===d.id)||(S.poAll||[]).find(x=>x.id===d.id);const ids=[...new Set([d.id,...((o&&o.slipIds)||[])])];const L=[];
     try{for(const id of ids){const g=await S.db.doc('po_slips/'+id).get();if(g.exists&&g.data().img)L.push(g.data())}}catch(e){return toast('โหลดสลิปไม่ได้','bad')}
     if(!L.length)return toast('ไม่พบรูปสลิป','bad');L.sort((a,b)=>(a.at||0)-(b.at||0));
     if(L.length===1)return viewImg(L[0].img,'สลิป '+poShort(o||{id:d.id})+' · '+baht(+(o&&o.total)||0));
