@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-112404">
+<meta name="app-version" content="2026.10.21-113403">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1156,6 +1156,7 @@ input.pkflash{animation:pkFl .9s ease-out}@keyframes pkFl{0%{box-shadow:0 0 0 0 
 .whl{display:flex;flex-direction:column;gap:8px}.whi{padding:4px 2px;border-radius:8px}.whi-h{display:flex;justify-content:space-between;gap:8px}.whbar{height:7px;border-radius:9px;background:rgba(0,0,0,.06);overflow:hidden;margin:3px 0}.whbar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#14b8a6,#0f766e)}.whbar.w i{background:linear-gradient(90deg,#f87171,#dc2626)}
 .whd{margin-top:8px}.whd-h{display:flex;justify-content:space-between;padding:4px 2px;border-bottom:1px solid var(--line)}.whd-h span{font-size:13px;opacity:.8}
 .phs>div small+small{opacity:.65}
+.wdn{display:inline-block;margin-left:4px;padding:0 6px;border-radius:99px;background:rgba(255,255,255,.85);color:#0f766e;font-size:11px;font-weight:700}
 </style>
 </head>
 <body>
@@ -3780,7 +3781,9 @@ function wdCard(g='food'){if(!wdOK())return '';const gD=g==='drink',W=isPo()?[..
 
 // ===== ประวัติการตัดสต็อก (ดู / แก้ / ยกเลิก ทีละครั้ง)
 function wdHistList(RS,s){const g=s.g==='drink'?'drink':'food';if(!isPo())return wdTodayN(g).map(w=>({key:w.id,w}));const rr=RS.find(x=>x.k===s.rk)||RS[0];return wdOf(rr,g).map(w=>({key:String(w.at),w}))}
-function wdHistHtml(RS,s){const L=wdHistList(RS,s).sort((a,b)=>b.w.at-a.w.at);if(!L.length)return '';const rr=isPo()?(RS.find(x=>x.k===s.rk)||RS[0]):null;
+function wdHistHtml(RS,s){const L=wdHistList(RS,s).sort((a,b)=>b.w.at-a.w.at),rr=isPo()?(RS.find(x=>x.k===s.rk)||RS[0]):null;
+  if(!L.length){const oth=isPo()?RS.filter(x=>x.k!==s.rk).map(x=>({x,n:wdHistList(RS,{...s,rk:x.k}).length})).filter(o=>o.n):[];
+    return `<div class="wdh wdh0"><b>📋 ตัดไปแล้ว${isPo()?' · '+esc(rr.label):' · วันนี้'}</b><p class="help" style="margin:4px 0 0">ยังไม่มีการตัดสต็อก${isPo()?'ให้รอบนี้':'วันนี้'}${oth.length?` · มีการตัดอยู่ใน <b>${esc(oth[0].x.label)}</b> ${oth[0].n} ครั้ง — กดเลือกรอบนั้นด้านบนเพื่อดู/แก้`:''}</p><button type="button" class="btn sm" data-act="wdHist" style="margin-top:6px">📋 ดูประวัติตัดสต็อกทั้งหมด</button></div>`}
   const T=L.reduce((a,{w})=>a+(w.items||[]).reduce((b,x)=>b+(+x.q||0)*(+x.uc||0),0),0);
   return `<details class="wdh" ${s.edit?'':'open'}><summary><b>📋 ตัดไปแล้ว${isPo()?' · '+esc(rr.label):' · วันนี้'}</b><span>${L.length} ครั้ง · ${baht(T)}</span></summary>
    ${L.map(({key,w})=>{const t=(w.items||[]).reduce((b,x)=>b+(+x.q||0)*(+x.uc||0),0),ed=s.edit===key;return `<div class="wdh1${ed?' ed':''}"><div class="wdh-h"><b>${dshort(w.at)} ${hm(w.at)}</b>${w.by?`<small class="muted">${esc(String(w.by).split('@')[0])}</small>`:''}<b class="wdh-t">${baht(t)}</b></div>
@@ -3799,7 +3802,7 @@ function sheetPoWd(){const s=S.sheet,gD=s.g==='drink',STA=stockList().filter(t=>
   const R=s.rows,used=new Set(R.map(r=>r.sid)),tot=R.reduce((a,r)=>{const t=ST.find(x=>x.id===r.sid);return a+(t?(+r.q||0)*(+t.unitCost||0):0)},0);
   $('#panel').innerHTML=head('✂️ ตัดสต็อก'+(gD?'เครื่องดื่ม':''),ws?'ของเสีย / ขายไม่ได้ · ตัดออกจากคลังและบันทึกเป็นเงินที่เสียไป':'เลือกของในคลังที่เอาไปทำขาย · ใส่จำนวนที่เบิก · กดตัดสต็อก')+`<form class="sh-body" id="wdForm" onsubmit="return false" autocomplete="off">
    <div class="seg wdseg" role="group"><button type="button" data-act="wdMode" data-v="sell" aria-pressed="${!ws}">🍚 ใช้ขายวันนี้</button><button type="button" data-act="wdMode" data-v="waste" aria-pressed="${ws}">🗑 ของเสีย</button></div>
-   ${!ws&&RS.length>1?`<div class="field"><label>คิดต้นทุนให้รอบไหน</label><div class="seg prgrp" role="group">${RS.map(x=>`<button type="button" data-act="wdRk" data-v="${x.k}" aria-pressed="${s.rk===x.k}">${esc(x.label)}</button>`).join('')}</div></div>`:''}
+   ${!ws&&RS.length>1?`<div class="field"><label>คิดต้นทุนให้รอบไหน</label><div class="seg prgrp" role="group">${RS.map(x=>{const n=wdHistList(RS,{...s,rk:x.k}).length;return `<button type="button" data-act="wdRk" data-v="${x.k}" aria-pressed="${s.rk===x.k}">${esc(x.label)}${n?` <span class="wdn">✂️${n}</span>`:''}</button>`}).join('')}</div></div>`:''}
    ${!ws?(gD?'<p class="help" style="margin:0">เฉพาะ<b>ของเบิกใช้ทำน้ำ</b> (นม ผงชา น้ำเชื่อม น้ำแข็ง) · แก้ว หลอด ฝา ขวด ตัดตามยอดขายตอนปิดยอดให้แล้ว · ต้นทุนหารด้วยจำนวนแก้ว/ขวดที่ขายได้</p>':(isPo()?'<p class="help" style="margin:0">เฉพาะ<b>ของเบิกใช้</b> (ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน) · ของนับชิ้น (กล่อง ช้อน ขวด) ระบบตัดตามยอดขายตอนปิดยอดให้แล้ว</p>':'<p class="help" style="margin:0">เฉพาะ<b>ของเบิกใช้</b> (เช่น กระดูกต้มน้ำซุป ผัก เครื่องปรุงที่ใช้ทั้งหม้อ) · ของที่ตัดตามสูตรเมนูตอนรับเงินอยู่แล้วไม่แสดงที่นี่ · ต้นทุนหารด้วยชามที่ขายวันนี้</p>')):''}
    ${!ws?wdHistHtml(RS,s):''}
    ${R.length>5?`<div class="wdsrch"><input id="wdQ" type="search" placeholder="🔍 ค้นหารายการ" autocomplete="off" aria-label="ค้นหารายการ"></div>`:''}
@@ -3830,7 +3833,7 @@ Object.assign(ACT,{
   wdRk:d=>{wdRead();S.sheet.rk=d.v;if(S.sheet.edit){S.sheet.edit=null;S.sheet.rows=null}sheetPoWd()},
   wdEdit:d=>{if(!wdOK())return deny();const s=S.sheet,RS=isPo()?poRounds():[],it=wdHistList(RS,s).find(x=>x.key===d.k);if(!it)return;const ST=stockList(),rows=(it.w.items||[]).map(x=>({sid:x.sid,q:String(x.q),m:x.m||'share'}));
     ST.filter(t=>stCut(t)==='use'&&stGrp(t)===(s.g==='drink'?'drink':'food')&&!rows.some(r=>r.sid===t.id)).forEach(t=>rows.push({sid:t.id,q:'',m:'share'}));s.rows=rows;s.edit=d.k;sheetPoWd();const b=$('#panel .sh-body');if(b)setTimeout(()=>{const f=$('#panel .wdlist');if(f)f.scrollIntoView({block:'start',behavior:'smooth'})},60)},
-  wdHist:()=>{if(!wdOK())return deny();openSheet({type:'wdHist',d:7,f:'all'})},
+  wdHist:()=>{if(!wdOK())return deny();if(S.sheet)closeSheet();openSheet({type:'wdHist',d:7,f:'all'})},
   whD:d=>{S.sheet.d=+d.v;sheetWdHist()},whF:d=>{S.sheet.f=d.v;sheetWdHist()},
   wdEditX:()=>{S.sheet.edit=null;S.sheet.rows=null;sheetPoWd()},
   wdRm:async d=>{if(!wdOK())return deny();const ok=await wdRemove(d.k,S.sheet.g);if(ok){if(S.sheet.edit===d.k){S.sheet.edit=null;S.sheet.rows=null}toast('↩ ยกเลิกการตัดครั้งนั้นแล้ว คืนของเข้าคลัง');sheetPoWd();render()}},
