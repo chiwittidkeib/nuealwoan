@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-084101">
+<meta name="app-version" content="2026.10.21-090349">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -3816,24 +3816,24 @@ async function poSave(){if(!poAdmin())return deny();poReadPts();const d=S.sheet.
     const b=document.querySelector('[data-act="poSave"]');if(b){b.textContent='✓ บันทึกแล้ว';b.classList.add('ok-flash');setTimeout(()=>{b.textContent='บันทึก';b.classList.remove('ok-flash')},2000)}toast('บันทึกการตั้งค่าแล้ว')}}
 function poRecvSt(o){if(!o||o.status!=='done'||!o.recv)return '';return o.recv==='wait'&&Date.now()>=(+o.recvUntil||0)?'auto':o.recv}
 function poRecvMins(){const v=poCfg().recvMins;return v==null||v===''?30:Math.max(0,+v||0)}
-async function poSet(id,patch,msg){const o0=S.poOrders.find(x=>x.id===id);let sc=0;
+async function poSet(id,patch,msg){const o0=poById(id);let sc=0;
   if(o0&&patch.status==='done'&&o0.status!=='done'){const n=Date.now(),m=poRecvMins();patch={...patch,handedAt:n,...(m?{recv:'wait',recvUntil:n+m*60000}:{recv:'ok',recvBy:'shop',recvAt:n,recvUntil:null}),recvIssue:null,issueSeen:null}}
   else if(o0&&patch.status&&patch.status!=='done'&&o0.status==='done')patch={...patch,recv:null,recvUntil:null,handedAt:null,recvIssue:null,issueSeen:null};
   if(o0&&patch.status==='cancelled'&&o0.stockCut){patch={...patch,stockCut:false};sc=-1}
-  const ok=await write('po_orders/'+id,r=>r.update(patch));if(ok&&sc&&o0)deductStock(o0.items,S.poMenu,sc);if(ok){const o=S.poOrders.find(x=>x.id===id);if(o)Object.assign(o,patch);render();if(msg)toast(msg)}}
+  const ok=await write('po_orders/'+id,r=>r.update(patch));if(ok&&sc&&o0)deductStock(o0.items,S.poMenu,sc);if(ok){const o=poById(id);if(o)Object.assign(o,patch);render();if(msg)toast(msg)}}
 Object.assign(ACT,{
   viewSlip:async d=>{const o=S.open[d.id];try{const s=await S.db.doc('slips/'+d.id).get();const x=s.exists?s.data():null;if(!x||!x.img)return toast('ลูกค้าลบสลิปแล้ว หรือยังไม่ได้แนบ','bad');viewImg(x.img,'สลิป · '+(o?tableLabel(o):(x.orderNo||''))+' · '+hm(x.at))}catch(e){toast('โหลดสลิปไม่ได้','bad')}},
   shopSw:d=>{if(!canPo())return deny();S.shop=d.v==='po'?'po':'noodle';try{localStorage.setItem('nl_shop',S.shop)}catch(e){}S.menuCat='all';S.tab=homeTab(effRole());closeSheet();render();window.scrollTo(0,0)},
   poDay:d=>{S.poDay=d.v;render()},
   poF:d=>{S.poF=d.v;render()},
-  poCxSeen:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;o.cancelSeen=true;render();await write('po_orders/'+o.id,r=>r.update({cancelSeen:true}))},
-  poIssueSeen:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;o.issueSeen=true;render();await write('po_orders/'+o.id,r=>r.update({issueSeen:true}))},
-  poRecvOk:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;poSet(o.id,{recv:'ok',recvBy:'shop',recvAt:Date.now(),issueSeen:true},'จัดส่งสำเร็จ · '+poShort(o))},
-  poAddSeen:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;o.addSeen=true;render();await write('po_orders/'+o.id,r=>r.update({addSeen:true}))},
+  poCxSeen:async d=>{const o=poById(d.id);if(!o)return;o.cancelSeen=true;render();await write('po_orders/'+o.id,r=>r.update({cancelSeen:true}))},
+  poIssueSeen:async d=>{const o=poById(d.id);if(!o)return;o.issueSeen=true;render();await write('po_orders/'+o.id,r=>r.update({issueSeen:true}))},
+  poRecvOk:d=>{const o=poById(d.id);if(!o)return;poSet(o.id,{recv:'ok',recvBy:'shop',recvAt:Date.now(),issueSeen:true},'จัดส่งสำเร็จ · '+poShort(o))},
+  poAddSeen:async d=>{const o=poById(d.id);if(!o)return;o.addSeen=true;render();await write('po_orders/'+o.id,r=>r.update({addSeen:true}))},
   poSlipBad:d=>{if(!['owner','chef'].includes(S.role))return deny();openSheet({type:'poSlipBad',id:d.id,rs:''})},
   poSbRs:d=>{const i=$('#sbTxt');if(i){i.value=d.v;S.sheet.rs=d.v}},
   poSbView:d=>ACT.poSlip({id:S.sheet.id}),
-  poSbGo:async()=>{const o=S.poOrders.find(x=>x.id===S.sheet.id);const t=(val('sbTxt')||'').trim().slice(0,150);if(!o)return closeSheet();if(!t)return toast('เลือกหรือพิมพ์เหตุผลก่อน','bad');
+  poSbGo:async()=>{const o=poById(S.sheet.id);const t=(val('sbTxt')||'').trim().slice(0,150);if(!o)return closeSheet();if(!t)return toast('เลือกหรือพิมพ์เหตุผลก่อน','bad');
     const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='slip'?{payStatus:x.pay==='after'?'cod':'waiting',slipBad:t,slipBadAt:Date.now(),slipBadBy:S.me||''}:null));
     if(!ok)return;Object.assign(o,{payStatus:o.pay==='after'?'cod':'waiting',slipBad:t});closeSheet();render();toast('แจ้งลูกค้าแล้ว · ลูกค้าเห็นในหน้าออร์เดอร์และหน้าสถานะ')},
   resetOpen:async d=>{if(S.role!=='owner')return deny();const {data,error}=await SB.rpc('reset_counts');if(error)return toast(/function|PGRST20/i.test(error.message)?'ยังไม่ได้รัน SQL รีเซตบิล':'ทำไม่สำเร็จ: '+error.message,'bad');openSheet({type:'reset',shop:d.v,counts:data||{}})},
@@ -3933,24 +3933,24 @@ Object.assign(ACT,{
   poSet:()=>{if(!poAdmin())return deny();openSheet({type:'poSet'})},
   poQr:()=>openSheet({type:'poQr'}),
   poQrPrint:()=>{sheetPoQr();setTimeout(()=>window.print(),50)},
-  poCopy:async()=>{const u=poUrl();try{await navigator.clipboard.writeText(u);toast('คัดลอกลิงก์แล้ว')}catch(e){const i=$('#poLink');if(i){i.select();document.execCommand&&document.execCommand('copy')}toast('คัดลอกลิงก์แล้ว')}},
+  poCopy:async()=>{const li=$('#poLink'),u=li&&li.value?li.value:poUrl()+(S.poRt?'?r='+S.poRt:'');try{await navigator.clipboard.writeText(u);toast('คัดลอกลิงก์แล้ว')}catch(e){const i=$('#poLink');if(i){i.select();document.execCommand&&document.execCommand('copy')}toast('คัดลอกลิงก์แล้ว')}},
   poPtAdd:()=>{poReadPts();S.sheet.d.points.push({id:'p'+uid(),name:'',note:''});S.sheet.dirty=true;poRenderPts();const L=document.querySelectorAll('[data-pt][data-k="name"]');if(L.length)L[L.length-1].focus()},
   poPtDel:d=>{poReadPts();S.sheet.d.points.splice(+d.i,1);S.sheet.dirty=true;poRenderPts()},
   poSave:()=>poSave(),
-  poStep:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;const nx=PO_NEXT[o.status];if(!nx)return;poSet(o.id,{status:nx[0],[nx[0]+'At']:Date.now(),by:S.me||''},PO_ST[nx[0]][0]+' · '+poShort(o))},
-  poBack:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;const pv=PO_PREV[o.status];if(!pv)return;await poSet(o.id,{status:pv,...(o.status==='done'?{doneAt:null}:{})},'ย้อนเป็น '+PO_ST[pv][0]);poPickRefresh()},
-  poCancel:d=>{const o=S.poOrders.find(x=>x.id===d.id);if(o)openSheet({type:'poCx',id:o.id,rs:''})},
+  poStep:d=>{const o=poById(d.id);if(!o)return;const nx=PO_NEXT[o.status];if(!nx)return;poSet(o.id,{status:nx[0],[nx[0]+'At']:Date.now(),by:S.me||''},PO_ST[nx[0]][0]+' · '+poShort(o))},
+  poBack:async d=>{const o=poById(d.id);if(!o)return;const pv=PO_PREV[o.status];if(!pv)return;await poSet(o.id,{status:pv,...(o.status==='done'?{doneAt:null}:{})},'ย้อนเป็น '+PO_ST[pv][0]);poPickRefresh()},
+  poCancel:d=>{const o=poById(d.id);if(o)openSheet({type:'poCx',id:o.id,rs:''})},
   poCxRs:d=>{const i=$('#cxTxt');if(i){i.value=d.v;S.sheet.rs=d.v}},
-  poCxGo:()=>{const o=S.poOrders.find(x=>x.id===S.sheet.id);const t=(val('cxTxt')||'').trim().slice(0,150);if(!o)return closeSheet();if(!t)return toast('เลือกหรือพิมพ์เหตุผลการยกเลิกก่อน','bad');
+  poCxGo:()=>{const o=poById(S.sheet.id);const t=(val('cxTxt')||'').trim().slice(0,150);if(!o)return closeSheet();if(!t)return toast('เลือกหรือพิมพ์เหตุผลการยกเลิกก่อน','bad');
     closeSheet();poSet(o.id,{status:'cancelled',cancelledBy:'shop',cancelledAt:Date.now(),cancelReason:t,cancelSeen:true},'ยกเลิก '+poShort(o)+' แล้ว')},
-  poPaid:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o||o.payStatus==='paid')return;
+  poPaid:async d=>{const o=poById(d.id);if(!o||o.payStatus==='paid')return;
     const ok=await write('po_orders/'+o.id,r=>r.transform(x=>x.payStatus==='paid'?null:{payStatus:'paid',payAt:Date.now(),payBy:S.me||'',paidAmt:+x.total||0,slipBad:null,...(d.m?{payMethod:d.m}:{})}));if(!ok)return;
     Object.assign(o,{payStatus:'paid',payAt:Date.now(),paidAmt:+o.total||0});let msg='บันทึกรับเงิน '+poShort(o)+' แล้ว';
     if(o.memberPhone&&S.settings.pointsOn&&!o.ptsDone){const earn=Math.floor((+o.total||0)/Math.max(1,+S.settings.pointsPer||50));
       try{const bal=await applyPoints(o.memberPhone,o.name||'',0,earn,+o.total||0);const pex=LAST_LOTS?memExpSoon(LAST_LOTS):null;await write('po_orders/'+o.id,r=>r.update({ptsEarned:earn,ptsBalance:bal,ptsDone:true,...(pex?{ptsExp:pex}:{})}));Object.assign(o,{ptsEarned:earn,ptsBalance:bal,ptsDone:true});msg+=' · สมาชิก +'+earn+' แต้ม (รวม '+bal+')'}
       catch(e){toast('บันทึกแต้มไม่สำเร็จ: '+errMsg(e),'bad')}}
     render();poPickRefresh();toast(msg)},
-  poSlip:async d=>{const o=S.poOrders.find(x=>x.id===d.id)||(S.poAll||[]).find(x=>x.id===d.id);const ids=[...new Set([d.id,...((o&&o.slipIds)||[])])];const L=[];
+  poSlip:async d=>{const o=poById(d.id)||(S.poAll||[]).find(x=>x.id===d.id);const ids=[...new Set([d.id,...((o&&o.slipIds)||[])])];const L=[];
     try{for(const id of ids){const g=await S.db.doc('po_slips/'+id).get();if(g.exists&&g.data().img)L.push(g.data())}}catch(e){return toast('โหลดสลิปไม่ได้','bad')}
     if(!L.length)return toast('ไม่พบรูปสลิป','bad');L.sort((a,b)=>(a.at||0)-(b.at||0));
     if(L.length===1)return viewImg(L[0].img,'สลิป '+poShort(o||{id:d.id})+' · '+baht(+(o&&o.total)||0));
@@ -4013,7 +4013,8 @@ document.addEventListener('change',async e=>{const i=e.target;if(!i.dataset||!i.
   catch(err){if(msg)msg.textContent='อัปโหลดไม่สำเร็จ';toast('อัปโหลดโลโก้ไม่สำเร็จ: '+(err.message||err),'bad')}});
 /* ---------- ใบเสร็จร้านข้าวมันไก่ ---------- */
 const poRcptLink=o=>{const u=new URL('receipt.html',location.href);return u.origin+u.pathname+'?s=po&r='+encodeURIComponent(o.id)+'&t='+encodeURIComponent(o.rcptTok)};
-function sheetPoRcQr(){const o=S.poOrders.find(x=>x.id===S.sheet.id);if(!o)return closeSheet();const url=poRcptLink(o);
+function poById(id){return (S.poOrders||[]).find(x=>x.id===id)||(S.poAll||[]).find(x=>x.id===id)}
+function sheetPoRcQr(){const o=poById(S.sheet.id);if(!o)return closeSheet();const url=poRcptLink(o);
   $('#panel').innerHTML=head('ใบเสร็จ '+esc(poShort(o)),esc(o.name||''))+`<div class="sh-body"><div class="qrbig"><div class="pq"><small style="font-weight:600">${esc(poCfg().rcName||poCfg().shopName)}</small>${qrSvg(url)}<b>สแกนรับใบเสร็จ</b><small>ยอด ${baht(+o.total||0)}</small></div></div>
    <p class="help" style="margin:0">ลูกค้าที่สั่งผ่านลิงก์ จะเห็นปุ่ม "ใบเสร็จ" ในหน้าติดตามออร์เดอร์เองหลังร้านกดรับเงิน · หรือคัดลอกลิงก์ส่งทางไลน์</p>
    <div class="field"><label for="rcLink">ลิงก์ใบเสร็จ</label><input id="rcLink" readonly value="${esc(url)}"></div></div>
@@ -4026,10 +4027,10 @@ Object.assign(ACT,{
   sgTab:d=>{S.sheet.sg=+d.v;document.querySelectorAll('#panel .sg').forEach(x=>x.hidden=x.dataset.sg!==d.v);document.querySelectorAll('#panel .sgtabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===d.v)));const b=$('#panel .sh-body');if(b)b.scrollTop=0;
     if(d.v==='5')setTimeout(()=>{const m=S.sheet&&S.sheet.rdMap;try{m&&m.invalidateSize&&m.invalidateSize()}catch(e){}},60)},
   memQrPrint:()=>{const card=`<div class="pq"><small style="font-weight:600">${esc(S.settings.rcName||'เนื้อล้วนๆ')}</small>${qrSvg(memberUrl())}<b>สมัครสมาชิกสะสมแต้ม</b><small>ทุก ${num(+S.settings.pointsPer||50)} บาท ได้ 1 แต้ม · ใช้ได้ทั้ง 2 ร้าน</small></div>`;$('#printArea').className='qrs one';$('#printArea').innerHTML=card;setTimeout(()=>window.print(),50)},
-  memCard:()=>{const sh=S.sheet;const o=sh&&(sh.order||S.poOrders.find(x=>x.id===sh.id));if(!o||!o.memberPhone)return;const m=S.members.find(x=>x.id===o.memberPhone)||{};
+  memCard:()=>{const sh=S.sheet;const o=sh&&(sh.order||poById(sh.id));if(!o||!o.memberPhone)return;const m=S.members.find(x=>x.id===o.memberPhone)||{};
     showMemberCard({phone:maskPhone(o.memberPhone),name:o.memberName||m.name||o.name||'',points:o.ptsBalance!=null?o.ptsBalance:m.points,note:+o.ptsEarned?`ได้รับ +${+o.ptsEarned} แต้มจากบิลนี้ 🎉`:''})},
   rcLogoReset:d=>{RCLOGO[d.id]='';if(S.sheet)S.sheet.dirty=true;const b=$('#'+d.id+'Box');if(b)b.innerHTML=`<img src="${esc(d.def)}" alt="โลโก้">`;const m=$('#'+d.id+'Msg');if(m)m.textContent='ใช้โลโก้ตั้งต้น · กด "บันทึก" เพื่อใช้งาน'},
-  poRc:async d=>{const o=S.poOrders.find(x=>x.id===d.id);if(!o)return;if(!o.rcptTok){const t=rcTok();const ok=await write('po_orders/'+o.id,r=>r.update({rcptTok:t}));if(!ok)return;o.rcptTok=t}openSheet({type:'poRcQr',id:o.id})}
+  poRc:async d=>{const o=poById(d.id);if(!o)return;if(!o.rcptTok){const t=rcTok();const ok=await write('po_orders/'+o.id,r=>r.update({rcptTok:t}));if(!ok)return;o.rcptTok=t}openSheet({type:'poRcQr',id:o.id})}
 });
 
 /* ---------- ดูเมนูแบบอ่านอย่างเดียว (ตำแหน่งที่ไม่มีสิทธิ์แก้เมนู เช่น หุ้นส่วน) ---------- */
