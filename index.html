@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-105800">
+<meta name="app-version" content="2026.10.21-111843">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -3726,7 +3726,7 @@ function cpUnit(menuId){const m=(S.poMenu||[]).find(x=>x.id===menuId);const L=[]
 function poRounds(){const c=poCfg(),cut=+c.cutAt||0,lc=c.lastClose||{},R=[{k:'cur',start:cut,end:Infinity,label:'รอบนี้ (กำลังขาย)'}];
   if(lc.from!=null&&+lc.at)R.push({k:'last',start:+lc.from,end:+lc.at,label:'รอบที่ปิดยอดแล้ว · '+(()=>{const d=new Date(+lc.at+7*3600e3);return d.getUTCDate()+'/'+(d.getUTCMonth()+1)+' '+hm(+lc.at)})()});return R}
 const roundOrders=r=>r.k==='cur'?(S.poOrders||[]).filter(poLive):(S.poAll||[]).filter(o=>poLive(o)&&+o.at>r.start&&+o.at<=r.end);
-const wdOf=(r,g='food')=>{const cp=poCfg().costPlan;return ((cp&&cp.wd)||[]).filter(w=>(w.g||'food')===g&&(w.r!=null?+w.r===r.start:(r.k==='cur'&&+w.at>r.start)))};
+const wdOf=(r,g='food')=>{const cp=poCfg().costPlan;return ((cp&&cp.wd)||[]).filter(w=>(w.g||'food')===g&&(w.r!=null?+w.r===r.start:(+w.at>r.start&&+w.at<=(r.end||Infinity))))};
 // ต้นทุนจริงของรอบ = ของเบิกใช้ ÷ กล่องที่ขายได้ (ถ่วงปริมาณ %) + ของนับชิ้นตามสูตร
 function cpActual(r){const cp=cpPlan()||cpDefault(),P=cp.prod||[],L=roundOrders(r),W0=wdOf(r),sold=P.map(()=>0);let rev=0,oc=0,other=0;
   const WD=wdOf(r,'drink'),AD={};WD.forEach(w=>(w.items||[]).forEach(x=>{const a=AD[x.sid]=AD[x.sid]||{n:x.n,u:x.u,q:0,c:0};a.q+=+x.q||0;a.c+=(+x.q||0)*(+x.uc||0)}));
@@ -3853,7 +3853,7 @@ Object.assign(ACT,{
     if(old){const okr=await wdRemove(ed,S.sheet.g);if(!okr){if(b)b.disabled=false;return e.textContent='แก้ไม่สำเร็จ ลองใหม่'}items.forEach(x=>{const t=stockList().find(y=>y.id===x.sid);if(t)x.uc=+t.unitCost||x.uc});S.sheet.wAt=old.w.at;S.sheet.edit=null}
     await wdApply(items,1);
     if(!isPo()){const ref=S.db.collection('stockwd').doc(),doc={at:S.sheet.wAt||Date.now(),g:S.sheet.g==='drink'?'drink':'food',by:S.me||'',items:items.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc}))};const ok=await write('stockwd/'+ref.id,r=>r.set(doc));if(ok&&!(S.wdN||[]).some(x=>x.id===ref.id))S.wdN=[{id:ref.id,...doc},...(S.wdN||[])];closeSheet();render();toast('✂️ ตัดสต็อกแล้ว '+items.length+' รายการ · ต้นทุนต่อชามวันนี้อัปเดตแล้ว');return}
-    const RS=poRounds(),rr=RS.find(x=>x.k===S.sheet.rk)||RS[0],cp0=cpPlan()||{...cpDefault(),ing:[]},keep=RS.map(x=>x.start),gg=S.sheet.g==='drink'?'drink':'food',all=[...(cp0.wd||[]).filter(w=>w.r!=null?keep.includes(+w.r):+w.at>RS[0].start),{at:S.sheet.wAt||Date.now(),r:rr.start,g:gg,by:S.me||'',items,...(S.sheet.wAt?{edited:Date.now()}:{})}];
+    const RS=poRounds(),rr=RS.find(x=>x.k===S.sheet.rk)||RS[0],cp0=cpPlan()||{...cpDefault(),ing:[]},keep=RS.map(x=>x.start),gg=S.sheet.g==='drink'?'drink':'food',all=[...(cp0.wd||[]).filter(w=>(w.r!=null?keep.includes(+w.r):+w.at>RS[0].start)||+w.at>=Date.now()-40*DAY),{at:S.sheet.wAt||Date.now(),r:rr.start,g:gg,by:S.me||'',items,...(S.sheet.wAt?{edited:Date.now()}:{})}];
     const plan={...cp0,ing:gg==='food'?wdIng(cp0,all.filter(w=>(w.g||'food')==='food'&&(w.r!=null?+w.r:RS[0].start)===rr.start)):cp0.ing,wd:all,at:Date.now()};const ok=await write('config/po',r=>r.update({costPlan:plan}));
     if(ok){const nw=all[all.length-1],lg={at:nw.at,g:gg,by:nw.by,r:nw.r,items:items.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc})),shop:'po',...(nw.edited?{edited:nw.edited}:{})};await write('stockwd/po'+nw.at,r=>r.set(lg));if(!(S.wdN||[]).some(x=>x.id==='po'+nw.at))S.wdN=[{id:'po'+nw.at,...lg},...(S.wdN||[])]}
     if(ok)S.po={...poCfg(),costPlan:plan};closeSheet();render();S.cpRk=rr.k;toast('✂️ ตัดสต็อกแล้ว '+items.length+' รายการ · ต้นทุน'+(rr.k==='last'?'รอบที่ปิดแล้ว':'รอบนี้')+'อัปเดตแล้ว')},
