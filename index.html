@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-151317">
+<meta name="app-version" content="2026.10.21-152056">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1014,7 +1014,7 @@ body:not(.shop-po) .chip[aria-pressed="true"]{border-color:transparent;color:#ff
 .prdr2{display:inline-block;margin:0 0 10px;padding:5px 12px;border-radius:99px;font-size:13px;background:color-mix(in srgb,var(--surface) 85%,transparent);color:var(--fg);border:1px solid var(--line)}
 .prsplit .prr[data-pn]{cursor:pointer;transition:opacity .2s,transform .2s,background .2s,box-shadow .2s}
 .prsplit.lnkon .prr[data-pn]:not(.lnk){opacity:.4}
-.prsplit .prr.lnk{opacity:1;transform:scale(1.025);background:linear-gradient(90deg,rgba(20,184,166,.14),rgba(20,184,166,.04));box-shadow:0 0 0 2px rgba(20,184,166,.55),0 8px 20px rgba(13,148,136,.18);border-radius:12px;position:relative;z-index:1}
+.prsplit .prr.lnk{opacity:1;background:linear-gradient(90deg,rgba(20,184,166,.14),rgba(20,184,166,.04));box-shadow:0 0 0 2px rgba(20,184,166,.55),0 8px 20px rgba(13,148,136,.18);border-radius:12px;position:relative;z-index:1}
 .prsplit .prr.lnk .prb span{filter:brightness(1.08) saturate(1.15)}
 .dnt-r{transition:background .2s,transform .2s}.dnt-r.on{transform:translateX(4px);background:rgba(20,184,166,.12)!important;box-shadow:inset 3px 0 0 #14b8a6}
 .dsc{background:repeating-linear-gradient(135deg,#db2777 0 4px,#f472b6 4px 8px)!important}.dsc.pro{background:repeating-linear-gradient(135deg,#d97706 0 4px,#fbbf24 4px 8px)!important}.prb span.dsc{min-width:10px!important;box-shadow:0 0 0 1.5px rgba(255,255,255,.9) inset,0 0 8px rgba(217,119,6,.45);position:relative}.prb span.dsc:not(.pro){box-shadow:0 0 0 1.5px rgba(255,255,255,.9) inset,0 0 8px rgba(219,39,119,.45)}
@@ -3587,7 +3587,7 @@ if(!window.__prEv){window.__prEv=1;
     if(!fromRow){const f=rowsOf(w).find(x=>x.classList.contains('lnk'));if(f&&f.scrollIntoViewIfNeeded)f.scrollIntoViewIfNeeded(false)}};
   const dnOff=w=>{w.classList.remove('hov');w.querySelectorAll('.on').forEach(x=>x.classList.remove('on'));const c=w.querySelector('.dnt-in');if(c)c.innerHTML=`<small>${esc(w.dataset.ttl)}</small><b>${w.dataset.tot}</b>`;const sp=w.closest('.prsplit');if(sp){sp.classList.remove('lnkon');sp.querySelectorAll('.prr.lnk').forEach(x=>x.classList.remove('lnk'))}};
   const rowHit=row=>{const sp=row.closest('.prsplit'),w=sp&&sp.querySelector('.dnt');if(!w)return;const nm=nmOf(row.dataset.pn),R=[...w.querySelectorAll('.dnt-r')];let r=R.find(x=>nmOf(x.dataset.nm)===nm);if(!r)r=R.find(x=>x.dataset.nm==='อื่นๆ');if(r)dn(w,r.dataset.dn,1)};
-  const on=e=>{const t=e.target;if(!t.closest)return;const h=t.closest('[data-prd]');if(h)return prTip(+h.dataset.prd,h);const d=t.closest('.dnt [data-dn]');if(d)return dn(d.closest('.dnt'),d.dataset.dn);const pr=t.closest('.prsplit .prr[data-pn]');if(pr)return rowHit(pr);if(e.type==='pointerdown')document.querySelectorAll('.dnt.hov').forEach(dnOff)};
+  const on=e=>{const t=e.target;if(!t.closest)return;const h=t.closest('[data-prd]');if(h)return prTip(+h.dataset.prd,h);const d=t.closest('.dnt [data-dn]');if(d)return dn(d.closest('.dnt'),d.dataset.dn);const pr=t.closest('.prsplit .prr[data-pn]');if(pr){clearTimeout(window.__prRT);if(e.type==='pointerover'&&e.pointerType==='mouse'){window.__prRT=setTimeout(()=>rowHit(pr),70);return}return rowHit(pr)}if(e.type==='pointerdown')document.querySelectorAll('.dnt.hov').forEach(dnOff)};
   document.addEventListener('pointerover',on);document.addEventListener('pointerdown',on);
   document.addEventListener('pointerout',e=>{if(e.pointerType!=='mouse'||!e.target.closest)return;const rt=e.relatedTarget,inn=(sel,el)=>rt&&rt.closest&&rt.closest(sel)===el;const b=e.target.closest('.prc');if(b&&!inn('.prc',b))clr(b);
     const sp=e.target.closest('.prsplit');if(sp&&(e.target.closest('.dnt')||e.target.closest('.prr'))){const ok=rt&&rt.closest&&(rt.closest('.prsplit .dnt [data-dn]')||rt.closest('.prsplit .prr[data-pn]'))&&rt.closest('.prsplit')===sp;if(!ok){const w=sp.querySelector('.dnt');if(w)dnOff(w)}}});
