@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-2138">
+<meta name="app-version" content="2026.10.21-0826">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1127,6 +1127,13 @@ body.shop-po .shopsw::before{transform:translateX(100%);background:linear-gradie
 .pkcalc{display:flex;flex-direction:column;gap:8px;background:linear-gradient(135deg,rgba(253,230,138,.25),rgba(255,255,255,0))!important;border:1px dashed rgba(245,184,46,.7)!important}
 .pkrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.pkres{margin:0;padding:8px 12px;border-radius:10px;background:rgba(20,184,166,.1);color:#0f766e;font-size:14px}
 @media (max-width:560px){.pkrow{grid-template-columns:1fr 1fr}}
+.sxw{position:relative;display:flex;flex:1 1 auto;min-width:0;align-items:center}.sxw>input{flex:1;min-width:0;width:100%;padding-right:42px!important}
+.sxw>input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+.sxb{position:absolute;right:8px;top:50%;transform:translateY(-50%) scale(.6);width:28px;height:28px;border-radius:50%;border:0;display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,#94a3b8,#64748b);box-shadow:0 2px 6px rgba(0,0,0,.2);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s}
+.sxw.has .sxb{opacity:1;pointer-events:auto;transform:translateY(-50%) scale(1)}.sxb:hover{background:linear-gradient(135deg,#f87171,#dc2626)}
+.pfday{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 14px 4px}.pfdate{display:inline-flex;align-items:center;gap:4px;font-size:14px}.pfdate input{padding:6px 10px;border-radius:99px;border:1px solid var(--line);font:inherit;font-size:14px!important;background:var(--surface)}
+.pfdate input{min-width:160px;line-height:1.2}
+.pq .pqrt{display:block;margin-top:4px;font-size:11px;font-weight:700;color:#b45309}
 </style>
 </head>
 <body>
@@ -1825,6 +1832,7 @@ function viewReport(){const RK=S.report.range in RANGES?S.report.range:'today';i
   h+=`<details class="card prtbl"><summary><b>🧾 บิลที่ชำระแล้ว (${D.orders.length})</b></summary>${D.orders.length?'<div class="list">'+D.orders.slice(0,100).map(o=>`<div class="row click" data-act="bill" data-id="${o.id}"><div class="grow"><div class="t">${esc(tableLabel(o))} <span class="pill ${o.method==='cash'?'mute':'ok'}">${methodName(o.method)}</span></div><div class="s">${o.orderNo?esc(o.orderNo)+' · ':''}${dshort(o.paidAt)} ${hm(o.paidAt)} · ${linesCount(o.items)} รายการ</div></div><div class="r"><b>${baht(o.total)}</b></div></div>`).join('')+'</div>':`<div class="empty"><b>ยังไม่มีบิลในช่วงนี้</b>บิลจะขึ้นที่นี่หลังกดรับเงิน</div>`}</details>`;
   return h;
 }
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='pfD'){S.pfDay=e.target.value||'';sheetPoFind()}});
 if(!window.__rpEv){window.__rpEv=1;document.addEventListener('change',e=>{const id=e.target&&e.target.id;if(id!=='rpF'&&id!=='rpT')return;S.report.from=$('#rpF').value;S.report.to=$('#rpT').value;S.report.data=null;render()})}
 
 /* ---------- sheets ---------- */
@@ -1839,6 +1847,10 @@ const NUM_IDS=['sPkQ','sPkP','sPkN','sQty','sMin','sCost','pAmt','pQty','pBuy','
 const fmtIn=el=>{if(!el||document.activeElement===el)return;const raw=String(el.value||'').replace(/,/g,'').trim();if(!/^-?\d+(\.\d+)?$/.test(raw))return;const n=+raw;el.value=Math.abs(n)>=1000?n.toLocaleString('en-US',{maximumFractionDigits:4}):raw};
 const fmtNums=()=>NUM_IDS.forEach(id=>fmtIn(document.getElementById(id)));
 if(!window.__fmtN){window.__fmtN=1;document.addEventListener('focusout',e=>{if(e.target&&NUM_IDS.includes(e.target.id))fmtIn(e.target)});document.addEventListener('focusin',e=>{const t=e.target;if(t&&NUM_IDS.includes(t.id)&&/,/.test(t.value))t.value=t.value.replace(/,/g,'')})}
+// ปุ่ม ✕ ล้างช่องค้นหาทุกช่อง
+function sxDecorate(root){(root||document).querySelectorAll('input[type=search]:not([data-sx])').forEach(i=>{i.dataset.sx=1;const w=document.createElement('span');w.className='sxw';i.parentNode.insertBefore(w,i);w.appendChild(i);const b=document.createElement('button');b.type='button';b.className='sxb';b.setAttribute('aria-label','ล้างคำค้น');b.textContent='✕';w.appendChild(b);
+  const t=()=>w.classList.toggle('has',!!i.value);t();i.addEventListener('input',t);b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();i.value='';i.dispatchEvent(new Event('input',{bubbles:true}));t();i.focus()})})}
+if(!window.__sx){window.__sx=1;new MutationObserver(()=>sxDecorate()).observe(document.documentElement,{childList:true,subtree:true})}
 function renderSheet(){const s=S.sheet;if(!s)return;setTimeout(fmtNums,0);
   {const pn=$('#panel');if(pn&&pn.parentElement)pn.parentElement.classList.toggle('findmode',s.type==='poFind')}
   ({poWd:sheetPoWd,poCost:sheetPoCost,poFind:sheetPoFind,poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
@@ -3038,8 +3050,8 @@ function poWinArg(){const a=val('prW1'),b=val('prW2');const n=poWinStr(a,b),o=po
 // ช่องวันที่: แสดง วัน/เดือน/ปี เสมอ (ไม่ขึ้นกับภาษาเบราว์เซอร์)
 const TH_WD=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
 function dShow(inp){const sp=inp&&inp.nextElementSibling;if(!sp||!sp.classList.contains('dshow'))return;const v=inp.value;
-  if(!/^\d{4}-\d\d-\d\d$/.test(v)){sp.textContent='วว/ดด/ปปปป';sp.classList.add('ph');return}
-  const [y,m,d]=v.split('-');sp.textContent=`${d}/${m}/${y} · ${TH_WD[new Date(+y,+m-1,+d).getDay()]}`;sp.classList.remove('ph')}
+  if(!/^\d{4}-\d\d-\d\d$/.test(v)){sp.textContent='วว/ดด/ปปปป (พ.ศ.)';sp.classList.add('ph');return}
+  const [y,m,d]=v.split('-');sp.textContent=`${d}/${m}/${+y+543} · ${TH_WD[new Date(+y,+m-1,+d).getDay()]}`;sp.classList.remove('ph')}
 // ช่องเวลา 24 ชม.: เปลี่ยน input[type=time] เป็นช่องพิมพ์ HH:MM (พิมพ์ 0900 / 9 / 9:30 / 2300 ได้) · เว้นว่างได้
 function t24Norm(v){v=String(v||'').trim();if(!v)return '';let h,mi;const c=v.match(/^(\d{1,2})[:.](\d{1,2})$/);
   if(c){h=+c[1];mi=+c[2]}else if(/^\d{1,4}$/.test(v)){if(v.length<=2){h=+v;mi=0}else if(v.length===3){h=+v[0];mi=+v.slice(1)}else{h=+v.slice(0,2);mi=+v.slice(2)}}else return null;
@@ -3154,17 +3166,18 @@ async function comboSave(){const s=S.sheet;comboKeep();const e=$('#cbErr');const
 
 // ---------- รับของ / ส่งของ: ค้นหาด่วน · สแกน QR · รับเงินสด / สแกนจ่าย ----------
 const poDue=o=>Math.max(0,(+o.total||0)-(o.payStatus==='paid'?(+o.total||0):(+o.paidAmt||0)));
-function poMatch(q){q=String(q||'').trim().toLowerCase().replace(/^kmk\s*/,'');if(!q)return [];
-  return (S.poOrders||[]).filter(o=>poLive(o)).filter(o=>{const ph=String(o.phone||'').replace(/\D/g,''),no=String(o.orderNo||'').slice(-4);
+function poMatch(q){q=String(q||'').trim().toLowerCase().replace(/^kmk\s*/,'');const D=S.pfDay||'';if(!q&&!D)return [];
+  return (D?(S.poAll||S.poOrders||[]).filter(o=>o.deliverDate===D):(S.poOrders||[])).filter(o=>poLive(o)).filter(o=>{if(!q)return true;const ph=String(o.phone||'').replace(/\D/g,''),no=String(o.orderNo||'').slice(-4);
     if(/^\d+$/.test(q))return (q.length>=3&&ph.endsWith(q))||(q.length<=4&&+no===+q);return String(o.name||'').toLowerCase().includes(q)})
    .sort((a,b)=>((a.status==='done')-(b.status==='done'))||(a.deliverDate||'').localeCompare(b.deliverDate||'')||a.at-b.at)}
 function poSearchBox(){return `<div class="posrch"><button class="srchbtn" data-act="poFind" type="button">🔍 ค้นหาเพื่อส่งของ · เบอร์ 4 ตัวท้าย / KMK / ชื่อ</button><button class="btn" data-act="poScan" type="button">📷 สแกนรับของ</button></div>`}
 // หน้าค้นหาแยก (ช่องพิมพ์บนสุด ผลอยู่ใต้ทันที · ไม่พังตอนคีย์บอร์ดเด้งบน iPhone)
 function sheetPoFind(){$('#panel').innerHTML=`<div class="sh-head findhead"><input id="pfQ" type="search" autocomplete="off" enterkeyhint="search" placeholder="🔍 เบอร์ 4 ตัวท้าย / KMK / ชื่อ" value="${esc(S.poQ||'')}"><button class="btn" data-act="close" type="button">ปิด</button></div>
+   <div class="pfday"><button type="button" class="chip" data-act="pfDay" data-v="" aria-pressed="${!S.pfDay}">รอบนี้</button>${[1,0,-1].map(k=>bkkDay(k)).filter(d=>(S.poAll||[]).some(o=>o.deliverDate===d)||d===bkkDay(0)).map(d=>`<button type="button" class="chip" data-act="pfDay" data-v="${d}" aria-pressed="${S.pfDay===d}">ส่ง${esc(poDayName(d).trim())}</button>`).join('')}<label class="pfdate">📅 <input id="pfD" type="date" value="${esc(S.pfDay||'')}" max="${bkkDay(7)}" min="${bkkDay(-40)}" aria-label="เลือกวันส่ง"></label></div>
    <div class="sh-body" id="pfRes">${poFindRes()}</div>`;const i=$('#pfQ');setTimeout(()=>{i.focus();try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}},60)}
-function poFindRes(){const q=(S.poQ||'').trim();if(!q)return '<p class="help" style="text-align:center;margin:20px 0">พิมพ์เบอร์ 4 ตัวท้าย, เลข KMK หรือชื่อลูกค้า<br>รวมออร์เดอร์ที่ส่งแล้ว (ไม่รวมที่ยกเลิก)</p>';return poResHtml()}
-function poResHtml(){const q=(S.poQ||'').trim();if(!q)return '';const L=poMatch(q);
-  return `<div class="sec-h" style="margin-top:4px"><h2>ผลค้นหา "${esc(q)}"</h2><span class="hint">${L.length?'พบ '+L.length+' ออร์เดอร์':'ไม่พบ'} · ไม่รวมที่ยกเลิก · ที่ส่งแล้วอยู่ท้าย</span></div>${L.length?`<div class="pogrid">${L.map(o=>poPickCard(o,q)).join('')}</div>`:'<div class="empty"><b>ไม่พบออร์เดอร์</b>ลองพิมพ์เบอร์ 4 ตัวท้าย หรือเลข KMK</div>'}`}
+function poFindRes(){const q=(S.poQ||'').trim();if(!q&&!S.pfDay)return '<p class="help" style="text-align:center;margin:20px 0">พิมพ์เบอร์ 4 ตัวท้าย, เลข KMK หรือชื่อลูกค้า<br>หรือเลือกวันส่งด้านบน เพื่อดูออร์เดอร์ย้อนหลัง (ไม่เกิน 40 วัน)</p>';return poResHtml()}
+function poResHtml(){const q=(S.poQ||'').trim();if(!q&&!S.pfDay)return '';const L=poMatch(q);
+  return `<div class="sec-h" style="margin-top:4px"><h2>${q?'ผลค้นหา "'+esc(q)+'"':''}${S.pfDay?(q?' · ':'')+'ส่ง '+esc(poDate(S.pfDay)):''}</h2><span class="hint">${L.length?'พบ '+L.length+' ออร์เดอร์':'ไม่พบ'} · ไม่รวมที่ยกเลิก · ที่ส่งแล้วอยู่ท้าย</span></div>${L.length?`<div class="pogrid">${L.map(o=>poPickCard(o,q)).join('')}</div>`:'<div class="empty"><b>ไม่พบออร์เดอร์</b>ลองพิมพ์เบอร์ 4 ตัวท้าย หรือเลข KMK</div>'}`}
 function poPickCard(o,q){const due=poDue(o),paid=o.payStatus==='paid',slip=o.payStatus==='slip',hl=s=>{const d=String(q||'').replace(/\D/g,'');return d.length>=3&&String(s).replace(/\D/g,'').endsWith(d)?esc(String(s).slice(0,-d.length))+'<mark>'+esc(String(s).slice(-d.length))+'</mark>':esc(s)};
   const stamp=paid?'<span class="pocpaid" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></span>':slip?'<span class="pocpaid chk">รอตรวจ<br>สอบยอด<i>CHECKING</i></span>':'<span class="pocpaid due" aria-label="ค้างชำระ">ค้างชำระ<i>UNPAID</i></span>';
   return `<div class="card poc pick paid">${stamp}<div class="poc-h"><b class="poc-no">${esc(poShort(o))}</b><span class="pill ${(PO_ST[o.status]||PO_ST.new)[1]}">${(PO_ST[o.status]||PO_ST.new)[0]}</span></div>
@@ -3513,7 +3526,7 @@ function viewPoReport(){const N=prRange(),lastDel=(()=>{const t=bkkDay(0),L=(S.p
    ${poCashCard(T,t0,t1,len)}${prExp(t0,t1)}${poFinCard(T,t0,t1,len)}
    <details class="card prtbl"><summary><b>ตารางรายวัน</b></summary><div class="list">${[...A.D].reverse().filter(r=>r.o).map(r=>`<div class="row"><div class="grow"><div class="t">ส่ง${poDayName(r.d)}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(r.d))?' · '+esc(poDate(r.d)):''}</div><div class="s">${r.o} ออร์เดอร์ · ${r.f} กล่อง${r.dr?' · น้ำ '+r.dr:''}${r.u?' · ค้างจ่าย '+baht(r.u):''}</div></div><div style="text-align:right"><b>${baht(r.s)}</b><div class="s muted">ทุน ${baht(r.c)} · กำไร ${baht(r.s-r.c)}</div></div></div>`).join('')||'<div class="empty">ไม่มียอด</div>'}</div></details>`;
   return h}
-Object.assign(ACT,{cashAll:()=>{S.cashAll=!S.cashAll;render()},cashOpen:()=>{S.cashOpen=!S.cashOpen;render()},prGrp:d=>{if(prGrp()===d.v)return;S.prGrp=d.v;prLS('nl_prg',d.v);PRGA=true;render()},prRange:d=>{S.prRange=d.v==='c'?'c':+d.v;prLS('nl_prr',String(d.v));render()},prSort:d=>{S.prSort=d.v;render()}});
+Object.assign(ACT,{pfDay:d=>{S.pfDay=d.v||'';sheetPoFind()},cashAll:()=>{S.cashAll=!S.cashAll;render()},cashOpen:()=>{S.cashOpen=!S.cashOpen;render()},prGrp:d=>{if(prGrp()===d.v)return;S.prGrp=d.v;prLS('nl_prg',d.v);PRGA=true;render()},prRange:d=>{S.prRange=d.v==='c'?'c':+d.v;prLS('nl_prr',String(d.v));render()},prSort:d=>{S.prSort=d.v;render()}});
 function cashCardG(o){const out=o.out.buy+o.out.exp,got=o.got,owe=o.owe||0,net=got-out,stv=(o.stock||[]).reduce((a,x)=>a+Math.max(0,+x.qty||0)*(+x.unitCost||0),0),pct=out>0?Math.min(100,got/out*100):100,mx=Math.max(1,out,got+owe),col=v=>`color:${v>=0?'#1a8a5c':'var(--chili)'}`;
   const R0=o.rec,rec=[...R0.purch.map(x=>({at:x.at,n:'🛒 ซื้อ '+(x.name||'')+(x.qty?' '+num(x.qty)+' '+(x.unit||''):''),a:-(+x.amount||0),note:x.note})),...R0.exp.map(x=>({at:x.at,n:'💸 '+(x.cat||'รายจ่าย'),a:-(+x.amount||0),note:x.note})),...R0.inc.map(x=>({at:x.at,n:'💰 '+(x.cat||'รายรับ'),a:+x.amount||0,note:x.note}))].sort((a,b)=>b.at-a.at),sh=S.cashAll?rec:rec.slice(0,6),dd=t=>{const d=new Date(t);return d.getDate()+'/'+(d.getMonth()+1)};
   return `<div class="card prcard cash"><div class="prh"><h3>💰 ลงทุน vs ขายได้ (${o.len} วัน)</h3><div class="inrow" style="gap:6px;flex-wrap:wrap">${can('stock')?'<button class="btn sm" data-act="purchase" type="button">🛒 + ซื้อของเข้า</button>':''}${can('expenses')?'<button class="btn sm" data-act="expense" type="button">💸 + รายจ่าย</button><button class="btn sm" data-act="income" type="button">💰 + รายรับ</button>':''}</div></div>
@@ -3747,11 +3760,14 @@ Object.assign(ACT,{
     const ok=await write('config/po',r=>r.update({costPlan:plan}));if(ok)S.po={...poCfg(),costPlan:plan};render();toast('↩ คืนสต็อกครั้งล่าสุดแล้ว')}
 });
 const poUrl=()=>{const u=new URL('preorder.html',location.href);return u.origin+u.pathname};
-function sheetPoQr(){const c=poCfg(),url=poUrl();const card=`<div class="pq"><small style="font-weight:600">${esc(c.shopName)}</small>${qrSvg(url)}<b>สั่งล่วงหน้า</b><small>สแกนเพื่อดูเมนูและสั่ง · ${c.cutoff?'ปิดรับ '+esc(c.cutoff)+' น. ':''}${c.window?'· ส่ง '+esc(c.window):''}</small></div>`;
+// QR / ลิงก์ประจำรอบ: เปลี่ยนใหม่ทุกรอบ (ปิดยอด หรือเปลี่ยนวันส่ง) · รอบเก่าหมดอายุ
+function poRtKey(){const st=poState()||{};return (+poCfg().cutAt||0)+':'+(st.deliverDate||'')}
+function poRt(){const c=poCfg(),k=poRtKey();if(c.rt&&c.rtKey===k)return c.rt;const rt=Math.random().toString(36).slice(2,8);S.po={...c,rt,rtKey:k};write('config/po',r=>r.update({rt,rtKey:k}));return rt}
+function sheetPoQr(){const c=poCfg(),st=poState()||{},url=poUrl()+'?r='+poRt();const card=`<div class="pq"><small style="font-weight:600">${esc(c.shopName)}</small>${qrSvg(url)}<b>สั่งล่วงหน้า</b><small>${st.deliverDate?'รอบส่ง '+esc(poDate(st.deliverDate))+' · ':''}${c.cutoff?'ปิดรับ '+esc(c.cutoff)+' น. ':''}${c.window?'· ส่ง '+esc(c.window):''}</small><small class="pqrt">QR เฉพาะรอบนี้ · ปิดรับแล้วใช้สั่งไม่ได้</small></div>`;
   $('#printArea').className='qrs one';$('#printArea').innerHTML=card;
-  $('#panel').innerHTML=head('ลิงก์ / QR ร้านพรีออเดอร์','ใช้ได้ตลอด ไม่ต้องเปลี่ยนทุกวัน')+`<div class="sh-body"><div class="qrbig">${card}</div>
-    <div class="field"><label for="poLink">ลิงก์สั่งล่วงหน้า (ส่งในไลน์กลุ่มลูกค้าได้เลย)</label><input id="poLink" readonly value="${esc(url)}"></div>
-    <p class="help" style="margin:0">ลูกค้าเปิดลิงก์ได้ตลอด แต่จะกดสั่งได้เฉพาะตอนร้านเปิดรับและยังไม่เลยเวลาปิดรับ</p></div>
+  $('#panel').innerHTML=head('ลิงก์ / QR รอบนี้','QR ใหม่ทุกรอบ · หมดเวลา/ปิดรับแล้ว QR เก่าสั่งไม่ได้')+`<div class="sh-body"><div class="qrbig">${card}</div>
+    <div class="field"><label for="poLink">ลิงก์สั่งรอบนี้ (ส่งในไลน์กลุ่มลูกค้าได้เลย)</label><input id="poLink" readonly value="${esc(url)}"></div>
+    <p class="help" style="margin:0">ลิงก์/QR นี้ใช้สั่งได้เฉพาะรอบนี้ · พอหมดเวลาหรือกดปิดรับ/ปิดยอด ลูกค้าที่สแกน QR เก่าจะเห็นว่า "หมดอายุ" สั่งไม่ได้ (ยังเช็กสถานะออร์เดอร์ของตัวเองได้) · รอบใหม่กดปุ่มนี้อีกครั้งจะได้ QR ใหม่</p></div>
     <div class="sh-foot"><button class="btn" data-act="poCopy" type="button">คัดลอกลิงก์</button><button class="btn pri wide" data-act="poQrPrint" type="button">พิมพ์ QR</button></div>`}
 function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(poCfg())));
   $('#panel').innerHTML=head('ตั้งค่าร้านพรีออเดอร์','ร้านข้าวมันไก่ · สั่งวันนี้ ส่งวันถัดไป')+`<form class="sh-body" id="poForm" autocomplete="off">

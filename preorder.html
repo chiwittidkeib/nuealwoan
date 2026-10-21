@@ -338,6 +338,9 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 @keyframes spGlow{0%,100%{box-shadow:0 0 0 3px rgba(250,204,21,.2),0 8px 22px rgba(217,119,6,.22)}50%{box-shadow:0 0 0 5px rgba(250,204,21,.45),0 8px 28px rgba(217,119,6,.4)}}
 @keyframes spShine{from{background-position:150% 0}to{background-position:-100% 0}}
 @media (prefers-reduced-motion:reduce){.sphero::before,.sph .spstar,.item.sp,.spbadge{animation:none}}
+.qrexp{margin:12px 0;padding:22px 18px;border-radius:18px;text-align:center;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:2px dashed #fb923c;box-shadow:0 8px 24px rgba(234,88,12,.15)}
+.qrexp .qx-ic{font-size:44px;line-height:1;margin-bottom:6px;animation:qxs 1.6s ease-in-out infinite}.qrexp b{display:block;font-size:20px;color:#9a3412;margin-bottom:6px}.qrexp p{margin:0;color:#7c2d12;line-height:1.6}
+@keyframes qxs{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
 </style>
 </head>
 <body>
@@ -640,9 +643,17 @@ setInterval(()=>{const el=document.getElementById('poCdT');if(!el||!S.cfg||!S.cf
   const ms=cutAt(S.cfg.state)-Date.now();el.textContent=cdTxt(ms);
   const box=document.getElementById('poCd'),hu=ms>0&&ms<2*3600e3;if(box&&box.classList.contains('hurry')!==hu){box.classList.toggle('hurry',hu);box.querySelector('small').textContent=hu?'⚡ ใกล้ปิดรับแล้ว! รีบสั่งเลย':'⏰ ปิดรับออร์เดอร์ใน'}
   if(ms<=0&&ms>-1500)loadShop().then(()=>S.view==='menu'&&render())},1000);
+const QR_RT=(()=>{try{return new URLSearchParams(location.search).get('r')||''}catch(e){return ''}})();
+// เปิดจาก QR ประจำรอบ: หมดอายุเมื่อรอบเปลี่ยน หรือหมดเวลา/ปิดรับ
+function qrExpired(c,st){if(!QR_RT)return false;if(!st.open)return true;return !!c.rt&&c.rt!==QR_RT||c.rt===''}
 function render(){
   const v=$('#view'),f=$('#footIn'),c=S.cfg||{},st=c.state||{};let h='',ft='';
   const keep={};document.querySelectorAll('#view input,#view textarea').forEach(i=>{if(i.id)keep[i.id]=i.value});
+  if(S.view==='menu'&&!S.staff&&qrExpired(c,st)){const mine=myOrders();
+    h=`${poHero(st)}<div class="qrexp"><div class="qx-ic">⏰</div><b>QR / ลิงก์นี้หมดอายุแล้ว</b><p>${st.open?'นี่เป็น QR ของรอบก่อน ร้านเปิดรับรอบใหม่แล้ว กรุณาสแกน QR หรือกดลิงก์ล่าสุดจากร้าน':'รอบนี้ปิดรับออร์เดอร์แล้ว รอร้านส่ง QR / ลิงก์รอบใหม่นะคะ'}</p></div>
+    ${mine.length?`<button class="btn mybtn big" data-a="mine" type="button"><span>📋 ออร์เดอร์ของฉัน <b class="mycnt">${mine.length}</b></span><small>แตะเพื่อเช็กสถานะ / แนบสลิป / ใบเสร็จ</small></button>`:''}
+    <button class="btn pri" data-a="view" data-v="board" type="button">📋 เช็กสถานะออร์เดอร์ / โอนเงิน + แนบสลิป</button>${lineAddBox(c.line)}`;
+    v.innerHTML=h;f.innerHTML='';return}
   if(S.view==='menu'){
     const mine=myOrders();
     h=`${c.notice?`<div class="notice">${esc(c.notice)}</div>`:''}
