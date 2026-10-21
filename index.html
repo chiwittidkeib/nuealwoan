@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-114853">
+<meta name="app-version" content="2026.10.21-120641">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1159,6 +1159,9 @@ input.pkflash{animation:pkFl .9s ease-out}@keyframes pkFl{0%{box-shadow:0 0 0 0 
 .wdn{display:inline-block;margin-left:4px;padding:0 6px;border-radius:99px;background:rgba(255,255,255,.85);color:#0f766e;font-size:11px;font-weight:700}
 .wdmeter.stm{position:relative;overflow:visible}.wdmeter.stm>i{border-radius:9px}.stmk{position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:2px;background:#b45309;opacity:.75}
 .stmc{display:block;font-size:11.5px;opacity:.7;margin-top:3px}
+input.ovmax{border-color:#dc2626!important;background:#fef2f2!important;color:#b91c1c!important;font-weight:700;box-shadow:0 0 0 3px rgba(220,38,38,.15)}
+.ovw{display:block;color:#dc2626;font-weight:700;font-size:12.5px;margin-top:4px;animation:ovB 1.2s ease-in-out infinite}@keyframes ovB{50%{opacity:.55}}
+.stmc.ov{color:#dc2626;opacity:1;font-weight:700}
 </style>
 </head>
 <body>
@@ -1770,7 +1773,7 @@ function viewBack(){
     h+='<div class="stl">'+SL.map(s=>{const q=+s.qty||0,m=+s.min||0,mx=+s.max||0,full=mx>0?mx:m*3,pct=Math.min(100,full>0?q/full*100:100),mk=full>0&&m>0?Math.min(100,m/full*100):0,lw=isLow(s),val=q*(+s.unitCost||0);
       return `<div class="str click${lw?' low':''}${q<=0?' out':''}" data-act="stockEdit" data-id="${s.id}" data-sn="${esc(String(s.name||'').toLowerCase())}"${hid(s)}>${stAva(s)}<div class="wdm"><div class="wdt"><b>${esc(s.name)}</b>${trendTag(s)}${lw?`<span class="stp ${q<=0?'out':'low'}">${q<=0?'หมด':'ต้องเติม'}</span>`:''}</div>
        <div class="wds"><span class="wdchip">ทุน ${baht(s.unitCost||0)}/${esc(s.unit)}</span>${isPo()?`<span class="wdchip ${stCut(s)==='sale'?'sale':'use'}">${stCut(s)==='sale'?'ตัดตามยอดขาย':'เบิกใช้'}</span>`:''}${s.buyPer&&s.buyUnit?`<span class="wdchip">1 ${esc(s.buyUnit)} ≈ ${num(s.buyPer)} ${esc(s.unit)}</span>`:''}</div>
-       <div class="wdmeter stm${lw?' lw':''}" title="${mx>0?'แถบเต็ม = สต็อกเต็ม '+num(mx):'ยังไม่ได้ตั้งสต็อกเต็ม — แถบเต็มคิดจาก 3 เท่าของจุดสั่งซื้อ'}"><i style="width:${Math.max(3,pct)}%"></i>${mk?`<b class="stmk" style="left:${mk}%"></b>`:''}</div><small class="stmc">${mx>0?`${Math.round(q/mx*100)}% ของสต็อกเต็ม ${num(mx)}${q<mx?` · ซื้อเพิ่ม ${num(r2(mx-q))} ${esc(s.unit||'')} ให้เต็ม`:''}`:m>0?`จุดสั่งซื้อ ${num(m)} ${esc(s.unit||'')} · ตั้ง "สต็อกเต็ม" ได้ในหน้าแก้ไข`:''}</small></div><div class="stq"><b>${num(q)}</b><small>${esc(s.unit)}</small>${val>0?`<em>${baht(val)}</em>`:''}</div></div>`}).join('')+'</div>';
+       <div class="wdmeter stm${lw?' lw':''}" title="${mx>0?'แถบเต็ม = สต็อกเต็ม '+num(mx):'ยังไม่ได้ตั้งสต็อกเต็ม — แถบเต็มคิดจาก 3 เท่าของจุดสั่งซื้อ'}"><i style="width:${Math.max(3,pct)}%"></i>${mk?`<b class="stmk" style="left:${mk}%"></b>`:''}</div><small class="stmc${mx>0&&q>mx?' ov':''}">${mx>0&&q>mx?`⚠️ เกินสต็อกเต็ม ${num(r2(q-mx))} ${esc(s.unit||'')} (เต็ม ${num(mx)})`:mx>0?`${Math.round(q/mx*100)}% ของสต็อกเต็ม ${num(mx)}${q<mx?` · ซื้อเพิ่ม ${num(r2(mx-q))} ${esc(s.unit||'')} ให้เต็ม`:''}`:m>0?`จุดสั่งซื้อ ${num(m)} ${esc(s.unit||'')} · ตั้ง "สต็อกเต็ม" ได้ในหน้าแก้ไข`:''}</small></div><div class="stq"><b>${num(q)}</b><small>${esc(s.unit)}</small>${val>0?`<em>${baht(val)}</em>`:''}</div></div>`}).join('')+'</div>';
     return h;}
   if(t==='purch'){
     const sum=purchList().filter(p=>p.at>=sod()-29*DAY).reduce((s,p)=>s+(+p.amount||0),0);
@@ -2426,6 +2429,7 @@ function priceHistHtml(st){const H=priceHist(st);if(!H.length)return st&&st.id?`
    <div class="phs"><div><small>ถูกสุด</small><b class="dn">${baht(mn)}</b></div><div><small>แพงสุด</small><b class="up">${baht(mx)}</b></div><div><small>เฉลี่ย</small><b>${baht(avg)}</b></div><div><small>ทุนตอนนี้</small><b>${baht(+st.unitCost||0)}</b></div></div>
    ${svg}<div class="phw"><table class="pht"><thead><tr><th>วันที่</th><th class="r">จำนวน</th><th class="r">ราคา</th><th class="r">ทุน/${u}</th><th class="r">เทียบรอบก่อน</th></tr></thead><tbody>${rows}</tbody></table></div>
    <p class="help" style="margin:0">ต้นทุนต่อหน่วยคิดแบบ <b>เฉลี่ยถ่วงน้ำหนัก</b> — ของเก่าที่เหลือ + ของซื้อใหม่ เฉลี่ยรวมกันทุกครั้งที่กด 🛒 ซื้อเติม</p></div>`}
+function stOvChk(){const q=$('#sQty'),m=$('#sMax');if(!q||!m)return;const qv=nval('sQty'),mv=nval('sMax'),ov=mv>0&&qv>mv,f=q.closest('.field');q.classList.toggle('ovmax',ov);m.classList.toggle('ovmax',ov);if(!f)return;let w=f.querySelector('.ovw');if(ov){if(!w){w=document.createElement('small');w.className='ovw';f.appendChild(w)}w.textContent='⚠️ เกินสต็อกเต็ม '+num(r2(qv-mv))+' '+(val('sUnit')||'')+' (เต็ม '+num(mv)+')'}else if(w)w.remove()}
 function sheetStock(){const s0=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit:'กก.',qty:'',min:'',unitCost:''},s=S.sheet.draft?{...s0,...S.sheet.draft}:s0;
   if(!S.sheet.sphoto)S.sheet.sphoto={url:s.img||'',path:s.imgPath||'',file:null,removed:false};
   $('#panel').innerHTML=head(S.sheet.id?'แก้ไขวัตถุดิบ':'เพิ่มวัตถุดิบ')+
@@ -2452,8 +2456,8 @@ function sheetStock(){const s0=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit
     const pq=nval('sPkQ');let t=[];if(pp>0&&pn>0){const c=Math.round(pp/pn*10000)/10000;$('#sCost').value=String(c);t.push(`💡 ${baht(pp)} ÷ ${num(pn)} = <b>ทุน ${baht(c)} / ${esc(u)}</b>`)}
     if(pq>0&&pn>0){const q=Math.round(pq*pn*1000)/1000;$('#sQty').value=String(q);fmtIn($('#sQty'));t.push(`📦 ${num(pq)} ${esc(bu)} × ${num(pn)} = <b>คงเหลือ ${num(q)} ${esc(u)}</b>`)}
     if(pq>0&&pp>0)t.push(`💰 จ่ายไป ${baht(pq*pp)}`);r.innerHTML=t.join('<br>')+(t.length?'<br><small>✅ ใส่ช่อง คงเหลือ / ต้นทุนต่อหน่วย ให้อัตโนมัติแล้ว ไม่ต้องกรอกซ้ำ · อยากแก้เอง ให้ลบตัวเลขในกรอบแพ็กออก</small>':'');r.hidden=!t.length;
-    const lk=(id,on)=>{const e=$('#'+id);if(!e)return;const was=e.readOnly;e.readOnly=on;e.classList.toggle('pkauto',on);const f=e.closest('.field');if(f)f.classList.toggle('pkf',on);if(on&&!was){e.classList.remove('pkflash');void e.offsetWidth;e.classList.add('pkflash')}};lk('sQty',pq>0&&pn>0);lk('sCost',pp>0&&pn>0)};
-  ['sPkQ','sPkP','sPkN','sPkU','sUnit'].forEach(i=>{const e=$('#'+i);if(e){e.addEventListener('input',pk);e.addEventListener('change',pk)}});pk();
+    const lk=(id,on)=>{const e=$('#'+id);if(!e)return;const was=e.readOnly;e.readOnly=on;e.classList.toggle('pkauto',on);const f=e.closest('.field');if(f)f.classList.toggle('pkf',on);if(on&&!was){e.classList.remove('pkflash');void e.offsetWidth;e.classList.add('pkflash')}};lk('sQty',pq>0&&pn>0);lk('sCost',pp>0&&pn>0);stOvChk()};
+  ['sPkQ','sPkP','sPkN','sPkU','sUnit'].forEach(i=>{const e=$('#'+i);if(e){e.addEventListener('input',pk);e.addEventListener('change',pk)}});pk();['sQty','sMax'].forEach(i=>{const e=$('#'+i);if(e)e.addEventListener('input',stOvChk)});stOvChk();
   $('#sPhoto').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
     if(!/^image\//.test(f.type))return toast('เลือกไฟล์รูปภาพ','bad');
     const ph=S.sheet.sphoto;if(ph.preview)URL.revokeObjectURL(ph.preview);ph.file=f;ph.preview=URL.createObjectURL(f);ph.removed=false;S.sheet.dirty=true;renderSPhoto();});}
