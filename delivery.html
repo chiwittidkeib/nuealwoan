@@ -186,6 +186,22 @@ footer .in{max-width:900px;margin:0 auto;display:flex;gap:10px;align-items:cente
 @keyframes spGlow{0%,100%{box-shadow:0 0 0 3px rgba(250,204,21,.2),0 8px 22px rgba(217,119,6,.22)}50%{box-shadow:0 0 0 5px rgba(250,204,21,.45),0 8px 28px rgba(217,119,6,.4)}}
 @keyframes spShine{from{background-position:150% 0}to{background-position:-100% 0}}
 @media (prefers-reduced-motion:reduce){.sphero::before,.sph .spstar,.item.sp,.spbadge{animation:none}}
+
+/* เมนูพิเศษ: การ์ดแนวนอน กินที่น้อย */
+.sphero{padding:10px 10px 10px!important;margin:2px 0 12px!important}
+.sph{margin:0 0 8px!important;font-size:16px!important}.sph .spstar{width:24px!important;height:24px!important;font-size:13px}
+.sphero .grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr))!important;gap:8px}
+.sphero .item{flex-direction:row!important;align-items:stretch;min-height:0}
+.sphero .item .ph{flex:0 0 42%;max-width:180px;aspect-ratio:1/1;height:auto}
+.sphero .item .ph img{width:100%;height:100%;object-fit:cover}
+.sphero .item .tx{justify-content:center;padding:10px 12px!important;min-width:0}
+.sphero .item .tx b{font-size:17px;line-height:1.3;word-break:keep-all;overflow-wrap:anywhere}
+.sphero .item .tx p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0}
+.sphero .item .spbadge{top:6px;left:6px}
+@media (prefers-color-scheme:dark){.sph{color:#fbbf24!important}.sph small{color:#fcd34d!important}}
+body.dark .sph,[data-theme=dark] .sph{color:#fbbf24!important}
+.sph{color:#d97706!important}.sph small{color:#f59e0b!important}
+.sphero{width:fit-content;max-width:100%;min-width:min(100%,360px)}.sphero .grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),440px))!important}
 </style>
 </head>
 <body>

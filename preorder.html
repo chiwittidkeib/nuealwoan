@@ -341,6 +341,22 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 .qrexp{margin:12px 0;padding:22px 18px;border-radius:18px;text-align:center;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:2px dashed #fb923c;box-shadow:0 8px 24px rgba(234,88,12,.15)}
 .qrexp .qx-ic{font-size:44px;line-height:1;margin-bottom:6px;animation:qxs 1.6s ease-in-out infinite}.qrexp b{display:block;font-size:20px;color:#9a3412;margin-bottom:6px}.qrexp p{margin:0;color:#7c2d12;line-height:1.6}
 @keyframes qxs{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+
+/* เมนูพิเศษ: การ์ดแนวนอน กินที่น้อย */
+.sphero{padding:10px 10px 10px!important;margin:2px 0 12px!important}
+.sph{margin:0 0 8px!important;font-size:16px!important}.sph .spstar{width:24px!important;height:24px!important;font-size:13px}
+.sphero .grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr))!important;gap:8px}
+.sphero .item{flex-direction:row!important;align-items:stretch;min-height:0}
+.sphero .item .ph{flex:0 0 42%;max-width:180px;aspect-ratio:1/1;height:auto}
+.sphero .item .ph img{width:100%;height:100%;object-fit:cover}
+.sphero .item .tx{justify-content:center;padding:10px 12px!important;min-width:0}
+.sphero .item .tx b{font-size:17px;line-height:1.3;word-break:keep-all;overflow-wrap:anywhere}
+.sphero .item .tx p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0}
+.sphero .item .spbadge{top:6px;left:6px}
+@media (prefers-color-scheme:dark){.sph{color:#fbbf24!important}.sph small{color:#fcd34d!important}}
+body.dark .sph,[data-theme=dark] .sph{color:#fbbf24!important}
+.sph{color:#d97706!important}.sph small{color:#f59e0b!important}
+.sphero{width:fit-content;max-width:100%;min-width:min(100%,360px)}.sphero .grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),440px))!important}
 </style>
 </head>
 <body>
@@ -645,12 +661,13 @@ setInterval(()=>{const el=document.getElementById('poCdT');if(!el||!S.cfg||!S.cf
   if(ms<=0&&ms>-1500)loadShop().then(()=>S.view==='menu'&&render())},1000);
 const QR_RT=(()=>{try{return new URLSearchParams(location.search).get('r')||''}catch(e){return ''}})();
 // เปิดจาก QR ประจำรอบ: หมดอายุเมื่อรอบเปลี่ยน หรือหมดเวลา/ปิดรับ
-function qrExpired(c,st){if(!QR_RT)return false;if(!st.open)return true;return !!c.rt&&c.rt!==QR_RT||c.rt===''}
+const QR_PASS=(()=>{try{const p=new URLSearchParams(location.search);return p.has('o')||p.has('t')||p.has('staff')}catch(e){return false}})();
+function qrExpired(c,st){if(QR_PASS)return false;if(!c.rt)return false;if(!QR_RT)return true;if(!st.open)return true;return c.rt!==QR_RT}
 function render(){
   const v=$('#view'),f=$('#footIn'),c=S.cfg||{},st=c.state||{};let h='',ft='';
   const keep={};document.querySelectorAll('#view input,#view textarea').forEach(i=>{if(i.id)keep[i.id]=i.value});
   if(S.view==='menu'&&!S.staff&&qrExpired(c,st)){const mine=myOrders();
-    h=`${poHero(st)}<div class="qrexp"><div class="qx-ic">⏰</div><b>QR / ลิงก์นี้หมดอายุแล้ว</b><p>${st.open?'นี่เป็น QR ของรอบก่อน ร้านเปิดรับรอบใหม่แล้ว กรุณาสแกน QR หรือกดลิงก์ล่าสุดจากร้าน':'รอบนี้ปิดรับออร์เดอร์แล้ว รอร้านส่ง QR / ลิงก์รอบใหม่นะคะ'}</p></div>
+    h=`${poHero(st)}<div class="qrexp"><div class="qx-ic">⏰</div><b>${QR_RT?'QR / ลิงก์นี้หมดอายุแล้ว':'กรุณาสแกน QR รอบล่าสุด'}</b><p>${!QR_RT?'ลิงก์นี้ใช้สั่งไม่ได้แล้ว กรุณาสแกน QR หรือกดลิงก์รอบล่าสุดที่ร้านส่งให้':st.open?'นี่เป็น QR ของรอบก่อน ร้านเปิดรับรอบใหม่แล้ว กรุณาสแกน QR หรือกดลิงก์ล่าสุดจากร้าน':'รอบนี้ปิดรับออร์เดอร์แล้ว รอร้านส่ง QR / ลิงก์รอบใหม่นะคะ'}</p></div>
     ${mine.length?`<button class="btn mybtn big" data-a="mine" type="button"><span>📋 ออร์เดอร์ของฉัน <b class="mycnt">${mine.length}</b></span><small>แตะเพื่อเช็กสถานะ / แนบสลิป / ใบเสร็จ</small></button>`:''}
     <button class="btn pri" data-a="view" data-v="board" type="button">📋 เช็กสถานะออร์เดอร์ / โอนเงิน + แนบสลิป</button>${lineAddBox(c.line)}`;
     v.innerHTML=h;f.innerHTML='';return}

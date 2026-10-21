@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-0826">
+<meta name="app-version" content="2026.10.21-0837">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -3762,8 +3762,8 @@ Object.assign(ACT,{
 const poUrl=()=>{const u=new URL('preorder.html',location.href);return u.origin+u.pathname};
 // QR / ลิงก์ประจำรอบ: เปลี่ยนใหม่ทุกรอบ (ปิดยอด หรือเปลี่ยนวันส่ง) · รอบเก่าหมดอายุ
 function poRtKey(){const st=poState()||{};return (+poCfg().cutAt||0)+':'+(st.deliverDate||'')}
-function poRt(){const c=poCfg(),k=poRtKey();if(c.rt&&c.rtKey===k)return c.rt;const rt=Math.random().toString(36).slice(2,8);S.po={...c,rt,rtKey:k};write('config/po',r=>r.update({rt,rtKey:k}));return rt}
-function sheetPoQr(){const c=poCfg(),st=poState()||{},url=poUrl()+'?r='+poRt();const card=`<div class="pq"><small style="font-weight:600">${esc(c.shopName)}</small>${qrSvg(url)}<b>สั่งล่วงหน้า</b><small>${st.deliverDate?'รอบส่ง '+esc(poDate(st.deliverDate))+' · ':''}${c.cutoff?'ปิดรับ '+esc(c.cutoff)+' น. ':''}${c.window?'· ส่ง '+esc(c.window):''}</small><small class="pqrt">QR เฉพาะรอบนี้ · ปิดรับแล้วใช้สั่งไม่ได้</small></div>`;
+async function poRtFetch(){try{const {data}=await SB.rpc('po_public');S.poRt=data&&data.rt||'';S.poRtK=poRtKey()}catch(e){S.poRt=''}return S.poRt}
+function sheetPoQr(){if(S.poRtK!==poRtKey()||!S.poRt){poRtFetch().then(()=>{if(S.sheet&&S.sheet.type==='poQr')sheetPoQr()})}const c=poCfg(),st=poState()||{},url=poUrl()+(S.poRt?'?r='+S.poRt:'');const card=`<div class="pq"><small style="font-weight:600">${esc(c.shopName)}</small>${qrSvg(url)}<b>สั่งล่วงหน้า</b><small>${st.deliverDate?'รอบส่ง '+esc(poDate(st.deliverDate))+' · ':''}${c.cutoff?'ปิดรับ '+esc(c.cutoff)+' น. ':''}${c.window?'· ส่ง '+esc(c.window):''}</small><small class="pqrt">QR เฉพาะรอบนี้ · ปิดรับแล้วใช้สั่งไม่ได้</small></div>`;
   $('#printArea').className='qrs one';$('#printArea').innerHTML=card;
   $('#panel').innerHTML=head('ลิงก์ / QR รอบนี้','QR ใหม่ทุกรอบ · หมดเวลา/ปิดรับแล้ว QR เก่าสั่งไม่ได้')+`<div class="sh-body"><div class="qrbig">${card}</div>
     <div class="field"><label for="poLink">ลิงก์สั่งรอบนี้ (ส่งในไลน์กลุ่มลูกค้าได้เลย)</label><input id="poLink" readonly value="${esc(url)}"></div>
