@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-183301">
+<meta name="app-version" content="2026.10.21-192932">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1233,6 +1233,7 @@ input.ovmax{border-color:#dc2626!important;background:#fef2f2!important;color:#b
 .wdg-pack{--wgc:linear-gradient(135deg,#f59e0b,#d97706);--wgs:rgba(217,119,6,.3);--wgb:rgba(254,243,199,.55)}
 .wdg-season{--wgc:linear-gradient(135deg,#a855f7,#7c3aed);--wgs:rgba(124,58,237,.3);--wgb:rgba(243,232,255,.55)}
 .wdchip.warnc{background:#fef3c7;color:#92400e}
+@media (max-width:760px){*,*::before,*::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}}
 </style>
 </head>
 <body>
@@ -1550,25 +1551,25 @@ async function startData(){
   S.db=db;S.state='ready';render();
   pushBoot();loadQrDay();setInterval(()=>{const d=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);if(!S.qrDay||S.qrDay.day!==d)loadQrDay()},10*60000);
   if(S.role!=='owner'){gateCheck();setInterval(gateCheck,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)gateCheck()})}
-  db.doc('config/permissions').onSnapshot(s=>{S.perms=s.exists?(s.data().roles||null):null;render();refreshSheet()},onErr);
-  db.doc('config/settings').onSnapshot(s=>{S.settings={...DEFAULTS,...(s.exists?s.data():{})};render();refreshSheet()},onErr);
-  db.collection('menu').onSnapshot(s=>{const all=s.docs.map(d=>({id:d.id,...d.data()}));S.nMenu=all.filter(m=>m.shop!=='po');S.poMenu=all.filter(m=>m.shop==='po');sortMenu(true);render();refreshSheet('menu')},onErr);
+  db.doc('config/permissions').onSnapshot(s=>{S.perms=s.exists?(s.data().roles||null):null;renderSoon();refreshSheet()},onErr);
+  db.doc('config/settings').onSnapshot(s=>{S.settings={...DEFAULTS,...(s.exists?s.data():{})};renderSoon();refreshSheet()},onErr);
+  db.collection('menu').onSnapshot(s=>{const all=s.docs.map(d=>({id:d.id,...d.data()}));S.nMenu=all.filter(m=>m.shop!=='po');S.poMenu=all.filter(m=>m.shop==='po');sortMenu(true);renderSoon();refreshSheet('menu')},onErr);
   poBoot(db);
-  db.collection('stock').onSnapshot(s=>{S.stock=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.name).localeCompare(String(b.name),'th'));render()},onErr);
-  db.collection('orders').where('status','==','open').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]={id:d.id,...d.data()});S.open=o;render();refreshSheet('order')},onErr);
-  db.collection('orders').where('status','==','paid').where('paidAt','>=',sod()).onSnapshot(s=>{S.today=s.docs.map(d=>({id:d.id,...d.data()}));render()},onErr);
+  db.collection('stock').onSnapshot(s=>{S.stock=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.name).localeCompare(String(b.name),'th'));renderSoon()},onErr);
+  db.collection('orders').where('status','==','open').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]={id:d.id,...d.data()});S.open=o;renderSoon();refreshSheet('order')},onErr);
+  db.collection('orders').where('status','==','paid').where('paidAt','>=',sod()).onSnapshot(s=>{S.today=s.docs.map(d=>({id:d.id,...d.data()}));renderSoon()},onErr);
   db.collection('voice').onSnapshot(s=>{const v={};s.docs.forEach(d=>{const x=d.data();if(x&&x.wav)v[d.id]=x.wav});S.voice=v;if(S.sheet&&S.sheet.type==='voiceRec')sheetVoiceRec()},onErr);
   db.collection('calls').onSnapshot(s=>{const prev=new Set(S.calls.map(c=>c.id+':'+c.at));S.calls=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.at-b.at);
     if(S.calls.some(c=>!prev.has(c.id+':'+c.at)&&Date.now()-c.at<120000))callAlert();renderCalls();render()},onErr);
   db.collection('coupons').onSnapshot(s=>{S.coupons=s.docs.map(d=>({id:d.id,...d.data()}));if(S.sheet&&S.sheet.type==='coupons')sheetCoupons();if(S.sheet&&S.sheet.type==='pay')renderCpn()},onErr);
   db.collection('coupon_stats').onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());S.cpnStats=o;if(S.sheet&&S.sheet.type==='coupons')sheetCoupons()},onErr);
-  db.collection('rewards').onSnapshot(s=>{S.rewards=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(+a.pts||0)-(+b.pts||0));if(S.tab==='back')render();if(S.sheet&&S.sheet.type==='pay')renderMem()},onErr);
+  db.collection('rewards').onSnapshot(s=>{S.rewards=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(+a.pts||0)-(+b.pts||0));if(S.tab==='back')renderSoon();if(S.sheet&&S.sheet.type==='pay')renderMem()},onErr);
   setTimeout(expireRun,6000);
-  db.collection('members').onSnapshot(s=>{S.members=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.lastAt||0)-(a.lastAt||0));if(S.tab==='back')render()},onErr);
+  db.collection('members').onSnapshot(s=>{S.members=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.lastAt||0)-(a.lastAt||0));if(S.tab==='back')renderSoon()},onErr);
   const since=sod()-95*DAY;
   if(S.role==='owner')db.collection('notices').where('at','>=',sod()-7*DAY).onSnapshot(s=>{const prev=new Set((S.notices||[]).map(n=>n.id));const first=!S.notices;S.notices=s.docs.map(d=>({id:d.id,...d.data()}));
     if(!first)S.notices.filter(n=>!prev.has(n.id)&&!n.seen).forEach(n=>toast(n.kind==='gmap'?(n.level==='max'?'⛔ Google Maps ถึงเพดานแล้ว':'⚠️ Google Maps ใกล้ครบโควตาฟรี')+' · '+(n.label||''):'🔑 ไรเดอร์ '+(n.name||'')+' รีเซตรหัสผ่านเอง','bad'));if(S.tab==='tables')render()},onErr);
-  db.collection('riders').onSnapshot(s=>{S.riders=s.docs.map(d=>({id:d.id,...d.data()}));if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet)render();if(S.sheet&&S.sheet.type==='riders')sheetRiders()},onErr);
+  db.collection('riders').onSnapshot(s=>{S.riders=s.docs.map(d=>({id:d.id,...d.data()}));if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet)renderSoon();if(S.sheet&&S.sheet.type==='riders')sheetRiders()},onErr);
   db.collection('deliveries').where('at','>=',sod()-DAY).onSnapshot(s=>{const prev=new Map((S.dlv||[]).map(d=>[d.id,d.status])),first=!S.dlvInit;S.dlvInit=true;S.dlv=s.docs.map(d=>({id:d.id,...d.data()}));
     if(!first)S.dlv.filter(d=>d.status==='done'&&prev.has(d.id)&&prev.get(d.id)!=='done').forEach(dlDoneAlert);if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet)render();rdTick()},onErr);
   if(canDl())db.collection('dl_req').where('at','>=',Date.now()-36*3600e3).onSnapshot(s=>{const prev=new Map((S.dlReq||[]).map(q=>[q.id,q.status])),first=!S.dlReq;
@@ -1576,12 +1577,12 @@ async function startData(){
     if(!first&&S.dlReq.some(q=>['new','slip'].includes(q.status)&&prev.get(q.id)!==q.status))dlAlert();
     if(!first)S.dlReq.filter(q=>q.status==='cancelled'&&prev.has(q.id)&&prev.get(q.id)!=='cancelled').forEach(q=>toast('ลูกค้ายกเลิกออร์เดอร์ '+dlNo(q),'bad'));
     renderCalls();if(S.tab==='tables'&&S.floor==='deliv'&&!S.sheet)render();if(S.sheet&&S.sheet.type==='dlReq')sheetDlReq()},onErr);
-  db.collection('consign_log').where('at','>=',sod()-90*DAY).onSnapshot(s=>{S.consignLog=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back')render()},onErr);
-  db.collection('purchases').where('at','>=',since).onSnapshot(s=>{S.purch=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
-  db.collection('lists').onSnapshot(s=>{const L={};s.docs.forEach(d=>L[d.id]=d.data());S.lists=L;refreshSheet();render()},onErr);
-  db.collection('incomes').where('at','>=',since).onSnapshot(s=>{S.inc=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back'||S.tab==='report')render()},onErr);
-  db.collection('stockwd').where('at','>=',since).onSnapshot(s=>{S.wdN=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back'||S.tab==='report')render()},()=>{});
-  db.collection('expenses').where('at','>=',since).onSnapshot(s=>{S.exp=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);render()},onErr);
+  db.collection('consign_log').where('at','>=',sod()-90*DAY).onSnapshot(s=>{S.consignLog=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back')renderSoon()},onErr);
+  db.collection('purchases').where('at','>=',since).onSnapshot(s=>{S.purch=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);renderSoon()},onErr);
+  db.collection('lists').onSnapshot(s=>{const L={};s.docs.forEach(d=>L[d.id]=d.data());S.lists=L;refreshSheet();renderSoon()},onErr);
+  db.collection('incomes').where('at','>=',since).onSnapshot(s=>{S.inc=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back'||S.tab==='report')renderSoon()},onErr);
+  db.collection('stockwd').where('at','>=',since).onSnapshot(s=>{S.wdN=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);if(S.tab==='back'||S.tab==='report')renderSoon()},()=>{});
+  db.collection('expenses').where('at','>=',since).onSnapshot(s=>{S.exp=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);renderSoon()},onErr);
 }
 const CALL_DEF=[{id:'staff',label:'เรียกพนักงาน'},{id:'pay',label:'ขอชำระเงิน / เช็คบิล',pay:true},{id:'water',label:'ขอน้ำ / น้ำแข็ง'}];
 const callOpts=()=>{const L=S.settings.callOptions;return Array.isArray(L)&&L.length?L.filter(o=>o&&o.id&&o.label):CALL_DEF};
@@ -1686,7 +1687,12 @@ function sortMenu(both){if(both){const k=S.shop;S.shop=k==='po'?'noodle':'po';so
 if(vv)vv.addEventListener('resize',chk);addEventListener('orientationchange',()=>{base=0;setTimeout(chk,400)});document.addEventListener('focusout',()=>setTimeout(chk,150));document.addEventListener('focusin',()=>setTimeout(chk,350))})();
 function setTopH(){const t=document.querySelector('header.top');if(t)document.documentElement.style.setProperty('--toph',t.offsetHeight+'px')}
 try{new ResizeObserver(setTopH).observe(document.querySelector('header.top')||document.body)}catch(e){window.addEventListener('resize',setTopH)}
-function render(){
+// รวมการวาดใหม่จากข้อมูลเรียลไทม์ที่เข้ามาติดๆ กัน ให้เหลือครั้งเดียวต่อเฟรม (ลดอาการค้างบนมือถือ)
+let __rsT=0,__rsF=0;function renderSoon(){if(__rsF)return;__rsF=1;clearTimeout(__rsT);__rsT=setTimeout(()=>requestAnimationFrame(()=>{__rsF=0;render()}),60)}
+// จำผลคำนวณหนักไว้ใช้ซ้ำภายในการทำงานรอบเดียวกัน (ล้างเองทันทีที่จบรอบ)
+let MEMO=null;function memo(k,f){if(!MEMO){MEMO=new Map();setTimeout(()=>{MEMO=null},0)}if(MEMO.has(k))return MEMO.get(k);const v=f();MEMO.set(k,v);return v}
+const LOWFX=(()=>{try{return matchMedia('(max-width:760px)').matches||(navigator.hardwareConcurrency||8)<=4||matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}})();
+function render(){MEMO=null;
   document.body.classList.toggle('auth',S.state!=='ready');
   document.body.classList.toggle('app',S.state==='ready');
   $('#shopName').textContent=S.state!=='ready'?'เนื้อล้วนๆ':isPo()?(poCfg().shopName||'ข้าวมันไก่'):'เนื้อล้วนๆ';{const bl=$('#brandLogo'),src=isPo()&&S.state==='ready'?'images/logo-po.png':'images/logo-nl.png?v=20261016b';if(bl.getAttribute('src')!==src)bl.setAttribute('src',src);bl.hidden=S.state!=='ready';}
@@ -1954,7 +1960,7 @@ const NEG_RE=/^\s*[−-]\s?(฿|\d)/;
 function negMark(root){const R=root&&root.querySelectorAll?root:document.body;if(!R)return;const w=document.createTreeWalker(R,NodeFilter.SHOW_TEXT,{acceptNode:n=>NEG_RE.test(n.nodeValue)&&/\d/.test(n.nodeValue)?1:2});const L=[];let n;while(n=w.nextNode())L.push(n);
   L.forEach(t=>{const p=t.parentElement;if(!p||p.closest('input,textarea,select,option,svg,script,style,.noneg')||p.classList.contains('neg'))return;if(p.childNodes.length===1||p.matches('b,strong,span,small,em,td,i')){p.classList.add('neg')}else{const s=document.createElement('span');s.className='neg';t.replaceWith(s);s.appendChild(t)}})}
 let __negT=0;
-if(!window.__sx){window.__sx=1;new MutationObserver(()=>{sxDecorate();clearTimeout(__negT);__negT=setTimeout(()=>negMark(),30)}).observe(document.documentElement,{childList:true,subtree:true,characterData:true})}
+if(!window.__sx){window.__sx=1;new MutationObserver(()=>{sxDecorate();clearTimeout(__negT);__negT=setTimeout(()=>{['#view','#panel','#sheet'].forEach(q=>{const r=document.querySelector(q);if(r)negMark(r)})},120)}).observe(document.body,{childList:true,subtree:true})}
 function renderSheet(){const s=S.sheet;if(!s)return;setTimeout(fmtNums,0);
   {const pn=$('#panel');if(pn&&pn.parentElement)pn.parentElement.classList.toggle('findmode',s.type==='poFind')}
   ({wdHist:sheetWdHist,poWd:sheetPoWd,poCost:sheetPoCost,poFind:sheetPoFind,poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
@@ -3126,7 +3132,7 @@ function poPayPill(o){if(o.payStatus==='paid')return '<span class="pill ok">จ�
   return '<span class="pill bad">ยังไม่โอน</span>'}
 let poSeen=null;
 function poBoot(db){
-  db.doc('config/po').onSnapshot(s=>{S.po=s.exists?s.data():null;poApplyCut();if(isPo()){sortMenu();render()}if(S.sheet&&S.sheet.type==='poSet'&&!S.sheet.dirty)sheetPoSet()},onErr);
+  db.doc('config/po').onSnapshot(s=>{S.po=s.exists?s.data():null;poApplyCut();if(isPo()){sortMenu();renderSoon()}if(S.sheet&&S.sheet.type==='poSet'&&!S.sheet.dirty)sheetPoSet()},onErr);
   db.collection('po_orders').where('at','>=',sod()-40*DAY).onSnapshot(s=>{
     S.poAll=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.at-b.at);poApplyCut();
     const ids=new Set(S.poOrders.map(o=>o.id));
@@ -3652,7 +3658,7 @@ function prExp(t0,t1){if(!can('expenses'))return '';const P=x=>x.shop==='po'&&x.
 function viewPoReport(){const N=prRange(),lastDel=(()=>{const t=bkkDay(0),L=(S.poAll||S.poOrders||[]).filter(o=>poLive(o)&&poClosed(o)&&o.deliverDate>t&&o.deliverDate<=bkkDay(7)).map(o=>o.deliverDate).sort();return L.length?L[L.length-1]:t})();
   let from,to;if(N==='c'){to=S.prTo||prLS('nl_prt')||lastDel;from=S.prFrom||prLS('nl_prf')||dAdd(to,-6);if(from>to)[from,to]=[to,from]}else if(N===1){to=from=bkkDay(-1)}else{to=lastDel;from=dAdd(to,-(N-1))}
   const len=dDiff(from,to)+1,CP=cpPlan(),CC=CP?cpCalc(CP):null,A=prAgg(from,to,CC),B=prAgg(dAdd(from,-len),dAdd(from,-1),CC),T=A.T,pf=T.s-T.c;PRD=A.D;
-  const ak=from+to,anim=ak!==PRAK;PRAK=ak;PRANIM=anim;if(anim&&!matchMedia('(prefers-reduced-motion: reduce)').matches)setTimeout(prCount,30);
+  const ak=from+to,anim=ak!==PRAK&&!LOWFX;PRAK=ak;PRANIM=anim;if(anim&&!matchMedia('(prefers-reduced-motion: reduce)').matches)setTimeout(prCount,30);
   const cmp=B.T.o>=Math.max(3,A.T.o*.3),t0=Date.parse(from+'T00:00:00+07:00'),t1=Date.parse(to+'T00:00:00+07:00')+DAY;
   const sp=k=>prSpark(A.D.map(k),k===spS?PRC.s:k===spC?PRC.c:PRC.p),spS=r=>r.s,spC=r=>r.c,spP=r=>r.s-r.c;
   const hasFD=A.I.some(x=>x.dk)&&A.I.some(x=>!x.dk),gg=hasFD?prGrp():'all',gI=A.I.filter(x=>gg==='all'||((gg==='d')===!!x.dk)),gA=anim||PRGA;PRGA=false;PRANIM=gA;
@@ -3715,7 +3721,8 @@ function cpDefault(){const M=S.poMenu||[],m=M.find(x=>/ไก่ต้ม/.test(
 const cpPlan=()=>{const c=poCfg().costPlan;return c&&Array.isArray(c.prod)&&c.prod.length?c:null};
 const cpSt=x=>x&&x.sid?(S.stock||[]).find(t=>t.id===x.sid):null;
 const cpP=x=>{const t=cpSt(x);return t&&+t.unitCost>0?r2((+x.q||0)*(+t.unitCost)):(+x.p||0)};
-function cpCalc(cp){const I=(cp.ing||[]).filter(x=>!(cpSt(x)&&stCut(cpSt(x))==='sale')).map(x=>({...x,p:cpP(x)})),P=cp.prod||[];
+const __cpcW=new WeakMap();function cpCalc(cp){if(cp&&typeof cp==='object'){const k=MEMO?MEMO:null;if(k){let m=__cpcW.get(cp);if(m&&m.k===k)return m.v;const v=cpCalc__(cp);__cpcW.set(cp,{k,v});return v}}return cpCalc__(cp)}
+function cpCalc__(cp){const I=(cp.ing||[]).filter(x=>!(cpSt(x)&&stCut(cpSt(x))==='sale')).map(x=>({...x,p:cpP(x)})),P=cp.prod||[];
   const share=I.filter(x=>x.m!=='each').reduce((a,x)=>a+(+x.p||0),0),each=I.filter(x=>x.m==='each').reduce((a,x)=>a+((+x.q||0)>0?(+x.p||0)/(+x.q)*(+x.use||1):0),0);
   const W=P.reduce((a,r)=>a+(+r.qty||0)*(+r.f||100)/100,0),box=P.reduce((a,r)=>a+(+r.qty||0),0);
   const rows=P.map(r=>{const u=cpUnit(r.menuId).c,c=(W>0?share/W*(+r.f||100)/100:0)+each+u,pr=+r.price||0;return {...r,unit:u,cost:c,profit:pr-c,pct:pr>0?(pr-c)/pr*100:0}});
@@ -3890,16 +3897,18 @@ const stCut=t=>t&&(t.cut==='sale'||t.cut==='use')?t.cut:(t&&t.shop!=='po'?'sale'
 // ต้นทุนของนับชิ้นต่อ 1 ชิ้นของเมนู (จากสูตรเมนู เฉพาะของที่ตัดตามยอดขาย)
 function cpUnit(menuId){const m=(S.poMenu||[]).find(x=>x.id===menuId);const L=[];let c=0;(m&&m.recipe||[]).forEach(g=>{const t=(S.stock||[]).find(x=>x.id===g.stockId);if(!t||stCut(t)!=='sale')return;const v=(+g.qty||0)*(+t.unitCost||0);c+=v;L.push({n:t.name,q:+g.qty||0,u:t.unit||'',v,uc:+t.unitCost||0,sid:t.id})});return {c,L}}
 // รอบ: ปัจจุบัน / ที่ปิดยอดล่าสุด
-function poRounds(){const c=poCfg(),cut=+c.cutAt||0,lc=c.lastClose||{},R=[{k:'cur',start:cut,end:Infinity,label:'รอบนี้ (กำลังขาย)'}];
+function poRounds(...a){return memo('poRounds',()=>poRounds__(...a))}
+function poRounds__(){const c=poCfg(),cut=+c.cutAt||0,lc=c.lastClose||{},R=[{k:'cur',start:cut,end:Infinity,label:'รอบนี้ (กำลังขาย)'}];
   if(lc.from!=null&&+lc.at){let st=+lc.from,lt=+lc.at,ws=null;const A=(S.poAll||[]).filter(poLive);
     // กดปิดยอดซ้ำ (รอบล่าสุดว่าง) → ใช้ออร์เดอร์ชุดล่าสุดก่อนปิด (วันส่งเดียวกัน) แทน
     if(!A.some(o=>+o.at>st&&+o.at<=+lc.at)){const P=A.filter(o=>+o.at<=+lc.at).sort((x,y)=>x.at-y.at);if(P.length){const dd=P[P.length-1].deliverDate,G=P.filter(o=>o.deliverDate===dd),mn=Math.min(...G.map(o=>+o.at)),mx=Math.max(...G.map(o=>+o.at));
       const cp=poCfg().costPlan,C=[...((cp&&cp.wd)||[]).map(w=>+w.r).filter(x=>x>0),+lc.from].filter(x=>x<mn);ws=C.length?Math.max(...C):0;st=mn-1;lt=Math.max(...G.map(o=>+o.stockCutAt||0))||+lc.from||mx}}
     R.push({k:'last',start:st,end:+lc.at,cut:lt,ws:ws??st,label:'รอบที่ปิดยอดแล้ว · '+(()=>{const d=new Date(lt+7*3600e3);return d.getUTCDate()+'/'+(d.getUTCMonth()+1)+' '+hm(lt)})()})}return R}
-const roundOrders=r=>r.k==='cur'?(S.poOrders||[]).filter(poLive):(S.poAll||[]).filter(o=>poLive(o)&&+o.at>r.start&&+o.at<=r.end);
+const roundOrders=r=>memo('ro:'+r.k+':'+r.start+':'+r.end,()=>roundOrders__(r));const roundOrders__=r=>r.k==='cur'?(S.poOrders||[]).filter(poLive):(S.poAll||[]).filter(o=>poLive(o)&&+o.at>r.start&&+o.at<=r.end);
 const wdOf=(r,g='food')=>{const cp=poCfg().costPlan;return ((cp&&cp.wd)||[]).filter(w=>(w.g||'food')===g&&(w.r!=null?(r.k==='last'?+w.r>=(r.ws??r.start)&&+w.r<(+poCfg().cutAt||Infinity):+w.r===r.start):(+w.at>r.start&&+w.at<=(r.end||Infinity))))};
 // ต้นทุนจริงของรอบ = ของเบิกใช้ ÷ กล่องที่ขายได้ (ถ่วงปริมาณ %) + ของนับชิ้นตามสูตร
-function cpActual(r){const cp=cpPlan()||cpDefault(),P=cp.prod||[],L=roundOrders(r),W0=wdOf(r),sold=P.map(()=>0);let rev=0,oc=0,other=0;
+function cpActual(...a){return memo('cpA:'+(a[0]&&a[0].k)+':'+(a[0]&&a[0].start)+':'+(a[0]&&a[0].end),()=>cpActual__(...a))}
+function cpActual__(r){const cp=cpPlan()||cpDefault(),P=cp.prod||[],L=roundOrders(r),W0=wdOf(r),sold=P.map(()=>0);let rev=0,oc=0,other=0;
   const WD=wdOf(r,'drink'),AD={};WD.forEach(w=>(w.items||[]).forEach(x=>{const a=AD[x.sid]=AD[x.sid]||{n:x.n,u:x.u,q:0,c:0};a.q+=+x.q||0;a.c+=(+x.q||0)*(+x.uc||0)}));
   const bulkD=Object.values(AD),BD=bulkD.reduce((a,x)=>a+x.c,0);let dq=0,du=0,dl=0;
   L.forEach(o=>{rev+=+o.total||0;(o.items||[]).forEach(l=>{const k=cpMatch(cp,l),q=+l.qty||0;if(k>=0)sold[k]+=q;else if(BD>0&&poIsDrink(l)){dq+=q;du+=cpUnit(l.menuId).c*q}else{if(poIsDrink(l)){dq+=q;dl+=(+l.cost||0)*q}oc+=(+l.cost||0)*q;other+=q}})});
@@ -4006,7 +4015,7 @@ function wdUpd(){if(!S.sheet||S.sheet.type!=='poWd')return;wdRead();const ST=sto
     const row=document.querySelector(`[data-wr="${i}"]`);if(row){row.classList.toggle('on',q>0);row.classList.toggle('over',q>left);const m=row.querySelector('.wdmeter i');if(m)m.style.width=(left>0?Math.min(100,q/left*100):(q>0?100:0))+'%'}});
   {const GS={},GN={};S.sheet.rows.forEach(r=>{const t=ST.find(x=>x.id===r.sid);if(!t)return;const k=stTab(t),q=+r.q||0;GS[k]=(GS[k]||0)+q*(+t.unitCost||0);if(q>0)GN[k]=(GN[k]||0)+1});document.querySelectorAll('[data-wgs]').forEach(e=>e.textContent=baht(GS[e.dataset.wgs]||0));document.querySelectorAll('[data-wgn]').forEach(e=>e.textContent=GN[e.dataset.wgn]||0)}
   const T=$('#wdTot');if(T)T.textContent=ng+baht(tot);const C=$('#wdCnt');if(C)C.textContent=n+' รายการ'}
-async function wdApply(items,sign){for(const x of items){const q=r2((+x.q||0)*sign);const s=S.stock.find(t=>t.id===x.sid);if(s)s.qty=r2((+s.qty||0)-q);await write('stock/'+x.sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))}}
+async function wdApply(items,sign){await Promise.all(items.map(x=>{const q=r2((+x.q||0)*sign);const s=S.stock.find(t=>t.id===x.sid);if(s)s.qty=r2((+s.qty||0)-q);return write('stock/'+x.sid,r=>r.transform(d=>({qty:r2((+d.qty||0)-q)})))}))}
 function wdIng(cp,W){const A={};W.forEach(w=>(w.items||[]).forEach(x=>{const a=A[x.sid]=A[x.sid]||{sid:x.sid,n:x.n,u:x.u,q:0,p:0,m:x.m};a.q=r2(a.q+(+x.q||0));a.p=r2(a.p+(+x.q||0)*(+x.uc||0));a.m=x.m}));
   return [...(cp.ing||[]).filter(x=>!x.sid),...Object.values(A).map(a=>({...a,m:a.m==='each'?'each':'share',...(a.m==='each'?{use:1}:{})}))]}
 Object.assign(ACT,{
@@ -4042,7 +4051,7 @@ Object.assign(ACT,{
     if(!isPo()){let t0=S.sheet.wAt||Date.now();for(const [g,its] of GRPS){const ref=S.db.collection('stockwd').doc(),doc={at:t0++,g,by:S.me||'',items:its.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc}))};const ok=await write('stockwd/'+ref.id,r=>r.set(doc));if(ok&&!(S.wdN||[]).some(x=>x.id===ref.id))S.wdN=[{id:ref.id,...doc},...(S.wdN||[])]}closeSheet();render();toast('✂️ ตัดสต็อกแล้ว '+items.length+' รายการ · ต้นทุนต่อชามวันนี้อัปเดตแล้ว');return}
     const RS=poRounds(),rr=RS.find(x=>x.k===S.sheet.rk)||RS[0],cp0=cpPlan()||{...cpDefault(),ing:[]},keep=RS.map(x=>x.start),t0=S.sheet.wAt||Date.now(),NW=GRPS.map(([g,its],k)=>({at:t0+k,r:rr.start,g,by:S.me||'',items:its,...(S.sheet.wAt?{edited:Date.now()}:{})})),hasF=GRPS.some(x=>x[0]==='food'),all=[...(cp0.wd||[]).filter(w=>(w.r!=null?keep.includes(+w.r):+w.at>RS[0].start)||+w.at>=Date.now()-40*DAY),...NW];
     const plan={...cp0,ing:hasF?wdIng(cp0,all.filter(w=>(w.g||'food')==='food'&&(w.r!=null?+w.r:RS[0].start)===rr.start)):cp0.ing,wd:all,at:Date.now()};const ok=await write('config/po',r=>r.update({costPlan:plan}));
-    if(ok)for(const nw of NW){const lg={at:nw.at,g:nw.g,by:nw.by,r:nw.r,items:nw.items.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc})),shop:'po',...(nw.edited?{edited:nw.edited}:{})};await write('stockwd/po'+nw.at,r=>r.set(lg));if(!(S.wdN||[]).some(x=>x.id==='po'+nw.at))S.wdN=[{id:'po'+nw.at,...lg},...(S.wdN||[])]}
+    if(ok)await Promise.all(NW.map(nw=>{const lg={at:nw.at,g:nw.g,by:nw.by,r:nw.r,items:nw.items.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc})),shop:'po',...(nw.edited?{edited:nw.edited}:{})};if(!(S.wdN||[]).some(x=>x.id==='po'+nw.at))S.wdN=[{id:'po'+nw.at,...lg},...(S.wdN||[])];return write('stockwd/po'+nw.at,r=>r.set(lg))}));
     if(ok)S.po={...poCfg(),costPlan:plan};closeSheet();render();S.cpRk=rr.k;toast('✂️ ตัดสต็อกแล้ว '+items.length+' รายการ · ต้นทุน'+(rr.k==='last'?'รอบที่ปิดแล้ว':'รอบนี้')+'อัปเดตแล้ว')},
   wdUndo:async()=>{if(!wdOK())return deny();if(!isPo()){const L=[...(S.wdN||[])].filter(w=>+w.at>=sod()).sort((a,b)=>b.at-a.at);if(!L.length)return toast('ยังไม่มีการตัดวันนี้');const x=L[0];await wdApply(x.items||[],-1);const ok=await write('stockwd/'+x.id,r=>r.delete());if(ok)S.wdN=(S.wdN||[]).filter(w=>w.id!==x.id);render();return toast('↩ คืนสต็อกครั้งล่าสุดแล้ว')}const cp0=cpPlan(),W=[...((cp0&&cp0.wd)||[])].sort((a,b)=>a.at-b.at);if(!W.length)return toast('ยังไม่มีการตัด');const last=W[W.length-1];
     await wdApply(last.items||[],-1);const W2=(cp0.wd||[]).filter(w=>w!==last&&!(w.at===last.at&&w.by===last.by));const rs=last.r,same=W2.filter(w=>w.r===rs&&(w.g||'food')==='food');

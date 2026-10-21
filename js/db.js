@@ -61,7 +61,7 @@
         if (again && alive) { again = false; run(); }
       };
       // รวมการเปลี่ยนแปลงที่เข้ามาติดๆ กัน (เช่น ลูกค้าหลายโต๊ะสั่งพร้อมกัน) ให้เหลือโหลดครั้งเดียว
-      const l = { col, status, kick: () => { if (!t) t = setTimeout(() => { t = null; run(); }, 350); } };
+      const l = { col, status, kick: () => { if (!t) t = setTimeout(() => { t = null; run(); }, 180); } };
       listeners.add(l); ensureChan(); run();
       return () => { alive = false; listeners.delete(l); };
     }
