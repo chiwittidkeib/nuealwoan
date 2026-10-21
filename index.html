@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.20-1956">
+<meta name="app-version" content="2026.10.20-2138">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -590,6 +590,7 @@ body.shop-po .top{box-shadow:inset 0 -3px 0 #f0a54a}
 .cpf .card{display:flex;flex-direction:column;gap:8px}
 .cpi,.cpp{display:grid;gap:6px 8px;align-items:end;padding-bottom:10px;border-bottom:1px dashed var(--line)}
 .cpl{display:flex;flex-direction:column;gap:2px;min-width:0}.cpl small{font-size:11.5px;color:var(--muted)}
+.cpl input.ro{background:var(--sunk);font-weight:700;color:#0f766e}
 .cpl input,.cpl select{min-width:0;width:100%;padding:8px;font-size:14px}.cpi>button,.cpp>button{padding-bottom:10px}
 .cpi .cpl-sid{grid-column:1/4;grid-row:1}.cpi .cpl-n{grid-row:2!important;grid-column:1/-1!important}.cplink .cpl-n{display:none}.cplink input[readonly]{background:var(--soft,#f6f1e7);color:var(--muted);border:1px solid var(--line);box-shadow:none}
 .cpu{grid-column:1/-1;margin-top:-2px;font-size:12px}.cpu:empty{display:none}
@@ -1122,6 +1123,10 @@ body.shop-po .shopsw::before{transform:translateX(100%);background:linear-gradie
 .spchk{padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(253,230,138,.35),rgba(251,191,36,.15));border:1px solid rgba(245,184,46,.6)}
 .mtile.sp,.row.sp{box-shadow:0 0 0 2px #f5b82e,0 6px 18px rgba(217,119,6,.25)}
 .sptag{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;color:#5a2d00;background:linear-gradient(135deg,#fde68a,#f59e0b);vertical-align:middle}
+.cpul{display:flex;flex-direction:column;gap:2px;padding:4px 0 4px 8px;font-size:13px;color:var(--muted)}.cpul .kv.bad{color:var(--chili);font-weight:700}
+.pkcalc{display:flex;flex-direction:column;gap:8px;background:linear-gradient(135deg,rgba(253,230,138,.25),rgba(255,255,255,0))!important;border:1px dashed rgba(245,184,46,.7)!important}
+.pkrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.pkres{margin:0;padding:8px 12px;border-radius:10px;background:rgba(20,184,166,.1);color:#0f766e;font-size:14px}
+@media (max-width:560px){.pkrow{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -1830,7 +1835,7 @@ function refreshSheet(kind){const s=S.sheet;if(!s)return;
     if(s.type==='order'){renderOrderLines();renderPicker()}else payUpdate()}
   if(s.type==='order'&&kind==='menu')renderPicker();}
 // ตัวเลข ≥ 1,000 ใส่จุลภาคเสมอ (ช่องตัวเลขที่อ่านด้วย nval ซึ่งตัด , ออกให้อยู่แล้ว)
-const NUM_IDS=['sQty','sMin','sCost','pAmt','pQty','pBuy','pPer','eAmt','iAmt','mPrice','mCost','ppP','cbPrice'];
+const NUM_IDS=['sPkQ','sPkP','sPkN','sQty','sMin','sCost','pAmt','pQty','pBuy','pPer','eAmt','iAmt','mPrice','mCost','ppP','cbPrice'];
 const fmtIn=el=>{if(!el||document.activeElement===el)return;const raw=String(el.value||'').replace(/,/g,'').trim();if(!/^-?\d+(\.\d+)?$/.test(raw))return;const n=+raw;el.value=Math.abs(n)>=1000?n.toLocaleString('en-US',{maximumFractionDigits:4}):raw};
 const fmtNums=()=>NUM_IDS.forEach(id=>fmtIn(document.getElementById(id)));
 if(!window.__fmtN){window.__fmtN=1;document.addEventListener('focusout',e=>{if(e.target&&NUM_IDS.includes(e.target.id))fmtIn(e.target)});document.addEventListener('focusin',e=>{const t=e.target;if(t&&NUM_IDS.includes(t.id)&&/,/.test(t.value))t.value=t.value.replace(/,/g,'')})}
@@ -2357,6 +2362,9 @@ function sheetMember(){const m=S.members.find(x=>x.id===S.sheet.id);if(!m)return
 const stAva=s=>{const hue=[...String(s.name||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360,ok=can('stock')&&s.id,lb=(s.img?'เปลี่ยนรูป ':'ใส่รูป ')+(s.name||'');return `<div class="wda stava${s.img?' has':''}${ok?' tap':''}" style="--h:${hue}"${ok?` data-act="stPhoto" data-id="${s.id}" role="button" tabindex="0" title="${esc(lb)}" aria-label="${esc(lb)}"`:''}>${s.img?thumb(s,'thumb'):`<span class="stini">${esc(String(s.name||'?').slice(0,1))}</span>`}${ok?'<span class="stcam2" aria-hidden="true">📷</span>':''}</div>`};
 const stThumb=s=>s.img?`<span data-act="imgv" data-src="${esc(s.img)}" data-cap="${esc(s.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(s,'thumb')}</span>`:thumb(s,'thumb');
 const UNITS=[['น้ำหนัก',['กก.','กรัม','ขีด']],['ปริมาตร',['ลิตร','มล.']],['นับชิ้น',['ชิ้น','ใบ','คู่','ขวด','กระป๋อง','ถุง','ซอง','แพ็ค','ห่อ','กล่อง','ลัง','ฟอง','หัว','ลูก','ตัว','ไม้','กำ','ม้วน','แผ่น','ชุด','แกลลอน','กระสอบ']]];
+const U_BASE={'กก.':['g',1000],'กิโลกรัม':['g',1000],'กรัม':['g',1],'ขีด':['g',100],'ลิตร':['ml',1000],'มล.':['ml',1]};
+// แปลงหน่วย: 1 [from] = กี่ [to]  (เช่น กก.→กรัม = 1000) · แปลงไม่ได้ = null
+const uFactor=(from,to)=>{const a=U_BASE[String(from||'').trim()],b=U_BASE[String(to||'').trim()];return a&&b&&a[0]===b[0]?a[1]/b[1]:null};
 const unitList=()=>{const l=S.lists&&S.lists.units&&S.lists.units.items;return Array.isArray(l)&&l.length?l:null};
 const unitOpts=(v,blank)=>{const UL=unitList(),all=UL||UNITS.flatMap(g=>g[1]),cur=String(v||'').trim(),norm=cur.replace(/\.$/,'')===('กก')?'กก.':cur;return (blank?`<option value="">${blank}</option>`:'')+(norm&&!all.includes(norm)?`<option value="${esc(norm)}" selected>${esc(norm)} (เดิม)</option>`:'')+(UL?UL.map(u=>`<option value="${esc(u)}" ${u===norm?'selected':''}>${esc(u)}</option>`).join(''):UNITS.map(([g,L])=>`<optgroup label="${g}">${L.map(u=>`<option value="${u}" ${u===norm?'selected':''}>${u}</option>`).join('')}</optgroup>`).join(''))};
 const setUnitSel=(el,v)=>{if(!el)return;v=v||'';if(v&&![...el.options].some(o=>o.value===v)){const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o)}el.value=v};
@@ -2368,13 +2376,25 @@ function sheetStock(){const s0=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit
      <button class="btn sm ghost" data-act="sPhotoRemove" type="button" id="sPhotoDel">ลบรูป</button>
      <small class="muted">ถ่ายจากมือถือได้เลย ระบบย่อรูปให้อัตโนมัติ</small></div></div>
   <div class="field"><label for="sName">ชื่อ</label><input id="sName" value="${esc(s.name)}" placeholder="เช่น เส้นเล็ก" autocomplete="off"></div>
+  <div class="card pkcalc"><h3 style="margin:0">🧮 ซื้อยกแพ็ก · ระบบคำนวณคงเหลือและทุนต่อหน่วยให้</h3>
+   <div class="pkrow"><label class="cpl"><small>มีกี่<span class="pkU">${esc(s.buyUnit||'แพ็ค')}</span></small><input id="sPkQ" inputmode="decimal" placeholder="เช่น 2"></label><label class="cpl"><small>ซื้อมาเป็น</small><select id="sPkU">${unitOpts(s.buyUnit||'แพ็ค')}</select></label>
+    <label class="cpl"><small>ราคาต่อ<span class="pkU">${esc(s.buyUnit||'แพ็ค')}</span> (บาท)</small><input id="sPkP" inputmode="decimal" value="${s.packPrice??''}" placeholder="เช่น 250"></label>
+    <label class="cpl"><small>1 <span class="pkU">${esc(s.buyUnit||'แพ็ค')}</span> มีกี่ <span class="pkB">${esc(s.unit||'หน่วย')}</span></small><input id="sPkN" inputmode="decimal" value="${s.buyPer??''}" placeholder="เช่น 100"></label></div>
+   <p class="pkres" id="sPkR"></p></div>
   <div class="grid2"><div class="field"><label for="sUnit" style="display:flex;justify-content:space-between;align-items:center;gap:6px">หน่วย<button class="lnk" data-act="catList" data-k="units" type="button" style="font-size:12px">⚙️ จัดการหน่วย</button></label><select id="sUnit">${unitOpts(s.unit||(S.sheet.id?'':'กก.'))}</select></div><div class="field"><label for="sQty">คงเหลือตอนนี้</label><input id="sQty" inputmode="decimal" value="${s.qty??''}"></div></div>
   <div class="grid2"><div class="field"><label for="sMin">จุดสั่งซื้อ (เหลือเท่านี้ให้เตือน)</label><input id="sMin" inputmode="decimal" value="${s.min??''}"></div><div class="field"><label for="sCost">ต้นทุนต่อหน่วย (บาท)</label><input id="sCost" inputmode="decimal" value="${s.unitCost??''}"></div></div>
+
   ${true?`<div class="field"><label for="sGrp">หมวด</label><select id="sGrp"><option value="food" ${(S.sheet.g||stGrp(s))!=='drink'?'selected':''}>🍚 วัตถุดิบอาหาร</option><option value="drink" ${(S.sheet.g||(s.name?stGrp(s):''))==='drink'?'selected':''}>🥤 วัตถุดิบเครื่องดื่ม</option></select></div>`:''}
-  ${true?`<div class="field"><label for="sCut">วิธีตัดสต็อก</label><select id="sCut"><option value="sale" ${stCut({...s,shop:s.shop||(isPo()?'po':'')})==='sale'?'selected':''}>${isPo()?'ตัดตามยอดขายตอนปิดยอด — ของนับชิ้น เช่น กล่อง ช้อน ขวดน้ำ (ใส่ในสูตรเมนู)':'ตัดตามสูตรเมนูทุกครั้งที่รับเงิน (ค่าเดิม)'}</option><option value="use" ${stCut({...s,shop:s.shop||(isPo()?'po':'')})==='use'?'selected':''}>เบิกใช้ (✂️ ตัดสต็อกขายวันนี้) — ${isPo()?'ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน':'กระดูกต้มน้ำซุป ผัก เครื่องปรุง ที่ใช้ทั้งหม้อ'}</option></select><span class="help">${isPo()?'ค่าเริ่มต้นตามหน่วย: ใบ/คู่/ชิ้น/ขวด = ตามยอดขาย · กก./ลิตร = เบิกใช้':'เบิกใช้ = ไม่ตัดตามสูตรตอนรับเงิน แต่ตัดด้วย ✂️ แล้วเฉลี่ยต้นทุนต่อชาม'}</span></div>`:''}
+  ${true?`<div class="field"><label for="sCut">วิธีตัดสต็อก</label><select id="sCut"><option value="sale" ${stCut({...s,shop:s.shop||(isPo()?'po':'')})==='sale'?'selected':''}>${isPo()?'ตัดตามยอดขายตอนปิดยอด — ของนับชิ้น เช่น กล่อง ช้อน ขวดน้ำ (ใส่ในสูตรเมนู)':'ตัดตามสูตรเมนูทุกครั้งที่รับเงิน (ค่าเดิม)'}</option><option value="use" ${stCut({...s,shop:s.shop||(isPo()?'po':'')})==='use'?'selected':''}>เบิกใช้ (✂️ ตัดสต็อกขายวันนี้) — ${isPo()?'ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน':'กระดูกต้มน้ำซุป ผัก เครื่องปรุง ที่ใช้ทั้งหม้อ'}</option></select><span class="help">${isPo()?'ค่าเริ่มต้นตามหน่วย: ใบ/คู่/ชิ้น/กล่อง = ตามยอดขาย · ขวด · กก./ลิตร = เบิกใช้':'เบิกใช้ = ไม่ตัดตามสูตรตอนรับเงิน แต่ตัดด้วย ✂️ แล้วเฉลี่ยต้นทุนต่อชาม'}</span></div>`:''}
   <p class="help" style="margin:0">นับของจริงแล้วแก้ "คงเหลือ" ได้ตลอด ต้นทุนต่อหน่วยจะอัปเดตเองทุกครั้งที่บันทึกการซื้อ</p></form>
   <div class="sh-foot">${S.sheet.id?`<button class="btn danger" data-act="delStock" data-confirm="1" type="button">🗑 ลบ</button><button class="btn goldbtn" data-act="purchase" data-id="${S.sheet.id}" type="button">🛒 ซื้อเติม</button>`:''}<button class="btn pri wide" data-act="saveStock" type="button">บันทึก</button></div>`;
   renderSPhoto();
+  {const su=$('#sUnit');let prevU=su.value;su.addEventListener('change',()=>{const f=uFactor(prevU,su.value);if(f&&f!==1){const cv=(id,k)=>{const e=$('#'+id);if(!e||!String(e.value).trim())return;const v=nval(id);e.value=String(Math.round(v*k*10000)/10000);fmtIn(e)};cv('sQty',f);cv('sMin',f);cv('sCost',1/f);if(nval('sPkN')>0)cv('sPkN',f);S.sheet.uConv=(S.sheet.uConv||1)*f;toast('🔄 แปลง '+prevU+' → '+su.value+' ให้แล้ว (คงเหลือ ×'+num(f)+' · ทุน ÷'+num(f)+')')}prevU=su.value})}
+  const pk=()=>{const pp=nval('sPkP'),pn=nval('sPkN'),u=val('sUnit')||'หน่วย',bu=val('sPkU')||'แพ็ค',r=$('#sPkR');document.querySelectorAll('.pkU').forEach(e=>e.textContent=bu);document.querySelectorAll('.pkB').forEach(e=>e.textContent=u);
+    const pq=nval('sPkQ');let t=[];if(pp>0&&pn>0){const c=Math.round(pp/pn*10000)/10000;$('#sCost').value=String(c);t.push(`💡 ${baht(pp)} ÷ ${num(pn)} = <b>ทุน ${baht(c)} / ${esc(u)}</b>`)}
+    if(pq>0&&pn>0){const q=Math.round(pq*pn*1000)/1000;$('#sQty').value=String(q);fmtIn($('#sQty'));t.push(`📦 ${num(pq)} ${esc(bu)} × ${num(pn)} = <b>คงเหลือ ${num(q)} ${esc(u)}</b>`)}
+    if(pq>0&&pp>0)t.push(`💰 จ่ายไป ${baht(pq*pp)}`);r.innerHTML=t.join('<br>')+(t.length?'<br><small>กรอกช่อง คงเหลือ / ต้นทุนต่อหน่วย ให้แล้ว</small>':'');r.hidden=!t.length};
+  ['sPkQ','sPkP','sPkN','sPkU','sUnit'].forEach(i=>{const e=$('#'+i);if(e){e.addEventListener('input',pk);e.addEventListener('change',pk)}});pk();
   $('#sPhoto').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
     if(!/^image\//.test(f.type))return toast('เลือกไฟล์รูปภาพ','bad');
     const ph=S.sheet.sphoto;if(ph.preview)URL.revokeObjectURL(ph.preview);ph.file=f;ph.preview=URL.createObjectURL(f);ph.removed=false;S.sheet.dirty=true;renderSPhoto();});}
@@ -2383,13 +2403,14 @@ function renderSPhoto(){const ph=S.sheet.sphoto,box=$('#sPhotoBox');if(!box)retu
 async function saveStock(){const name=val('sName');if(!name)return toast('ใส่ชื่อวัตถุดิบก่อน','bad');
   const id=S.sheet.id||S.sheet.newId||(S.sheet.newId=S.db.collection('stock').doc().id);
   const old=S.stock.find(x=>x.id===id)||{};
-  const data={...(S.sheet.id?{}:shopTag()),...old,name,unit:val('sUnit')||'หน่วย',qty:nval('sQty'),min:nval('sMin'),unitCost:nval('sCost'),...($('#sCut')?{cut:val('sCut')}:{}),...($('#sGrp')?{grp:val('sGrp')}:{})};delete data.id;
+  const data={...(S.sheet.id?{}:shopTag()),...old,name,unit:val('sUnit')||'หน่วย',qty:nval('sQty'),min:nval('sMin'),unitCost:nval('sCost'),...($('#sCut')?{cut:val('sCut')}:{}),...($('#sGrp')?{grp:val('sGrp')}:{}),...(nval('sPkP')>0&&nval('sPkN')>0?{packPrice:nval('sPkP'),buyPer:nval('sPkN'),buyUnit:val('sPkU')||'แพ็ค'}:{})};delete data.id;
   const ph=S.sheet.sphoto||{};let drop='';
   if(ph.file){const b=$('[data-act=saveStock]');if(b){b.disabled=true;b.textContent='กำลังอัปโหลดรูป…'}
     try{const up=await uploadMenuPhoto('stock/'+id,ph.file);data.img=up.url;data.imgPath=up.path;drop=old.imgPath||''}
     catch(e){if(b){b.disabled=false;b.textContent='บันทึก'}return toast('อัปโหลดรูปไม่สำเร็จ ลองใหม่อีกครั้ง','bad')}}
   else if(ph.removed){data.img='';data.imgPath='';drop=old.imgPath||''}
-  const ok=await write('stock/'+id,r=>r.set(data));if(ok){if(drop)removePhoto(drop);closeSheet();toast('บันทึกแล้ว')}
+  const ok=await write('stock/'+id,r=>r.set(data));
+  if(ok&&S.sheet.id&&S.sheet.uConv&&S.sheet.uConv!==1){const f=S.sheet.uConv;let n=0;for(const m of (S.menu||[]).concat(S.poMenu||[],S.nMenu||[]).filter((x,i,a)=>a.findIndex(y=>y.id===x.id)===i)){if(!(m.recipe||[]).some(g=>g.stockId===id))continue;const recipe=m.recipe.map(g=>g.stockId===id?{...g,qty:Math.round((+g.qty||0)*f*10000)/10000}:g);m.recipe=recipe;await write('menu/'+m.id,r=>r.update({recipe}));n++}if(n)toast('แปลงหน่วยในสูตรเมนูให้ '+n+' เมนูแล้ว')}if(ok){if(drop)removePhoto(drop);closeSheet();toast('บันทึกแล้ว')}
   else{const b=$('[data-act=saveStock]');if(b){b.disabled=false;b.textContent='บันทึก'}}}
 
 function sheetPurchase(){const sid=S.sheet.id||'';
@@ -3554,10 +3575,12 @@ function cpResHtml(cp,C){C=C||cpCalc(cp);const col=v=>`color:${v>=0?'var(--ok,#2
   return `${C.rows.map(r=>`<div class="cpo"><b>${esc(r.n||'-')}</b><span>ต้นทุน <b>${baht(r.cost)}</b>/กล่อง</span><span>ขาย ${baht(+r.price||0)}</span><span style="${col(r.profit)}">กำไร ${baht(r.profit)} (${Math.round(r.pct)}%)</span></div>`).join('')}
    <div class="kv" style="margin-top:6px"><span>เฉลี่ยตามปริมาณ (${baht(C.share)} ÷ ${num(C.W)} กล่องเทียบธรรมดา)</span><b>${baht(C.W?C.share/C.W:0)}/กล่อง</b></div>
    <div class="kv"><span>ของนับชิ้นจากสูตรเมนู (กล่อง ช้อน ฯลฯ)</span><b>${baht(C.unitAvg+C.each)}/กล่อง</b></div>
+   ${(()=>{const seen=new Set(),L=[];(cp.prod||[]).forEach(r=>{if(!r.menuId||seen.has(r.menuId))return;seen.add(r.menuId);cpUnit(r.menuId).L.forEach(x=>L.push(x))});if(!L.length)return '';const pr=+((cp.prod||[])[0]||{}).price||0,big=L.filter(x=>x.v>Math.max(5,pr*.15));
+     return `<div class="cpul">${L.map(x=>`<div class="kv${big.includes(x)?' bad':''}"><span>· ${esc(x.n)} ${num(x.q)} ${esc(x.u)}</span><span>${baht(x.v)}</span></div>`).join('')}</div>${big.length?`<p class="help" style="margin:0;color:var(--chili)">⚠️ รายการสีแดงต้นทุนต่อกล่องสูงผิดปกติ — เช็ค "ต้นทุนต่อหน่วย" ของวัตถุดิบ (เช่น ซื้อ 100 ใบ 30 บาท = 0.30/ใบ ไม่ใช่ 30) หรือจำนวนในสูตรเมนู · เครื่องปรุงขวด (น้ำปลา ซอส) ควรตั้งเป็น "เบิกใช้" ไม่ใส่ในสูตร</p>`:''}`})()}
    ${C.rows.some(r=>r.menuId&&!(r.unit>0))?'<p class="help" style="margin:0;color:#9a6a00">💡 ยังไม่มีกล่อง/ช้อนในสูตรเมนู — ใส่ที่หน้าแก้เมนู → วัตถุดิบ (เช่น กล่อง 1, ช้อนส้อม 1) ระบบจะตัดตามยอดขายตอนปิดยอด</p>':''}
-   <div class="kv tot"><span>ถ้าขายหมด ${C.box} กล่อง · รายได้</span><b>${baht(C.rev)}</b></div>
+   <div class="kv tot"><span>ขายจริง ${C.box} กล่อง · รายได้</span><b>${baht(C.rev)}</b></div>
    <div class="kv"><span>ต้นทุน</span><b>−${baht(C.cost)}</b></div>
-   <div class="kv"><span><b>กำไรขั้นต้นต่อรอบ</b></span><b style="${col(C.profit)}">${baht(C.profit)}</b></div>
+   <div class="kv"><span><b>กำไรขั้นต้นรอบนี้</b></span><b style="${col(C.profit)}">${baht(C.profit)}</b></div>
    ${C.be!=null?`<div class="kv"><span class="muted">ขายกี่กล่องถึงคืนทุน</span><b>${C.be} กล่อง</b></div>`:''}
    ${cpMissing(cp)?'<p class="help" style="margin:4px 0 0;color:var(--chili)">⚠️ มีรายการที่ยังไม่ใส่ราคา</p>':''}`}
 const cpMissing=cp=>(cp.ing||[]).some(x=>String(x.n||'').trim()&&!(cpP(x)>0));
@@ -3580,7 +3603,9 @@ function cpRoundCard(){const saved=cpPlan(),adm=poAdmin();if(!saved&&!adm)return
      <div class="kv tot"><span>กำไรขั้นต้น</span><b${PRANIM?cntB(A.profit):''} style="${col(A.profit)}">${baht(A.profit)}</b></div>
      <div class="kv"><span class="muted">ขายข้าว ${A.sb} กล่อง${A.other?' · เมนูอื่น '+A.other+' ชิ้น':''}</span></div></div></div>
    ${A.rows.some(x=>x.menuId&&!(x.unit>0))?'<p class="help" style="margin:0;color:#9a6a00">💡 ยังไม่ใส่กล่อง/ช้อนในสูตรเมนู — ใส่ที่หน้าแก้เมนู → วัตถุดิบ แล้วระบบจะตัดตามยอดขายตอนปิดยอดให้เอง</p>':''}</div>`}
-function sheetPoCost(){const s=S.sheet;if(!s.cp)s.cp=JSON.parse(JSON.stringify(cpPlan()||cpDefault()));const cp=s.cp,M=S.poMenu||[],ST=(S.stock||[]).filter(x=>x.shop==='po');
+function cpSoldFill(cp){const RS=poRounds(),cur=RS[0],r=roundOrders(cur).length||!RS[1]?cur:RS[1],L=roundOrders(r),sold=(cp.prod||[]).map(()=>0);
+  L.forEach(o=>(o.items||[]).forEach(l=>{const k=cpMatch(cp,l);if(k>=0)sold[k]+=+l.qty||0}));(cp.prod||[]).forEach((p,i)=>p.qty=sold[i]);return r}
+function sheetPoCost(){const s=S.sheet;if(!s.cp)s.cp=JSON.parse(JSON.stringify(cpPlan()||cpDefault()));const cp=s.cp,RR=cpSoldFill(cp),M=S.poMenu||[],ST=(S.stock||[]).filter(x=>x.shop==='po');
   const F_=(c,k,x)=>`<label class="cpl cpl-${k}"><small>${c}</small>${x}</label>`,io=(i,k,v,a='',c='')=>F_(c,k,`<input data-ci="${i}" data-ck="${k}" value="${esc(v??'')}" ${a}>`),po=(i,k,v,a='',c='')=>F_(c,k,`<input data-pi="${i}" data-pk="${k}" value="${esc(v??'')}" ${a}>`);
   $('#panel').innerHTML=head('🧮 ต้นทุนเฉลี่ยต่อรอบ','ของเบิกใช้ ÷ กล่องที่ขาย + ของนับชิ้นตามสูตร = ต้นทุนต่อกล่อง')+`<form class="sh-body cpf" id="cpForm" onsubmit="return false" autocomplete="off">
    <div class="card"><div class="inrow" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">1) ของเบิกใช้ต่อรอบ (ไว้ประมาณการ)</h3><button class="btn sm" data-act="poWd" type="button">✂️ ตัดสต็อกขายวันนี้</button></div><p class="help" style="margin:0">เฉพาะของเบิกใช้ (ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน) · ของนับชิ้น (กล่อง ช้อน ขวด) ไม่ต้องใส่ — ระบบเอาจากสูตรเมนู · พอกด ✂️ ตัดสต็อกขายวันนี้ จะคิดจากของที่เบิกจริงแทน</p>
@@ -3589,8 +3614,8 @@ function sheetPoCost(){const s=S.sheet;if(!s.cp)s.cp=JSON.parse(JSON.stringify(c
       <button class="lnk" data-act="cpDel" data-v="i${i}" type="button" aria-label="ลบ">✕</button><small class="muted cpu" data-cu="${i}"></small></div>`}).join('')}
     <button class="lnk" data-act="cpAdd" data-v="i" type="button" style="align-self:flex-start">+ เพิ่มรายการ</button>
     <p class="help" style="margin:0">ราคา = จำนวน × ทุนในคลัง (เช่น ไก่ 90/กก. × 10 = 900)</p></div>
-   <div class="card"><h3>2) เมนูที่เฉลี่ยต้นทุน + กล่องที่คาดว่าจะขาย</h3><p class="help" style="margin:0">ต้นทุนจริงหารด้วยจำนวนที่ขายได้จริงอยู่แล้ว · ช่อง "กล่อง" ใช้ประมาณการก่อนขาย · ใส่ทุกเมนูที่ใช้ของเบิก (เช่น ข้าวมันไก่ทอด) ด้วย "+ เพิ่มแบบ"</p>
-        ${cp.prod.map((r,i)=>`<div class="cpp">${po(i,'n',r.n,'maxlength="24"','ชื่อ')}${F_('เมนู','menuId',`<select data-pi="${i}" data-pk="menuId"><option value="">— เลือกเมนู —</option>${M.map(m=>`<option value="${esc(m.id)}" ${m.id===r.menuId?'selected':''}>${esc(m.name)}</option>`).join('')}</select>`)}${po(i,'opt',r.opt,'maxlength="20" placeholder="เว้นว่าง = ธรรมดา"','ตัวเลือกที่มีคำว่า')}${po(i,'qty',r.qty,'inputmode="numeric"','กล่อง')}${po(i,'f',r.f,'inputmode="decimal"','ปริมาณ %')}${po(i,'price',r.price,'inputmode="decimal"','ราคาขาย ฿')}<button class="lnk" data-act="cpDel" data-v="p${i}" type="button" aria-label="ลบ">✕</button></div>`).join('')}
+   <div class="card"><h3>2) เมนูที่เฉลี่ยต้นทุน · จำนวนจากยอดขายจริง</h3><p class="help" style="margin:0">จำนวนกล่องดึงจากออร์เดอร์${RR.k==='cur'?'รอบนี้ (กำลังขาย)':'รอบที่ปิดยอดล่าสุด'}ให้เอง ไม่ต้องใส่ · ใส่ทุกเมนูที่ใช้ของเบิก (เช่น ข้าวมันไก่ทอด) ด้วย "+ เพิ่มแบบ"</p>
+        ${cp.prod.map((r,i)=>`<div class="cpp">${po(i,'n',r.n,'maxlength="24"','ชื่อ')}${F_('เมนู','menuId',`<select data-pi="${i}" data-pk="menuId"><option value="">— เลือกเมนู —</option>${M.map(m=>`<option value="${esc(m.id)}" ${m.id===r.menuId?'selected':''}>${esc(m.name)}</option>`).join('')}</select>`)}${po(i,'opt',r.opt,'maxlength="20" placeholder="เว้นว่าง = ธรรมดา"','ตัวเลือกที่มีคำว่า')}${po(i,'qty',r.qty,'readonly class="ro"','ขายจริง (กล่อง)')}${po(i,'f',r.f,'inputmode="decimal"','ปริมาณ %')}${po(i,'price',r.price,'inputmode="decimal"','ราคาขาย ฿')}<button class="lnk" data-act="cpDel" data-v="p${i}" type="button" aria-label="ลบ">✕</button></div>`).join('')}
     <button class="lnk" data-act="cpAdd" data-v="p" type="button" style="align-self:flex-start">+ เพิ่มแบบ</button>
     <p class="help" style="margin:0">ปริมาณ %: ธรรมดา = 100 · พิเศษเพิ่ม 10–15% ใส่ 110–115 · "ตัวเลือกที่มีคำว่า" ใช้แยกออร์เดอร์ เช่น ลูกค้าเลือก "พิเศษ" จะนับเป็นแถวพิเศษ</p></div>
    <div class="card cpres" id="cpRes"></div>
@@ -3599,8 +3624,8 @@ function sheetPoCost(){const s=S.sheet;if(!s.cp)s.cp=JSON.parse(JSON.stringify(c
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="cpSave" type="button">บันทึก</button></div>`;
   const F=$('#cpForm');F.addEventListener('input',cpUpd);F.addEventListener('change',e=>{const d=e.target.dataset||{};if(d.ck==='sid'||d.ck==='m'){cpRead();const x=cp.ing[+d.ci],t=cpSt(x);if(d.ck==='sid'&&t){x.n=t.name;x.u=t.unit||x.u}if(d.ck==='sid'&&!t)delete x.sid;sheetPoCost();return}cpUpd()});cpUpd()}
 function cpRead(){const cp=S.sheet&&S.sheet.cp;if(!cp)return;const N=v=>{const x=parseFloat(String(v).replace(/,/g,''));return isFinite(x)?x:''};
-  document.querySelectorAll('[data-ci]').forEach(e=>{const x=cp.ing[+e.dataset.ci];if(!x)return;const k=e.dataset.ck;if(k==='p'&&e.readOnly)return;x[k]=['q','p'].includes(k)?N(e.value):e.value});
-  document.querySelectorAll('[data-pi]').forEach(e=>{const r=cp.prod[+e.dataset.pi];if(!r)return;const k=e.dataset.pk;r[k]=['qty','f','price'].includes(k)?N(e.value):e.value.trim()})}
+  document.querySelectorAll('#cpForm [data-ci]').forEach(e=>{const x=cp.ing[+e.dataset.ci];if(!x)return;const k=e.dataset.ck;if(k==='p'&&e.readOnly)return;x[k]=['q','p'].includes(k)?N(e.value):e.value});
+  document.querySelectorAll('#cpForm [data-pi]').forEach(e=>{const r=cp.prod[+e.dataset.pi];if(!r)return;const k=e.dataset.pk;if(e.readOnly)return;r[k]=['qty','f','price'].includes(k)?N(e.value):e.value.trim()})}
 function cpUpd(){if(!S.sheet||S.sheet.type!=='poCost'||!S.sheet.cp)return;cpRead();const cp=S.sheet.cp,C=cpCalc(cp),el=$('#cpRes');if(!el)return;
   document.querySelectorAll('[data-cu]').forEach(e=>{const i=+e.dataset.cu,x=cp.ing[i];if(!x)return;const t=cpSt(x),p=cpP(x);
     if(t){const pi=document.querySelector(`[data-ci="${i}"][data-ck="p"]`);if(pi&&pi.readOnly)pi.value=p;}
@@ -3628,7 +3653,7 @@ const wdOK=()=>isPo()?poAdmin():can('stock');
 const wdTodayN=g=>(S.wdN||[]).filter(w=>(w.g||'food')===g&&+w.at>=sod());
 const wasteRound=()=>{if(!isPo())return (S.exp||[]).filter(x=>x.shop!=='po'&&x.waste&&+x.at>=sod());const cut=+poCfg().cutAt||0;return (S.exp||[]).filter(x=>x.shop==='po'&&x.waste&&+x.at>cut)};
 // วิธีคิดต้นทุนตามหน่วยนำเข้า: หน่วยนับเป็นชิ้น (ใบ คู่ ชิ้น ถุง…) = ใช้กล่องละ 1 · หน่วยชั่ง/ตวง (กก. กรัม ลิตร…) = เฉลี่ยตามปริมาณ
-const wdUnitM=t=>{const u=String((t&&t.unit)||'').replace(/\s|\./g,'');return /^(ใบ|คู่|ชิ้น|ถุง|อัน|ฝา|ชุด|แพ็ค|แพค|ห่อ|ซอง|ขวด|แก้ว|กล่อง|ด้าม|คัน|ม้วน|แผ่น|ลูก|ตัว|pcs|pc|ea)$/i.test(u)?'each':'share'};
+const wdUnitM=t=>{const u=String((t&&t.unit)||'').replace(/\s|\./g,'');return /^(ใบ|คู่|ชิ้น|ถุง|อัน|ฝา|ชุด|แพ็ค|แพค|ห่อ|ซอง|แก้ว|กล่อง|ด้าม|คัน|ม้วน|แผ่น|ลูก|ตัว|pcs|pc|ea)$/i.test(u)?'each':'share'};
 const DRINK_ST=/นม|ชา(?!ม)|กาแฟ|โกโก้|น้ำแข็ง|แก้ว|หลอด|ไซรัป|น้ำเชื่อม|โซดา|ผงชา|ฝาแก้ว|ขวดเปล่า|มัทฉะ|ช็อก|syrup|milk|tea|coffee|cup|straw/i;
 const stGrp=t=>t&&(t.grp==='drink'||t.grp==='food')?t.grp:(DRINK_ST.test((t&&t.name)||'')?'drink':'food');
 const wdRound=()=>wdOf(poRounds()[0]);
