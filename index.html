@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-123428">
+<meta name="app-version" content="2026.10.21-134132">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -3487,7 +3487,7 @@ async function poSumImg(day,btn){const L=poSumLive(day),t=poSumTot(L),c=poCfg();
   }catch(e){toast('สร้างรูปไม่สำเร็จ ลองกดพิมพ์หรือคัดลอกแทน','bad')}
   box.remove();if(btn&&btn.isConnected){btn.disabled=false;btn.textContent='🖼 บันทึกเป็นรูป'}}
 /* ===== สรุปยอดข้าวมันไก่ + กราฟ ===== */
-const PR_RANGES=[[1,'วันนี้'],[3,'3 วัน'],[5,'5 วัน'],[30,'1 เดือน']];
+const PR_RANGES=[[1,'เมื่อวาน'],[3,'3 วัน'],[5,'5 วัน'],[30,'1 เดือน']];
 const PRC={s:'#2a78d6',c:'#eb6834',p:'#1baf7a'},PRCAT=['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#6250d6'],PROTH='#a8a29e';
 function stQApply(){const q=String(S.stQ||'').trim().toLowerCase();let n=0,t=0;document.querySelectorAll('[data-sn]').forEach(e=>{const ok=!q||e.dataset.sn.includes(q);e.hidden=!ok;if(e.closest('.list'))t++;if(ok)n++});const c=$('#stQn');if(c)c.textContent=q?(n?'พบ '+n+' รายการ':'ไม่พบ "'+S.stQ+'"'):''}
 if(!window.__stQ){window.__stQ=1;document.addEventListener('input',e=>{if(e.target&&e.target.id==='stQ'){S.stQ=e.target.value;stQApply()}if(e.target&&e.target.id==='wdQ'){const q=e.target.value.trim().toLowerCase();document.querySelectorAll('[data-wn]').forEach(x=>{x.hidden=q&&!x.dataset.wn.includes(q)})}})}
@@ -3508,9 +3508,11 @@ function lineDisc(o,extra){const L=o.items||[],P=L.map(()=>0),Dd=L.map(()=>0),am
   (o.promos||[]).forEach(p=>{const pr=+p.price||0;(p.groups||[]).forEach(g=>{const reg=+g.reg||0,gd=Math.max(reg-pr,0);if(!(reg>0)||!gd)return;Object.entries(g.c||{}).forEach(([k,n])=>{const i=+k-1,l=L[i];if(!l)return;const v=(+l.price||0)*(+n||0)/reg*gd;P[i]+=v;used+=v})})});
   const tot=amt.reduce((a,b)=>a+b,0),lp=Math.max(0,(+o.promoDisc||0)-used),ld=Math.max(0,+extra||0);if(tot>0&&(lp>0.01||ld>0))amt.forEach((a,i)=>{P[i]+=a/tot*(lp>0.01?lp:0);Dd[i]+=a/tot*ld});
   return L.map((_,i)=>({p:P[i],d:Dd[i]}))}
+// สรุปยอดข้าวมันไก่: นับเฉพาะออร์เดอร์ในรอบที่ปิดยอดแล้ว
+const poClosed=o=>+o.at<=(+poCfg().cutAt||0)||!!o.stockCut;
 function prAgg(from,to,CC){const D={},I={};let T={o:0,q:0,s:0,c:0,u:0};const cp=cpPlan(),M=S.poMenu||[];
   for(let d=from;d<=to;d=dAdd(d,1))D[d]={d,o:0,q:0,f:0,dr:0,s:0,c:0,u:0};T.f=0;T.dr=0;
-  (S.poAll||S.poOrders||[]).filter(o=>poLive(o)&&o.deliverDate>=from&&o.deliverDate<=to).forEach(o=>{const r=D[o.deliverDate];if(!r)return;
+  (S.poAll||S.poOrders||[]).filter(o=>poLive(o)&&poClosed(o)&&o.deliverDate>=from&&o.deliverDate<=to).forEach(o=>{const r=D[o.deliverDate];if(!r)return;
     const q=poQty(o),cost=(o.items||[]).reduce((a,l)=>a+cpLineCost(l,CC),0),u=o.payStatus==='paid'?0:(+o.total||0);
     const fd=poQtyFD([o]),pd=o.payStatus==='paid'?(+o.total||0):Math.min(+o.total||0,+o.paidAmt||0);T.p=(T.p||0)+pd;[r,T].forEach(x=>{x.o++;x.q+=q;x.f+=fd.f;x.dr+=fd.d;x.s+=+o.total||0;x.c+=cost;x.u+=u});
     const LD=lineDisc(o,0);(o.items||[]).forEach((l,li)=>{let nm=l.name||'?';if(cp){const k=cpMatch(cp,l);if(k>=0&&cp.prod[k].opt)nm=(M.find(m=>m.id===l.menuId)||l).name+' · '+cp.prod[k].n}
@@ -3591,19 +3593,19 @@ function prItems(I0,raw){const g=raw?'all':prGrp(),I=I0.filter(x=>g==='all'||(g=
 function prExp(t0,t1){if(!can('expenses'))return '';const P=x=>x.shop==='po'&&x.at>=t0&&x.at<t1,G={};(S.exp||[]).filter(P).forEach(x=>{const c=x.waste?WASTE_CAT:(x.cat||'อื่นๆ');G[c]=(G[c]||0)+(+x.amount||0)});
   const L=Object.entries(G).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...L.map(x=>x[1])),tot=L.reduce((a,x)=>a+x[1],0);
   return `<div class="card prcard"><div class="prh"><h3>รายจ่ายร้าน</h3><b>${baht(tot)}</b></div>${L.length?`<div class="prsplit">${prDonut(L.map(([c,v])=>[(c===WASTE_CAT?'🗑 ':'')+c,v]),tot,'รายจ่ายรวม')}<div class="pri">${L.map(([c,v],i)=>`<div class="prr" data-pn="${esc(c)}" style="--d:${i*50}ms" title="${esc(c)} ${baht(v)}"><div class="prn"><b>${c===WASTE_CAT?'🗑 ':''}${esc(c)}</b><span class="muted">${tot?Math.round(v/tot*100):0}%</span></div><div class="prb"><span style="width:${v/mx*100}%;background:${i<6?PRCAT[i]:PROTH}"></span></div><div class="prv"><b>${baht(v)}</b></div></div>`).join('')}</div></div>`:'<p class="help" style="margin:0">ไม่มีรายจ่ายในช่วงนี้ · บันทึกที่แท็บ สต็อกสินค้า → รายจ่ายร้าน</p>'}</div>`}
-function viewPoReport(){const N=prRange(),lastDel=(()=>{const t=bkkDay(0),L=(S.poAll||S.poOrders||[]).filter(o=>poLive(o)&&o.deliverDate>t&&o.deliverDate<=bkkDay(7)).map(o=>o.deliverDate).sort();return L.length?L[L.length-1]:t})();
-  let from,to;if(N==='c'){to=S.prTo||prLS('nl_prt')||lastDel;from=S.prFrom||prLS('nl_prf')||dAdd(to,-6);if(from>to)[from,to]=[to,from]}else if(N===1){to=from=bkkDay(0)}else{to=lastDel;from=dAdd(to,-(N-1))}
+function viewPoReport(){const N=prRange(),lastDel=(()=>{const t=bkkDay(0),L=(S.poAll||S.poOrders||[]).filter(o=>poLive(o)&&poClosed(o)&&o.deliverDate>t&&o.deliverDate<=bkkDay(7)).map(o=>o.deliverDate).sort();return L.length?L[L.length-1]:t})();
+  let from,to;if(N==='c'){to=S.prTo||prLS('nl_prt')||lastDel;from=S.prFrom||prLS('nl_prf')||dAdd(to,-6);if(from>to)[from,to]=[to,from]}else if(N===1){to=from=bkkDay(-1)}else{to=lastDel;from=dAdd(to,-(N-1))}
   const len=dDiff(from,to)+1,CP=cpPlan(),CC=CP?cpCalc(CP):null,A=prAgg(from,to,CC),B=prAgg(dAdd(from,-len),dAdd(from,-1),CC),T=A.T,pf=T.s-T.c;PRD=A.D;
   const ak=from+to,anim=ak!==PRAK;PRAK=ak;PRANIM=anim;if(anim&&!matchMedia('(prefers-reduced-motion: reduce)').matches)setTimeout(prCount,30);
   const cmp=B.T.o>=Math.max(3,A.T.o*.3),t0=Date.parse(from+'T00:00:00+07:00'),t1=Date.parse(to+'T00:00:00+07:00')+DAY;
   const sp=k=>prSpark(A.D.map(k),k===spS?PRC.s:k===spC?PRC.c:PRC.p),spS=r=>r.s,spC=r=>r.c,spP=r=>r.s-r.c;
   const hasFD=A.I.some(x=>x.dk)&&A.I.some(x=>!x.dk),gg=hasFD?prGrp():'all',gI=A.I.filter(x=>gg==='all'||((gg==='d')===!!x.dk)),gA=anim||PRGA;PRGA=false;PRANIM=gA;
   const itemsDonut=prDonut([...gI].map(x=>({...x,s:x.s-(x.pd||0)-(x.dd||0)})).sort((a,b)=>b.s-a.s).map(x=>[x.n,x.s]),gI.reduce((a,x)=>a+x.s-(x.pd||0)-(x.dd||0),0),gg==='d'?'ยอดขายน้ำ':gg==='f'?'ยอดขายอาหาร':'สัดส่วนยอดขาย'),itemsHtml=prItems(A.I);PRANIM=anim;if(gA&&!anim)setTimeout(prCount,30);
-  let h=`<div class="sec-h"><h2>สรุปยอดร้านพรีออเดอร์</h2><span class="hint">ตามวันส่ง · ไม่รวมที่ยกเลิก</span></div>${cpRoundCard()}
+  let h=`<div class="sec-h"><h2>สรุปยอดร้านพรีออเดอร์</h2><span class="hint">ตามวันส่ง · เฉพาะรอบที่ปิดยอดแล้ว · ไม่รวมที่ยกเลิก</span></div>${cpRoundCard()}
    <div class="prbar"><div class="chips prrange" role="group" aria-label="ช่วงเวลา">${PR_RANGES.map(([v,t])=>`<button class="chip" aria-pressed="${N===v}" data-act="prRange" data-v="${v}" type="button">${t}</button>`).join('')}<button class="chip" aria-pressed="${N==='c'}" data-act="prRange" data-v="c" type="button">📅 กำหนดเอง</button></div>
     ${N==='c'?`<div class="prdates"><input type="date" id="prF" value="${from}" max="${bkkDay(7)}" aria-label="ตั้งแต่"><span>ถึง</span><input type="date" id="prT" value="${to}" max="${bkkDay(7)}" aria-label="ถึง"></div>`:`<span class="muted prdr">${from===to?esc(poDate(from)):esc(poDate(from))+' – '+esc(poDate(to))}</span>`}</div>
    <div class="prk${anim?' anim':''}"><div class="stat"><span>ยอดขาย</span><b class="num"${anim?cntB(T.s):''}>${baht(T.s)}</b>${cmp?prDelta(T.s,B.T.s):''}${sp(spS)}</div><div class="stat"><span>ต้นทุน</span><b class="num"${anim?cntB(T.c):''}>${baht(T.c)}</b>${cmp?prDelta(T.c,B.T.c,1):''}${sp(spC)}</div><div class="stat"><span>กำไรขั้นต้น</span><b class="num"${anim?cntB(pf):''} style="color:${pf>=0?'var(--ok,#2e7d32)':'var(--chili)'}">${baht(pf)}</b><small class="muted">ส่วนต่าง ${T.s?Math.round(pf/T.s*100):0}%</small>${sp(spP)}</div><div class="stat"><span>ออร์เดอร์</span><b class="num"${anim?cntB(T.o,'i'):''}>${T.o}</b><small class="muted">🍚 ${T.f} กล่อง${T.dr?' · 🥤 น้ำ '+T.dr:''}${T.u?' · ค้าง '+baht(T.u):''}</small></div></div>
-   <div class="card prcard"><div class="prh"><h3>ยอดขายรายวัน</h3><div class="prlg"><span><i style="background:${PRC.s}"></i>ยอดขาย</span><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="ln" style="background:${PRC.p}"></i>กำไร</span></div></div>${prDayChart(A.D,anim)}<p class="help" style="margin:0">แตะ/ชี้ที่วันเพื่อดูตัวเลข${cmp?' · % เทียบกับ'+(len===1?'เมื่อวาน':' '+len+' วันก่อนหน้า'):''}</p></div>
+   <div class="card prcard"><div class="prh"><h3>ยอดขายรายวัน</h3><div class="prlg"><span><i style="background:${PRC.s}"></i>ยอดขาย</span><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="ln" style="background:${PRC.p}"></i>กำไร</span></div></div>${prDayChart(A.D,anim)}<p class="help" style="margin:0">แตะ/ชี้ที่วันเพื่อดูตัวเลข${cmp?' · % เทียบกับ'+(len===1?'วันก่อนหน้า':' '+len+' วันก่อนหน้า'):''}</p></div>
    <div class="card prcard"><div class="prh"><h3>แยกตามเมนู · ขายดี</h3><div class="prlg"><span><i style="background:${PRC.c}"></i>ต้นทุน</span><span><i class="dsc pro"></i>โปรโมชั่น</span><span><i class="dsc"></i>ส่วนลด</span><span><i style="background:${PRC.p}"></i>กำไร</span></div></div><div class="prsplit${gA?' anim':''}">${itemsDonut}<div>${itemsHtml}</div></div><p class="help" style="margin:0">ความยาวแท่ง = ราคาเต็ม (ต้นทุน + ส่วนลด/โปร + กำไร) · ตัวเลขใหญ่ = ยอดหลังหักส่วนลด · แตะวงกลมเพื่อดูแต่ละเมนู</p></div>
    ${poCashCard(T,t0,t1,len)}${prExp(t0,t1)}${poFinCard(T,t0,t1,len)}
    <details class="card prtbl"><summary><b>ตารางรายวัน</b></summary><div class="list">${[...A.D].reverse().filter(r=>r.o).map(r=>`<div class="row"><div class="grow"><div class="t">ส่ง${poDayName(r.d)}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(r.d))?' · '+esc(poDate(r.d)):''}</div><div class="s">${r.o} ออร์เดอร์ · ${r.f} กล่อง${r.dr?' · น้ำ '+r.dr:''}${r.u?' · ค้างจ่าย '+baht(r.u):''}</div></div><div style="text-align:right"><b>${baht(r.s)}</b><div class="s muted">ทุน ${baht(r.c)} · กำไร ${baht(r.s-r.c)}</div></div></div>`).join('')||'<div class="empty">ไม่มียอด</div>'}</div></details>`;
