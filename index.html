@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-121023">
+<meta name="app-version" content="2026.10.21-122238">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1175,6 +1175,23 @@ input.ovmax{border-color:#dc2626!important;background:#fef2f2!important;color:#b
 .pkcalc .cpl input::placeholder{color:rgba(146,64,14,.35);font-weight:500;font-size:16px}
 .pkcalc .cpl:has(input:not(:placeholder-shown)){background:#fff;border-color:rgba(245,158,11,.55)}
 .pkcalc .pkres{position:relative;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(20,184,166,.08));border:1px solid rgba(16,185,129,.3);border-radius:14px;padding:10px 14px;line-height:1.7}
+.cpflow{display:flex;align-items:stretch;gap:6px;background:linear-gradient(135deg,#0f766e,#14b8a6);border-radius:16px;padding:10px;color:#fff;box-shadow:0 10px 26px rgba(15,118,110,.25)}
+.cpflow>div{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px;background:rgba(255,255,255,.12);border-radius:12px;padding:8px 4px}.cpflow i{font-style:normal;width:22px;height:22px;border-radius:50%;background:#fff;color:#0f766e;font-weight:800;font-size:12px;display:grid;place-items:center}.cpflow b{font-size:13px}.cpflow small{font-size:11px;opacity:.85}.cpflow>span{align-self:center;opacity:.8;font-weight:700}
+.cpnote{display:flex;flex-direction:column;gap:3px;border-radius:14px;padding:10px 14px;font-size:13.5px;line-height:1.55}.cpnote.est{background:#fffbeb;border:1px solid #fcd34d;color:#78350f}.cpnote.ok{background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46}
+.cpsec{border-radius:18px!important;box-shadow:0 8px 24px rgba(0,0,0,.05)!important}
+.cpsec-h{display:flex;align-items:center;gap:10px}.cpsec-h h3{margin:0;font-size:16px}.cpno{width:30px;height:30px;flex:none;border-radius:10px;display:grid;place-items:center;font-weight:800;color:#fff;background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 4px 12px rgba(217,119,6,.35)}
+.cpil{display:flex;flex-direction:column;gap:8px}
+.cpr{display:grid;grid-template-columns:42px minmax(0,1fr) 108px 84px 28px;grid-template-areas:"av main q p x" "av m m m m";gap:6px 10px;align-items:center;background:var(--surface,#fff);border:1px solid var(--line);border-radius:14px;padding:10px;transition:border-color .2s,box-shadow .2s}
+.cpr:focus-within{border-color:#14b8a6;box-shadow:0 0 0 4px rgba(20,184,166,.15)}
+.cpr-av{grid-area:av;width:42px;height:42px;border-radius:12px;font-size:18px;align-self:start;display:grid;place-items:center;overflow:hidden;color:#fff;font-weight:800;background:linear-gradient(135deg,hsl(var(--h,170) 60% 55%),hsl(calc(var(--h,170) + 40) 55% 40%))}.cpr-av img{width:100%;height:100%;object-fit:cover}.cpr-main{grid-area:main;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cpr-sel,.cpr-name{border:0!important;background:transparent!important;box-shadow:none!important;padding:0!important;min-height:26px;font-weight:700;font-size:15.5px;width:100%;color:var(--fg)}
+.cpr-sub{font-size:11.5px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cpr-q{grid-area:q;display:flex;align-items:center;gap:4px;background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.3);border-radius:10px;padding:2px 8px}.cpr-q input{border:0!important;background:transparent!important;box-shadow:none!important;padding:4px 0!important;min-height:30px;width:100%;min-width:0;font-weight:800;font-size:17px;text-align:right}.cpr-q em{font-style:normal;font-size:12px;opacity:.75;white-space:nowrap}.cpr-q .cpr-u{font-size:12px!important;font-weight:500!important;text-align:left;width:46px}
+.cpr-p{grid-area:p;text-align:right;font-size:16px;color:#b45309}.cpr-pp{grid-area:p}.cpr-pp span{font-size:13px;opacity:.7}
+.cpr-m{grid-area:m;justify-self:start;font-size:12.5px!important;padding:3px 26px 3px 10px!important;min-height:0!important;border-radius:99px!important;background-color:rgba(0,0,0,.04)!important;border:1px solid var(--line)!important;width:auto}
+.cpr-x{grid-area:x;border:0;background:rgba(239,68,68,.08);color:#dc2626;width:28px;height:28px;border-radius:8px;cursor:pointer}
+.cpsum{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 4px 0;border-top:1px dashed var(--line)}.cpsum b{font-size:18px;color:#b45309}
+@media (max-width:480px){.cpr{grid-template-columns:42px minmax(0,1fr) auto;grid-template-areas:"av main x" "q q p" "m m m"}.cpr-q:not(.cpr-pp){grid-area:q}.cpr-pp{grid-area:p;width:110px}}
 </style>
 </head>
 <body>
@@ -3689,17 +3706,25 @@ function cpSoldFill(cp){const RS=poRounds(),cur=RS[0],r=roundOrders(cur).length|
 function sheetPoCost(){const s=S.sheet;if(!s.cp)s.cp=JSON.parse(JSON.stringify(cpPlan()||cpDefault()));const cp=s.cp,RR=cpSoldFill(cp),M=S.poMenu||[],ST=(S.stock||[]).filter(x=>x.shop==='po');
   const F_=(c,k,x)=>`<label class="cpl cpl-${k}"><small>${c}</small>${x}</label>`,io=(i,k,v,a='',c='')=>F_(c,k,`<input data-ci="${i}" data-ck="${k}" value="${esc(v??'')}" ${a}>`),po=(i,k,v,a='',c='')=>F_(c,k,`<input data-pi="${i}" data-pk="${k}" value="${esc(v??'')}" ${a}>`);
   $('#panel').innerHTML=head('🧮 ต้นทุนเฉลี่ยต่อรอบ','ของเบิกใช้ ÷ กล่องที่ขาย + ของนับชิ้นตามสูตร = ต้นทุนต่อกล่อง')+`<form class="sh-body cpf" id="cpForm" onsubmit="return false" autocomplete="off">
-   <div class="card"><div class="inrow" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">1) ของเบิกใช้ต่อรอบ (ไว้ประมาณการ)</h3><button class="btn sm" data-act="poWd" type="button">✂️ ตัดสต็อกขายวันนี้</button></div><p class="help" style="margin:0">เฉพาะของเบิกใช้ (ไก่ ข้าว น้ำปลา น้ำตาล เครื่องใน) · ของนับชิ้น (กล่อง ช้อน ขวด) ไม่ต้องใส่ — ระบบเอาจากสูตรเมนู · พอกด ✂️ ตัดสต็อกขายวันนี้ จะคิดจากของที่เบิกจริงแทน</p>
-        ${cp.ing.map((x,i)=>{const t=cpSt(x),lp=t&&+t.unitCost>0;return `<div class="cpi${t?' cplink':''}">${F_('ทุนจากสต็อกในคลัง','sid',`<select data-ci="${i}" data-ck="sid"><option value="">— ไม่ผูกสต็อก (ใส่ราคาเอง) —</option>${ST.map(o=>`<option value="${esc(o.id)}" ${o.id===x.sid?'selected':''}>${esc(o.name)} · เหลือ ${num(+o.qty||0)} ${esc(o.unit||'')}</option>`).join('')}</select>`)}${io(i,'n',x.n,'maxlength="30" placeholder="เช่น ไก่"'+(t?' readonly':''),'รายการ')}${io(i,'q',x.q,'inputmode="decimal"',t?'เบิก':'จำนวน')}${io(i,'u',x.u,'maxlength="8"'+(t?' readonly':''),'หน่วย')}${io(i,'p',lp?cpP(x):x.p,'inputmode="decimal" placeholder="0"'+(lp?' readonly':''),lp?'ราคา (จากคลัง)':'ราคารวม ฿')}
-      ${F_('วิธีคิด','m',`<select data-ci="${i}" data-ck="m"><option value="share" ${x.m!=='each'?'selected':''}>เฉลี่ยตามปริมาณ</option><option value="each" ${x.m==='each'?'selected':''}>ใช้กล่องละ 1</option></select>`)}
-      <button class="lnk" data-act="cpDel" data-v="i${i}" type="button" aria-label="ลบ">✕</button><small class="muted cpu" data-cu="${i}"></small></div>`}).join('')}
-    <button class="lnk" data-act="cpAdd" data-v="i" type="button" style="align-self:flex-start">+ เพิ่มรายการ</button>
-    <p class="help" style="margin:0">ราคา = จำนวน × ทุนในคลัง (เช่น ไก่ 90/กก. × 10 = 900)</p></div>
-   <div class="card"><h3>2) เมนูที่เฉลี่ยต้นทุน · จำนวนจากยอดขายจริง</h3><p class="help" style="margin:0">จำนวนกล่องดึงจากออร์เดอร์${RR.k==='cur'?'รอบนี้ (กำลังขาย)':'รอบที่ปิดยอดล่าสุด'}ให้เอง ไม่ต้องใส่ · ใส่ทุกเมนูที่ใช้ของเบิก (เช่น ข้าวมันไก่ทอด) ด้วย "+ เพิ่มแบบ"</p>
+   <div class="cpflow"><div><i>1</i><b>วัตถุดิบต่อรอบ</b><small>ค่าประมาณ</small></div><span>→</span><div><i>2</i><b>กล่องที่ขาย</b><small>ดึงจากออร์เดอร์</small></div><span>→</span><div><i>3</i><b>ต้นทุน/กล่อง</b><small>คำนวณให้</small></div></div>
+   ${(()=>{const RS=poRounds(),n=RS.reduce((a,r)=>a+wdOf(r).length,0);return `<div class="cpnote ${n?'ok':'est'}"><b>${n?'✅ รอบนี้ตัดสต็อกจริงแล้ว':'💡 ส่วนที่ 1 คืออะไร?'}</b><span>${n?'ระบบใช้ของที่เบิกจริงคิดต้นทุนอยู่แล้ว — ส่วนที่ 1 ไม่ต้องแก้ (ค่าข้างล่างอัปเดตตามการตัดครั้งล่าสุดให้เอง)':'คือ "ปกติ 1 รอบใช้ไก่ ข้าว เครื่องปรุงเท่าไร" ไว้เดาต้นทุนตอนที่<b>ยังไม่ได้กด ✂️ ตัดสต็อก</b> · พอตัดสต็อกจริง ระบบจะใช้ของจริงแทนและอัปเดตตัวเลขตรงนี้ให้เอง'}</span></div>`})()}
+   <div class="card cpsec"><div class="cpsec-h"><span class="cpno">1</span><div class="grow"><h3>วัตถุดิบที่ใช้ต่อ 1 รอบ</h3><small class="muted">เฉพาะของเบิกใช้ (ไก่ ข้าว เครื่องปรุง) · กล่อง/ช้อน ไม่ต้องใส่</small></div><button class="btn sm wdbtn" data-act="poWd" type="button">✂️ ตัดสต็อก</button></div>
+    <div class="cpil">${cp.ing.map((x,i)=>{const t=cpSt(x),hue=[...String((t&&t.name)||x.n||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360;return `<div class="cpr${t?' cplink':''}">
+      <div class="cpr-av stava${t&&t.img?' has':''}" style="--h:${hue}">${t&&t.img?thumb(t,'thumb'):esc(String((t&&t.name)||x.n||'?').slice(0,1))}</div>
+      <div class="cpr-main"><select class="cpr-sel" data-ci="${i}" data-ck="sid" aria-label="วัตถุดิบ"><option value="">✏️ พิมพ์เอง (ไม่ผูกคลัง)</option>${ST.map(o=>`<option value="${esc(o.id)}" ${o.id===x.sid?'selected':''}>${esc(o.name)}</option>`).join('')}</select>
+       ${t?`<input type="hidden" data-ci="${i}" data-ck="n" value="${esc(x.n||t.name)}"><input type="hidden" data-ci="${i}" data-ck="u" value="${esc(x.u||t.unit||'')}">`:`<input class="cpr-name" data-ci="${i}" data-ck="n" value="${esc(x.n||'')}" maxlength="30" placeholder="ชื่อ เช่น แก๊ส">`}
+       <small class="cpr-sub" data-cu="${i}"></small></div>
+      <div class="cpr-q"><input data-ci="${i}" data-ck="q" value="${esc(x.q??'')}" inputmode="decimal" placeholder="0" aria-label="จำนวนต่อรอบ">${t?`<em>${esc(t.unit||'')}</em>`:`<input class="cpr-u" data-ci="${i}" data-ck="u" value="${esc(x.u||'')}" maxlength="8" placeholder="หน่วย">`}</div>
+      ${t?`<b class="cpr-p" data-cp="${i}">${baht(cpP(x))}</b>`:`<div class="cpr-q cpr-pp"><span>฿</span><input data-ci="${i}" data-ck="p" value="${esc(x.p??'')}" inputmode="decimal" placeholder="ราคารวม"></div>`}
+      <select class="cpr-m" data-ci="${i}" data-ck="m" title="วิธีคิด"><option value="share" ${x.m!=='each'?'selected':''}>⚖️ เฉลี่ยตามปริมาณ</option><option value="each" ${x.m==='each'?'selected':''}>📦 กล่องละ 1</option></select>
+      <button class="cpr-x" data-act="cpDel" data-v="i${i}" type="button" aria-label="ลบ">✕</button></div>`}).join('')}</div>
+    <div class="cpsum"><button class="btn sm" data-act="cpAdd" data-v="i" type="button">+ เพิ่มวัตถุดิบ</button><span>รวมต่อรอบ <b id="cpIngT">${baht(cp.ing.reduce((a,x)=>a+cpP(x),0))}</b></span></div>
+    <p class="help" style="margin:0">⚖️ เฉลี่ยตามปริมาณ = หารทุกกล่องตามขนาด (พิเศษได้มากกว่า) · 📦 กล่องละ 1 = ของที่ใช้ชิ้นเดียวต่อกล่อง</p></div>
+   <div class="card cpsec"><div class="cpsec-h"><span class="cpno">2</span><div class="grow"><h3>เมนู & จำนวนกล่องที่ขาย</h3><small class="muted">จำนวนกล่องดึงจากออร์เดอร์จริงให้เอง</small></div></div><p class="help" style="margin:0">จำนวนกล่องดึงจากออร์เดอร์${RR.k==='cur'?'รอบนี้ (กำลังขาย)':'รอบที่ปิดยอดล่าสุด'}ให้เอง ไม่ต้องใส่ · ใส่ทุกเมนูที่ใช้ของเบิก (เช่น ข้าวมันไก่ทอด) ด้วย "+ เพิ่มแบบ"</p>
         ${cp.prod.map((r,i)=>`<div class="cpp">${po(i,'n',r.n,'maxlength="24"','ชื่อ')}${F_('เมนู','menuId',`<select data-pi="${i}" data-pk="menuId"><option value="">— เลือกเมนู —</option>${M.map(m=>`<option value="${esc(m.id)}" ${m.id===r.menuId?'selected':''}>${esc(m.name)}</option>`).join('')}</select>`)}${po(i,'opt',r.opt,'maxlength="20" placeholder="เว้นว่าง = ธรรมดา"','ตัวเลือกที่มีคำว่า')}${po(i,'qty',r.qty,'readonly class="ro"','ขายจริง (กล่อง)')}${po(i,'f',r.f,'inputmode="decimal"','ปริมาณ %')}${po(i,'price',r.price,'inputmode="decimal"','ราคาขาย ฿')}<button class="lnk" data-act="cpDel" data-v="p${i}" type="button" aria-label="ลบ">✕</button></div>`).join('')}
     <button class="lnk" data-act="cpAdd" data-v="p" type="button" style="align-self:flex-start">+ เพิ่มแบบ</button>
     <p class="help" style="margin:0">ปริมาณ %: ธรรมดา = 100 · พิเศษเพิ่ม 10–15% ใส่ 110–115 · "ตัวเลือกที่มีคำว่า" ใช้แยกออร์เดอร์ เช่น ลูกค้าเลือก "พิเศษ" จะนับเป็นแถวพิเศษ</p></div>
-   <div class="card cpres" id="cpRes"></div>
+   <div class="card cpres cpsec" id="cpRes"></div>
    <label class="check"><input type="checkbox" id="cpMenu" checked> ใส่ต้นทุนต่อกล่องลงหน้าเมนูด้วย (แถวธรรมดา)</label>
    <p class="err" id="cpErr" role="alert"></p></form>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn pri wide" data-act="cpSave" type="button">บันทึก</button></div>`;
@@ -3711,9 +3736,9 @@ function cpUpd(){if(!S.sheet||S.sheet.type!=='poCost'||!S.sheet.cp)return;cpRead
   document.querySelectorAll('[data-cu]').forEach(e=>{const i=+e.dataset.cu,x=cp.ing[i];if(!x)return;const t=cpSt(x),p=cpP(x);
     if(t){const pi=document.querySelector(`[data-ci="${i}"][data-ck="p"]`);if(pi&&pi.readOnly)pi.value=p;}
     const over=false;e.style.color=over?'var(--chili)':'';
-    e.textContent=t?`ทุน ${baht(+t.unitCost||0)}/${t.unit||'หน่วย'} · ${num(+x.q||0)} ${t.unit||''} = ${baht(p)}${x.m==='each'&&+x.q>0?' → '+baht(p/x.q)+'/กล่อง':''} · คลังเหลือ ${num(+t.qty||0)}`:(+x.q>0&&p>0?'= '+baht(p/x.q)+' / '+(x.u||'หน่วย'):'')});
+    e.textContent=t?`ทุน ${baht(+t.unitCost||0)}/${t.unit||'หน่วย'} · คลังเหลือ ${num(+t.qty||0)} ${t.unit||''}${x.m==='each'&&+x.q>0?' · '+baht(p/x.q)+'/กล่อง':''}`:(+x.q>0&&p>0?'= '+baht(p/x.q)+' / '+(x.u||'หน่วย'):'')});
   const col=v=>`color:${v>=0?'var(--ok,#2e7d32)':'var(--chili)'}`;
-  el.innerHTML='<h3>3) ผลคำนวณ</h3>'+cpResHtml(cp,C)}
+  el.innerHTML='<div class="cpsec-h"><span class="cpno">3</span><div class="grow"><h3>ผลคำนวณต้นทุนต่อกล่อง</h3></div></div>'+cpResHtml(cp,C);const T=$('#cpIngT');if(T)T.textContent=baht(cp.ing.reduce((a,x)=>a+cpP(x),0));document.querySelectorAll('[data-cp]').forEach(e=>{const x=cp.ing[+e.dataset.cp];if(x)e.textContent=baht(cpP(x))})}
 Object.assign(ACT,{
   cpRk:d=>{S.cpRk=d.v;render()},
   poCost:()=>{if(!poAdmin())return deny();openSheet({type:'poCost'})},
