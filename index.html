@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-120641">
+<meta name="app-version" content="2026.10.21-121023">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1162,6 +1162,19 @@ input.pkflash{animation:pkFl .9s ease-out}@keyframes pkFl{0%{box-shadow:0 0 0 0 
 input.ovmax{border-color:#dc2626!important;background:#fef2f2!important;color:#b91c1c!important;font-weight:700;box-shadow:0 0 0 3px rgba(220,38,38,.15)}
 .ovw{display:block;color:#dc2626;font-weight:700;font-size:12.5px;margin-top:4px;animation:ovB 1.2s ease-in-out infinite}@keyframes ovB{50%{opacity:.55}}
 .stmc.ov{color:#dc2626;opacity:1;font-weight:700}
+.pkcalc{position:relative;border:0!important;background:linear-gradient(135deg,rgba(255,251,235,.95),rgba(254,243,199,.85))!important;box-shadow:0 10px 30px rgba(217,119,6,.12),inset 0 0 0 1px rgba(245,158,11,.35)!important;border-radius:18px!important;padding:14px!important;gap:12px!important;overflow:hidden}
+.pkcalc::before{content:'';position:absolute;inset:-40% -20% auto auto;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(251,191,36,.35),transparent 70%);pointer-events:none}
+.pkcalc h3{font-size:15px;position:relative}
+.pkcalc .pkrow{gap:10px;position:relative}
+.pkcalc .cpl{background:rgba(255,255,255,.75);border-radius:14px;padding:8px 10px 6px;box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 4px 14px rgba(146,64,14,.08);border:1px solid rgba(245,158,11,.25);transition:border-color .2s,box-shadow .2s,transform .2s;gap:2px}
+.pkcalc .cpl:focus-within{border-color:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.18),0 8px 22px rgba(217,119,6,.18);transform:translateY(-1px)}
+.pkcalc .cpl small{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:#92400e;letter-spacing:.1px;line-height:1.25;min-height:2.5em;align-items:flex-start}
+.pkcalc .cpl:nth-child(1) small::before{content:'📦'}.pkcalc .cpl:nth-child(2) small::before{content:'🏷️'}.pkcalc .cpl:nth-child(3) small::before{content:'💰'}.pkcalc .cpl:nth-child(4) small::before{content:'🔢'}
+.pkcalc .cpl input,.pkcalc .cpl select{border:0!important;background:transparent!important;box-shadow:none!important;padding:2px 0!important;min-height:34px;font-size:20px;font-weight:700;color:#451a03;outline:none;width:100%;font-variant-numeric:tabular-nums}
+.pkcalc .cpl select{font-size:17px;cursor:pointer}
+.pkcalc .cpl input::placeholder{color:rgba(146,64,14,.35);font-weight:500;font-size:16px}
+.pkcalc .cpl:has(input:not(:placeholder-shown)){background:#fff;border-color:rgba(245,158,11,.55)}
+.pkcalc .pkres{position:relative;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(20,184,166,.08));border:1px solid rgba(16,185,129,.3);border-radius:14px;padding:10px 14px;line-height:1.7}
 </style>
 </head>
 <body>
