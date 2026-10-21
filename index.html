@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-122238">
+<meta name="app-version" content="2026.10.21-123428">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -2523,10 +2523,11 @@ function sheetPurchase(){const sid=S.sheet.id||'';
     if(lastItem!==$('#pItem').value){lastItem=$('#pItem').value;qMan=false;setUnitSel($('#pBuyU'),st&&st.buyUnit?st.buyUnit:'');$('#pPer').value=st&&st.buyPer?st.buyPer:''}
     if(e&&e.target&&e.target.id==='pQty')qMan=$('#pQty').value.trim()!=='';
     const bu=val('pBuyU')||u;$('#pPerBU').textContent=bu;
-    const same=!val('pBuyU')||val('pBuyU')===u;$('#pPerF').style.opacity=same?.6:1;
+    const same=!val('pBuyU')||val('pBuyU')===u,cf=!same?uFactor(val('pBuyU'),u):null;$('#pPerF').style.opacity=same||cf?.6:1;
+    if(cf){$('#pPer').value=String(cf);$('#pPer').readOnly=true}else if($('#pPer').readOnly){$('#pPer').readOnly=false;$('#pPer').value=''}
     const bq=nval('pBuy'),per=same?1:nval('pPer');if(!qMan){$('#pQty').value=bq&&per?String(r2(bq*per)):'';fmtIn($('#pQty'))}
     const q=nval('pQty'),a=nval('pAmt');const t=[];
-    if(q&&a)t.push(`💡 ตก <b>${esc(u)}ละ ${baht(a/q)}</b>`);if(bq&&a&&!same)t.push(`${esc(bu)}ละ ${baht(a/bq)}`);if(q)t.push(`เข้าสต็อก +${num(q)} ${esc(u)}`);
+    if(q&&a)t.push(`💡 ตก <b>${esc(u)}ละ ${baht(a/q)}</b>`);if(bq&&a&&!same)t.push(`${esc(bu)}ละ ${baht(a/bq)}`);if(cf&&bq)t.unshift(`🔄 แปลงหน่วยให้อัตโนมัติ: ${num(bq)} ${esc(val('pBuyU'))} = <b>${num(r2(bq*cf*1000)/1000)} ${esc(u)}</b>`);if(q)t.push(`เข้าสต็อก +${num(q)} ${esc(u)}`);
     const box=$('#pUnitCost');box.hidden=!t.length;box.innerHTML=t.join(' · ')};
   ['pItem','pQty','pAmt','pBuy','pBuyU','pUnit','pPer'].forEach(i=>{$('#'+i).addEventListener('input',upd);$('#'+i).addEventListener('change',upd)});upd();}
 async function savePurch(){let sid=val('pItem');const qty=nval('pQty'),amount=nval('pAmt');
@@ -2534,7 +2535,7 @@ async function savePurch(){let sid=val('pItem');const qty=nval('pQty'),amount=nv
   let s=S.stock.find(x=>x.id===sid);
   if(sid==='__new'){const name=val('pName');if(!name)return toast('ใส่ชื่อของใหม่','bad');sid=S.db.collection('stock').doc().id;s={name,unit:val('pUnit')||'หน่วย',qty:0,min:0,unitCost:0}}
   const uc=amount>0?r2(amount/qty):(+s.unitCost||0);const isNew=!S.stock.some(x=>x.id===sid);
-  const bq=nval('pBuy'),bu=bq>0?(val('pBuyU')||''):'';const bx=bq>0&&bu?{buyUnit:bu,buyPer:r2(qty/bq)}:{};
+  const bq=nval('pBuy'),bu=bq>0?(val('pBuyU')||''):'';const bx=bq>0&&bu&&!uFactor(bu,s.unit)&&bu!==s.unit?{buyUnit:bu,buyPer:r2(qty/bq)}:{};
   const ok=await write('stock/'+sid,r=>isNew?r.set({name:s.name,unit:s.unit,qty,min:0,unitCost:uc,...bx,...shopTag()}):r.transform(d=>{const q0=Math.max(0,+d.qty||0),c0=+d.unitCost||0;const nc=amount>0&&q0>0&&c0>0?Math.round((q0*c0+amount)/(q0+qty)*10000)/10000:uc;return {qty:r2((+d.qty||0)+qty),unitCost:nc,...bx}}));if(!ok)return;
   const ref=S.db.collection('purchases').doc();
   await write('purchases/'+ref.id,r=>r.set({stockId:sid,name:s.name,unit:s.unit,qty,amount,...(bq>0?{buyQty:bq,buyUnit:bu}:{}),note:val('pNote'),...(amount>0?{unitPrice:Math.round(amount/qty*10000)/10000}:{}),at:fromDateInput(val('pDate')),...shopTag()}));
