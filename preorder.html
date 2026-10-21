@@ -357,6 +357,13 @@ a.btn{color:inherit;display:flex;align-items:center;justify-content:center;text-
 body.dark .sph,[data-theme=dark] .sph{color:#fbbf24!important}
 .sph{color:#d97706!important}.sph small{color:#f59e0b!important}
 .sphero{width:fit-content;max-width:100%;min-width:min(100%,360px)}.sphero .grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),440px))!important}
+.pohero{position:relative}
+.heroline{position:absolute;top:14px;right:14px;z-index:2;display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:99px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#22d36b,#06c755 55%,#05a346);box-shadow:0 0 0 2px rgba(255,255,255,.35),0 6px 16px rgba(6,199,85,.45);animation:hlPulse 2.2s ease-in-out infinite}
+.heroline .hl-ic{background:#fff;color:#06c755;font-weight:900;font-size:11px;padding:5px 7px;border-radius:99px;letter-spacing:.3px}
+.heroline .hl-t{display:flex;flex-direction:column;line-height:1.15}.heroline b{font-size:14px}.heroline small{font-size:11px;opacity:.9}
+@keyframes hlPulse{0%,100%{box-shadow:0 0 0 2px rgba(255,255,255,.35),0 6px 16px rgba(6,199,85,.4)}50%{box-shadow:0 0 0 4px rgba(255,255,255,.55),0 6px 22px rgba(6,199,85,.7)}}
+@media (max-width:420px){.heroline{top:10px;right:10px;padding:5px 10px 5px 5px}.heroline small{display:none}}
+@media (prefers-reduced-motion:reduce){.heroline{animation:none}}
 </style>
 </head>
 <body>
@@ -644,7 +651,8 @@ function menuGrid(empty){const P=promoIds();if(S.cat==='__promo'&&!S.menu.some(m
 const cutAt=st=>{const d=st.closeDate||st.today||new Date(Date.now()+7*3600e3).toISOString().slice(0,10);const t=/^\d\d:\d\d$/.test(st.cutoff||'')?st.cutoff:'20:00';return Date.parse(d+'T'+t+':00+07:00')};
 const cdTxt=ms=>{if(!(ms>0))return 'ปิดรับแล้ว';const s=Math.floor(ms/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>String(n).padStart(2,'0');return (d?d+' วัน ':'')+p(h)+':'+p(m)+':'+p(x)};
 const openAt=st=>Date.parse((st.openDate||st.today||new Date(Date.now()+7*3600e3).toISOString().slice(0,10))+'T'+(st.openFrom||'00:00')+':00+07:00');
-function poHero(st){
+function poHero(st){const h=poHero0(st),u=S.cfg&&S.cfg.line;if(!u)return h;const i=h.indexOf('>');return h.slice(0,i+1)+`<a class="heroline" href="${esc(u)}" target="_blank" rel="noopener" data-a="lineAdd"><span class="hl-ic">LINE</span><span class="hl-t"><b>เพิ่มเพื่อน</b><small>รับโปรดีๆ</small></span></a>`+h.slice(i+1)}
+function poHero0(st){
   if(st.reason==='before'){const ms=openAt(st)-Date.now(),w=(S.cfg&&(S.cfg.window||st.window))||'';
     return `<div class="pohero soon"><span class="pill"><i></i>ยังไม่เปิดรับออร์เดอร์</span>
      <div><div class="lb">🚚 รอบส่ง</div><div class="big">${esc(thDate(st.deliverDate))}</div>${w?`<div class="wtime">เวลา ${esc(w)}</div>`:''}</div>
