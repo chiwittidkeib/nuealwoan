@@ -670,7 +670,7 @@ setInterval(()=>{const el=document.getElementById('poCdT');if(!el||!S.cfg||!S.cf
 const QR_RT=(()=>{try{return new URLSearchParams(location.search).get('r')||''}catch(e){return ''}})();
 // เปิดจาก QR ประจำรอบ: หมดอายุเมื่อรอบเปลี่ยน หรือหมดเวลา/ปิดรับ
 const QR_PASS=(()=>{try{const p=new URLSearchParams(location.search);return p.has('o')||p.has('t')||p.has('staff')}catch(e){return false}})();
-function qrExpired(c,st){if(QR_PASS)return false;if(!c.rt)return false;if(!QR_RT)return true;if(!st.open)return true;return c.rt!==QR_RT}
+function qrExpired(c,st){if(QR_PASS)return false;if(!c.rt)return false;if(!QR_RT)return false;if(!st.open)return true;return c.rt!==QR_RT}
 function render(){
   const v=$('#view'),f=$('#footIn'),c=S.cfg||{},st=c.state||{};let h='',ft='';
   const keep={};document.querySelectorAll('#view input,#view textarea').forEach(i=>{if(i.id)keep[i.id]=i.value});
