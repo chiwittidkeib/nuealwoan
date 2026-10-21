@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-091030">
+<meta name="app-version" content="2026.10.21-094956">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1138,6 +1138,9 @@ body.shop-po .shopsw::before{transform:translateX(100%);background:linear-gradie
 .dwrap input::-webkit-datetime-edit{opacity:0}.dwrap input:focus::-webkit-datetime-edit{opacity:1}
 .pfdate .dwrap{width:215px}
 .rcrow{display:flex;gap:6px;margin-top:6px}.rcrow .btn{flex:1}
+input.pkauto{background:linear-gradient(135deg,#ecfdf5,#d1fae5)!important;border-color:#10b981!important;color:#065f46!important;font-weight:700;cursor:default}
+.field.pkf>label::after{content:' ✓ คำนวณให้แล้ว';color:#059669;font-size:12px;font-weight:700}
+input.pkflash{animation:pkFl .9s ease-out}@keyframes pkFl{0%{box-shadow:0 0 0 0 rgba(16,185,129,.7)}100%{box-shadow:0 0 0 10px rgba(16,185,129,0)}}
 </style>
 </head>
 <body>
@@ -1587,8 +1590,8 @@ document.addEventListener('pointerdown',()=>{Bell.unlock();Bell.speechUnlock()},
 function sortMenu(both){if(both){const k=S.shop;S.shop=k==='po'?'noodle':'po';sortMenu();S.shop=k}const cats=curCats();S.menu.sort((a,b)=>{const ca=cats.indexOf(a.cat),cb=cats.indexOf(b.cat);return (ca<0?99:ca)-(cb<0?99:cb)||String(a.name).localeCompare(String(b.name),'th')})}
 
 /* ---------- main render ---------- */
-document.addEventListener('focusin',e=>{const t=e.target;if(t&&(t.tagName==='TEXTAREA'||(t.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|file|range|color)$/.test(t.type))))document.body.classList.add('kb')});
-document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;if(!a||!/^(INPUT|TEXTAREA)$/.test(a.tagName))document.body.classList.remove('kb')},120));
+(function(){const vv=window.visualViewport;let base=0;const chk=()=>{const h=vv?vv.height:innerHeight;base=Math.max(base,innerHeight,h);const a=document.activeElement,typing=a&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|file|range|color)$/.test(a.type)));document.body.classList.toggle('kb',!!(typing&&vv&&base-vv.height>150))};
+if(vv)vv.addEventListener('resize',chk);addEventListener('orientationchange',()=>{base=0;setTimeout(chk,400)});document.addEventListener('focusout',()=>setTimeout(chk,150));document.addEventListener('focusin',()=>setTimeout(chk,350))})();
 function setTopH(){const t=document.querySelector('header.top');if(t)document.documentElement.style.setProperty('--toph',t.offsetHeight+'px')}
 try{new ResizeObserver(setTopH).observe(document.querySelector('header.top')||document.body)}catch(e){window.addEventListener('resize',setTopH)}
 function render(){
@@ -2409,7 +2412,8 @@ function sheetStock(){const s0=S.stock.find(x=>x.id===S.sheet.id)||{name:'',unit
   const pk=()=>{const pp=nval('sPkP'),pn=nval('sPkN'),u=val('sUnit')||'หน่วย',bu=val('sPkU')||'แพ็ค',r=$('#sPkR');document.querySelectorAll('.pkU').forEach(e=>e.textContent=bu);document.querySelectorAll('.pkB').forEach(e=>e.textContent=u);
     const pq=nval('sPkQ');let t=[];if(pp>0&&pn>0){const c=Math.round(pp/pn*10000)/10000;$('#sCost').value=String(c);t.push(`💡 ${baht(pp)} ÷ ${num(pn)} = <b>ทุน ${baht(c)} / ${esc(u)}</b>`)}
     if(pq>0&&pn>0){const q=Math.round(pq*pn*1000)/1000;$('#sQty').value=String(q);fmtIn($('#sQty'));t.push(`📦 ${num(pq)} ${esc(bu)} × ${num(pn)} = <b>คงเหลือ ${num(q)} ${esc(u)}</b>`)}
-    if(pq>0&&pp>0)t.push(`💰 จ่ายไป ${baht(pq*pp)}`);r.innerHTML=t.join('<br>')+(t.length?'<br><small>กรอกช่อง คงเหลือ / ต้นทุนต่อหน่วย ให้แล้ว</small>':'');r.hidden=!t.length};
+    if(pq>0&&pp>0)t.push(`💰 จ่ายไป ${baht(pq*pp)}`);r.innerHTML=t.join('<br>')+(t.length?'<br><small>✅ ใส่ช่อง คงเหลือ / ต้นทุนต่อหน่วย ให้อัตโนมัติแล้ว ไม่ต้องกรอกซ้ำ · อยากแก้เอง ให้ลบตัวเลขในกรอบแพ็กออก</small>':'');r.hidden=!t.length;
+    const lk=(id,on)=>{const e=$('#'+id);if(!e)return;const was=e.readOnly;e.readOnly=on;e.classList.toggle('pkauto',on);const f=e.closest('.field');if(f)f.classList.toggle('pkf',on);if(on&&!was){e.classList.remove('pkflash');void e.offsetWidth;e.classList.add('pkflash')}};lk('sQty',pq>0&&pn>0);lk('sCost',pp>0&&pn>0)};
   ['sPkQ','sPkP','sPkN','sPkU','sUnit'].forEach(i=>{const e=$('#'+i);if(e){e.addEventListener('input',pk);e.addEventListener('change',pk)}});pk();
   $('#sPhoto').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
     if(!/^image\//.test(f.type))return toast('เลือกไฟล์รูปภาพ','bad');
