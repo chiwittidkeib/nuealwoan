@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-174002">
+<meta name="app-version" content="2026.10.21-174850">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -2364,7 +2364,7 @@ async function uploadMenuPhoto(menuId,file){
 const removePhoto=path=>{if(path)SB.storage.from('menu-photos').remove([path]).catch(()=>{})};
 function renderIng(){const box=$('#ingList');if(!box)return;const R=S.sheet.recipe;
   box.innerHTML=R.length?R.map((g,i)=>{const s=S.stock.find(x=>x.id===g.stockId);return `<div style="display:grid;grid-template-columns:1fr 92px auto;gap:6px;align-items:end;margin-top:8px">
-   <div class="field"><label for="ig${i}">วัตถุดิบ</label><select id="ig${i}" data-ing="${i}" data-k="stockId"><option value="">เลือก</option>${stockList().map(s=>`<option value="${s.id}" ${s.id===g.stockId?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
+   <div class="field"><label for="ig${i}">วัตถุดิบ</label><select id="ig${i}" data-ing="${i}" data-k="stockId"><option value="">— เลือกวัตถุดิบ —</option>${WD_TABS.map(([k,lb])=>{const L=stockList().filter(s=>stTab(s)===k).sort((a,b)=>String(a.name).localeCompare(String(b.name),'th'));return L.length?`<optgroup label="${lb}">${L.map(s=>`<option value="${s.id}" ${s.id===g.stockId?'selected':''}>${esc(s.name)}${stCut(s)==='sale'?'':' · เบิกใช้'}</option>`).join('')}</optgroup>`:''}).join('')}</select></div>
    <div class="field"><label for="iq${i}">ใช้ (${esc(s?.unit||'หน่วย')})</label><input id="iq${i}" data-ing="${i}" data-k="qty" inputmode="decimal" value="${g.qty??''}"></div>
    <button class="btn sm ghost" data-act="delIng" data-i="${i}" type="button" aria-label="ลบ">×</button></div>`}).join(''):(stockList().length?'':'<p class="help" style="margin:8px 0 0">ยังไม่มีวัตถุดิบในสต็อก เพิ่มได้ที่แท็บหลังบ้าน</p>');}
 const OPT_TPL={noodle:['เลือกเส้น','req1',['เส้นเล็ก','เส้นใหญ่','เส้นหมี่','บะหมี่','วุ้นเส้น','เกาเหลา (ไม่ใส่เส้น)']],soup:['น้ำซุป','req1',['น้ำใส','น้ำตก','ต้มยำ','แห้ง']],size:['ขนาด','req1',[['ธรรมดา',0],['พิเศษ',10]]],top:['เพิ่มท็อปปิ้ง','multi',[['เพิ่มเนื้อ',20],['เพิ่มลูกชิ้น',10],['ไข่ต้ม',10]]],spicy:['ความเผ็ด','opt1',['ไม่เผ็ด','เผ็ดน้อย','เผ็ดกลาง','เผ็ดมาก']]};
