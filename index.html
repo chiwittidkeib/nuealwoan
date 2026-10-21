@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-181325">
+<meta name="app-version" content="2026.10.21-183301">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1227,6 +1227,12 @@ input.ovmax{border-color:#dc2626!important;background:#fef2f2!important;color:#b
 .verrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 16px;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.04);font-size:13px}
 .wdg{border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.55);margin-bottom:10px}.wdg>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 14px;font-weight:700}.wdg>summary::-webkit-details-marker{display:none}.wdg>summary small{margin-left:auto;font-weight:500;font-size:12.5px;opacity:.85}.wdg[open] .cpdet-a{transform:rotate(180deg)}.wdg-b{display:flex;flex-direction:column;gap:10px;padding:0 10px 10px}
 .wdfoot{flex-wrap:wrap}.wdft{flex-basis:100%;display:flex;justify-content:space-between;align-items:baseline;padding:2px 4px 6px;border-bottom:1px dashed var(--line);margin-bottom:4px}.wdft small{font-size:12.5px;opacity:.8}.wdft b{font-size:20px;color:#0f766e;font-variant-numeric:tabular-nums}.wdft.neg b{color:#dc2626}
+.wdg{border:0;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.06)}.wdg>summary{color:#fff;border-radius:16px;background:var(--wgc);box-shadow:0 6px 16px var(--wgs)}.wdg[open]>summary{border-radius:16px 16px 0 0}.wdg>summary small{opacity:.95}.wdg>summary b{color:#fff}.wdg>summary span:first-child{font-size:15.5px;text-shadow:0 1px 2px rgba(0,0,0,.2)}.wdg[open]{background:var(--wgb)}.wdg-b{padding-top:10px}
+.wdg-food{--wgc:linear-gradient(135deg,#16a34a,#15803d);--wgs:rgba(22,163,74,.3);--wgb:rgba(220,252,231,.55)}
+.wdg-drink{--wgc:linear-gradient(135deg,#0ea5e9,#2563eb);--wgs:rgba(37,99,235,.3);--wgb:rgba(219,234,254,.55)}
+.wdg-pack{--wgc:linear-gradient(135deg,#f59e0b,#d97706);--wgs:rgba(217,119,6,.3);--wgb:rgba(254,243,199,.55)}
+.wdg-season{--wgc:linear-gradient(135deg,#a855f7,#7c3aed);--wgs:rgba(124,58,237,.3);--wgb:rgba(243,232,255,.55)}
+.wdchip.warnc{background:#fef3c7;color:#92400e}
 </style>
 </head>
 <body>
@@ -3969,11 +3975,11 @@ document.addEventListener('input',e=>{if(e.target&&e.target.id==='wdQ'&&e.target
 function wdGroups(R,ST,s,H){if(!s.wgo)s.wgo={};const G={};R.forEach((r,i)=>{const t=ST.find(x=>x.id===r.sid)||{},k=stTab(t)||'food';(G[k]=G[k]||[]).push(i)});
   const keys=WD_TABS.map(x=>x[0]).filter(k=>G[k]);if(keys.length<2)return H.join('');
   return keys.map(k=>{const I=G[k],lb=(WD_TABS.find(x=>x[0]===k)||[])[1],n=I.filter(i=>+R[i].q>0).length,sub=I.reduce((a,i)=>{const t=ST.find(x=>x.id===R[i].sid);return a+(t?(+R[i].q||0)*(+t.unitCost||0):0)},0),op=s.wgo[k]!=null?s.wgo[k]:(n>0||k==='food');
-    return `<details class="wdg" data-wg="${k}"${op?' open':''} ontoggle="if(S.sheet&&S.sheet.wgo)S.sheet.wgo['${k}']=this.open"><summary><span>${lb}</span><small><span data-wgn="${k}">${n}</span>/${I.length} รายการ · <b data-wgs="${k}">${baht(sub)}</b></small><i class="cpdet-a">▾</i></summary><div class="wdg-b">${I.map(i=>H[i]).join('')}</div></details>`}).join('')}
-function sheetPoWd(){const s=S.sheet,gD=s.g==='drink',STA=stockList().filter(t=>s.g==='all'||stGrp(t)===(gD?'drink':'food')),ws=s.mode==='waste',ST=ws?STA:STA.filter(t=>stCut(t)==='use'),RS=isPo()?poRounds():[{k:'cur',start:sod(),label:'วันนี้'}];
+    return `<details class="wdg wdg-${k}" data-wg="${k}"${op?' open':''} ontoggle="if(S.sheet&&S.sheet.wgo)S.sheet.wgo['${k}']=this.open"><summary><span>${lb}</span><small><span data-wgn="${k}">${n}</span>/${I.length} รายการ · <b data-wgs="${k}">${baht(sub)}</b></small><i class="cpdet-a">▾</i></summary><div class="wdg-b">${I.map(i=>H[i]).join('')}</div></details>`}).join('')}
+function sheetPoWd(){const s=S.sheet,gD=s.g==='drink',STA=stockList().filter(t=>s.g==='all'||stGrp(t)===(gD?'drink':'food')),ws=s.mode==='waste',ST=ws?STA:STA.filter(t=>stCut(t)==='use'||stTab(t)==='pack'),RS=isPo()?poRounds():[{k:'cur',start:sod(),label:'วันนี้'}];
   if(!s.rk){const cur=RS[0];s.rk=s.r0&&RS.some(x=>x.k===s.r0)?s.r0:(RS[1]&&isPo()&&!roundOrders(cur).length?'last':'cur')}
   if(!s.rows&&ws)s.rows=[];
-  if(!s.rows){const cp=(isPo()&&cpPlan())||{},prev=gD||!isPo()?[]:(cp.ing||[]).filter(x=>x.sid&&ST.some(t=>t.id===x.sid)).map(x=>x.sid),ids=prev.length?prev:ST.map(t=>t.id);s.rows=ids.map(id=>({sid:id,q:'',m:'share'}))}
+  if(!s.rows){const cp=(isPo()&&cpPlan())||{},prev=gD||!isPo()?[]:(cp.ing||[]).filter(x=>x.sid&&ST.some(t=>t.id===x.sid)).map(x=>x.sid),ids=[...new Set([...prev,...ST.map(t=>t.id)])];s.rows=ids.map(id=>({sid:id,q:'',m:'share'}))}
   const R=s.rows,used=new Set(R.map(r=>r.sid)),tot=R.reduce((a,r)=>{const t=ST.find(x=>x.id===r.sid);return a+(t?(+r.q||0)*(+t.unitCost||0):0)},0);
   $('#panel').innerHTML=head('✂️ ตัดสต็อก'+(gD?'เครื่องดื่ม':''),ws?'ของเสีย / ขายไม่ได้ · ตัดออกจากคลังและบันทึกเป็นเงินที่เสียไป':'เลือกของในคลังที่เอาไปทำขาย · ใส่จำนวนที่เบิก · กดตัดสต็อก')+`<form class="sh-body" id="wdForm" onsubmit="return false" autocomplete="off">
    <div class="seg wdseg" role="group"><button type="button" data-act="wdMode" data-v="sell" aria-pressed="${!ws}">🍚 ใช้ขายวันนี้</button><button type="button" data-act="wdMode" data-v="waste" aria-pressed="${ws}">🗑 ของเสีย</button></div>
@@ -3984,14 +3990,14 @@ function sheetPoWd(){const s=S.sheet,gD=s.g==='drink',STA=stockList().filter(t=>
    <div class="wdlist">${R.length?wdGroups(R,ST,s,R.map((r,i)=>{const t=ST.find(x=>x.id===r.sid)||{},q=+r.q||0,left=+t.qty||0,over=q>left,pc=left>0?Math.min(100,q/left*100):(q>0?100:0),hue=[...String(t.name||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360;return `<div class="wdr2${q>0?' on':''}${over?' over':''}${left<=0?' empty':''}" data-wr="${i}" data-wn="${esc(String(t.name||'').toLowerCase())}">
      <div class="wda stava${t.img?' has':''}" style="--h:${hue}">${t.img?thumb(t,'thumb'):esc(String(t.name||'?').slice(0,1))}</div>
      <div class="wdm"><div class="wdt"><b>${esc(t.name||'?')}</b><button class="wdx" data-act="wdDel" data-v="${i}" type="button" aria-label="เอาออก">✕</button></div>
-      <div class="wds">${s.g==='all'?`<span class="wdchip">${wdIco(t)}</span>`:''}<span class="wdchip${left<=0?' bad':''}">คลัง ${num(left)} ${esc(t.unit||'')}</span><span class="wdchip">ทุน ${baht(+t.unitCost||0)}/${esc(t.unit||'หน่วย')}</span></div>
+      <div class="wds">${s.g==='all'?`<span class="wdchip">${wdIco(t)}</span>`:''}${!ws&&stCut(t)==='sale'?'<span class="wdchip warnc" title="ของนี้ระบบตัดตามยอดขายตอนปิดยอดอยู่แล้ว ใส่ตรงนี้เฉพาะที่ใช้นอกยอดขาย (เช่น แจก/ใช้เอง)">⚠️ ตัดตามยอดขายอยู่แล้ว</span>':''}<span class="wdchip${left<=0?' bad':''}">คลัง ${num(left)} ${esc(t.unit||'')}</span><span class="wdchip">ทุน ${baht(+t.unitCost||0)}/${esc(t.unit||'หน่วย')}</span></div>
       <div class="wdmeter"><i style="width:${pc}%"></i></div></div>
      <div class="wdctl"><div class="wdstep"><button type="button" data-act="wdStep" data-i="${i}" data-d="-1" aria-label="ลด">−</button><input data-wq="${i}" inputmode="decimal" value="${esc(r.q??'')}" placeholder="0" aria-label="จำนวน ${esc(t.name||'')}"><button type="button" data-act="wdStep" data-i="${i}" data-d="1" aria-label="เพิ่ม">+</button></div>
       <small class="wdu">${esc(t.unit||'')}</small><b class="wdc${ws?' neg':''}" data-wc="${i}">${ws?'−':''}${baht(q*(+t.unitCost||0))}</b></div></div>`})):(!ws&&!ST.length?'<div class="empty"><b>ยังไม่มีวัตถุดิบแบบ "เบิกใช้"</b>ตั้งที่หน้าแก้วัตถุดิบ → วิธีตัดสต็อก = เบิกใช้ (ของที่ตัดตามสูตรอยู่แล้วไม่ต้องตัดที่นี่)</div>':'<div class="empty"><b>ยังไม่ได้เลือกรายการ</b>เลือกของจากคลังด้านล่าง</div>')}</div>
    <div class="field"><label for="wdAdd">+ เพิ่มรายการจากสต็อก</label><select id="wdAdd"><option value="">— เลือกของในคลัง —</option>${WD_TABS.map(([k,lb])=>{const L=ST.filter(t=>!used.has(t.id)&&stTab(t)===k);return L.length?`<optgroup label="${lb}">${L.map(t=>`<option value="${esc(t.id)}">${esc(t.name)} · เหลือ ${num(+t.qty||0)} ${esc(t.unit||'')}</option>`).join('')}</optgroup>`:''}).join('')}</select></div>
    ${ws?`<div class="field"><label for="wsWhy">เหตุผล</label><input id="wsWhy" maxlength="60" value="${esc(s.why||'')}" placeholder="เช่น ผักเสีย / หมดอายุ / ทำหก"><div class="chips" style="margin-top:6px">${['ผักเสีย','หมดอายุ','ของเหลือขายไม่ได้','ทำหก / ตกพื้น','ชิมทดลอง'].map(x=>`<button type="button" class="chip" data-act="wsWhy" data-v="${x}">${x}</button>`).join('')}</div></div>`:''}
    
-   ${ws?'<p class="help" style="margin:0">ตัดออกจากคลังทันที และบันทึกเป็นรายจ่ายร้าน (ติดลบในกำไรสุทธิ) · ไม่นำไปคิดต้นทุนต่อกล่อง · ตัดผิดกด "ยกเลิกตัดจำหน่ายครั้งล่าสุด"</p>':`<p class="help" style="margin:0">กดตัดแล้วสต็อกลดทันที แล้วระบบเอาไปหารกับ${isPo()?'กล่องที่ขายได้จริงของรอบที่เลือก = ต้นทุนเบิกใช้ต่อกล่อง':'ชามที่ขายได้วันนี้ = ต้นทุนเบิกใช้ต่อชาม'} · ไม่ใส่จำนวน = ไม่ตัด · ตัดผิดกด "ยกเลิกการตัดครั้งล่าสุด"</p>${STA.some(t=>stCut(t)==='sale')?'<p class="help" style="margin:0">ของที่ตั้งเป็น "ตัดตามยอดขาย" ไม่แสดงในรายการนี้ (เปลี่ยนได้ที่หน้าแก้วัตถุดิบ)</p>':''}`}
+   ${ws?'<p class="help" style="margin:0">ตัดออกจากคลังทันที และบันทึกเป็นรายจ่ายร้าน (ติดลบในกำไรสุทธิ) · ไม่นำไปคิดต้นทุนต่อกล่อง · ตัดผิดกด "ยกเลิกตัดจำหน่ายครั้งล่าสุด"</p>':`<p class="help" style="margin:0">กดตัดแล้วสต็อกลดทันที แล้วระบบเอาไปหารกับ${isPo()?'กล่องที่ขายได้จริงของรอบที่เลือก = ต้นทุนเบิกใช้ต่อกล่อง':'ชามที่ขายได้วันนี้ = ต้นทุนเบิกใช้ต่อชาม'} · ไม่ใส่จำนวน = ไม่ตัด · ตัดผิดกด "ยกเลิกการตัดครั้งล่าสุด"</p>${STA.some(t=>stCut(t)==='sale')?'<p class="help" style="margin:0">ของที่ตั้งเป็น "ตัดตามยอดขาย" ไม่แสดงในรายการนี้ ยกเว้น 📦 บรรจุภัณฑ์ (มีป้าย ⚠️ — ใส่เฉพาะที่ใช้นอกยอดขาย เช่น แจก/ชำรุด ไม่งั้นจะตัดซ้ำตอนปิดยอด)</p>':''}`}
    <p class="err" id="wdErr" role="alert"></p></form>
    <div class="sh-foot wdfoot"><div class="wdft${ws?' neg':''}"><small>${ws?'รวมเสียเงิน':'รวมต้นทุนที่เบิก'} · <span id="wdCnt">${R.filter(r=>+r.q>0).length} รายการ</span></small><b id="wdTot">${ws?'−':''}${baht(tot)}</b></div><button class="btn" data-act="close" type="button">ปิด</button><button class="btn ${ws?'danger':'pri'} wide" data-act="wdSave" type="button">${ws?'🗑 ตัดจำหน่าย':s.edit?'💾 บันทึกการแก้ไข':'✂️ ตัดสต็อก'}</button></div>`;
   const F=$('#wdForm');F.addEventListener('input',wdUpd);F.addEventListener('change',e=>{if(e.target.id==='wdAdd'&&e.target.value){wdRead();const t=ST.find(x=>x.id===e.target.value);s.rows.push({sid:e.target.value,q:'',m:'share'});sheetPoWd();setTimeout(()=>{const q=document.querySelector(`[data-wq="${s.rows.length-1}"]`);if(q)q.focus()},50)}else wdUpd()})}
