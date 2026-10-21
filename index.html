@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-140242">
+<meta name="app-version" content="2026.10.21-140416">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1196,6 +1196,7 @@ input.ovmax{border-color:#dc2626!important;background:#fef2f2!important;color:#b
 .cpdet>summary>span:first-child{font-weight:700}.cpdet-c{padding:2px 10px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:12.5px}.cpdet-a{margin-left:auto;font-style:normal;transition:transform .25s;opacity:.7}.cpdet[open] .cpdet-a{transform:rotate(180deg)}.cpdet[open]>summary{margin-bottom:10px}
 .dnt-q{display:flex;flex-direction:column;gap:1px;margin-top:4px;font-size:11px;line-height:1.3;max-width:100%}.dnt-q span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}.dnt-q em{font-style:normal;opacity:.8}.dnt-q b{font-size:12px!important;transform:none!important}
 .dnt-r:has(.dnt-qn){grid-template-columns:12px minmax(0,1fr) auto 42px}.dnt-r:has(.dnt-qn)>b{text-align:right}.dnt-qn{font-size:12.5px;font-weight:700;color:var(--fg);opacity:.75;white-space:nowrap}
+.neg{color:var(--chili,#dc2626)!important}
 </style>
 </head>
 <body>
@@ -1912,7 +1913,12 @@ if(!window.__fmtN){window.__fmtN=1;document.addEventListener('focusout',e=>{if(e
 // ปุ่ม ✕ ล้างช่องค้นหาทุกช่อง
 function sxDecorate(root){(root||document).querySelectorAll('input[type=search]:not([data-sx])').forEach(i=>{i.dataset.sx=1;const w=document.createElement('span');w.className='sxw';i.parentNode.insertBefore(w,i);w.appendChild(i);const b=document.createElement('button');b.type='button';b.className='sxb';b.setAttribute('aria-label','ล้างคำค้น');b.textContent='✕';w.appendChild(b);
   const t=()=>w.classList.toggle('has',!!i.value);t();i.addEventListener('input',t);b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();i.value='';i.dispatchEvent(new Event('input',{bubbles:true}));t();i.focus()})})}
-if(!window.__sx){window.__sx=1;new MutationObserver(()=>sxDecorate()).observe(document.documentElement,{childList:true,subtree:true})}
+// ตัวเลขติดลบ (−฿ / -฿ / −123) เป็นสีแดงทั้งแอป
+const NEG_RE=/^\s*[−-]\s?(฿|\d)/;
+function negMark(root){const R=root&&root.querySelectorAll?root:document.body;if(!R)return;const w=document.createTreeWalker(R,NodeFilter.SHOW_TEXT,{acceptNode:n=>NEG_RE.test(n.nodeValue)&&/\d/.test(n.nodeValue)?1:2});const L=[];let n;while(n=w.nextNode())L.push(n);
+  L.forEach(t=>{const p=t.parentElement;if(!p||p.closest('input,textarea,select,option,svg,script,style,.noneg')||p.classList.contains('neg'))return;if(p.childNodes.length===1||p.matches('b,strong,span,small,em,td,i')){p.classList.add('neg')}else{const s=document.createElement('span');s.className='neg';t.replaceWith(s);s.appendChild(t)}})}
+let __negT=0;
+if(!window.__sx){window.__sx=1;new MutationObserver(()=>{sxDecorate();clearTimeout(__negT);__negT=setTimeout(()=>negMark(),30)}).observe(document.documentElement,{childList:true,subtree:true,characterData:true})}
 function renderSheet(){const s=S.sheet;if(!s)return;setTimeout(fmtNums,0);
   {const pn=$('#panel');if(pn&&pn.parentElement)pn.parentElement.classList.toggle('findmode',s.type==='poFind')}
   ({wdHist:sheetWdHist,poWd:sheetPoWd,poCost:sheetPoCost,poFind:sheetPoFind,poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
