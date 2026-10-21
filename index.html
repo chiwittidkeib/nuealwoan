@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-171159">
+<meta name="app-version" content="2026.10.21-174002">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1224,6 +1224,7 @@ input.ovmax{border-color:#dc2626!important;background:#fef2f2!important;color:#b
 .wpd>summary{cursor:pointer;font-size:13.5px;font-weight:600;padding:6px 0}.wit2{width:100%;border-collapse:collapse;font-size:13px}.wit2 th{font-size:12px;padding:6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.wit2 td{padding:6px;border-bottom:1px dashed var(--line)}.wit2 .r{text-align:right}.wit2 td small{display:block;font-size:10.5px;opacity:.8}.wit2 td small.dn{color:#b45309;opacity:1}.wit2 td small.up{color:#059669;opacity:1}.wit2 td.lim{background:rgba(245,158,11,.12)}.wit2 tr td:first-child small{display:inline}
 .wichips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.wichips small{font-weight:600;opacity:.8}.wichips .chip{padding:4px 12px;font-size:13px}.wichips .chip.on{background:#0f766e;color:#fff;border-color:#0f766e}
 .wdt b,.stl .str .wdt b{line-height:1.6;padding-top:3px}
+.verrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 16px;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.04);font-size:13px}
 </style>
 </head>
 <body>
@@ -2661,7 +2662,7 @@ const accountCard=()=>bellCard()+bgCard()+myAccountCard();
 const myAccountCard=()=>`<div class="card"><h3>บัญชีของฉัน <small class="muted" style="font-size:12px;font-weight:400">เว็บเวอร์ชัน ${esc(APP_VER)}</small></h3><p class="help" style="margin:0">เข้าสู่ระบบด้วยชื่อผู้ใช้ <b>${esc(S.me||'')}</b> · ${S.role==='owner'?'เจ้าของร้าน':'พนักงาน'}</p>
    <div class="field"><label for="myPw">ตั้งรหัสผ่านใหม่</label><div class="inrow"><input id="myPw" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"><button class="btn sm" data-act="myPwSave" type="button">เปลี่ยนรหัส</button></div></div>
    <button class="btn sm danger" data-act="logout" data-confirm="1" type="button" style="align-self:flex-start">ออกจากระบบ</button></div>`;
-function sheetAccount(){$('#panel').innerHTML=head('บัญชีของฉัน')+`<form class="sh-body">${accountCard()}</form>`;bindBg();bellBind();}
+function sheetAccount(){$('#panel').innerHTML=head('บัญชีของฉัน')+`<form class="sh-body">${accountCard()}</form>${verRow()}`;bindBg();bellBind();}
 function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.settings;
   $('#panel').innerHTML=head('ตั้งค่าร้าน')+
   `<form class="sh-body">
@@ -2730,7 +2731,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
   </section>
   <section class="card" style="border:1px solid var(--chili);padding:12px;display:flex;flex-direction:column;gap:6px"><b style="color:var(--chili)">🧹 รีเซตบิล · เนื้อล้วนๆ</b><span class="help" style="margin:0">ช่วงทดลองระบบ: ล้างบิล/ออร์เดอร์ทดสอบ แล้วเริ่มเลขบิลใหม่ · เจ้าของร้านเท่านั้น · ต้องยืนยันก่อน</span><button class="btn danger" data-act="resetOpen" data-v="noodle" type="button">🧹 รีเซตบิลเนื้อล้วนๆ…</button></section>
   </form>
-  <div class="sh-foot"><button class="btn pri wide" data-act="saveSettings" type="button">บันทึกการตั้งค่า</button></div>`;
+  ${verRow()}<div class="sh-foot"><button class="btn pri wide" data-act="saveSettings" type="button">บันทึกการตั้งค่า</button></div>`;
   loadStaff();bindBg();bellBind();renderPerm();rdBindSettings();if(!S.sheet.co)S.sheet.co=callOpts().map(o=>({...o}));renderCo();
   const vx=()=>{const on=$('#cVatOn').checked,r=parseFloat(val('cVatRate'))||0,ex=val('cVatMode')==='excl';$('#cVatEx').textContent=!on?'ปิดอยู่ ใบเสร็จจะไม่แสดงภาษี':ex?`ตัวอย่าง: อาหาร 100 บาท + VAT ${r}% = ${baht(r2(100+100*r/100))}`:`ตัวอย่าง: อาหาร 100 บาท (รวม VAT แล้ว) = ก่อนภาษี ${baht(r2(100-100*r/(100+r)))} + VAT ${baht(r2(100*r/(100+r)))}`};
   ['cVatOn','cVatRate','cVatMode'].forEach(i=>$('#'+i).addEventListener('input',vx));$('#cVatMode').addEventListener('change',vx);vx();
@@ -3075,9 +3076,11 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet(
 setInterval(()=>{if(S.state==='ready'&&(!S.sheet||S.sheet.type!=='pay'))render()},60000);
 /* ---------- แจ้งเตือนเวอร์ชันใหม่ (กันมือถือจำหน้าเก่าไว้) ---------- */
 const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||'';
-async function checkUpdate(){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
+function verRow(){const v=APP_VER.replace(/^(\d{4})\.(\d\d)\.(\d\d)-(\d\d)(\d\d).*/,(m,y,mo,d,h,mi)=>`${+d}/${+mo}/${+y+543} ${h}:${mi} น.`);return `<div class="verrow"><span>📱 เวอร์ชันที่ใช้อยู่: <b>${esc(v||'-')}</b></span><button type="button" class="btn sm" data-act="verCheck">🔄 ตรวจสอบอัปเดต</button></div>`}
+async function checkUpdate(manual){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
   if(m&&APP_VER&&m[1]!==APP_VER&&!document.getElementById('updBar')){const b=document.createElement('div');b.id='updBar';b.className='updbar';b.innerHTML='มีเวอร์ชันใหม่ของเว็บ <button type="button">อัปเดตเลย</button>';
-    b.querySelector('button').onclick=()=>{const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)};document.body.appendChild(b)}}catch(e){}}
+    b.querySelector('button').onclick=()=>{const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.href)};document.body.appendChild(b);if(manual)toast('มีเวอร์ชันใหม่ กด "อัปเดตเลย" ด้านบน')}else if(manual)toast(m&&m[1]===APP_VER?'✅ เป็นเวอร์ชันล่าสุดแล้ว · ถ้าเพิ่งอัปโหลด รอ GitHub อัปเดต 1–5 นาทีแล้วลองใหม่':'ตรวจสอบไม่ได้ ลองใหม่')}catch(e){if(manual)toast('ตรวจสอบไม่ได้ (ไม่มีอินเทอร์เน็ต?)','bad')}}
+Object.assign(ACT,{verCheck:()=>{toast('กำลังตรวจสอบ…');checkUpdate(1)}});
 setTimeout(()=>{try{if(new URLSearchParams(location.search).has('install')&&!PUSH.standalone())instOpen()}catch(e){}},600);
 setTimeout(checkUpdate,3000);setInterval(checkUpdate,5*60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 
@@ -3943,13 +3946,13 @@ function wdCard(g='food'){if(!wdOK())return '';const gD=g==='drink',W=isPo()?[..
    ${(()=>{const X=wasteRound();if(!X.length)return '';const t=X.reduce((a,x)=>a+(+x.amount||0),0);return `<div class="wdw"><div class="kv"><b>🗑 ตัดจำหน่าย (ของเสีย) ${isPo()?'รอบนี้':'วันนี้'}</b><b style="color:var(--chili)">−${baht(t)}</b></div>${X.map(x=>`<div class="kv"><span class="muted">${esc((x.waste.items||[]).map(i=>i.n+' '+num(i.q)+' '+(i.u||'')).join(', '))}${x.waste.reason?' · '+esc(x.waste.reason):''}</span><span style="color:var(--chili)">−${baht(+x.amount||0)}</span></div>`).join('')}<button class="btn sm danger" data-act="wsUndo" data-confirm="1" type="button" style="align-self:flex-start">↩ ยกเลิกตัดจำหน่ายครั้งล่าสุด</button></div>`})()}</div>`}
 
 // ===== ประวัติการตัดสต็อก (ดู / แก้ / ยกเลิก ทีละครั้ง)
-function wdHistList(RS,s){const g=s.g==='drink'?'drink':'food';if(!isPo())return wdTodayN(g).map(w=>({key:w.id,w}));const rr=RS.find(x=>x.k===s.rk)||RS[0];return wdOf(rr,g).map(w=>({key:String(w.at),w}))}
+function wdHistList(RS,s){const G=s.g==='all'?['food','drink']:[s.g==='drink'?'drink':'food'];if(!isPo())return G.flatMap(g=>wdTodayN(g)).map(w=>({key:w.id,w}));const rr=RS.find(x=>x.k===s.rk)||RS[0];return G.flatMap(g=>wdOf(rr,g)).map(w=>({key:String(w.at),w}))}
 function wdHistHtml(RS,s){const L=wdHistList(RS,s).sort((a,b)=>b.w.at-a.w.at),rr=isPo()?(RS.find(x=>x.k===s.rk)||RS[0]):null;
   if(!L.length){const oth=isPo()?RS.filter(x=>x.k!==s.rk).map(x=>({x,n:wdHistList(RS,{...s,rk:x.k}).length})).filter(o=>o.n):[];
     return `<div class="wdh wdh0"><b>📋 ตัดไปแล้ว${isPo()?' · '+esc(rr.label):' · วันนี้'}</b><p class="help" style="margin:4px 0 0">ยังไม่มีการตัดสต็อก${isPo()?'ให้รอบนี้':'วันนี้'}${oth.length?` · มีการตัดอยู่ใน <b>${esc(oth[0].x.label)}</b> ${oth[0].n} ครั้ง — กดเลือกรอบนั้นด้านบนเพื่อดู/แก้`:''}</p><button type="button" class="btn sm" data-act="wdHist" style="margin-top:6px">📋 ดูประวัติตัดสต็อกทั้งหมด</button></div>`}
   const T=L.reduce((a,{w})=>a+(w.items||[]).reduce((b,x)=>b+(+x.q||0)*(+x.uc||0),0),0);
   return `<details class="wdh" ${s.edit?'':'open'}><summary><b>📋 ตัดไปแล้ว${isPo()?' · '+esc(rr.label):' · วันนี้'}</b><span>${L.length} ครั้ง · ${baht(T)}</span></summary><button type="button" class="btn sm" data-act="wdHist" style="margin-top:6px">📋 ดูประวัติตัดสต็อกทั้งหมด</button>
-   ${L.map(({key,w})=>{const t=(w.items||[]).reduce((b,x)=>b+(+x.q||0)*(+x.uc||0),0),ed=s.edit===key;return `<div class="wdh1${ed?' ed':''}"><div class="wdh-h"><b>${dshort(w.at)} ${hm(w.at)}</b>${w.by?`<small class="muted">${esc(String(w.by).split('@')[0])}</small>`:''}<b class="wdh-t">${baht(t)}</b></div>
+   ${L.map(({key,w})=>{const t=(w.items||[]).reduce((b,x)=>b+(+x.q||0)*(+x.uc||0),0),ed=s.edit===key;return `<div class="wdh1${ed?' ed':''}"><div class="wdh-h"><b>${dshort(w.at)} ${hm(w.at)}</b><span class="tg ${w.g==='drink'?'tg-sale':'tg-use'}">${w.g==='drink'?'🥤 น้ำ':'🍚 อาหาร'}</span>${w.by?`<small class="muted">${esc(String(w.by).split('@')[0])}</small>`:''}<b class="wdh-t">${baht(t)}</b></div>
     <div class="wdh-i">${(w.items||[]).map(x=>`<span>${esc(x.n)} <b>${num(x.q)}</b> ${esc(x.u||'')}</span>`).join('')}</div>
     <div class="wdh-a">${ed?'<span class="pill info">✏️ กำลังแก้ครั้งนี้ — แก้จำนวนด้านล่างแล้วกดบันทึก</span><button type="button" class="btn sm" data-act="wdEditX">ยกเลิกการแก้</button>':`<button type="button" class="btn sm" data-act="wdEdit" data-k="${esc(key)}">✏️ แก้</button><button type="button" class="btn sm danger" data-act="wdRm" data-k="${esc(key)}" data-confirm="1">🗑 ยกเลิกครั้งนี้ (คืนสต็อก)</button>`}</div></div>`}).join('')}</details>`}
 // เอาการตัด 1 ครั้งออก: คืนสต็อก + ลบบันทึก + คำนวณต้นทุนรอบใหม่
@@ -3958,7 +3961,9 @@ async function wdRemove(key,g){if(!isPo()){const x=(S.wdN||[]).find(w=>w.id===ke
   const W2=(cp0.wd||[]).filter(w=>w!==x),same=W2.filter(w=>w.r===x.r&&(w.g||'food')==='food');
   const plan={...cp0,ing:(x.g||'food')!=='food'?cp0.ing:same.length?wdIng(cp0,same):(cp0.ing||[]).map(i=>i.sid?{...i,q:0,p:0}:i),wd:W2,at:Date.now()};
   const ok=await write('config/po',r=>r.update({costPlan:plan}));if(ok){S.po={...poCfg(),costPlan:plan};const lid='po'+x.at;if((S.wdN||[]).some(w=>w.id===lid)){await write('stockwd/'+lid,r=>r.delete());S.wdN=(S.wdN||[]).filter(w=>w.id!==lid)}}return ok}
-function sheetPoWd(){const s=S.sheet,gD=s.g==='drink',STA=stockList().filter(t=>stGrp(t)===(gD?'drink':'food')),ws=s.mode==='waste',ST=ws?STA:STA.filter(t=>stCut(t)==='use'),RS=isPo()?poRounds():[{k:'cur',start:sod(),label:'วันนี้'}];
+const WD_TABS=[['food','🍚 วัตถุดิบอาหาร'],['drink','🥤 วัตถุดิบเครื่องดื่ม'],['pack','📦 บรรจุภัณฑ์ใส่อาหาร'],['season','🧂 เครื่องปรุงรส']];
+const wdIco=t=>({food:'🍚',drink:'🥤',pack:'📦',season:'🧂'})[stTab(t)]||'🍚';
+function sheetPoWd(){const s=S.sheet,gD=s.g==='drink',STA=stockList().filter(t=>s.g==='all'||stGrp(t)===(gD?'drink':'food')),ws=s.mode==='waste',ST=ws?STA:STA.filter(t=>stCut(t)==='use'),RS=isPo()?poRounds():[{k:'cur',start:sod(),label:'วันนี้'}];
   if(!s.rk){const cur=RS[0];s.rk=s.r0&&RS.some(x=>x.k===s.r0)?s.r0:(RS[1]&&isPo()&&!roundOrders(cur).length?'last':'cur')}
   if(!s.rows&&ws)s.rows=[];
   if(!s.rows){const cp=(isPo()&&cpPlan())||{},prev=gD||!isPo()?[]:(cp.ing||[]).filter(x=>x.sid&&ST.some(t=>t.id===x.sid)).map(x=>x.sid),ids=prev.length?prev:ST.map(t=>t.id);s.rows=ids.map(id=>({sid:id,q:'',m:'share'}))}
@@ -3972,11 +3977,11 @@ function sheetPoWd(){const s=S.sheet,gD=s.g==='drink',STA=stockList().filter(t=>
    <div class="wdlist">${R.length?R.map((r,i)=>{const t=ST.find(x=>x.id===r.sid)||{},q=+r.q||0,left=+t.qty||0,over=q>left,pc=left>0?Math.min(100,q/left*100):(q>0?100:0),hue=[...String(t.name||'?')].reduce((a,c)=>a+c.charCodeAt(0),0)%360;return `<div class="wdr2${q>0?' on':''}${over?' over':''}${left<=0?' empty':''}" data-wr="${i}" data-wn="${esc(String(t.name||'').toLowerCase())}">
      <div class="wda stava${t.img?' has':''}" style="--h:${hue}">${t.img?thumb(t,'thumb'):esc(String(t.name||'?').slice(0,1))}</div>
      <div class="wdm"><div class="wdt"><b>${esc(t.name||'?')}</b><button class="wdx" data-act="wdDel" data-v="${i}" type="button" aria-label="เอาออก">✕</button></div>
-      <div class="wds"><span class="wdchip${left<=0?' bad':''}">คลัง ${num(left)} ${esc(t.unit||'')}</span><span class="wdchip">ทุน ${baht(+t.unitCost||0)}/${esc(t.unit||'หน่วย')}</span></div>
+      <div class="wds">${s.g==='all'?`<span class="wdchip">${wdIco(t)}</span>`:''}<span class="wdchip${left<=0?' bad':''}">คลัง ${num(left)} ${esc(t.unit||'')}</span><span class="wdchip">ทุน ${baht(+t.unitCost||0)}/${esc(t.unit||'หน่วย')}</span></div>
       <div class="wdmeter"><i style="width:${pc}%"></i></div></div>
      <div class="wdctl"><div class="wdstep"><button type="button" data-act="wdStep" data-i="${i}" data-d="-1" aria-label="ลด">−</button><input data-wq="${i}" inputmode="decimal" value="${esc(r.q??'')}" placeholder="0" aria-label="จำนวน ${esc(t.name||'')}"><button type="button" data-act="wdStep" data-i="${i}" data-d="1" aria-label="เพิ่ม">+</button></div>
       <small class="wdu">${esc(t.unit||'')}</small><b class="wdc${ws?' neg':''}" data-wc="${i}">${ws?'−':''}${baht(q*(+t.unitCost||0))}</b></div></div>`}).join(''):(!ws&&!ST.length?'<div class="empty"><b>ยังไม่มีวัตถุดิบแบบ "เบิกใช้"</b>ตั้งที่หน้าแก้วัตถุดิบ → วิธีตัดสต็อก = เบิกใช้ (ของที่ตัดตามสูตรอยู่แล้วไม่ต้องตัดที่นี่)</div>':'<div class="empty"><b>ยังไม่ได้เลือกรายการ</b>เลือกของจากคลังด้านล่าง</div>')}</div>
-   <div class="field"><label for="wdAdd">+ เพิ่มรายการจากสต็อก</label><select id="wdAdd"><option value="">— เลือกของในคลัง —</option>${ST.filter(t=>!used.has(t.id)).map(t=>`<option value="${esc(t.id)}">${esc(t.name)} · เหลือ ${num(+t.qty||0)} ${esc(t.unit||'')}</option>`).join('')}</select></div>
+   <div class="field"><label for="wdAdd">+ เพิ่มรายการจากสต็อก</label><select id="wdAdd"><option value="">— เลือกของในคลัง —</option>${WD_TABS.map(([k,lb])=>{const L=ST.filter(t=>!used.has(t.id)&&stTab(t)===k);return L.length?`<optgroup label="${lb}">${L.map(t=>`<option value="${esc(t.id)}">${esc(t.name)} · เหลือ ${num(+t.qty||0)} ${esc(t.unit||'')}</option>`).join('')}</optgroup>`:''}).join('')}</select></div>
    ${ws?`<div class="field"><label for="wsWhy">เหตุผล</label><input id="wsWhy" maxlength="60" value="${esc(s.why||'')}" placeholder="เช่น ผักเสีย / หมดอายุ / ทำหก"><div class="chips" style="margin-top:6px">${['ผักเสีย','หมดอายุ','ของเหลือขายไม่ได้','ทำหก / ตกพื้น','ชิมทดลอง'].map(x=>`<button type="button" class="chip" data-act="wsWhy" data-v="${x}">${x}</button>`).join('')}</div></div>`:''}
    <div class="wdsum${ws?' neg':''}"><div><small>${ws?'รวมเสียเงิน (ลงรายจ่าย "'+WASTE_CAT+'")':'รวมต้นทุนที่เบิก'}</small><span id="wdCnt">${R.filter(r=>+r.q>0).length} รายการ</span></div><b id="wdTot">${ws?'−':''}${baht(tot)}</b></div>
    ${ws?'<p class="help" style="margin:0">ตัดออกจากคลังทันที และบันทึกเป็นรายจ่ายร้าน (ติดลบในกำไรสุทธิ) · ไม่นำไปคิดต้นทุนต่อกล่อง · ตัดผิดกด "ยกเลิกตัดจำหน่ายครั้งล่าสุด"</p>':`<p class="help" style="margin:0">กดตัดแล้วสต็อกลดทันที แล้วระบบเอาไปหารกับ${isPo()?'กล่องที่ขายได้จริงของรอบที่เลือก = ต้นทุนเบิกใช้ต่อกล่อง':'ชามที่ขายได้วันนี้ = ต้นทุนเบิกใช้ต่อชาม'} · ไม่ใส่จำนวน = ไม่ตัด · ตัดผิดกด "ยกเลิกการตัดครั้งล่าสุด"</p>${STA.some(t=>stCut(t)==='sale')?'<p class="help" style="margin:0">ของที่ตั้งเป็น "ตัดตามยอดขาย" ไม่แสดงในรายการนี้ (เปลี่ยนได้ที่หน้าแก้วัตถุดิบ)</p>':''}`}
@@ -3991,11 +3996,11 @@ async function wdApply(items,sign){for(const x of items){const q=r2((+x.q||0)*si
 function wdIng(cp,W){const A={};W.forEach(w=>(w.items||[]).forEach(x=>{const a=A[x.sid]=A[x.sid]||{sid:x.sid,n:x.n,u:x.u,q:0,p:0,m:x.m};a.q=r2(a.q+(+x.q||0));a.p=r2(a.p+(+x.q||0)*(+x.uc||0));a.m=x.m}));
   return [...(cp.ing||[]).filter(x=>!x.sid),...Object.values(A).map(a=>({...a,m:a.m==='each'?'each':'share',...(a.m==='each'?{use:1}:{})}))]}
 Object.assign(ACT,{
-  poWd:d=>{if(!wdOK())return deny();if(!stockList().filter(t=>stGrp(t)===(d&&d.g==='drink'?'drink':'food')).length)return toast('ยังไม่มีของในคลังหมวดนี้ — กด "+ เพิ่มวัตถุดิบ" ก่อน','bad');openSheet({type:'poWd',mode:d&&d.v==='waste'?'waste':'sell',r0:d&&d.r,g:d&&d.g==='drink'?'drink':'food'})},
+  poWd:d=>{if(!wdOK())return deny();if(!stockList().length)return toast('ยังไม่มีของในคลัง — กด "+ เพิ่มวัตถุดิบ" ก่อน','bad');openSheet({type:'poWd',mode:d&&d.v==='waste'?'waste':'sell',r0:d&&d.r,g:'all'})},
   wdStep:d=>{const i=+d.i,inp=document.querySelector(`[data-wq="${i}"]`);if(!inp)return;const r=S.sheet.rows[i],t=stockList().find(x=>x.id===r.sid),st=wdUnitM(t)==='each'?1:0.5;inp.value=String(Math.max(0,r2((parseFloat(inp.value)||0)+st*(+d.d))))||'';if(inp.value==='0')inp.value='';wdUpd()},
   wdRk:d=>{wdRead();S.sheet.rk=d.v;if(S.sheet.edit){S.sheet.edit=null;S.sheet.rows=null}sheetPoWd()},
   wdEdit:d=>{if(!wdOK())return deny();const s=S.sheet,RS=isPo()?poRounds():[],it=wdHistList(RS,s).find(x=>x.key===d.k);if(!it)return;const ST=stockList(),rows=(it.w.items||[]).map(x=>({sid:x.sid,q:String(x.q),m:x.m||'share'}));
-    ST.filter(t=>stCut(t)==='use'&&stGrp(t)===(s.g==='drink'?'drink':'food')&&!rows.some(r=>r.sid===t.id)).forEach(t=>rows.push({sid:t.id,q:'',m:'share'}));s.rows=rows;s.edit=d.k;sheetPoWd();const b=$('#panel .sh-body');if(b)setTimeout(()=>{const f=$('#panel .wdlist');if(f)f.scrollIntoView({block:'start',behavior:'smooth'})},60)},
+    ST.filter(t=>stCut(t)==='use'&&(s.g==='all'||stGrp(t)===(s.g==='drink'?'drink':'food'))&&!rows.some(r=>r.sid===t.id)).forEach(t=>rows.push({sid:t.id,q:'',m:'share'}));s.rows=rows;s.edit=d.k;sheetPoWd();const b=$('#panel .sh-body');if(b)setTimeout(()=>{const f=$('#panel .wdlist');if(f)f.scrollIntoView({block:'start',behavior:'smooth'})},60)},
   wdHist:()=>{if(!wdOK())return deny();const b=S.sheet&&S.sheet.type==='poWd'?(wdRead(),S.sheet):null;openSheet({type:'wdHist',d:7,f:'all',back:b})},
   whBack:()=>{const b=S.sheet&&S.sheet.back;if(b)openSheet(b);else closeSheet()},
   whD:d=>{S.sheet.d=+d.v;sheetWdHist()},whF:d=>{S.sheet.f=d.v;sheetWdHist()},
@@ -4019,10 +4024,11 @@ Object.assign(ACT,{
     const b=$('[data-act=wdSave]');if(b)b.disabled=true;
     if(old){const okr=await wdRemove(ed,S.sheet.g);if(!okr){if(b)b.disabled=false;return e.textContent='แก้ไม่สำเร็จ ลองใหม่'}items.forEach(x=>{const t=stockList().find(y=>y.id===x.sid);if(t)x.uc=+t.unitCost||x.uc});S.sheet.wAt=old.w.at;S.sheet.edit=null}
     await wdApply(items,1);
-    if(!isPo()){const ref=S.db.collection('stockwd').doc(),doc={at:S.sheet.wAt||Date.now(),g:S.sheet.g==='drink'?'drink':'food',by:S.me||'',items:items.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc}))};const ok=await write('stockwd/'+ref.id,r=>r.set(doc));if(ok&&!(S.wdN||[]).some(x=>x.id===ref.id))S.wdN=[{id:ref.id,...doc},...(S.wdN||[])];closeSheet();render();toast('✂️ ตัดสต็อกแล้ว '+items.length+' รายการ · ต้นทุนต่อชามวันนี้อัปเดตแล้ว');return}
-    const RS=poRounds(),rr=RS.find(x=>x.k===S.sheet.rk)||RS[0],cp0=cpPlan()||{...cpDefault(),ing:[]},keep=RS.map(x=>x.start),gg=S.sheet.g==='drink'?'drink':'food',all=[...(cp0.wd||[]).filter(w=>(w.r!=null?keep.includes(+w.r):+w.at>RS[0].start)||+w.at>=Date.now()-40*DAY),{at:S.sheet.wAt||Date.now(),r:rr.start,g:gg,by:S.me||'',items,...(S.sheet.wAt?{edited:Date.now()}:{})}];
-    const plan={...cp0,ing:gg==='food'?wdIng(cp0,all.filter(w=>(w.g||'food')==='food'&&(w.r!=null?+w.r:RS[0].start)===rr.start)):cp0.ing,wd:all,at:Date.now()};const ok=await write('config/po',r=>r.update({costPlan:plan}));
-    if(ok){const nw=all[all.length-1],lg={at:nw.at,g:gg,by:nw.by,r:nw.r,items:items.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc})),shop:'po',...(nw.edited?{edited:nw.edited}:{})};await write('stockwd/po'+nw.at,r=>r.set(lg));if(!(S.wdN||[]).some(x=>x.id==='po'+nw.at))S.wdN=[{id:'po'+nw.at,...lg},...(S.wdN||[])]}
+    const grpOf=x=>{if(S.sheet.g!=='all')return S.sheet.g==='drink'?'drink':'food';const t=stockList().find(y=>y.id===x.sid);return t&&stGrp(t)==='drink'?'drink':'food'},GRPS=['food','drink'].map(g=>[g,items.filter(x=>grpOf(x)===g)]).filter(x=>x[1].length);
+    if(!isPo()){let t0=S.sheet.wAt||Date.now();for(const [g,its] of GRPS){const ref=S.db.collection('stockwd').doc(),doc={at:t0++,g,by:S.me||'',items:its.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc}))};const ok=await write('stockwd/'+ref.id,r=>r.set(doc));if(ok&&!(S.wdN||[]).some(x=>x.id===ref.id))S.wdN=[{id:ref.id,...doc},...(S.wdN||[])]}closeSheet();render();toast('✂️ ตัดสต็อกแล้ว '+items.length+' รายการ · ต้นทุนต่อชามวันนี้อัปเดตแล้ว');return}
+    const RS=poRounds(),rr=RS.find(x=>x.k===S.sheet.rk)||RS[0],cp0=cpPlan()||{...cpDefault(),ing:[]},keep=RS.map(x=>x.start),t0=S.sheet.wAt||Date.now(),NW=GRPS.map(([g,its],k)=>({at:t0+k,r:rr.start,g,by:S.me||'',items:its,...(S.sheet.wAt?{edited:Date.now()}:{})})),hasF=GRPS.some(x=>x[0]==='food'),all=[...(cp0.wd||[]).filter(w=>(w.r!=null?keep.includes(+w.r):+w.at>RS[0].start)||+w.at>=Date.now()-40*DAY),...NW];
+    const plan={...cp0,ing:hasF?wdIng(cp0,all.filter(w=>(w.g||'food')==='food'&&(w.r!=null?+w.r:RS[0].start)===rr.start)):cp0.ing,wd:all,at:Date.now()};const ok=await write('config/po',r=>r.update({costPlan:plan}));
+    if(ok)for(const nw of NW){const lg={at:nw.at,g:nw.g,by:nw.by,r:nw.r,items:nw.items.map(({sid,n,u,q,uc})=>({sid,n,u,q,uc})),shop:'po',...(nw.edited?{edited:nw.edited}:{})};await write('stockwd/po'+nw.at,r=>r.set(lg));if(!(S.wdN||[]).some(x=>x.id==='po'+nw.at))S.wdN=[{id:'po'+nw.at,...lg},...(S.wdN||[])]}
     if(ok)S.po={...poCfg(),costPlan:plan};closeSheet();render();S.cpRk=rr.k;toast('✂️ ตัดสต็อกแล้ว '+items.length+' รายการ · ต้นทุน'+(rr.k==='last'?'รอบที่ปิดแล้ว':'รอบนี้')+'อัปเดตแล้ว')},
   wdUndo:async()=>{if(!wdOK())return deny();if(!isPo()){const L=[...(S.wdN||[])].filter(w=>+w.at>=sod()).sort((a,b)=>b.at-a.at);if(!L.length)return toast('ยังไม่มีการตัดวันนี้');const x=L[0];await wdApply(x.items||[],-1);const ok=await write('stockwd/'+x.id,r=>r.delete());if(ok)S.wdN=(S.wdN||[]).filter(w=>w.id!==x.id);render();return toast('↩ คืนสต็อกครั้งล่าสุดแล้ว')}const cp0=cpPlan(),W=[...((cp0&&cp0.wd)||[])].sort((a,b)=>a.at-b.at);if(!W.length)return toast('ยังไม่มีการตัด');const last=W[W.length-1];
     await wdApply(last.items||[],-1);const W2=(cp0.wd||[]).filter(w=>w!==last&&!(w.at===last.at&&w.by===last.by));const rs=last.r,same=W2.filter(w=>w.r===rs&&(w.g||'food')==='food');
@@ -4996,7 +5002,7 @@ async function sheetMyAcct(){const s=S.sheet;
    <div class="card"><h3>เข้าสู่ระบบด้วย LINE</h3>
     ${r.err?`<p class="help" style="margin:0">${r.err==='sql'?'ร้านยังไม่ได้รัน SQL เข้าสู่ระบบด้วย LINE ของพนักงาน':'โหลดข้อมูลบัญชีไม่ได้'}</p><p class="help" style="margin:0;font-size:12px;opacity:.75">รายละเอียด: ${esc(r.msg||'')}</p><button class="btn sm" data-act="myAcctRe" type="button">ลองใหม่</button>`:r.line_name?`<div class="kv"><span>🟢 ผูกกับ LINE</span><b>${esc(r.line_name)}</b></div><p class="help" style="margin:0">หน้าเข้าสู่ระบบ กด "เข้าสู่ระบบด้วย LINE" ได้เลย ไม่ต้องจำรหัส</p><button class="btn sm" data-act="slUnlink" data-confirm="1" type="button">ยกเลิกการผูก LINE</button>`
       :`<p class="help" style="margin:0">ผูกครั้งเดียว ครั้งหน้ากดปุ่ม LINE เข้าได้เลย (ยังใช้ชื่อผู้ใช้/รหัสผ่านเดิมได้)</p><button class="btn lineb" data-act="slLink" type="button">ผูกบัญชี LINE</button>`}</div></div>
-   <div class="sh-foot"><button class="btn wide" data-act="close" type="button">ปิด</button></div>`}
+   ${verRow()}<div class="sh-foot"><button class="btn wide" data-act="close" type="button">ปิด</button></div>`}
 Object.assign(ACT,{
   myAcct:()=>openSheet({type:'myAcct'}),
   myAcctRe:()=>{S.sheet.loaded=false;sheetMyAcct()},
