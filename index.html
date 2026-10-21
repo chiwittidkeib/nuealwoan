@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.21-134132">
+<meta name="app-version" content="2026.10.21-135021">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1192,6 +1192,8 @@ input.ovmax{border-color:#dc2626!important;background:#fef2f2!important;color:#b
 .cpr-x{grid-area:x;border:0;background:rgba(239,68,68,.08);color:#dc2626;width:28px;height:28px;border-radius:8px;cursor:pointer}
 .cpsum{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 4px 0;border-top:1px dashed var(--line)}.cpsum b{font-size:18px;color:#b45309}
 @media (max-width:480px){.cpr{grid-template-columns:42px minmax(0,1fr) auto;grid-template-areas:"av main x" "q q p" "m m m"}.cpr-q:not(.cpr-pp){grid-area:q}.cpr-pp{grid-area:p;width:110px}}
+.cpdet{margin-top:10px}.cpdet>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 14px;border-radius:14px;border:1px dashed rgba(217,119,6,.35);background:rgba(255,251,235,.7);font-size:13.5px;transition:background .2s}.cpdet>summary::-webkit-details-marker{display:none}.cpdet>summary:hover{background:rgba(254,243,199,.9)}
+.cpdet>summary>span:first-child{font-weight:700}.cpdet-c{padding:2px 10px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:12.5px}.cpdet-a{margin-left:auto;font-style:normal;transition:transform .25s;opacity:.7}.cpdet[open] .cpdet-a{transform:rotate(180deg)}.cpdet[open]>summary{margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -3693,6 +3695,7 @@ function cpRoundCard(){const saved=cpPlan(),adm=poAdmin();if(!saved&&!adm)return
      return `<details class="cpbox cpul2"${bad.length?' open':''}><summary><h4 style="display:inline">🧾 ของนับชิ้นต่อกล่อง (จากสูตรเมนู) · ${baht(tot)}</h4>${bad.length?` <span class="sb sb-out"><i></i>${bad.length} รายการน่าจะผิด</span>`:''}</summary>
       ${L.map(i=>`<div class="kv click${bad.includes(i)?' bad':''}" data-act="stockEdit" data-id="${i.sid}"><span>${bad.includes(i)?'⚠️ ':'· '}${esc(i.n)} <small class="muted">${num(i.q)} ${esc(i.u)} × ${baht(i.uc)}/${esc(i.u)}</small></span><b>${baht(i.v)}</b></div>`).join('')}
       ${bad.length?`<p class="help" style="margin:4px 0 0;color:var(--chili)">รายการสีแดงแพงเกินจริงสำหรับ 1 กล่อง (เกิน ${baht(lim)}) — กดที่รายการเพื่อแก้ "ต้นทุนต่อหน่วย" (เช่น ช้อน 100 คัน 79 บาท = ฿0.79/คัน ไม่ใช่ ฿79) หรือแก้จำนวนในสูตรเมนู · ของเทใช้ทั้งขวด/ทั้งถุง (น้ำปลา ซอส น้ำจิ้ม) ควรตั้งเป็น "เบิกใช้" แล้วเอาออกจากสูตร</p>`:'<p class="help" style="margin:4px 0 0">กดที่รายการเพื่อแก้ต้นทุนต่อหน่วย</p>'}</details>`})()}
+   <details class="cpdet"${(()=>{try{return localStorage.getItem('nl_cpdet')==='1'}catch(e){return false}})()?' open':''} ontoggle="try{localStorage.setItem('nl_cpdet',this.open?'1':'0')}catch(e){}"><summary><span>📋 รายละเอียด</span><span class="cpdet-c">🥩 เบิกใช้ <b>${baht(A.B||0)}</b></span><span class="cpdet-c">🥤 ${A.dq} แก้ว/ขวด</span><span class="cpdet-c">${r.k==='cur'?'รอบนี้':'รอบที่ปิด'} ${A.orders} ออร์เดอร์ · กำไร <b style="${col(A.profit)}">${baht(A.profit)}</b></span><i class="cpdet-a">▾</i></summary>
    <div class="cp2"><div class="cpbox"><h4>🥩 ของเบิกใช้ (✂️ ตัดสต็อกขายวันนี้)</h4>
      ${A.bulk.length?A.bulk.map(b=>`<div class="kv"><span>${esc(b.n)} ${num(b.q)} ${esc(b.u||'')}</span><span>${baht(b.c)}</span></div>`).join('')+`<div class="kv tot"><span>รวม ${baht(A.B)} ÷ ${num(A.W)} กล่อง</span><b>${baht(A.per)}/กล่อง</b></div>`
        :`<p class="help" style="margin:0">${r.k==='last'?'⚠️ รอบนี้ยังไม่ได้ตัดสต็อกขายวันนี้':'ยังไม่ได้ตัดสต็อก'} — ตอนนี้ใช้ค่าประมาณ ${baht(A.per)}/กล่อง จากตารางต้นทุน</p>`}</div>
@@ -3702,7 +3705,7 @@ function cpRoundCard(){const saved=cpPlan(),adm=poAdmin();if(!saved&&!adm)return
     <div class="cpbox"><h4>${r.k==='cur'?'รอบนี้ตอนนี้':'สรุปรอบที่ปิดแล้ว'} (${A.orders} ออร์เดอร์)</h4>
      <div class="kv"><span>ยอดขาย</span><b${PRANIM?cntB(A.rev):''}>${baht(A.rev)}</b></div><div class="kv"><span>ต้นทุน (เบิกใช้ + นับชิ้น${A.other?' + เมนูอื่น':''})</span><b>−${baht(A.cost)}</b></div>
      <div class="kv tot"><span>กำไรขั้นต้น</span><b${PRANIM?cntB(A.profit):''} style="${col(A.profit)}">${baht(A.profit)}</b></div>
-     <div class="kv"><span class="muted">ขายข้าว ${A.sb} กล่อง${A.other?' · เมนูอื่น '+A.other+' ชิ้น':''}</span></div></div></div>
+     <div class="kv"><span class="muted">ขายข้าว ${A.sb} กล่อง${A.other?' · เมนูอื่น '+A.other+' ชิ้น':''}</span></div></div></div></details>
    ${A.rows.some(x=>x.menuId&&!(x.unit>0))?'<p class="help" style="margin:0;color:#9a6a00">💡 ยังไม่ใส่กล่อง/ช้อนในสูตรเมนู — ใส่ที่หน้าแก้เมนู → วัตถุดิบ แล้วระบบจะตัดตามยอดขายตอนปิดยอดให้เอง</p>':''}</div>`}
 function cpSoldFill(cp){const RS=poRounds(),cur=RS[0],r=roundOrders(cur).length||!RS[1]?cur:RS[1],L=roundOrders(r),sold=(cp.prod||[]).map(()=>0);
   L.forEach(o=>(o.items||[]).forEach(l=>{const k=cpMatch(cp,l);if(k>=0)sold[k]+=+l.qty||0}));(cp.prod||[]).forEach((p,i)=>p.qty=sold[i]);return r}
