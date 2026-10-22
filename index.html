@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.22-115210">
+<meta name="app-version" content="2026.10.22-120303">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1237,9 +1237,9 @@ input.ovmax{border-color:#dc2626!important;background:#fef2f2!important;color:#b
 .autoc{font-size:11px;font-weight:600;color:#0f766e;background:#ccfbf1;padding:1px 8px;border-radius:99px;margin-left:4px}
 #mCost.ro{background:linear-gradient(135deg,#ecfdf5,#d1fae5)!important;border-color:#10b981!important;color:#065f46!important;font-weight:800}
 /* ===== ร้านล้านฅนเมียง: ธีมไม้สัก-โคมไฟ ===== */
-body.shop-kn{--bg:#fbf6ee;--surface:#ffffff;--sunk:#f4ece0;--line:#e8d9c2;--veil-rgb:251,246,238;--veil-a:.55;--fg:#2e1a0e;--muted:#7d5a3f;--jade:#6b3e1f;--jade-soft:#f6e7d4;--on-jade:#fff;--chili:#b4233c;--amber:#a87600;--amber-soft:#fbf0d2;color-scheme:light;color:var(--fg);background:var(--bg)}
+body.shop-kn{--bg:#fbf6ee;--surface:#ffffff;--sunk:#f4ece0;--line:#e8d9c2;--veil-rgb:251,246,238;--veil-a:0;--fg:#2e1a0e;--muted:#7d5a3f;--jade:#6b3e1f;--jade-soft:#f6e7d4;--on-jade:#fff;--chili:#b4233c;--amber:#a87600;--amber-soft:#fbf0d2;color-scheme:light;color:var(--fg);background:var(--bg)}
 body.app.shop-kn::before{background:linear-gradient(rgba(250,242,232,var(--veil-a)),rgba(250,242,232,var(--veil-a))),url(images/bg-kn.jpg?v=20261022b) center/cover no-repeat,var(--bg)!important}
-@media (max-width:700px),(orientation:portrait){body.app.shop-kn::before{background:linear-gradient(rgba(250,242,232,var(--veil-a)),rgba(250,242,232,var(--veil-a))),url(images/bg-kn-m.jpg?v=20261022b) center 20%/cover no-repeat,var(--bg)!important}}
+@media (max-width:700px),(orientation:portrait){body.app.shop-kn::before{background:linear-gradient(rgba(250,242,232,var(--veil-a)),rgba(250,242,232,var(--veil-a))),url(images/bg-kn-m.jpg?v=20261022c) center/cover no-repeat,var(--bg)!important}}
 body.shop-kn .top{background:rgba(255,255,255,.9);border-bottom:3px solid #6b3e1f;box-shadow:0 2px 12px rgba(62,36,16,.12)}
 body.shop-kn .top h1#shopName{font-family:'Kanit',var(--f-display);font-weight:800;font-size:26px;color:#6b3e1f;-webkit-text-stroke:.5px #3e2410}
 body.shop-kn .tabs{background:rgba(255,255,255,.96);border-top:3px solid #d98b3a}
@@ -1280,6 +1280,17 @@ body.shop-kn .top h1#shopName{text-shadow:0 1px 0 #fff,0 2px 6px rgba(217,139,58
 .knsrch input{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font:inherit;font-size:16px;box-shadow:0 4px 12px rgba(62,36,16,.06)}.knsrch input:focus{outline:none;border-color:#6b3e1f;box-shadow:0 0 0 4px rgba(107,62,31,.15)}
 @media (max-width:760px){.kns{padding-bottom:84px}}
 body.shop-kn .brandlogo{border-color:#c8792a!important;background:#000!important;box-shadow:0 2px 10px rgba(107,62,31,.35)!important}
+body.shop-kn .sec-h,body.shop-kn .chips .chip:not([aria-pressed="true"]){background:rgba(255,250,242,.92)}body.shop-kn .sec-h{border-radius:14px;padding:8px 12px}body.shop-kn .empty{background:rgba(255,250,242,.94)}
+.shopsw[hidden]{display:none!important}
+.lg-logo{width:52px;height:52px;border-radius:14px;object-fit:cover;flex:none;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+body.auth.auth-po::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.5) 55%,rgba(8,6,5,.85)),url(images/bg-po.jpg) center/cover no-repeat,#0b0a09!important}
+body.auth.auth-kn::before{background:linear-gradient(180deg,rgba(8,6,5,.15),rgba(8,6,5,.4) 55%,rgba(8,6,5,.8)),url(images/bg-kn.jpg?v=20261022b) center/cover no-repeat,#0b0a09!important}
+@media (max-width:700px),(orientation:portrait){body.auth.auth-po::before{background:linear-gradient(180deg,rgba(8,6,5,.2),rgba(8,6,5,.5) 55%,rgba(8,6,5,.85)),url(images/bg-po-m.jpg) center/cover no-repeat,#0b0a09!important}
+ body.auth.auth-kn::before{background:linear-gradient(180deg,rgba(8,6,5,.1),rgba(8,6,5,.35) 55%,rgba(8,6,5,.8)),url(images/bg-kn-m.jpg?v=20261022c) center/cover no-repeat,#0b0a09!important}}
+body.auth.auth-kn .lg-mark,body.auth.auth-kn .btn.pri{background:linear-gradient(140deg,#e9a54b,#c8792a 55%,#6b3e1f)}
+body.auth.auth-po .btn.pri{background:linear-gradient(140deg,#ff6b5e,#e11d2e 55%,#b0101f);color:#fff}
+body.auth.auth-po .shopsw::before{transform:translateX(100%)}body.auth.auth-kn .shopsw::before{transform:translateX(200%)}
+body.auth.auth-po .shopsw,body.auth.auth-kn .shopsw{background:rgba(20,14,10,.55)!important}body.auth.auth-po .shopsw button:not([aria-pressed="true"]),body.auth.auth-kn .shopsw button:not([aria-pressed="true"]){color:#f3e6d4!important}
 </style>
 </head>
 <body>
@@ -1748,7 +1759,7 @@ const LOWFX=(()=>{try{return matchMedia('(max-width:760px)').matches||(navigator
 function render(){MEMO=null;
   document.body.classList.toggle('auth',S.state!=='ready');
   document.body.classList.toggle('app',S.state==='ready');
-  $('#shopName').textContent=S.state!=='ready'?'เนื้อล้วนๆ':isPo()?(poCfg().shopName||'ข้าวมันไก่'):isKn()?(knCfg().shopName||'ล้านฅนเมียง'):'เนื้อล้วนๆ';{const bl=$('#brandLogo'),src=S.state!=='ready'?'images/logo-nl.png?v=20261016b':isPo()?'images/logo-po.png':isKn()?'images/logo-kn.png?v=20261022':'images/logo-nl.png?v=20261016b';if(bl.getAttribute('src')!==src)bl.setAttribute('src',src);bl.hidden=S.state!=='ready';}
+  $('#shopName').textContent=S.state!=='ready'&&S.shop==='noodle'?'เนื้อล้วนๆ':isPo()?(poCfg().shopName||'ข้าวมันไก่'):isKn()?(knCfg().shopName||'ล้านฅนเมียง'):'เนื้อล้วนๆ';{const bl=$('#brandLogo'),src=S.state!=='ready'?'images/logo-nl.png?v=20261016b':isPo()?'images/logo-po.png':isKn()?'images/logo-kn.png?v=20261022':'images/logo-nl.png?v=20261016b';if(bl.getAttribute('src')!==src)bl.setAttribute('src',src);bl.hidden=S.state!=='ready';}
   const c=$('#conn');
   c.innerHTML=S.state==='ready'?'<span class="dot on"></span>ออนไลน์ · '+esc(dlong(Date.now())):['noconfig','offline','nostaff'].includes(S.state)?'<span class="dot off"></span>ไม่ได้เชื่อมฐานข้อมูล':S.state==='login'?'<span class="dot"></span>ยังไม่ได้เข้าสู่ระบบ':'<span class="dot"></span>กำลังเชื่อมต่อ…';
   document.querySelector('[data-act="settings"]').hidden=S.state!=='ready';
@@ -1757,8 +1768,8 @@ function render(){MEMO=null;
   const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){{const sel=$('#hdrMode'),want=isPo()?'po':'all';if(sel.dataset.set!==want){sel.dataset.set=want;sel.innerHTML=(isPo()?[['','Admin'],['chef','แม่ครัว']]:[['','Admin'],['waiter','พนักงานเสิร์ฟ'],['chef','แม่ครัว'],['partner','หุ้นส่วน']]).map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}}$('#hdrMode').value=S.viewAs||'';$('#hdrMode').dataset.v=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs);mw.dataset.r=S.viewAs||'owner'}
   const va=$('#viewAs');va.hidden=!(S.state==='ready'&&S.viewAs);if(!va.hidden)va.innerHTML=`<span>โหมด <b>${roleName(S.viewAs)}</b> · ใช้งานจริงตามสิทธิ์ของตำแหน่งนี้</span><button class="btn sm" data-act="viewAsOff" type="button">กลับโหมดแอดมิน</button>`;
   $('#tabs').parentElement.hidden=S.state!=='ready';
-  if(S.state==='ready'&&(isPo()||isKn())&&!canPo())S.shop='noodle';
-  {const sw=$('#shopSw');sw.hidden=!(S.state==='ready'&&canPo());if(!sw.hidden)sw.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.shop)));document.body.classList.toggle('shop-po',S.state==='ready'&&isPo());document.body.classList.toggle('shop-kn',S.state==='ready'&&isKn());}
+  if(S.state==='ready'&&(isPo()||isKn())&&!canPo()){S.shop='noodle';S.tab=homeTab(effRole())}
+  {const sw=$('#shopSw');sw.hidden=S.state==='ready'?!canPo():!['login','nostaff'].includes(S.state);document.body.classList.toggle('auth-po',S.state!=='ready'&&isPo());document.body.classList.toggle('auth-kn',S.state!=='ready'&&isKn());if(!sw.hidden)sw.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.shop)));document.body.classList.toggle('shop-po',S.state==='ready'&&isPo());document.body.classList.toggle('shop-kn',S.state==='ready'&&isKn());}
   const isOwner=S.role==='owner';
   document.querySelector('[data-act="settings"]').textContent=isOwner?'⚙️ ตั้งค่าร้าน':'👤 บัญชีของฉัน';
   let nTab=0;document.querySelectorAll('.tab').forEach(t=>{const ok=S.state!=='ready'||TAB_OK[t.dataset.v]();t.hidden=!ok;if(ok)nTab++});
@@ -1776,7 +1787,7 @@ function render(){MEMO=null;
   if(S.state==='nostaff'){v.innerHTML=`<div class="empty"><b>บัญชีนี้ยังไม่มีสิทธิ์ใช้ระบบร้าน</b>ให้เจ้าของร้านเพิ่มชื่อผู้ใช้นี้ที่ ตั้งค่าร้าน &gt; พนักงาน<div style="margin-top:12px"><button class="btn sm" data-act="logout" type="button">ออกจากระบบ</button></div></div>`;return}
   if(S.state==='login'){let last='';try{last=localStorage.getItem('nl_user')||''}catch(e){}
     v.innerHTML=`<form class="login" id="lgForm" novalidate>
-    <div class="lg-brand"><div class="lg-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M9 3c-1 2 1 3 0 5M14 3c-1 2 1 3 0 5"/></svg></div><div><h2>${esc(S.settings.shopName||'NueaLwoan')}</h2><p class="help" style="margin:0">ระบบจัดการร้าน</p></div></div>
+    <div class="lg-brand">${isPo()||isKn()?`<img class="lg-logo" src="${isPo()?'images/logo-po.png':'images/logo-kn.png?v=20261022'}" alt="">`:`<div class="lg-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M9 3c-1 2 1 3 0 5M14 3c-1 2 1 3 0 5"/></svg></div>`}<div><h2>${esc(isPo()?((S.po&&S.po.shopName)||'ข้าวมันไก่'):isKn()?((S.kn&&S.kn.shopName)||'ล้านฅนเมียง'):(S.settings.shopName||'NueaLwoan'))}</h2><p class="help" style="margin:0">ระบบจัดการร้าน</p></div></div>
     ${S.outMsg?`<div class="outmsg" role="alert">${esc(S.outMsg)}</div>`:''}
     <div class="field"><label for="lgUser">ชื่อผู้ใช้</label><input id="lgUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" value="${esc(last)}" placeholder="เช่น admin"></div>
     <div class="field"><label for="lgPw">รหัสผ่าน</label><div class="pw"><input id="lgPw" type="password" autocomplete="current-password"><button type="button" class="pw-eye" data-act="pwToggle" data-for="lgPw" aria-label="แสดงรหัสผ่าน">แสดง</button></div></div>
@@ -4281,7 +4292,7 @@ async function poSet(id,patch,msg){const o0=poById(id);let sc=0;
   const ok=await write('po_orders/'+id,r=>r.update(patch));if(ok&&sc&&o0)deductStock(o0.items,S.poMenu,sc);if(ok){const o=poById(id);if(o)Object.assign(o,patch);render();if(msg)toast(msg)}}
 Object.assign(ACT,{
   viewSlip:async d=>{const o=S.open[d.id];try{const s=await S.db.doc('slips/'+d.id).get();const x=s.exists?s.data():null;if(!x||!x.img)return toast('ลูกค้าลบสลิปแล้ว หรือยังไม่ได้แนบ','bad');viewImg(x.img,'สลิป · '+(o?tableLabel(o):(x.orderNo||''))+' · '+hm(x.at))}catch(e){toast('โหลดสลิปไม่ได้','bad')}},
-  shopSw:d=>{if(!canPo())return deny();S.shop=d.v==='po'||d.v==='kn'?d.v:'noodle';try{localStorage.setItem('nl_shop',S.shop)}catch(e){}S.menuCat='all';S.tab=homeTab(effRole());closeSheet();render();window.scrollTo(0,0)},
+  shopSw:d=>{if(S.state==='ready'&&!canPo()&&d.v!=='noodle')return deny();S.shop=d.v==='po'||d.v==='kn'?d.v:'noodle';try{localStorage.setItem('nl_shop',S.shop)}catch(e){}S.menuCat='all';S.tab=homeTab(effRole());closeSheet();render();window.scrollTo(0,0)},
   poDay:d=>{S.poDay=d.v;render()},
   poF:d=>{S.poF=d.v;render()},
   poCxSeen:async d=>{const o=poById(d.id);if(!o)return;o.cancelSeen=true;render();await write('po_orders/'+o.id,r=>r.update({cancelSeen:true}))},
