@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.22-190906">
+<meta name="app-version" content="2026.10.22-193101">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1422,6 +1422,23 @@ body.shop-kn .cstamp{border-color:#c8792a;background:rgba(36,20,10,.92);box-shad
 body.shop-kn .cstamp img{width:78px;height:78px;border-radius:50%;margin-top:0}
 body.shop-kn .cstamp b,body.shop-kn .cstamp i{color:#ffcf7a;border-color:#ffcf7a}
 body.shop-kn .closedtx span{color:#f6e7d4}body.shop-kn .closedtx small{color:#d9b48a}
+
+/* ปุ่มหัว: ตั้งค่าระบบส่วนกลาง + ตั้งค่าร้าน */
+#hdrShopSet{order:9}.top-in>.hbr{display:none}
+@media (max-width:860px){.top-in .hfull{display:none}
+ .top-in::before{order:9}
+ #hdrSys{order:10}#hdrShopSet{order:10}
+ .top-in>.hbr{display:block;order:11;flex-basis:100%;height:0}
+ #hdrMe{order:12}#hdrLogout{order:13}
+ #hdrSys,#hdrShopSet{flex:1 1 0;min-width:0;margin:0!important;justify-content:center;white-space:nowrap;font-size:13px!important}}
+
+.kncash.kncl{border-color:#e7a3a3;background:linear-gradient(180deg,#fff5f5,#ffe4e4);color:#9b1c1c;font-weight:700}.kncash.kncl:hover{border-color:#dc2626}
+
+/* ปุ่มรอยืนยัน (แตะอีกครั้ง) ให้อ่านชัดทุกพื้นหลัง */
+.btn[data-armed],button[data-armed],a[data-armed]{color:#fff!important;background:linear-gradient(135deg,#ef4444,#b91c1c)!important;border:2px solid #fff!important;box-shadow:0 0 0 3px rgba(220,38,38,.35),0 4px 12px rgba(185,28,28,.35)!important;text-shadow:0 1px 1px rgba(0,0,0,.25);font-weight:700}
+.btn[data-armed] *,button[data-armed] *{color:#fff!important}
+
+.cfscan{margin-top:6px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px;border-radius:14px;border:1.5px dashed #2563eb;background:linear-gradient(180deg,#eff6ff,#dbeafe);color:#1e40af;font-weight:800}.cfscan small{font-weight:500;color:#3b5bab;font-size:12px}
 </style>
 </head>
 <body>
@@ -1431,7 +1448,8 @@ body.shop-kn .closedtx span{color:#f6e7d4}body.shop-kn .closedtx small{color:#d9
   <div class="shopsw" id="shopSw" role="group" aria-label="เลือกร้าน" hidden><button type="button" data-act="shopSw" data-v="noodle"><img class="swlogo" src="images/logo-nl.png?v=20261016b" alt="">เนื้อล้วนๆ</button><button type="button" data-act="shopSw" data-v="po"><img class="swlogo" src="images/logo-po.png" alt="">ข้าวมันไก่</button><button type="button" data-act="shopSw" data-v="kn"><img class="swlogo" src="images/logo-kn-s.png?v=20261022" alt="">ล้านฅนเมียง</button></div>
   <label class="modesel" id="hdrModeWrap" hidden><span>🛡️ โหมด</span><select id="hdrMode" aria-label="โหมดหน้าจอ"><option value="">Admin</option><option value="waiter">พนักงานเสิร์ฟ</option><option value="chef">แม่ครัว</option><option value="partner">หุ้นส่วน</option></select></label>
   <button class="btn sm hbtn" id="hdrMe" data-act="myAcct" type="button" hidden>👤 บัญชี</button>
-  <button class="btn sm hbtn" data-act="settings" type="button">⚙️ ตั้งค่าร้าน</button>
+  <button class="btn sm hbtn" data-act="settings" id="hdrSys" type="button">⚙️ <span>ตั้งค่า<span class="hfull">ระบบ</span>ส่วนกลาง</span></button>
+  <button class="btn sm hbtn" data-act="shopSet" id="hdrShopSet" type="button" hidden>🏪 <span>ตั้งค่าร้าน<span class="hfull" id="hdrShopSetN"></span></span></button><i class="hbr" aria-hidden="true"></i>
   <button class="btn sm" id="hdrShop" data-act="shopSession" type="button" hidden>🔒 ปิดร้าน</button>
   <button class="btn sm hbtn hout" id="hdrLogout" data-act="logout" data-confirm="1" type="button">🚪 ออกจากระบบ</button>
 </div></header>
@@ -1895,14 +1913,14 @@ function render(){MEMO=null;
   c.innerHTML=S.state==='ready'?'<span class="dot on"></span>ออนไลน์ · '+esc(dlong(Date.now())):['noconfig','offline','nostaff'].includes(S.state)?'<span class="dot off"></span>ไม่ได้เชื่อมฐานข้อมูล':S.state==='login'?'<span class="dot"></span>ยังไม่ได้เข้าสู่ระบบ':'<span class="dot"></span>กำลังเชื่อมต่อ…';
   document.querySelector('[data-act="settings"]').hidden=S.state!=='ready';
   $('#hdrLogout').hidden=S.state!=='ready';$('#hdrMe').hidden=S.state!=='ready';
-  {const hb=$('#hdrShop');if(hb){const own=S.state==='ready'&&(isKn()?canPo():(S.role==='owner'||(isPo()&&S.role==='chef'))),cl=isKn()?!cashCur('kn'):shopClosed();hb.dataset.act=isKn()?'knShop':'shopSession';hb.hidden=!own;hb.innerHTML=cl?'<span class="dot"></span>ร้านปิดอยู่ · <b>เปิดร้าน</b>':'<span class="dot"></span>เปิดอยู่ · <b>ปิดร้าน</b>';hb.classList.toggle('closed',cl);hb.title=cl?'ร้านปิดอยู่ · กดเพื่อเปิดร้าน':'ปิดร้าน: หยุดขายทุกช่องทาง'}}if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!((S.calls.length&&canCall())||dlWaiting().length);
+  {const ss=$('#hdrShopSet');if(ss){ss.hidden=!(S.state==='ready'&&(isPo()?poAdmin():S.role==='owner'));const nn=$('#hdrShopSetN');if(nn)nn.textContent=isKn()?(knCfg().shopName||'ล้านฅนเมียง'):isPo()?((S.po&&S.po.shopName)||'ข้าวมันไก่'):(S.settings.rcName||'เนื้อล้วนๆ')}}{const hb=$('#hdrShop');if(hb){const own=S.state==='ready'&&(isKn()?canPo():(S.role==='owner'||(isPo()&&S.role==='chef'))),cl=isKn()?!cashCur('kn'):shopClosed();hb.dataset.act=isKn()?'knShop':'shopSession';hb.hidden=!own;hb.innerHTML=cl?'<span class="dot"></span>ร้านปิดอยู่ · <b>เปิดร้าน</b>':'<span class="dot"></span>เปิดอยู่ · <b>ปิดร้าน</b>';hb.classList.toggle('closed',cl);hb.title=cl?'ร้านปิดอยู่ · กดเพื่อเปิดร้าน':'ปิดร้าน: หยุดขายทุกช่องทาง'}}if($('#callbar'))$('#callbar').hidden=S.state!=='ready'||!((S.calls.length&&canCall())||dlWaiting().length);
   const mw=$('#hdrModeWrap');mw.hidden=!(S.state==='ready'&&S.role==='owner');if(!mw.hidden){{const sel=$('#hdrMode'),want=isPo()||isKn()?'po':'all';if((isPo()||isKn())&&S.viewAs&&S.viewAs!=='chef')S.viewAs=null;if(sel.dataset.set!==want){sel.dataset.set=want;sel.innerHTML=(isPo()||isKn()?[['','Admin'],['chef','แม่ครัว']]:[['','Admin'],['waiter','พนักงานเสิร์ฟ'],['chef','แม่ครัว'],['partner','หุ้นส่วน']]).map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}}$('#hdrMode').value=S.viewAs||'';$('#hdrMode').dataset.v=S.viewAs||'';mw.classList.toggle('on',!!S.viewAs);mw.dataset.r=S.viewAs||'owner'}
   const va=$('#viewAs');va.hidden=!(S.state==='ready'&&S.viewAs);if(!va.hidden)va.innerHTML=`<span>โหมด <b>${roleName(S.viewAs)}</b> · ใช้งานจริงตามสิทธิ์ของตำแหน่งนี้</span><button class="btn sm" data-act="viewAsOff" type="button">กลับโหมดแอดมิน</button>`;
   $('#tabs').parentElement.hidden=S.state!=='ready';
   if(S.state==='ready'&&(isPo()||isKn())&&!canPo()){S.shop='noodle';S.tab=homeTab(effRole())}
   {const sw=$('#shopSw');sw.hidden=S.state==='ready'?!canPo():!['login','nostaff'].includes(S.state);document.body.classList.toggle('auth-po',S.state!=='ready'&&isPo());document.body.classList.toggle('auth-kn',S.state!=='ready'&&isKn());if(!sw.hidden)sw.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.shop)));document.body.classList.toggle('shop-po',S.state==='ready'&&isPo());document.body.classList.toggle('shop-kn',S.state==='ready'&&isKn());}
   const isOwner=S.role==='owner';
-  document.querySelector('[data-act="settings"]').textContent=isOwner?'⚙️ ตั้งค่าร้าน':'👤 บัญชีของฉัน';
+  {const sb=document.querySelector('[data-act="settings"]'),h=isOwner?'⚙️ <span>ตั้งค่า<span class="hfull">ระบบ</span>ส่วนกลาง</span>':'👤 บัญชีของฉัน';if(sb.dataset.h!==h){sb.dataset.h=h;sb.innerHTML=h;try{knIcons(sb)}catch(e){}}}
   let nTab=0;document.querySelectorAll('.tab').forEach(t=>{const ok=S.state!=='ready'||TAB_OK[t.dataset.v]();t.hidden=!ok;if(ok)nTab++});
   $('#tabs').style.gridTemplateColumns=`repeat(${Math.max(1,nTab)},1fr)`;
   if(S.state==='ready'&&!TAB_OK[S.tab]())S.tab=Object.keys(TAB_OK).find(k=>TAB_OK[k]())||'menu';
@@ -2163,7 +2181,7 @@ function knIcons(root){if(!document.body.classList.contains('shop-kn')||!root)re
     while(m=KN_ICO_RE.exec(v)){if(m.index>last)f.appendChild(document.createTextNode(v.slice(last,m.index)));const k=m[0].replace(/\uFE0F/g,''),svg=KN_ICO[k]||KN_ICO[k+'\uFE0F'];const i=document.createElement('i');i.className='kni';i.setAttribute('aria-hidden','true');i.innerHTML=svg||m[0];f.appendChild(i);last=m.index+m[0].length}
     if(last<v.length)f.appendChild(document.createTextNode(v.slice(last)));t.replaceWith(f)})}
 let __negT=0;
-if(!window.__sx){window.__sx=1;new MutationObserver(()=>{sxDecorate();clearTimeout(__negT);__negT=setTimeout(()=>{['#view','#panel','#sheet'].forEach(q=>{const r=document.querySelector(q);if(r)negMark(r)});['header.top','#view','#panel','#toast'].forEach(q=>knIcons(document.querySelector(q)))},120)}).observe(document.body,{childList:true,subtree:true})}
+if(!window.__sx){window.__sx=1;new MutationObserver(()=>{sxDecorate();if(document.body.classList.contains('shop-kn'))['header.top','#view','#panel','#toast','#tabs'].forEach(q=>knIcons(document.querySelector(q)));clearTimeout(__negT);__negT=setTimeout(()=>{['#view','#panel','#sheet'].forEach(q=>{const r=document.querySelector(q);if(r)negMark(r)})},120)}).observe(document.body,{childList:true,subtree:true})}
 function renderSheet(){const s=S.sheet;if(!s)return;setTimeout(fmtNums,0);
   {const pn=$('#panel');if(pn&&pn.parentElement)pn.parentElement.classList.toggle('findmode',s.type==='poFind')}
   ({knRc:sheetKnRc,knQr:sheetKnQr,cashOpen:sheetCashOpen,cashClose:sheetCashClose,knPay:sheetKnPay,knSale:sheetKnSale,knSet:sheetKnSet,wdHist:sheetWdHist,poWd:sheetPoWd,poCost:sheetPoCost,poFind:sheetPoFind,poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
@@ -2892,11 +2910,11 @@ const myAccountCard=()=>`<div class="card"><h3>บัญชีของฉัน
    <div class="field"><label for="myPw">ตั้งรหัสผ่านใหม่</label><div class="inrow"><input id="myPw" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"><button class="btn sm" data-act="myPwSave" type="button">เปลี่ยนรหัส</button></div></div>
    <button class="btn sm danger" data-act="logout" data-confirm="1" type="button" style="align-self:flex-start">ออกจากระบบ</button></div>`;
 function sheetAccount(){$('#panel').innerHTML=head('บัญชีของฉัน')+`<form class="sh-body">${accountCard()}</form>${verRow()}`;bindBg();bellBind();}
-function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.settings;
-  $('#panel').innerHTML=head('ตั้งค่าร้าน')+
+function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.settings,SYS=S.sheet.scope!=='shop',SG=S.sheet.sg||(SYS?6:1),sh=k=>SG==k?'':'hidden';
+  $('#panel').innerHTML=head(SYS?'⚙️ ตั้งค่าระบบส่วนกลาง':'🏪 ตั้งค่าร้าน'+esc(s.rcName||'เนื้อล้วนๆ'),SYS?'ใช้ร่วมกันทุกร้าน · พนักงาน · พร้อมเพย์ · เบอร์โทร · สะสมแต้ม · เสียงแจ้งเตือน':'เฉพาะร้านนี้ · โต๊ะ · ใบเสร็จ · QR สั่งอาหาร · เดลิเวอรี่')+
   `<form class="sh-body">
-  <div class="sgtabs" role="tablist">${[['1','🏪','ร้าน & พนักงาน'],['2','💳','เงิน & ใบเสร็จ'],['3','⭐','สมาชิก'],['4','📷','หน้าลูกค้า & เสียง'],['5','🛵','เดลิเวอรี่']].map(([k,i,t])=>`<button type="button" role="tab" data-act="sgTab" data-v="${k}" aria-selected="${(S.sheet.sg||1)==k}"><span>${i}</span>${t}</button>`).join('')}</div>
-  <section class="sg" data-sg="1" ${(S.sheet.sg||1)==1?'':'hidden'}><h3 class="sg-h">🏪 ข้อมูลร้าน · หมวดหมู่ · พนักงาน · สิทธิ์การใช้งาน</h3>
+  <div class="sgtabs" role="tablist">${(SYS?[['6','👥','พนักงาน & สิทธิ์'],['2','💳','พร้อมเพย์ & เบอร์โทร'],['3','⭐','สะสมแต้ม'],['8','🔔','เสียงแจ้งเตือน']]:[['1','🏪','ร้าน & โต๊ะ'],['7','🧾','VAT & ใบเสร็จ'],['4','📷','QR สั่งอาหาร'],['5','🛵','เดลิเวอรี่']]).map(([k,i,t])=>`<button type="button" role="tab" data-act="sgTab" data-v="${k}" aria-selected="${SG==k}"><span>${i}</span>${t}</button>`).join('')}</div>
+  <section class="sg" data-sg="1" ${sh(1)}><h3 class="sg-h">🏪 ข้อมูลร้าน · โต๊ะ · หมวดหมู่</h3>
   <div class="field"><label for="cName">ชื่อร้าน</label><input id="cName" value="${esc(s.shopName)}"></div>
   <div class="grid2"><div class="field"><label for="cTables">จำนวนโต๊ะ</label><input id="cTables" inputmode="numeric" value="${s.tables}"></div><div class="field"><label for="cExtra">ราคา "พิเศษ" (บาท)</label><input id="cExtra" inputmode="decimal" value="${s.extraPrice??10}"></div></div>
   <div class="card"><div class="sec-h"><h3>จำนวนเก้าอี้แต่ละโต๊ะ</h3><span class="hint">ค่าเริ่มต้น <input class="seatdef" id="cDefSeats" inputmode="numeric" value="${s.defSeats||4}" aria-label="ที่นั่งเริ่มต้น"> ที่</span></div>
@@ -2904,6 +2922,8 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <p class="help" style="margin:0">เว้นว่าง = ใช้ค่าเริ่มต้น · เพิ่มจำนวนโต๊ะแล้วกดบันทึก ช่องของโต๊ะใหม่จะขึ้นเมื่อเปิดหน้านี้อีกครั้ง</p></div>
   <div class="field"><label for="cCats">หมวดเมนู (คั่นด้วย ,)</label><input id="cCats" value="${esc((s.cats||[]).join(', '))}"></div>
   <p class="help" style="margin:0">หมวดรายจ่าย / ประเภทรายรับ: เพิ่ม ลบ แก้ชื่อได้ที่หน้า "บันทึกรายจ่าย" หรือ "บันทึกรายรับ" → ปุ่ม ⚙ จัดการ</p>
+  </section>
+  <section class="sg" data-sg="6" ${sh(6)}><h3 class="sg-h">👥 พนักงาน · สิทธิ์การใช้งาน (ใช้ทุกร้าน)</h3>
   <div class="card"><div class="sec-h"><h3>พนักงาน</h3><button class="lnk" data-act="staffNew" type="button">+ เพิ่มพนักงาน</button></div>
    <p class="help" style="margin:0">เฉพาะแอดมินที่สร้าง ตั้งรหัส ลบบัญชี และเปลี่ยนตำแหน่งได้</p><div id="staffList"><p class="help" style="margin:0">กำลังโหลด…</p></div></div>
   <div class="card"><div class="sec-h"><h3>สิทธิ์การใช้งาน</h3><button class="lnk" data-act="permReset" type="button">คืนค่าเริ่มต้น</button></div>
@@ -2914,9 +2934,14 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
 
   ${myAccountCard()}
   </section>
-  <section class="sg" data-sg="2" ${(S.sheet.sg||1)==2?'':'hidden'}><h3 class="sg-h">💳 การชำระเงิน · ใบเสร็จ · ใบเสร็จออนไลน์</h3>
+  <section class="sg" data-sg="2" ${sh(2)}><h3 class="sg-h">💳 พร้อมเพย์ · เบอร์โทรร้าน (ใช้ทุกร้าน)</h3>
   <div class="card"><h3>การชำระเงิน</h3>
   <div class="field"><label for="cPP">พร้อมเพย์ของร้าน</label><input id="cPP" inputmode="numeric" value="${esc(s.promptpay)}" placeholder="เบอร์มือถือ 10 หลัก หรือเลขบัตร 13 หลัก"><span class="help">ใช้สร้าง QR พร้อมยอดเงินตอนเก็บเงิน</span></div></div>
+  <div class="field"><label for="cPPN">ชื่อบัญชีพร้อมเพย์ (โชว์ในการ์ด QR ให้ลูกค้าเห็นตอนโอน)</label><input id="cPPN" maxlength="50" value="${esc(s.ppName||'')}" placeholder="เช่น นายสมชาย ใจดี"></div>
+  <div class="card"><h3>เบอร์โทรร้าน</h3><div class="field"><label for="cPhone">เบอร์โทรร้าน</label><input id="cPhone" inputmode="tel" value="${esc(s.phone||'')}"></div><p class="help" style="margin:0">ใช้ทุกร้าน: ใบเสร็จ · หน้าสั่งอาหาร · ปุ่มโทรหาร้าน</p></div>
+  <p class="help" style="margin:0">พร้อมเพย์ ชื่อบัญชี และเบอร์โทร ใช้ร่วมกันทั้ง 3 ร้าน (เนื้อล้วนๆ · ข้าวมันไก่ · ล้านฅนเมียง) · บันทึกแล้วอัปเดตให้ทุกร้านทันที</p>
+  </section>
+  <section class="sg" data-sg="7" ${sh(7)}><h3 class="sg-h">🧾 VAT · โลโก้ · ใบเสร็จ</h3>
   <div class="card"><h3>ภาษีมูลค่าเพิ่ม (VAT)</h3>
    <label class="check"><input type="checkbox" id="cVatOn" ${vatCfg().on?'checked':''}> คิดภาษีมูลค่าเพิ่ม</label>
    <div class="grid2"><div class="field"><label for="cVatRate">อัตรา (%)</label><input id="cVatRate" inputmode="decimal" value="${vatCfg().rate}"></div>
@@ -2927,7 +2952,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    ${rcLogoField('rcLogo',s.rcLogo||s.logo,'images/logo-nl-t.png?v=20261016b')}
    <p class="help" style="margin:2px 0 10px">โลโก้เดียวใช้ทุกที่: ใบแจ้งยอด/ใบเสร็จที่พิมพ์ · ใบเสร็จออนไลน์ · หน้าสั่งอาหารของลูกค้า · ป้าย QR</p>
    <div class="field"><label for="cAddr">ที่อยู่ร้าน</label><input id="cAddr" value="${esc(s.address||'')}" placeholder="เช่น 12 ถ.สุขุมวิท บางนา กทม." autocomplete="off"></div>
-   <div class="grid2"><div class="field"><label for="cPhone">เบอร์โทรร้าน</label><input id="cPhone" inputmode="tel" value="${esc(s.phone||'')}"></div><div class="field"><label for="cTax">เลขผู้เสียภาษี (ถ้ามี)</label><input id="cTax" inputmode="numeric" value="${esc(s.taxId||'')}"></div></div>
+   <div class="grid2"><div class="field"><label for="cTax">เลขผู้เสียภาษี (ถ้ามี)</label><input id="cTax" inputmode="numeric" value="${esc(s.taxId||'')}"></div></div>
    <div class="field"><label for="cFoot">ข้อความท้ายใบเสร็จ</label><input id="cFoot" value="${esc(s.receiptFooter||'')}" placeholder="ขอบคุณที่อุดหนุนครับ"></div>
    <details class="rcx" open><summary><b>📱 ข้อมูลเพิ่มเติมบนใบเสร็จออนไลน์</b> <small class="muted">ชื่อร้าน · Facebook · หมุดพิกัด</small></summary>
     <div class="grid2"><div class="field"><label for="rcName">ชื่อร้าน (ไทย)</label><input id="rcName" maxlength="40" value="${esc(s.rcName??'เนื้อล้วนๆ')}"></div><div class="field"><label for="rcNameEn">ชื่อร้าน (อังกฤษ)</label><input id="rcNameEn" maxlength="40" value="${esc(s.rcNameEn??'NUEA LWOON')}"></div></div>
@@ -2938,7 +2963,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
     <p class="help" style="margin:0">เบอร์โทรใช้ช่อง "เบอร์โทรร้าน" ด้านบน · ภาษีมูลค่าเพิ่มแสดงบนใบเสร็จเฉพาะเมื่อเปิด VAT · ถ้าใส่เลขผู้เสียภาษีด้วย หัวจะเป็น "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ"</p></details>
    <div class="field"><label for="cPaper">ขนาดกระดาษเครื่องพิมพ์</label><select id="cPaper"><option value="80" ${+s.paper!==58?'selected':''}>80 มม.</option><option value="58" ${+s.paper===58?'selected':''}>58 มม.</option></select></div></div>
   </section>
-  <section class="sg" data-sg="3" ${(S.sheet.sg||1)==3?'':'hidden'}><h3 class="sg-h">⭐ สมาชิกสะสมแต้ม · QR สมัครสมาชิก</h3>
+  <section class="sg" data-sg="3" ${sh(3)}><h3 class="sg-h">⭐ สมาชิกสะสมแต้ม · QR สมัครสมาชิก</h3><p class="help" style="margin:0">ใช้ร่วมกัน ร้านเนื้อล้วนๆ และข้าวมันไก่ · ร้านล้านฅนเมียงไม่มีระบบสะสมแต้ม</p>
   <div class="card" style="flex-direction:row;align-items:center;gap:10px"><span style="font-size:24px">🎟️</span><div class="grow"><b>คูปองส่วนลด</b><div class="help" style="margin:0">โปรลดทุกบิล / แจกคูปองจำนวนจำกัด / ส่วนลดค่าส่ง</div></div><button class="btn sm pri" data-act="coupons" type="button">จัดการคูปอง</button></div>
   <div class="card"><h3>สะสมแต้ม</h3>
    <label class="check"><input type="checkbox" id="cPtsOn" ${s.pointsOn?'checked':''}> เปิดระบบสะสมแต้มด้วยเบอร์โทร</label>
@@ -2948,17 +2973,18 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
    <div class="qrbig"><div class="pq"><small style="font-weight:600">${esc(s.rcName||'เนื้อล้วนๆ')}</small>${qrSvg(memberUrl())}<b>สมัครสมาชิกสะสมแต้ม</b><small>ทุก ${num(+s.pointsPer||50)} บาท ได้ 1 แต้ม · ใช้ได้ทั้ง 2 ร้าน</small></div></div>
    <div class="inrow" style="flex-wrap:wrap"><button class="btn sm" data-act="memQrPrint" type="button">พิมพ์ QR นี้</button><a class="btn sm ghost" href="${esc(memberUrl())}" target="_blank" rel="noopener">เปิดหน้าสมัคร</a></div></div>
   </section>
-  <section class="sg" data-sg="4" ${(S.sheet.sg||1)==4?'':'hidden'}><h3 class="sg-h">📷 QR สั่งอาหาร · ปุ่มเรียกพนักงาน · เสียงและการแจ้งเตือน</h3>
+  <section class="sg" data-sg="4" ${sh(4)}><h3 class="sg-h">📷 QR สั่งอาหาร · ปุ่มเรียกพนักงาน · ภาพพื้นหลัง</h3>
   <div class="card"><h3>ลูกค้าสั่งเองผ่าน QR</h3><p class="help" style="margin:0">พิมพ์ QR ไปติดที่โต๊ะ ลูกค้าสแกนแล้วสั่งได้เลย รายการจะเข้าบิลของโต๊ะนั้น</p> <label class="check" style="align-items:flex-start"><input type="checkbox" id="cQrSecure" ${s.qrSecure!==false?'checked':''}><span><b>QR ปลอดภัย (แนะนำ)</b><br><small class="muted">QR สั่งเองเปลี่ยนใหม่ทุกวัน · QR โต๊ะสร้างใหม่ทุกครั้งที่เปิดโต๊ะ และใช้ไม่ได้หลังชำระเงิน กันคนเอา QR เก่ามาแกล้งสั่ง (ไม่ต้องติด QR บนโต๊ะ ให้ลูกค้าสแกนจากจอพนักงานหรือพิมพ์ใบ QR ตอนเปิดโต๊ะ)</small></span></label><label class="check"><input type="checkbox" id="cQrWalk" ${s.qrWalkin!==false?'checked':''}> เปิดให้ลูกค้าสั่งเองแบบไม่ระบุโต๊ะ (QR เคาน์เตอร์)</label><label class="check"><input type="checkbox" id="cQrOpen" ${s.qrRequireOpen!==false?'checked':''}> ให้สั่งผ่าน QR ได้เฉพาะโต๊ะที่พนักงานเปิดแล้ว</label><button class="btn sm" data-act="qrSheet" type="button">${s.qrSecure!==false?'ดู QR สั่งเองของวันนี้':'ดูและพิมพ์ QR ประจำโต๊ะ'}</button></div>
   <div class="card"><h3>ปุ่มเรียกพนักงาน (หน้าลูกค้า)</h3><p class="help" style="margin:0">ลูกค้ากด 🔔 แล้วจะเห็นปุ่มตามรายการนี้ · พิมพ์ประโยคเองได้ เพิ่ม/ลบได้ (สูงสุด 8) · ติ๊ก "เก็บเงิน" ถ้าเป็นการขอจ่ายเงิน (ใช้เสียงเก็บเงิน และมีปุ่มไปหน้าคิดเงิน) · เสียงของแต่ละประโยค อัดหรือเลือกไฟล์ได้ที่ 🎙 อัดเสียงเรียกโต๊ะ</p><div id="coList"></div>
    <div class="inrow" style="margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-act="coAdd" type="button">+ เพิ่มประโยค</button><button class="btn sm ghost" data-act="vOpen" type="button">🎙 อัด / เลือกไฟล์เสียงของแต่ละประโยค</button></div></div>
-  ${bellCard()}${bgCard()}
+  ${bgCard()}
   </section>
-  <section class="sg" data-sg="5" ${(S.sheet.sg||1)==5?'':'hidden'}><h3 class="sg-h">🛵 เดลิเวอรี่</h3>${rdSettingsCard()}${oaSettingsCard()}
+  <section class="sg" data-sg="8" ${sh(8)}><h3 class="sg-h">🔔 เสียงแจ้งเตือน (ใช้ทุกร้าน)</h3>${bellCard()}</section>
+  <section class="sg" data-sg="5" ${sh(5)}><h3 class="sg-h">🛵 เดลิเวอรี่</h3>${rdSettingsCard()}${oaSettingsCard()}
   <div class="card"><h3>ช่องทางเดลิเวอรี่</h3><p class="help" style="margin:0">ราคาบวกเพิ่มใช้ตอนเพิ่มรายการในออร์เดอร์ของช่องทางนั้น GP ใช้คิดเงินที่ร้านได้รับจริงในรายงาน ใส่ตามสัญญาของร้าน</p>
    <div class="perm-wrap"><table class="perm"><thead><tr><th>ช่องทาง</th><th>เปิดใช้</th><th>ราคา +%</th><th>GP %</th></tr></thead><tbody>${DELIV.map(c=>{const g=chCfg(c);return `<tr><td><span class="chip-ch" style="--chc:${CH[c].c}">${CH[c].n}</span></td><td class="c"><input type="checkbox" id="chOn_${c}" ${g.on?'checked':''} aria-label="เปิดใช้ ${CH[c].n}"></td><td class="c"><input class="pct" id="chMk_${c}" inputmode="decimal" value="${g.markup||0}" aria-label="ราคาบวกเพิ่ม ${CH[c].n}"></td><td class="c"><input class="pct" id="chGp_${c}" inputmode="decimal" value="${g.gp||0}" aria-label="GP ${CH[c].n}"></td></tr>`}).join('')}</tbody></table></div></div>
   </section>
-  <section class="card" style="border:1px solid var(--chili);padding:12px;display:flex;flex-direction:column;gap:6px"><b style="color:var(--chili)">🧹 รีเซตบิล · เนื้อล้วนๆ</b><span class="help" style="margin:0">ช่วงทดลองระบบ: ล้างบิล/ออร์เดอร์ทดสอบ แล้วเริ่มเลขบิลใหม่ · เจ้าของร้านเท่านั้น · ต้องยืนยันก่อน</span><button class="btn danger" data-act="resetOpen" data-v="noodle" type="button">🧹 รีเซตบิลเนื้อล้วนๆ…</button></section>
+  <section class="card" ${SYS?'hidden':''} style="border:1px solid var(--chili);padding:12px;display:flex;flex-direction:column;gap:6px"><b style="color:var(--chili)">🧹 รีเซตบิล · เนื้อล้วนๆ</b><span class="help" style="margin:0">ช่วงทดลองระบบ: ล้างบิล/ออร์เดอร์ทดสอบ แล้วเริ่มเลขบิลใหม่ · เจ้าของร้านเท่านั้น · ต้องยืนยันก่อน</span><button class="btn danger" data-act="resetOpen" data-v="noodle" type="button">🧹 รีเซตบิลเนื้อล้วนๆ…</button></section>
   </form>
   ${verRow()}<div class="sh-foot"><button class="btn pri wide" data-act="saveSettings" type="button">บันทึกการตั้งค่า</button></div>`;
   loadStaff();bindBg();bellBind();renderPerm();rdBindSettings();if(!S.sheet.co)S.sheet.co=callOpts().map(o=>({...o}));renderCo();
@@ -3055,9 +3081,11 @@ function sheetQr(){const s=S.settings,n=Math.max(1,Math.min(60,+s.tables||10));
    <div class="field"><label>ลิงก์โต๊ะ 1 (ไว้ทดสอบ)</label><a href="${esc(tableUrl(1,s.qrKey))}" target="_blank" rel="noopener" style="overflow-wrap:anywhere;color:var(--jade)">${esc(tableUrl(1,s.qrKey))}</a></div>
    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">${cards.join('')}</div></div>
    <div class="sh-foot"><button class="btn danger" data-act="qrRotate" data-confirm="1" type="button">เปลี่ยนรหัส QR</button><button class="btn pri wide" data-act="qrPrint" type="button">พิมพ์ QR ทั้งหมด</button></div>`;}
+async function syncShared(d){const patch={promptpay:d.promptpay||'',ppName:d.ppName||'',phone:d.phone||''};for(const id of ['po','kn']){const ref=S.db.collection('config').doc(id);try{await ref.update(patch)}catch(e){try{await ref.set(patch)}catch(_){}}}
+  S.po=S.po?{...S.po,...patch}:S.po;S.kn={...(S.kn||{}),...patch}}
 async function saveSettings(){const pp=val('cPP').replace(/\D/g,'');if(pp&&!ppValid(pp))return toast('พร้อมเพย์ต้องเป็นเบอร์ 10 หลัก หรือเลข 13 หลัก','bad');
   const split=v=>v.split(/[,，]/).map(x=>x.trim()).filter(Boolean);
-  const data={...S.settings,shopName:val('cName')||'NueaLwoan',tables:Math.max(1,Math.min(60,Math.round(nval('cTables'))||10)),extraPrice:nval('cExtra'),promptpay:pp,cats:split(val('cCats')),expCats:S.settings.expCats||DEFAULTS.expCats,qrKey:S.settings.qrKey||newQrKey(),
+  const data={...S.settings,shopName:val('cName')||'NueaLwoan',tables:Math.max(1,Math.min(60,Math.round(nval('cTables'))||10)),extraPrice:nval('cExtra'),promptpay:pp,ppName:val('cPPN').trim().slice(0,50),cats:split(val('cCats')),expCats:S.settings.expCats||DEFAULTS.expCats,qrKey:S.settings.qrKey||newQrKey(),
     logo:rcLogoVal('rcLogo',S.settings.rcLogo||S.settings.logo),address:val('cAddr'),phone:val('cPhone'),taxId:val('cTax'),receiptFooter:val('cFoot'),rcName:val('rcName'),rcNameEn:val('rcNameEn'),rcTag:val('rcTag'),rcFb:val('rcFb'),rcFbUrl:val('rcFbUrl'),rcMap:val('rcMap'),rcMapUrl:val('rcMapUrl'),rcThanks2:val('rcThanks2'),rcLogo:rcLogoVal('rcLogo',S.settings.rcLogo||S.settings.logo),paper:+val('cPaper')||80,
     defSeats:Math.max(1,Math.min(30,Math.round(nval('cDefSeats'))||4)),seats:Object.fromEntries([...document.querySelectorAll('[data-seat]')].map(e=>[e.dataset.seat,Math.round(parseFloat(e.value))]).filter(([,v])=>v>0&&v<=30)),
     vat:{on:$('#cVatOn').checked,rate:Math.min(30,Math.max(0,nval('cVatRate'))),mode:val('cVatMode')==='excl'?'excl':'incl'},
@@ -3065,7 +3093,7 @@ async function saveSettings(){const pp=val('cPP').replace(/\D/g,'');if(pp&&!ppVa
     pointsOn:$('#cPtsOn').checked,pointsPer:Math.max(1,nval('cPtsPer')||50),pointValue:Math.max(0.01,nval('cPtsVal')||1)};
   if(!data.cats.length)data.cats=DEFAULTS.cats;if(!data.expCats.length)data.expCats=DEFAULTS.expCats;
   const back=S.sheet.back;const ok=await write('config/settings',r=>r.set(data));if(!ok)return;
-  S.settings={...DEFAULTS,...data};toast('บันทึกการตั้งค่าแล้ว');
+  S.settings={...DEFAULTS,...data};toast('บันทึกการตั้งค่าแล้ว');syncShared(data);
   if(back)return openSheet(back);
   const b=document.querySelector('[data-act="saveSettings"]');if(b){b.textContent='✓ บันทึกแล้ว';b.classList.add('ok-flash');clearTimeout(b._t);b._t=setTimeout(()=>{b.textContent='บันทึกการตั้งค่า';b.classList.remove('ok-flash')},2000)}}
 
@@ -3119,7 +3147,8 @@ const ACT={
   callAck:d=>{S.calls=S.calls.filter(c=>c.id!==d.c);renderCalls();render();write('calls/'+d.c,r=>r.delete())},
   callBill:d=>{if(!S.open[d.id])return toast('บิลนี้ปิดไปแล้ว','bad');if(!can('pay'))return deny();const p=payOpen(d.id);if((S.calls.find(c=>c.id===d.c)||{}).kind==='paid'&&!isDel(S.open[d.id]))p.method='promptpay';openSheet(p)},
   tab:d=>{S.tab=d.v;render();window.scrollTo(0,0)},
-  settings:()=>openSheet({type:'settings',back:S.sheet&&S.sheet.type==='pay'?{...S.sheet}:null}),
+  settings:()=>openSheet({type:'settings',scope:'sys',back:S.sheet&&S.sheet.type==='pay'?{...S.sheet}:null}),
+  shopSet:()=>{if(isKn())return ACT.knSet();if(isPo())return ACT.poSet();if(S.role!=='owner')return deny();openSheet({type:'settings',scope:'shop'})},
   close:closeSheet,
   openTable:d=>can('tables')?openTable(d.t):deny(),
   openOrder:d=>openSheet({type:'order',id:d.id,cat:'all',q:'',edit:null}),
@@ -3332,6 +3361,7 @@ function sheetCashOpen(){const s=S.sheet,sh=cashShop(),last=cashLast(sh),def=s.f
    <div class="chips">${[0,300,500,1000].map(v=>`<button type="button" class="chip" data-act="cfSet" data-v="${v}">${v?baht(v):'ไม่มี'}</button>`).join('')}</div>
    ${off.length?`<label class="check"><input type="checkbox" id="cfReact" checked> เปิดขายเมนูที่หมดเมื่อวาน (${off.length} เมนู: ${esc(off.slice(0,4).map(m=>m.name).join(', '))}${off.length>4?'…':''})</label>`:''}
    <p class="help" style="margin:0">ตอนปิดร้าน ระบบจะหักเงินทอนนี้ออกจากเงินที่นับได้ให้เอง</p></div>
+   ${KN?`<button type="button" class="btn wide cfscan" data-act="cfScan">📱 ไม่มีเงินทอน · รับสแกน/โอนอย่างเดียว<small>ลูกค้าจ่ายพร้อมเพย์ทั้งหมด · ปิดการรับเงินสดวันนี้</small></button>`:''}</div>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ข้าม</button><button class="btn pri wide" data-act="cfSave" type="button">🔓 เปิดร้าน · เริ่มขาย</button></div>`;
   const i=$('#cfIn');i.addEventListener('input',()=>{s.f=i.value.replace(/[^0-9.]/g,'');$('#cfShow').textContent=baht(+s.f||0)})}
 function knPotRows(t0,t1){const M={};(S.knMenu||[]).forEach(m=>M[m.id]={m,q:0,s:0,pot:0,pack:0,ing:[]});
@@ -3348,7 +3378,7 @@ function sheetCashClose(){const s=S.sheet,sh=cashShop(),c=cashCur(sh);if(!c){$('
   const X=cashSales(c),exp=r2((+c.float||0)+X.cash),cnt=s.cnt===''||s.cnt==null?null:+s.cnt,diff=cnt==null?null:r2(cnt-exp);if(!s.left)s.left={};
   $('#panel').innerHTML=head('💵 ปิดร้าน · นับเงินสด',shopNm(sh)+' · เปิดตั้งแต่ '+hm(c.at))+`<div class="sh-body">
    <div class="cash-k"><div><small>เงินทอนตั้งต้น</small><b>${baht(c.float||0)}</b></div><div><small>ขายเงินสด</small><b>${baht(X.cash)}</b></div><div><small>โอน / สแกน</small><b>${baht(X.qr)}</b></div><div class="hl"><small>ควรมีเงินในลิ้นชัก</small><b>${baht(exp)}</b></div></div>
-   <div class="field"><label for="ccIn">นับเงินสดในลิ้นชักได้ (บาท)</label><input id="ccIn" inputmode="decimal" value="${s.cnt??''}" placeholder="${num(exp)}"></div>
+   ${c.scanOnly&&!X.cash?'<p class="help" style="margin:0">📱 วันนี้รับสแกนอย่างเดียว · ไม่ต้องนับเงินสด</p><input type="hidden" id="ccIn" value="">':`<div class="field"><label for="ccIn">นับเงินสดในลิ้นชักได้ (บาท)</label><input id="ccIn" inputmode="decimal" value="${s.cnt??''}" placeholder="${num(exp)}"></div>`}
    <div class="cash-r" id="ccRes">${cashResHtml(c,X,cnt,diff)}</div>
    ${sh==='kn'?knPotHtml(+c.at,Infinity,1,s.left):''}
    <div class="field"><label for="ccNote">หมายเหตุ (ไม่บังคับ)</label><input id="ccNote" maxlength="80" value="${esc(s.note||'')}" placeholder="เช่น ทอนผิด 20 บาท"></div></div>
@@ -3362,7 +3392,8 @@ function cashHistHtml(sh){const L=(S.cashS||[]).filter(x=>x.shop===sh).slice(0,1
   return `<div class="card"><h3>💵 ลิ้นชักเงินสด (ล่าสุด)</h3><div class="list">${L.map(c=>{const X=c.closeAt?{cash:c.cashSales,qr:c.qrSales}:cashSales(c);return `<div class="row"><div class="grow"><div class="t">${dshort(c.at)} ${hm(c.at)}${c.closeAt?' – '+hm(c.closeAt):' · <span class="pill ok">เปิดอยู่</span>'}</div><div class="s">ทอนตั้งต้น ${baht(c.float||0)} · สด ${baht(X.cash||0)} · โอน ${baht(X.qr||0)}${c.closeAt&&c.counted!=null?` · นับได้ ${baht(c.counted)}`:''}</div></div>${c.closeAt&&c.diff!=null?`<b class="${Math.abs(c.diff)<.01?'':c.diff>0?'up':'dn'}">${Math.abs(c.diff)<.01?'ตรง':(c.diff>0?'เกิน ':'ขาด ')+baht(Math.abs(c.diff))}</b>`:''}</div>`}).join('')}</div></div>`}
 Object.assign(ACT,{
   cfSet:d=>{const i=$('#cfIn');i.value=d.v;S.sheet.f=d.v;$('#cfShow').textContent=baht(+d.v)},
-  cfSave:async()=>{const sh=cashShop(),f=+(S.sheet.f??val('cfIn'))||0;if(cashCur(sh)){closeSheet();return toast('ลิ้นชักเปิดอยู่แล้ว')}const now=Date.now(),id=sh+'-'+now,doc={shop:sh,at:now,float:r2(f),by:S.me||'',...(sh==='kn'?{qk:newQrKey()+newQrKey()}:{})};
+  cfScan:()=>{S.sheet.scan=1;S.sheet.f=0;ACT.cfSave()},
+  cfSave:async()=>{const sh=cashShop(),f=+(S.sheet.f??val('cfIn'))||0;if(cashCur(sh)){closeSheet();return toast('ลิ้นชักเปิดอยู่แล้ว')}const now=Date.now(),id=sh+'-'+now,doc={shop:sh,at:now,float:S.sheet.scan?0:r2(f),by:S.me||'',...(S.sheet.scan?{scanOnly:true}:{}),...(sh==='kn'?{qk:newQrKey()+newQrKey()}:{})};
     const ok=await write('cash_sessions/'+id,r=>r.set(doc));if(!ok)return;S.cashS=[{id,...doc},...(S.cashS||[])];
     if(sh==='kn'&&$('#cfReact')&&$('#cfReact').checked){for(const m of S.knMenu.filter(m=>m.active===false)){m.active=true;write('menu/'+m.id,r=>r.update({active:true}))}}
     closeSheet();render();toast('🔓 เปิดร้านแล้ว · เงินทอน '+baht(f))},
@@ -3373,7 +3404,7 @@ Object.assign(ACT,{
     const ok=await write('cash_sessions/'+c.id,r=>r.update(upd));if(!ok)return;Object.assign(c,upd);
     if(sh!=='kn'&&!shopClosed(sh)&&s.alsoClose!==false){await SB.rpc('shop_session',{p_closed:true,p_shop:sh});const key=sh==='po'?'shopSessionPo':'shopSession';S.lists=S.lists||{};S.lists[key]={...(S.lists[key]||{}),closed:true,closedAt:now}}
     closeSheet();render();toast('🔒 ปิดร้านแล้ว · เงินสดสุทธิ '+baht(upd.net)+(upd.diff!=null&&Math.abs(upd.diff)>=.01?(upd.diff>0?' · เกิน ':' · ขาด ')+baht(Math.abs(upd.diff)):''))},
-  cashFloat:async()=>{const c=cashCur();if(!c)return;const v=prompt('แก้เงินทอนตั้งต้น (บาท)',String(c.float||0));if(v==null)return;const f=r2(+String(v).replace(/[^0-9.]/g,'')||0);c.float=f;render();await write('cash_sessions/'+c.id,r=>r.update({float:f}));toast('เงินทอน '+baht(f))},
+  cashFloat:async()=>{const c=cashCur();if(!c)return;const v=prompt(c.scanOnly?'ตอนนี้รับสแกนอย่างเดียว · ใส่เงินทอนเพื่อเปิดรับเงินสด (บาท)':'แก้เงินทอนตั้งต้น (บาท)',String(c.float||0));if(v==null)return;const f=r2(+String(v).replace(/[^0-9.]/g,'')||0);c.float=f;c.scanOnly=false;render();await write('cash_sessions/'+c.id,r=>r.update({float:f,scanOnly:false}));toast('เงินทอน '+baht(f)+' · รับเงินสดได้แล้ว')},
   knShop:()=>{if(!canPo())return deny();openSheet({type:cashCur('kn')?'cashClose':'cashOpen'})},
   knQToggle:async()=>{if(!canPo())return deny();const on=knCfg().queueOn===false;if(!confirm(on?'เปิดใช้ระบบคิว?\n\n• ทุกบิลได้เลขคิว + ใส่ชื่อลูกค้า\n• มีแท็บ "คิว" ไว้เรียกลูกค้า':'ปิดระบบคิว?\n\n• ขายจบทันที ไม่มีเลขคิว ไม่ต้องใส่ชื่อ\n• ซ่อนแท็บ "คิว" (คิวที่ค้างยังอยู่ เปิดกลับมาดูได้)'))return;const c={...(S.kn||{}),queueOn:on};const ok=await write('config/kn',r=>r.set(c));if(ok){S.kn=c;render();toast(on?'🔔 เปิดใช้ระบบคิวแล้ว':'ปิดระบบคิวแล้ว · ขายจบได้ทันที')}},
   knSoldMode:()=>{S.knSO=!S.knSO;render();if(S.knSO)toast('แตะเมนูเพื่อตั้ง "หมดแล้ว" / เปิดขายอีกครั้ง')},
@@ -3401,7 +3432,7 @@ function viewKnSell(){S.knSO=false;const cats=curCats(),M=S.menu.filter(m=>!m.hi
   const L=M.filter(m=>(cat==='all'||(m.cat||'อื่นๆ')===cat)&&(!q||String(m.name).toLowerCase().includes(q)));const tot=knCartTot(),n=S.knCart.reduce((a,l)=>a+l.qty,0),SP=M.filter(m=>m.special&&!isSoldOut(m));
   const qOn=knCfg().queueOn!==false,adm=canPo();
   return closedCard()+`
-   ${adm?`<div class="knbar2"><button type="button" class="qsw${qOn?' on':''}" role="switch" aria-checked="${qOn}" data-act="knQToggle"><span class="qsw-t"><i></i></span><b>ระบบคิว</b><em>${qOn?'เปิด':'ปิด'}</em></button>${qOn?'<button type="button" class="kncash" data-act="knQr">📱 QR ลูกค้าสั่งเอง</button>':''}${(()=>{const c=cashCur('kn');return `<button type="button" class="kncash${c?' on':''}" data-act="${c?'cashFloat':'knShop'}">💵 เงินทอน <b>${c?baht(c.float||0):'ยังไม่ใส่'}</b></button>`})()}</div>`:''}
+   ${adm?`<div class="knbar2"><button type="button" class="qsw${qOn?' on':''}" role="switch" aria-checked="${qOn}" data-act="knQToggle"><span class="qsw-t"><i></i></span><b>ระบบคิว</b><em>${qOn?'เปิด':'ปิด'}</em></button>${qOn?'<button type="button" class="kncash" data-act="knQr">📱 QR ลูกค้าสั่งเอง</button>':''}${(()=>{const c=cashCur('kn');return `<button type="button" class="kncash${c?' on':''}" data-act="${c?'cashFloat':'knShop'}">${c&&c.scanOnly?'📱 สแกนอย่างเดียว':`💵 เงินทอน <b>${c?baht(c.float||0):'ยังไม่ใส่'}</b>`}</button>${c?'<button type="button" class="kncash kncl" data-act="knShop">🔒 ปิดร้าน</button>':''}`})()}</div>`:''}
    <div class="kns">
    <div class="kns-m">
     <div class="knsrch"><input id="knQ" type="search" placeholder="🔍 ค้นหาเมนู" value="${esc(S.knQ||'')}" autocomplete="off" aria-label="ค้นหาเมนู"></div>
@@ -3417,7 +3448,7 @@ function knCartHtml(qOn,n,tot){return `
       <div class="stepper sm"><button type="button" data-act="knQty" data-i="${i}" data-d="-1" aria-label="ลด">−</button><span>${l.qty}</span><button type="button" data-act="knQty" data-i="${i}" data-d="1" aria-label="เพิ่ม">+</button></div><b class="kncl-p">${baht(((+l.price||0)+(+l.extra||0))*l.qty)}</b><button type="button" class="kncl-x" data-act="knDel" data-i="${i}" data-confirm="1" aria-label="ลบ ${esc(l.name)}">✕</button></div>`).join('')}</div>
      ${qOn?`<label class="knc-name"><span>ลูกค้า คุณ</span><input id="knCName" maxlength="40" value="${esc(S.knName||'')}" placeholder="ชื่อเล่น เช่น แดง" autocomplete="off"></label>`:''}
      <div class="knc-t"><span>รวม ${num(n)} ชิ้น</span><b>${baht(tot)}</b></div>
-     <div class="knc-b"><button type="button" class="btn knpay cash" data-act="knPay" data-v="cash">💵 เงินสด</button><button type="button" class="btn knpay qr" data-act="knPay" data-v="qr">📱 พร้อมเพย์</button></div>`
+     <div class="knc-b">${(cashCur('kn')||{}).scanOnly?'':'<button type="button" class="btn knpay cash" data-act="knPay" data-v="cash">💵 เงินสด</button>'}<button type="button" class="btn knpay qr" data-act="knPay" data-v="qr">📱 พร้อมเพย์</button></div>`
      :'<p class="help" style="margin:0">แตะเมนูเพื่อใส่ตะกร้า</p>'}
    </aside></div>
    ${n?`<button type="button" class="knbar" data-act="knGoCart"><span>🧺 ${num(n)} ชิ้น</span><b>${baht(tot)}</b><em>ชำระเงิน ›</em></button>`:''}`}
@@ -3472,11 +3503,11 @@ function viewKnReport(){const r=S.knR||'today',now=sod(),[a,b]=r==='today'?[now,
      :`<div class="list">${Object.keys(D).sort().reverse().map(k=>`<div class="row"><div class="grow"><div class="t">${esc(dshort(Date.parse(k+'T12:00:00+07:00')))}</div></div><b>${baht(D[k])}</b></div>`).join('')}</div>`}</div>`:'<div class="empty"><b>ยังไม่มียอดขายในช่วงนี้</b></div>'}
    ${can('expenses')?`<div class="card"><h3>การเงิน (${len} วัน)</h3><div class="kv"><span>ยอดขาย</span><b>${baht(sale)}</b></div><div class="kv"><span>ต้นทุนอาหาร</span><b>−${baht(cost)}</b></div><div class="kv"><span>รายจ่ายร้าน</span><b>−${baht(ex)}</b></div><div class="kv tot"><span>กำไรสุทธิ</span><b style="color:${pf-ex>=0?'var(--ok,#2e7d32)':'var(--chili)'}">${baht(pf-ex)}</b></div><p class="help" style="margin:0">บันทึกรายจ่าย / ซื้อของเข้า ที่แท็บ สต็อกสินค้า</p></div>`:''}
    ${r==='today'?knPotHtml(sod(),Infinity,0,(cashLast('kn')&&+cashLast('kn').at>=sod()?cashLast('kn').left:null)):''}${cashHistHtml('kn')}
-   ${S.role==='owner'?'<button type="button" class="btn sm" data-act="knSet">⚙️ ตั้งค่าร้านล้านฅนเมียง</button>':''}`}
-function sheetKnSet(){const c=knCfg();$('#panel').innerHTML=head('⚙️ ตั้งค่าร้านล้านฅนเมียง')+`<form class="sh-body" onsubmit="return false">
+   `}
+function sheetKnSet(){const c=knCfg();$('#panel').innerHTML=head('🏪 ตั้งค่าร้าน'+esc(c.shopName||'ล้านฅนเมียง'))+`<form class="sh-body" onsubmit="return false">
   <div class="field"><label for="knSN">ชื่อร้าน</label><input id="knSN" maxlength="40" value="${esc(c.shopName||'ล้านฅนเมียง')}"></div>
-  <div class="field"><label for="knPP">พร้อมเพย์ (เว้นว่าง = ใช้เลขเดียวกับเนื้อล้วนๆ)</label><input id="knPP" inputmode="numeric" maxlength="15" value="${esc(c.promptpay||'')}" placeholder="${esc(S.settings.promptpay||'')}"></div>
-  <div class="field"><label for="knPPN">ชื่อบัญชีพร้อมเพย์ (โชว์ในการ์ด QR ให้ลูกค้าเห็นตอนโอน)</label><input id="knPPN" maxlength="50" value="${esc(c.ppName||'')}" placeholder="เช่น นายสมชาย ใจดี"></div>
+  <div class="field"><label>พร้อมเพย์ · ชื่อบัญชี · เบอร์โทร</label><div class="help" style="margin:0;padding:8px 10px;border-radius:10px;background:var(--sunk)">ใช้ของส่วนกลาง: <b>${esc(S.settings.promptpay||'-')}</b>${S.settings.ppName?' · '+esc(S.settings.ppName):''}${S.settings.phone?' · โทร '+esc(S.settings.phone):''}<br>แก้ได้ที่ปุ่ม ⚙️ ส่วนกลาง ด้านบน</div></div><input type="hidden" id="knPP" value="${esc(S.settings.promptpay||'')}">
+  <input type="hidden" id="knPPN" value="${esc(S.settings.ppName||'')}">
   <div class="field"><label for="knPre">ตัวอักษรนำหน้าเลขคิว</label><input id="knPre" maxlength="3" value="${esc(c.qPre??'K')}"></div>
   <label class="check"><input type="checkbox" id="knQOn" ${c.queueOn!==false?'checked':''}> 🔔 ใช้ระบบคิว + ชื่อลูกค้า (เอาออกตอนลูกค้าน้อย = ขายจบทันที)</label>
   <div class="field"><label for="knFl">เงินทอนตั้งต้นปกติ (บาท)</label><input id="knFl" inputmode="decimal" value="${esc(c.floatDef??500)}"></div></form>
@@ -3509,7 +3540,7 @@ Object.assign(ACT,{
   knQrPrint:()=>{const w=window.open('','_blank');if(!w)return;w.document.write('<html><head><title>QR สั่งอาหาร</title><style>body{font-family:sans-serif;text-align:center;padding:30px}svg{width:340px;height:340px}h1{margin:10px 0}</style></head><body><h1>'+esc(knCfg().shopName||'ล้านฅนเมียง')+'</h1><p style="font-size:22px">📱 สแกนสั่งอาหาร · ใส่ชื่อ · จ่ายเงิน</p>'+qrSvg(knOrderUrl())+'<p>รอเรียกคิวที่หน้าร้าน</p><p style="color:#888;font-size:13px">QR ประจำวันที่ '+dshort(Date.now())+' · เปลี่ยนใหม่ทุกครั้งที่เปิดร้าน</p><script>setTimeout(()=>print(),300)<\/script></body></html>');w.document.close()},
   knR:d=>{S.knR=d.v;render()},
   knSet:()=>{if(S.role!=='owner')return deny();openSheet({type:'knSet'})},
-  knSetSave:async()=>{const c={...(S.kn||{}),shopName:val('knSN')||'ล้านฅนเมียง',promptpay:val('knPP').replace(/\D/g,''),ppName:val('knPPN').trim().slice(0,50),qPre:val('knPre').trim().slice(0,3),queueOn:$('#knQOn').checked,floatDef:+val('knFl')||0};const ok=await write('config/kn',r=>r.set(c));if(ok){S.kn=c;closeSheet();render();toast('บันทึกแล้ว')}}
+  knSetSave:async()=>{const c={...(S.kn||{}),shopName:val('knSN')||'ล้านฅนเมียง',promptpay:val('knPP').replace(/\D/g,''),ppName:val('knPPN').trim().slice(0,50),phone:S.settings.phone||'',qPre:val('knPre').trim().slice(0,3),queueOn:$('#knQOn').checked,floatDef:+val('knFl')||0};const ok=await write('config/kn',r=>r.set(c));if(ok){S.kn=c;closeSheet();render();toast('บันทึกแล้ว')}}
 });
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='knQ'){S.knQ=e.target.value;const p=e.target.selectionStart;render();const n=$('#knQ');if(n){n.focus();try{n.setSelectionRange(p,p)}catch(x){}}}});
 
@@ -3809,7 +3840,7 @@ function poHeadCard(){const c=poCfg(),st=poState(),own=poAdmin();
     ${['owner','chef'].includes(S.role)?`<div class="inrow ph-l" style="gap:6px;flex-wrap:wrap;align-items:center"><button class="btn sm goldbtn" data-act="poRound" type="button">📅 กำหนดรอบส่ง</button><span class="help" style="margin:0">${st.round?'รอบส่ง '+esc(poDate(st.deliverDate))+' · ปิดรับ '+esc(poDate(st.closeDate))+' '+esc(c.cutoff||'20:00')+' น.':'อัตโนมัติ: สั่งวันนี้ ส่ง'+(+c.leadDays?'อีก '+(+c.leadDays)+' วัน':'วันนี้')}</span></div>`:''}
     ${st.reason==='after'&&['owner','chef'].includes(S.role)?`<div class="inrow ph-l" style="gap:6px;flex-wrap:wrap"><a class="btn pri sm" href="preorder.html?staff=1" target="_blank" rel="noopener">➕ สั่งเพิ่มให้ลูกค้า (หลังปิดรับ)</a><span class="help" style="margin:0">เฉพาะแม่ครัว / แอดมิน · รอบส่ง${poDayName(st.deliverDate)}</span></div>`:''}
     ${own?`<div class="inrow ph-r" style="gap:6px;flex-wrap:wrap;align-items:center"><button class="btn sm closeround" data-act="poCloseRound" type="button">🧾 ปิดยอดรอบนี้</button><span class="help" style="margin:0">${c.lastClose?'ปิดยอดล่าสุด '+esc(poDate(new Date(+c.lastClose.at+7*3600e3).toISOString().slice(0,10)))+' '+hm(c.lastClose.at)+' น. · ':''}รอบนี้ ${(S.poOrders||[]).filter(poLive).length} ออร์เดอร์</span></div>`:''}
-    ${own?`<div class="inrow ph-r" style="gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="poQr" type="button">ลิงก์ / QR ให้ลูกค้า</button><button class="btn sm bluebtn" data-act="poSet" type="button">ตั้งค่าร้านพรีออเดอร์</button></div>`:''}
+    ${own?`<div class="inrow ph-r" style="gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="poQr" type="button">ลิงก์ / QR ให้ลูกค้า</button></div>`:''}
     ${!S.po&&own?'<p class="help" style="margin:0">ยังไม่ได้ตั้งค่าร้าน กด "ตั้งค่าร้านพรีออเดอร์" เพื่อใส่เวลาปิดรับ จุดส่ง และพร้อมเพย์</p>':''}</div>`}
 function poRecvLine(o){const r=poRecvSt(o);if(!r)return '';const ed=['owner','chef'].includes(S.role);
   if(r==='wait')return `<div class="porecv wait">⏳ ส่งของแล้ว ${o.handedAt?hm(o.handedAt)+' น. ':''}· รอลูกค้ากดยืนยันรับ<small>ยืนยันอัตโนมัติ ${hm(+o.recvUntil)} น. ถ้าลูกค้าไม่กด</small></div>`;
@@ -4485,7 +4516,7 @@ function sheetPoQr(){if(S.poRtK!==poRtKey()||!S.poRt){poRtFetch().then(()=>{if(S
     <p class="help" style="margin:0">ลิงก์/QR นี้ใช้สั่งได้เฉพาะรอบนี้ · พอหมดเวลาหรือกดปิดรับ/ปิดยอด ลูกค้าที่สแกน QR เก่าจะเห็นว่า "หมดอายุ" สั่งไม่ได้ (ยังเช็กสถานะออร์เดอร์ของตัวเองได้) · รอบใหม่กดปุ่มนี้อีกครั้งจะได้ QR ใหม่</p></div>
     <div class="sh-foot"><button class="btn" data-act="poCopy" type="button">คัดลอกลิงก์</button><button class="btn pri wide" data-act="poQrPrint" type="button">พิมพ์ QR</button></div>`}
 function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(poCfg())));
-  $('#panel').innerHTML=head('ตั้งค่าร้านพรีออเดอร์','ร้านข้าวมันไก่ · สั่งวันนี้ ส่งวันถัดไป')+`<form class="sh-body" id="poForm" autocomplete="off">
+  $('#panel').innerHTML=head('🏪 ตั้งค่าร้าน'+esc((S.po&&S.po.shopName)||'ข้าวมันไก่'),'ร้านข้าวมันไก่ · สั่งวันนี้ ส่งวันถัดไป')+`<form class="sh-body" id="poForm" autocomplete="off">
    <label class="check"><input type="checkbox" id="pOpen" ${c.open?'checked':''}> <b>เปิดรับออร์เดอร์</b> <small class="muted">(เอาติ๊กออก = ปิดร้าน ลูกค้าสั่งไม่ได้)</small></label>
    <div class="field"><label for="pShop">ชื่อร้าน</label><input id="pShop" maxlength="40" value="${esc(c.shopName)}"></div>
    <div class="card"><h3>เวลา</h3>
@@ -4498,8 +4529,8 @@ function sheetPoSet(){const c=S.sheet.d||(S.sheet.d=JSON.parse(JSON.stringify(po
    <div class="card"><h3>ชำระเงิน</h3>
     <label class="check"><input type="checkbox" id="pPB" ${c.payBefore?'checked':''}> โอนก่อน (แสดง QR พร้อมเพย์ + แนบสลิป)</label>
     <label class="check"><input type="checkbox" id="pPA" ${c.payAfter?'checked':''}> ชำระเงินตอนรับของ</label>
-    <div class="field"><label for="pPP">พร้อมเพย์</label><input id="pPP" inputmode="numeric" value="${esc(c.promptpay||'')}" placeholder="${esc(S.settings.promptpay?'เว้นว่าง = ใช้ของร้านก๋วยเตี๋ยว ('+S.settings.promptpay+')':'เบอร์มือถือ หรือเลขบัตร 13 หลัก')}"></div><div class="field"><label for="pPPN">ชื่อ-นามสกุล เจ้าของพร้อมเพย์</label><input id="pPPN" maxlength="60" value="${esc(c.ppName||'')}" placeholder="แสดงให้ลูกค้าเห็นตอนโอน"></div></div>
-   <div class="grid2"><div class="field"><label for="pPhone">เบอร์ร้าน (ลูกค้ากดโทรได้)</label><input id="pPhone" inputmode="tel" maxlength="20" value="${esc(c.phone||'')}"></div><div class="field"><label for="pLine">ลิงก์ LINE ร้าน (ปุ่มส่งข้อความ)</label><input id="pLine" inputmode="url" maxlength="200" value="${esc(c.line||'')}" placeholder="https://lin.ee/… (เว้นว่าง = ส่ง SMS)"></div></div>
+    <div class="field" style="grid-column:1/-1"><label>พร้อมเพย์ · ชื่อบัญชี · เบอร์โทร</label><div class="help" style="margin:0;padding:8px 10px;border-radius:10px;background:var(--sunk)">ใช้ของส่วนกลาง: <b>${esc(S.settings.promptpay||'-')}</b>${S.settings.ppName?' · '+esc(S.settings.ppName):''}${S.settings.phone?' · โทร '+esc(S.settings.phone):''}<br>แก้ได้ที่ปุ่ม ⚙️ ส่วนกลาง ด้านบน</div></div><input type="hidden" id="pPP" value="${esc(S.settings.promptpay||'')}"><input type="hidden" id="pPPN" value="${esc(S.settings.ppName||'')}"></div>
+   <input type="hidden" id="pPhone" value="${esc(S.settings.phone||'')}"><div class="grid2"><div class="field"><label for="pLine">ลิงก์ LINE ร้าน (ปุ่มส่งข้อความ)</label><input id="pLine" inputmode="url" maxlength="200" value="${esc(c.line||'')}" placeholder="https://lin.ee/… (เว้นว่าง = ส่ง SMS)"></div></div>
    <div class="card"><h3>โลโก้ร้าน & หัวใบเสร็จ (ร้านข้าวมันไก่)</h3>
     ${rcLogoField('poRcLogo',c.rcLogo||c.logo,'images/logo-po-t.png?v=20261018')}
     <div class="grid2"><div class="field"><label for="poRcName">ชื่อร้าน (ไทย)</label><input id="poRcName" maxlength="40" value="${esc(c.rcName??c.shopName??'ข้าวมันไก่')}"></div><div class="field"><label for="poRcNameEn">ชื่อร้าน (อังกฤษ)</label><input id="poRcNameEn" maxlength="40" value="${esc(c.rcNameEn??'KHAO MAN GAI')}"></div></div>
