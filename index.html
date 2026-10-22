@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.22-173428">
+<meta name="app-version" content="2026.10.22-183522">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -3476,6 +3476,7 @@ function viewKnReport(){const r=S.knR||'today',now=sod(),[a,b]=r==='today'?[now,
 function sheetKnSet(){const c=knCfg();$('#panel').innerHTML=head('⚙️ ตั้งค่าร้านล้านฅนเมียง')+`<form class="sh-body" onsubmit="return false">
   <div class="field"><label for="knSN">ชื่อร้าน</label><input id="knSN" maxlength="40" value="${esc(c.shopName||'ล้านฅนเมียง')}"></div>
   <div class="field"><label for="knPP">พร้อมเพย์ (เว้นว่าง = ใช้เลขเดียวกับเนื้อล้วนๆ)</label><input id="knPP" inputmode="numeric" maxlength="15" value="${esc(c.promptpay||'')}" placeholder="${esc(S.settings.promptpay||'')}"></div>
+  <div class="field"><label for="knPPN">ชื่อบัญชีพร้อมเพย์ (โชว์ในการ์ด QR ให้ลูกค้าเห็นตอนโอน)</label><input id="knPPN" maxlength="50" value="${esc(c.ppName||'')}" placeholder="เช่น นายสมชาย ใจดี"></div>
   <div class="field"><label for="knPre">ตัวอักษรนำหน้าเลขคิว</label><input id="knPre" maxlength="3" value="${esc(c.qPre??'K')}"></div>
   <label class="check"><input type="checkbox" id="knQOn" ${c.queueOn!==false?'checked':''}> 🔔 ใช้ระบบคิว + ชื่อลูกค้า (เอาออกตอนลูกค้าน้อย = ขายจบทันที)</label>
   <div class="field"><label for="knFl">เงินทอนตั้งต้นปกติ (บาท)</label><input id="knFl" inputmode="decimal" value="${esc(c.floatDef??500)}"></div></form>
@@ -3508,7 +3509,7 @@ Object.assign(ACT,{
   knQrPrint:()=>{const w=window.open('','_blank');if(!w)return;w.document.write('<html><head><title>QR สั่งอาหาร</title><style>body{font-family:sans-serif;text-align:center;padding:30px}svg{width:340px;height:340px}h1{margin:10px 0}</style></head><body><h1>'+esc(knCfg().shopName||'ล้านฅนเมียง')+'</h1><p style="font-size:22px">📱 สแกนสั่งอาหาร · ใส่ชื่อ · จ่ายเงิน</p>'+qrSvg(knOrderUrl())+'<p>รอเรียกคิวที่หน้าร้าน</p><p style="color:#888;font-size:13px">QR ประจำวันที่ '+dshort(Date.now())+' · เปลี่ยนใหม่ทุกครั้งที่เปิดร้าน</p><script>setTimeout(()=>print(),300)<\/script></body></html>');w.document.close()},
   knR:d=>{S.knR=d.v;render()},
   knSet:()=>{if(S.role!=='owner')return deny();openSheet({type:'knSet'})},
-  knSetSave:async()=>{const c={...(S.kn||{}),shopName:val('knSN')||'ล้านฅนเมียง',promptpay:val('knPP').replace(/\D/g,''),qPre:val('knPre').trim().slice(0,3),queueOn:$('#knQOn').checked,floatDef:+val('knFl')||0};const ok=await write('config/kn',r=>r.set(c));if(ok){S.kn=c;closeSheet();render();toast('บันทึกแล้ว')}}
+  knSetSave:async()=>{const c={...(S.kn||{}),shopName:val('knSN')||'ล้านฅนเมียง',promptpay:val('knPP').replace(/\D/g,''),ppName:val('knPPN').trim().slice(0,50),qPre:val('knPre').trim().slice(0,3),queueOn:$('#knQOn').checked,floatDef:+val('knFl')||0};const ok=await write('config/kn',r=>r.set(c));if(ok){S.kn=c;closeSheet();render();toast('บันทึกแล้ว')}}
 });
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='knQ'){S.knQ=e.target.value;const p=e.target.selectionStart;render();const n=$('#knQ');if(n){n.focus();try{n.setSelectionRange(p,p)}catch(x){}}}});
 

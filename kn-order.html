@@ -68,6 +68,28 @@ button,input{font:inherit;color:inherit}
 .toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:60;padding:10px 16px;border-radius:12px;background:#2e1a0e;color:#fff;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.3)}
 .slipok{display:flex;gap:12px;align-items:center;margin-top:10px;padding:10px;border-radius:14px;background:#f0fdf4;border:1px solid #86efac}.slipok img{width:64px;height:84px;object-fit:cover;border-radius:8px;border:1px solid #d6c3a8}.slipok div{display:flex;flex-direction:column;gap:2px}.slipok b{color:#166534}.slipok small{color:#6b7280}.slipok .lnk{color:#a0561c;text-decoration:underline;cursor:pointer;font-size:14px;margin-top:4px}
 #go:disabled{opacity:.6;filter:grayscale(.3)}
+.ppbox{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:10px 12px;border-radius:14px;background:#fff8ec;border:1px solid #e9cfa8;width:100%;box-sizing:border-box}.ppbox div{display:flex;flex-direction:column;text-align:left}.ppbox small{color:#8a6a4a;font-size:12px}.ppbox b{font-size:20px;letter-spacing:.5px;color:#3e2410;user-select:all;-webkit-user-select:all}
+.cpy{flex:none;border:0;border-radius:999px;padding:9px 14px;font:inherit;font-weight:700;color:#fff;background:linear-gradient(135deg,#c8792a,#6b3e1f);box-shadow:0 3px 10px rgba(107,62,31,.3);cursor:pointer}.cpy.ok{background:linear-gradient(135deg,#22c55e,#15803d)}
+
+/* การ์ด QR พร้อมเพย์ ลายร้าน (โปสเตอร์ ซ้ายหัวข้อ+ภาพ ขวา QR) */
+.ppc{margin-top:12px;border-radius:22px;overflow:hidden;position:relative;background:#24140a url(images/bg-kn-m.jpg?v=1) center 30%/cover no-repeat;box-shadow:0 10px 28px rgba(36,20,10,.35);border:2px solid #d9a441}
+.ppc::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(36,20,10,.82) 0%,rgba(36,20,10,.55) 50%,rgba(36,20,10,.35) 100%),linear-gradient(0deg,rgba(36,20,10,.7),transparent 40%)}
+.ppc::after{content:"";position:absolute;inset:7px;border:1.5px solid rgba(255,207,122,.75);border-radius:16px;pointer-events:none}
+.ppc-in{position:relative;z-index:1;padding:16px 14px 12px;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:10px;align-items:stretch}
+.ppc-l{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.ppc-logo{width:52px;height:52px;border-radius:50%;border:2px solid #ffcf7a;box-shadow:0 0 0 3px rgba(255,207,122,.25),0 4px 10px rgba(0,0,0,.4);background:#24140a}
+.ppc-l h3{margin:8px 0 0;display:grid;grid-template-columns:auto 1fr;align-items:end;column-gap:4px;line-height:1.25}
+.ppc-l h3 span{padding-top:8px;font-size:37px;font-weight:800;background:linear-gradient(180deg,#fff6d8 10%,#ffcf7a 55%,#d48a2c);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #5a300f) drop-shadow(0 3px 6px rgba(0,0,0,.5))}
+.ppc-l h3 small{font-size:17px;white-space:nowrap;font-weight:700;color:#ffe9c2;padding-bottom:7px;text-shadow:0 2px 4px rgba(0,0,0,.6)}
+.ppc-r{display:flex;flex-direction:column;gap:7px;min-width:0}
+.ppc-qr{background:#fffdf8;border-radius:16px;padding:0 10px 8px;box-shadow:0 8px 22px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.ppc-qh{width:calc(100% + 20px);background:linear-gradient(135deg,#c8792a,#6b3e1f);color:#fff;font-weight:700;text-align:center;padding:6px 0;margin-bottom:8px;font-size:14px}
+.ppc-qr svg{width:100%;height:auto;display:block}
+.ppc-amt{margin-top:6px;font-size:13px;color:#6b3e1f;white-space:nowrap}.ppc-amt b{font-size:20px;color:#3e2410;margin-left:3px}
+.ppc-pill{display:flex;flex-direction:column;align-items:flex-start;background:rgba(255,248,236,.96);border:1.5px solid #ffcf7a;border-radius:14px;padding:6px 10px;box-shadow:0 3px 10px rgba(0,0,0,.25);line-height:1.3;min-width:0}
+.ppc-pill span{color:#8a5a2b;font-size:11.5px}.ppc-pill b{color:#3e2410;font-size:15.5px;max-width:100%;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all}
+.ppc-pill .cpy{margin-top:5px;align-self:stretch;padding:6px 8px;font-size:13px}
+.ppc-ft{grid-column:1/-1;margin:2px 0 0;color:#ffe9c2;font-size:13.5px;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 </style>
 </head>
 <body>
@@ -94,6 +116,16 @@ const S={shop:null,cart:[],cat:'all',name:LS.get('kn_name',''),pay:'qr',view:'me
 let sb=null;
 const oKey=l=>l.menuId+'|'+(l.opts||[]).join(',')+'|'+(l.note||'');
 const cTot=()=>S.cart.reduce((a,l)=>a+l.unit*l.qty,0),cN=()=>S.cart.reduce((a,l)=>a+l.qty,0);
+const ppFmt=n=>n.length===10?n.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3'):n.length===13?n.replace(/(\d)(\d{4})(\d{5})(\d{2})(\d)/,'$1-$2-$3-$4-$5'):n;
+const ppBox=pp=>`<div class="ppbox"><div><small>พร้อมเพย์</small><b>${ppFmt(pp)}</b></div><button type="button" class="cpy" data-cp="${pp}">📋 คัดลอก</button></div>`;
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-cp]');if(!b)return;const t=b.dataset.cp;let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(_){try{const x=document.createElement('textarea');x.value=t;x.style.position='fixed';x.style.opacity='0';document.body.appendChild(x);x.select();ok=document.execCommand('copy');x.remove()}catch(__){}}
+  if(ok){b.textContent='✓ คัดลอกแล้ว';b.classList.add('ok');setTimeout(()=>{b.textContent='📋 คัดลอก';b.classList.remove('ok')},1800)}else toast('คัดลอกไม่ได้ · กดค้างที่เบอร์เพื่อคัดลอก')});
+const ppCard=(pp,amt,foot)=>`<div class="ppc"><div class="ppc-in">
+  <div class="ppc-l"><img class="ppc-logo" src="images/logo-kn-s.png?v=20261022" alt=""><h3><span>โอน</span><small>เมื่อใด</small><span>เฮง</span><small>เมื่อนั้น</small></h3></div>
+  <div class="ppc-r"><div class="ppc-qr"><div class="ppc-qh">🏦 QR พร้อมเพย์</div>${qrSvg(ppPayload(pp,amt))}<div class="ppc-amt">ยอดโอน <b>${baht(amt)}</b></div></div>
+  ${S.shop&&S.shop.ppName?`<div class="ppc-pill"><span>ชื่อบัญชี</span><b>${esc(S.shop.ppName)}</b></div>`:''}
+  <div class="ppc-pill"><span>พร้อมเพย์</span><b>${ppFmt(pp)}</b><button type="button" class="cpy" data-cp="${pp}">📋 คัดลอกเลข</button></div></div>
+  <p class="ppc-ft">${foot}</p></div></div>`;
 const hdr=()=>`<div class="hd"><img src="images/logo-kn.png?v=20261022" alt=""><div><h1>${esc((S.shop&&S.shop.shopName)||'ล้านฅนเมียง')}</h1><small>อาหารเหนือ · สั่งเองผ่านมือถือ</small></div></div>`;
 function render(){const a=$('#app');
   if(S.view==='status')return renderStatus();
@@ -134,8 +166,8 @@ function renderCart(){const a=$('#app'),pp=(S.shop.promptpay||'').replace(/\D/g,
    <div class="tot"><span>รวม ${cN()} รายการ</span><b>${baht(cTot())}</b></div></div>
    <div class="card"><label class="name"><span>ชื่อลูกค้า คุณ</span><input id="nm" maxlength="40" value="${esc(S.name)}" placeholder="ชื่อเล่น (ไว้เรียกคิว)"></label></div>
    <div class="card"><h2>ชำระเงิน</h2><div class="pays">${pp?`<button class="pay${S.pay==='qr'?' on':''}" data-p="qr">📱 โอน / สแกนจ่าย<small>สแกน QR แล้วแนบสลิป</small></button>`:''}<button class="pay${S.pay==='cash'?' on':''}" data-p="cash">💵 จ่ายเงินสด<small>ที่เคาน์เตอร์หน้าร้าน</small></button></div>
-   ${S.pay==='qr'&&pp?(cTot()>0?`<div class="qr" style="margin-top:12px">${qrSvg(ppPayload(pp,cTot()))}<small>① สแกนจ่าย <b>${baht(cTot())}</b> ด้วยแอปธนาคาร</small></div>
-   ${S.slipImg?`<div class="slipok"><img src="${S.slipImg}" alt="สลิป"><div><b>✅ แนบสลิปแล้ว</b><small>ตรวจดูว่าเป็นสลิปที่ถูกต้อง</small><label class="lnk">เปลี่ยนสลิป<input type="file" accept="image/*" id="cslip" hidden></label></div></div>`:`<label class="btn pri" style="margin-top:10px">📎 ② แนบสลิปการโอน<input type="file" accept="image/*" id="cslip" hidden></label>`}`:'<div class="msg warn" style="margin-top:10px">ยอดเป็น ฿0 · กรุณาแจ้งพนักงาน</div>'):''}</div>
+   ${S.pay==='qr'&&pp?(cTot()>0?`${ppCard(pp,cTot(),'① สแกนจ่ายแล้ว ② แนบสลิปด้านล่างได้เลยเจ้า')}
+   ${S.slipImg?`<div class="slipok"><img src="${S.slipImg}" alt="สลิป"><div><b>✅ แนบสลิปแล้ว</b><small>ตรวจดูว่าเป็นสลิปที่ถูกต้อง</small><label class="lnk">เปลี่ยนสลิป<input type="file" accept="image/*" id="cslip" hidden></label></div></div>`:`<label class="btn pri" style="margin-top:10px">📎 ② แนบสลิปการโอน<input type="file" accept="image/*" id="cslip" hidden></label>`}`:'<div class="msg warn" style="margin-top:10px">เมนูนี้ร้านยังไม่ได้ตั้งราคา (฿0) · กรุณาแจ้งพนักงาน หรือเลือกจ่ายเงินสดที่เคาน์เตอร์</div>'):''}</div>
    <button class="btn pri" id="go" ${!S.cart.length||S.busy||needSlip?'disabled':''}>${S.busy?'⏳ กำลังส่ง…':needSlip?'📎 แนบสลิปก่อน จึงกดยืนยันได้':'✅ ยืนยันสั่ง '+baht(cTot())}</button>
    <button class="btn" id="back" style="margin-top:10px">← เลือกเมนูเพิ่ม</button>`;
   a.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const l=S.cart[+b.dataset.i];l.qty+= +b.dataset.d;if(l.qty<=0)S.cart.splice(+b.dataset.i,1);render()});
@@ -160,7 +192,7 @@ function renderStatus(){const a=$('#app'),o=S.st;if(!o){a.innerHTML=hdr()+'<div 
    ${vd?'<div class="msg bad" style="margin-top:10px">ออร์เดอร์นี้ถูกยกเลิก ติดต่อพนักงานหน้าร้าน</div>':`<div class="stp">${stp.map((x,i)=>`<div class="${i<=ix?'on':''}"><i>${i<ix?'✓':i+1}</i>${x[1]}</div>`).join('')}</div>`}
    ${!vd&&o.q==='ready'?'<div class="msg ok">🔔 อาหารพร้อมแล้ว! มารับที่เคาน์เตอร์ได้เลยเจ้า</div>':''}
    ${!vd&&!paid&&o.pay==='cash'?'<div class="msg warn">💵 ไปจ่ายเงินสดที่เคาน์เตอร์ บอกเลขคิวกับพนักงาน แล้วร้านจะเริ่มทำให้</div>':''}
-   ${!vd&&!paid&&o.pay==='qr'?(o.slip?`<div class="msg warn">⏳ ส่งสลิปแล้ว รอร้านตรวจสอบ…</div>`:`${o.slipBad?`<div class="msg bad">สลิปไม่ผ่าน: ${esc(o.slipBad)} · แนบใหม่อีกครั้ง</div>`:''}<div class="qr">${pp?qrSvg(ppPayload(pp,+o.total)):''}<small>สแกนจ่าย ${baht(o.total)} แล้วแนบสลิป</small></div><label class="btn pri" style="margin-top:10px">📎 แนบสลิป<input type="file" accept="image/*" id="slip" hidden></label>`):''}
+   ${!vd&&!paid&&o.pay==='qr'?(o.slip?`<div class="msg warn">⏳ ส่งสลิปแล้ว รอร้านตรวจสอบ…</div>`:`${o.slipBad?`<div class="msg bad">สลิปไม่ผ่าน: ${esc(o.slipBad)} · แนบใหม่อีกครั้ง</div>`:''}${pp?ppCard(pp,+o.total,'โอนเรียบร้อยแล้ว แนบสลิปด้านล่างได้เลยเจ้า'):''}<label class="btn pri" style="margin-top:10px">📎 แนบสลิป<input type="file" accept="image/*" id="slip" hidden></label>`):''}
    ${paid?`<a class="btn pri" style="margin-top:10px;text-decoration:none" href="${esc(rc)}">🧾 ดูใบเสร็จ</a>`:''}</div>
    <div class="card"><h2>รายการ</h2>${(o.items||[]).map(l=>`<div class="row"><div class="t"><b>${num(l.qty)} × ${esc(l.name)}</b>${(l.opts||[]).length?`<small>${esc(l.opts.map(x=>x.n).join(', '))}</small>`:''}</div><b>${baht(l.price*l.qty)}</b></div>`).join('')}</div>
    <button class="btn" id="newO">🍽️ สั่งเพิ่ม / ออร์เดอร์ใหม่</button>`;
