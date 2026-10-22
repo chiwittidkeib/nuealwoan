@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.22-120303">
+<meta name="app-version" content="2026.10.22-121923">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -350,7 +350,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 body.auth{background:#0b0a09}
 body.auth::before{content:"";position:fixed;inset:0;z-index:-1;
   background:linear-gradient(180deg,rgba(8,6,5,.30) 0%,rgba(8,6,5,.55) 55%,rgba(8,6,5,.88) 100%),url(images/login-bg.jpg?v=20261016b) center 40%/cover no-repeat,url(images/login-bg.jpg?v=20261016b) center 40%/cover no-repeat}
-@media (max-width:700px){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.1) 35vw,#0b0a09 100vw),url(images/login-bg-m.jpg?v=20261016b) 50% 0/100% auto no-repeat,url(images/login-bg-m.jpg?v=20261016b) 50% 0/100% auto no-repeat,#0b0a09}}
+@media (max-width:700px){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,.15),rgba(8,6,5,.4) 55%,rgba(8,6,5,.85)),url(images/login-bg-m.jpg?v=20261022) center/cover no-repeat,#0b0a09}}
 body.auth .top{background:transparent;border-color:transparent}
 body.auth .top h1,body.auth .top small{color:#f6efe4;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 body.auth .wrap{min-height:calc(100vh - 70px);padding-block:16px 24px;max-width:none}
@@ -365,17 +365,17 @@ body.auth .lg-mark{background:linear-gradient(140deg,#e9bd6f,#b9802f)}
 body.auth .lg-mark svg{stroke:#1d1307}
 body.auth .btn.pri{background:linear-gradient(180deg,#e2b265,#c48d3d);border-color:#c48d3d;color:#1d1307;font-weight:600}
 @media (max-width:700px){body.auth .login{margin:auto 0 8px;width:100%}}
-@media (min-width:701px) and (orientation:portrait){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/login-bg-m.jpg?v=20261016b) center 30%/cover no-repeat,url(images/login-bg-m.jpg?v=20261016b) center 30%/cover no-repeat,#0b0a09}}
+@media (min-width:701px) and (orientation:portrait){body.auth::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.8)),url(images/login-bg-m.jpg?v=20261022) center 30%/cover no-repeat,url(images/login-bg-m.jpg?v=20261022) center 30%/cover no-repeat,#0b0a09}}
 
 /* ---- พื้นหลังรูปหน้าร้าน (หลังเข้าสู่ระบบ) ---- */
 body.app::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg.jpg?v=20261016b) center/cover no-repeat,url(bg.jpg?v=20261016b) center/cover no-repeat,var(--bg)}
 @media (max-width:700px),(orientation:portrait){body.app::before{
-  background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-m.jpg?v=20261016b) center 20%/cover no-repeat,url(bg-m.jpg?v=20261016b) center 20%/cover no-repeat,var(--bg)}}
+  background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-m.jpg?v=20261022) center 20%/cover no-repeat,url(bg-m.jpg?v=20261022) center 20%/cover no-repeat,var(--bg)}}
 body.app.nobg::before{display:none}
 /* ร้านข้าวมันไก่: ฉากหลังของร้านเอง */
 body.app.shop-po::before{background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-po.jpg) center/cover no-repeat,url(bg-po.jpg) center/cover no-repeat,var(--bg)}
-@media (max-width:700px),(orientation:portrait){body.app.shop-po::before{background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-po-m.jpg) center 20%/cover no-repeat,url(bg-po-m.jpg) center 20%/cover no-repeat,var(--bg)}}
+@media (max-width:700px),(orientation:portrait){body.app.shop-po::before{background:linear-gradient(rgba(255,255,255,var(--veil-a)),rgba(255,255,255,var(--veil-a))),url(images/bg-po-m.jpg?v=20261022) center 20%/cover no-repeat,url(bg-po-m.jpg) center 20%/cover no-repeat,var(--bg)}}
 body.app .top{background:rgba(var(--veil-rgb),.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 body.app .tcard:not(.busy){background:color-mix(in srgb,var(--surface) 72%,transparent);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 body.app .sec-h{background:rgba(var(--veil-rgb),.7);border-radius:10px;padding:6px 10px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
@@ -1285,7 +1285,7 @@ body.shop-kn .sec-h,body.shop-kn .chips .chip:not([aria-pressed="true"]){backgro
 .lg-logo{width:52px;height:52px;border-radius:14px;object-fit:cover;flex:none;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 body.auth.auth-po::before{background:linear-gradient(180deg,rgba(8,6,5,.25),rgba(8,6,5,.5) 55%,rgba(8,6,5,.85)),url(images/bg-po.jpg) center/cover no-repeat,#0b0a09!important}
 body.auth.auth-kn::before{background:linear-gradient(180deg,rgba(8,6,5,.15),rgba(8,6,5,.4) 55%,rgba(8,6,5,.8)),url(images/bg-kn.jpg?v=20261022b) center/cover no-repeat,#0b0a09!important}
-@media (max-width:700px),(orientation:portrait){body.auth.auth-po::before{background:linear-gradient(180deg,rgba(8,6,5,.2),rgba(8,6,5,.5) 55%,rgba(8,6,5,.85)),url(images/bg-po-m.jpg) center/cover no-repeat,#0b0a09!important}
+@media (max-width:700px),(orientation:portrait){body.auth.auth-po::before{background:linear-gradient(180deg,rgba(8,6,5,.2),rgba(8,6,5,.5) 55%,rgba(8,6,5,.85)),url(images/bg-po-m.jpg?v=20261022) center/cover no-repeat,#0b0a09!important}
  body.auth.auth-kn::before{background:linear-gradient(180deg,rgba(8,6,5,.1),rgba(8,6,5,.35) 55%,rgba(8,6,5,.8)),url(images/bg-kn-m.jpg?v=20261022c) center/cover no-repeat,#0b0a09!important}}
 body.auth.auth-kn .lg-mark,body.auth.auth-kn .btn.pri{background:linear-gradient(140deg,#e9a54b,#c8792a 55%,#6b3e1f)}
 body.auth.auth-po .btn.pri{background:linear-gradient(140deg,#ff6b5e,#e11d2e 55%,#b0101f);color:#fff}
