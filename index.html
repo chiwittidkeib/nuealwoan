@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.22-142242">
+<meta name="app-version" content="2026.10.22-143029">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1415,6 +1415,13 @@ body.shop-kn #hdrShop:not(.closed){color:#14532d;background:linear-gradient(180d
 #hdrShop,#hdrModeWrap,#hdrMe,.top-in>[data-act="settings"],#hdrLogout{min-height:42px}
 .top-in>.shopsw{flex-basis:100%;margin:0!important}
 }
+
+/* ป้ายร้านปิด · ล้านฅนเมียง */
+body.shop-kn .closedwrap{background:radial-gradient(circle at 20% 30%,rgba(200,121,42,.28),transparent 60%),linear-gradient(135deg,#3e2410,#24140a);border-color:rgba(200,121,42,.6)}
+body.shop-kn .cstamp{border-color:#c8792a;background:rgba(36,20,10,.92);box-shadow:inset 0 0 0 5px rgba(200,121,42,.35),0 0 0 3px rgba(200,121,42,.25),0 10px 30px rgba(0,0,0,.45)}
+body.shop-kn .cstamp img{width:78px;height:78px;border-radius:50%;margin-top:0}
+body.shop-kn .cstamp b,body.shop-kn .cstamp i{color:#ffcf7a;border-color:#ffcf7a}
+body.shop-kn .closedtx span{color:#f6e7d4}body.shop-kn .closedtx small{color:#d9b48a}
 </style>
 </head>
 <body>
@@ -1705,10 +1712,10 @@ function clearAuth(){try{Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/
 function bumpFail(){let n=0;try{n=(+sessionStorage.getItem('nl_fail')||0)+1;sessionStorage.setItem('nl_fail',n)}catch(e){}return n}
 async function logout(){try{await Promise.race([SB.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,3000))])}catch(e){}clearAuth();location.reload()}
 /* ---------- ออกจากระบบอัตโนมัติ (ยกเว้นแอดมิน): ข้ามเที่ยงคืน / แอดมินปิดร้าน ---------- */
-function closedCard(){if(!shopClosed())return '';const ss=shopSes(),po=S.shop==='po',lg=S.shop==='po'?'images/logo-po.png':'images/stamp-logo.png?v=20261016b';
+function closedCard(){const kn=isKn();if(kn?!!cashCur('kn'):!shopClosed())return '';const ss=kn?(()=>{const l=(S.cashS||[]).find(x=>x.shop==='kn'&&x.closeAt);return l?{closedAt:l.closeAt,closedBy:l.closedBy}:{}})():shopSes(),po=S.shop==='po',lg=po?'images/logo-po.png':kn?'images/logo-kn.png?v=20261022':'images/stamp-logo.png?v=20261016b';
   return `<div class="closedwrap"><div class="cstamp"><img src="${lg}" alt=""><b>ปิดให้บริการ</b><i>Closed</i></div>
-   <div class="closedtx"><b>🔒 ร้านปิดแล้ว</b><span>${po?'ลูกค้าสั่งพรีออเดอร์ใหม่ไม่ได้ · ออร์เดอร์ที่รับไว้แล้วยังจัดการได้ตามปกติ':'เปิดบิลใหม่ / เพิ่มรายการ / ลูกค้าสั่งเองไม่ได้ · บิลที่ค้างอยู่ยังเก็บเงินได้'}</span>${ss.closedAt?`<small>ปิดเมื่อ ${dshort(ss.closedAt)} ${hm(ss.closedAt)} น.${ss.closedBy?' · '+esc(emailToUser(ss.closedBy)):''}</small>`:''}
-   ${S.role==='owner'?'<small>กด "เปิดร้าน" ที่ปุ่มด้านบนเพื่อเปิดร้าน</small>':'<small>แอดมินจะเป็นคนเปิดร้าน</small>'}</div></div>`}
+   <div class="closedtx"><b>🔒 ร้านปิดแล้ว</b><span>${kn?'ขายหน้าร้าน / ลูกค้าสแกนสั่งเองไม่ได้ · ใส่เงินทอนเพื่อเปิดร้าน':po?'ลูกค้าสั่งพรีออเดอร์ใหม่ไม่ได้ · ออร์เดอร์ที่รับไว้แล้วยังจัดการได้ตามปกติ':'เปิดบิลใหม่ / เพิ่มรายการ / ลูกค้าสั่งเองไม่ได้ · บิลที่ค้างอยู่ยังเก็บเงินได้'}</span>${ss.closedAt?`<small>ปิดเมื่อ ${dshort(ss.closedAt)} ${hm(ss.closedAt)} น.${ss.closedBy?' · '+esc(emailToUser(ss.closedBy)):''}</small>`:''}
+   ${(kn?canPo():S.role==='owner')?'<small>กด "เปิดร้าน" ที่ปุ่มด้านบนเพื่อเปิดร้าน</small>':'<small>แอดมินจะเป็นคนเปิดร้าน</small>'}</div></div>`}
 const shopSes=(sh=S.shop)=>(S.lists&&S.lists[sh==='po'?'shopSessionPo':'shopSession'])||{};
 const shopClosed=(sh=S.shop)=>!!shopSes(sh).closed;
 const GATE_MSG={closed:'🔒 ร้านปิดแล้ว · แอดมินปิดร้าน ระบบจึงออกจากระบบให้อัตโนมัติ · เข้าได้อีกครั้งเมื่อแอดมินเปิดร้าน',expired:'🌙 ขึ้นวันใหม่แล้ว ระบบออกจากระบบให้อัตโนมัติ (หลัง 23:59 น. เมื่อไม่มีออร์เดอร์ค้าง) · กรุณาเข้าสู่ระบบใหม่'};
@@ -3390,7 +3397,7 @@ function viewKnSell(){S.knSO=false;const cats=curCats(),M=S.menu.filter(m=>!m.hi
   const allCats=[...cats.filter(c=>M.some(m=>m.cat===c)),...[...new Set(M.map(m=>m.cat||'อื่นๆ'))].filter(c=>!cats.includes(c))],usedCats=allCats,cnt=c=>M.filter(m=>(m.cat||'อื่นๆ')===c).length;
   const L=M.filter(m=>(cat==='all'||(m.cat||'อื่นๆ')===cat)&&(!q||String(m.name).toLowerCase().includes(q)));const tot=knCartTot(),n=S.knCart.reduce((a,l)=>a+l.qty,0),SP=M.filter(m=>m.special&&!isSoldOut(m));
   const qOn=knCfg().queueOn!==false,adm=canPo();
-  return `
+  return closedCard()+`
    ${adm?`<div class="knbar2"><button type="button" class="qsw${qOn?' on':''}" role="switch" aria-checked="${qOn}" data-act="knQToggle"><span class="qsw-t"><i></i></span><b>ระบบคิว</b><em>${qOn?'เปิด':'ปิด'}</em></button>${qOn?'<button type="button" class="kncash" data-act="knQr">📱 QR ลูกค้าสั่งเอง</button>':''}${(()=>{const c=cashCur('kn');return `<button type="button" class="kncash${c?' on':''}" data-act="${c?'cashFloat':'knShop'}">💵 เงินทอน <b>${c?baht(c.float||0):'ยังไม่ใส่'}</b></button>`})()}</div>`:''}
    <div class="kns">
    <div class="kns-m">
@@ -3439,7 +3446,7 @@ function sheetKnQr(){const u=knOrderUrl();$('#panel').innerHTML=head('📱 QR �
    <div class="sh-foot"><button class="btn wide" data-act="close" type="button">ปิด</button></div>`}
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='knCName')S.knName=e.target.value});
 function viewKnQ(){const qOn=knCfg().queueOn!==false,f=S.knQf||(qOn?'wait':'all'),T=knToday(),P=T.filter(o=>o.status==='unpaid'),W=T.filter(o=>knLive(o)&&(o.q||'wait')==='wait'),R=T.filter(o=>knLive(o)&&o.q==='ready'),L=f==='pay'?P:f==='wait'?W:f==='ready'?R:T;
-  return `<div class="sec-h"><h2>${qOn?'คิววันนี้':'บิลวันนี้'}</h2><span class="hint">${num(T.filter(knLive).length)} บิล · ${baht(T.filter(knLive).reduce((a,o)=>a+(+o.total||0),0))}</span></div>
+  return closedCard()+`<div class="sec-h"><h2>${qOn?'คิววันนี้':'บิลวันนี้'}</h2><span class="hint">${num(T.filter(knLive).length)} บิล · ${baht(T.filter(knLive).reduce((a,o)=>a+(+o.total||0),0))}</span></div>
    <div class="chips">${P.length||qOn?`<button type="button" class="chip${P.length?' payc':''}" aria-pressed="${f==='pay'}" data-act="knQf" data-v="pay">💳 รอชำระ ${P.length}</button>`:''}${qOn?`<button type="button" class="chip" aria-pressed="${f==='wait'}" data-act="knQf" data-v="wait">🍳 กำลังทำ ${W.length}</button><button type="button" class="chip" aria-pressed="${f==='ready'}" data-act="knQf" data-v="ready">🔔 พร้อมรับ ${R.length}</button>`:''}<button type="button" class="chip" aria-pressed="${f==='all'}" data-act="knQf" data-v="all">ทั้งหมด ${T.length}</button></div>
    ${L.length?`<div class="knql">${[...L].sort((a,b)=>f==='all'?b.at-a.at:a.at-b.at).map(o=>{const st=o.status==='void'?'void':o.status==='unpaid'?'pay':(o.q||'wait');return `<div class="knq st-${st}"><div class="knq-h"><b class="knq-no">${esc(o.no)}</b><span class="muted">${hm(o.at)}${o.name?' · คุณ'+esc(o.name):''}</span>${o.src==='qr'?'<span class="tg tg-w">📱 สั่งเอง</span>':''}<span class="tg ${o.pay==='qr'?'tg-sale':'tg-use'}">${o.pay==='qr'?'📱 โอน':'💵 สด'}</span><b class="knq-t">${baht(o.total)}</b></div>
      <div class="knq-i">${(o.items||[]).map(l=>`<div><b>${num(l.qty)}×</b> ${esc(l.name)}${l.opts&&l.opts.length?` <small>${esc(optNames(l.opts))}</small>`:''}${l.note?` <small>📝 ${esc(l.note)}</small>`:''}</div>`).join('')}</div>
