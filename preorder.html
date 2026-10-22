@@ -364,6 +364,30 @@ body.dark .sph,[data-theme=dark] .sph{color:#fbbf24!important}
 @keyframes hlPulse{0%,100%{box-shadow:0 0 0 2px rgba(255,255,255,.35),0 6px 16px rgba(6,199,85,.4)}50%{box-shadow:0 0 0 4px rgba(255,255,255,.55),0 6px 22px rgba(6,199,85,.7)}}
 @media (max-width:420px){.heroline{top:10px;right:10px;padding:5px 10px 5px 5px}.heroline small{display:none}}
 @media (prefers-reduced-motion:reduce){.heroline{animation:none}}
+
+/* การ์ด QR พร้อมเพย์แบบโปสเตอร์ v2 (ภาพร้านเต็มใบ) */
+.ppc{margin:10px 0;border-radius:20px;overflow:hidden;position:relative;background:#2a1a10 var(--pc-bg) no-repeat;background-size:var(--pc-size,cover);background-position:var(--pc-pos,center);box-shadow:0 10px 28px rgba(0,0,0,.3);text-align:left;min-height:340px;background-repeat:var(--pc-rep,no-repeat)}
+.ppc::before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.28),transparent 45%),linear-gradient(270deg,rgba(0,0,0,.18),transparent 55%);pointer-events:none}
+.ppc-in{position:relative;min-height:340px;box-sizing:border-box;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);padding:12px 10px 10px 12px;gap:8px}
+.ppc-l{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;min-width:0;padding-bottom:4px}.ppc-l h3{margin-top:auto!important}.ppc-l.top h3{margin-top:0!important;margin-bottom:auto;padding-top:4px}
+.ppc-sign{width:100%;max-width:170px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+.ppc-l h3{margin:0;font-family:Kanit,var(--f-display,system-ui),sans-serif;line-height:1.08;display:flex;flex-direction:column;transform:rotate(-3deg);transform-origin:left bottom}
+.ppc-l h3 em{font-style:normal;white-space:nowrap}
+.ppc-l h3 span,.ppc-l h3 small{color:#fff4dc;-webkit-text-stroke:5px #7a4a24;paint-order:stroke fill;font-weight:900;text-shadow:0 0 0 #fff,0 4px 0 #fff,0 6px 10px rgba(0,0,0,.35)}
+.ppc-l h3 span{font-size:36px;letter-spacing:-.5px}.ppc-l h3 small{font-size:19px;margin-left:1px}
+.ppc-r{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ppc-qr{background:#fff;border-radius:18px;padding:0 10px 6px;box-shadow:0 6px 18px rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.ppc-qh{width:calc(100% + 20px);background:linear-gradient(180deg,#f7e6c8,#eed3a6);color:#7a4a24;font-weight:900;text-align:center;padding:5px 0;margin-bottom:6px;font-size:15px;font-family:Kanit,var(--f-display,system-ui),sans-serif;display:flex;align-items:center;justify-content:center;gap:6px}
+.ppc-qh i{font-style:normal;width:22px;height:22px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.ppc-qr svg{width:100%!important;height:auto!important;display:block;max-width:none!important;margin:0!important}
+.ppc-amt{margin-top:3px;font-size:12.5px;color:#7a4a24;white-space:nowrap;font-weight:600}.ppc-amt b{font-size:19px;color:#3e2410;margin-left:3px}
+.ppc-pill{display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,#fbeed6,#f1dbb5);border:2.5px solid #fff;border-radius:999px;padding:4px 4px 4px 12px;box-shadow:0 3px 10px rgba(0,0,0,.28);min-width:0;line-height:1.2}
+.ppc-pill>div{display:flex;flex-direction:column;min-width:0;flex:1}
+.ppc-pill span{color:#8a5a2b;font-size:10.5px;font-weight:600}.ppc-pill b{color:#5a3216;font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:all;-webkit-user-select:all}
+.ppc-pill:not(:has(.ppc-cpy)){padding-right:12px}
+.ppc-cpy{flex:none;border:0;border-radius:50%;width:32px;height:32px;padding:0;font:inherit;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(135deg,#d9822b,#7a4a24);box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:pointer}.ppc-cpy.ok{background:linear-gradient(135deg,#22c55e,#15803d)}
+.ppc-ft{margin:auto 0 0;color:#d2691e;font-size:12.5px;font-weight:800;text-align:center;line-height:1.3;-webkit-text-stroke:3px #fff;paint-order:stroke fill;font-family:Kanit,var(--f-display,system-ui),sans-serif}
+@media (max-width:360px){.ppc-l h3 span{font-size:38px}.ppc-l h3 small{font-size:20px}}
 </style>
 </head>
 <body>
@@ -577,8 +601,16 @@ async function start(){
 const closeTxt=st=>st.closeDate&&st.today&&st.closeDate!==st.today?`${thDate(st.closeDate)} เวลา ${st.cutoff} น.`:`${st.cutoff} น. วันนี้`;
 // กล่องโอนเงิน: QR + เบอร์พร้อมเพย์ + ชื่อเจ้าของบัญชี (กดคัดลอกเบอร์ได้)
 const ppFmt=pp=>pp.length===10?pp.replace(/^(\d{3})(\d{3})(\d{4})$/,'$1-$2-$3'):pp.length===13?pp.replace(/^(\d)(\d{4})(\d{5})(\d{2})(\d)$/,'$1-$2-$3-$4-$5'):pp;
-const ppBox=(pp,amt,name)=>`<div class="payqr"><small>สแกนจ่ายด้วยแอปธนาคาร (พร้อมเพย์)</small>${qrSvg(ppPayload(pp,amt))}<b>${baht(amt)}</b>
-  <div class="ppinfo"><span>พร้อมเพย์ <b>${esc(ppFmt(pp))}</b></span>${name?`<span>ชื่อบัญชี <b>${esc(name)}</b></span>`:''}<button class="btn sm" data-a="ppCopy" data-v="${esc(pp)}" type="button">📋 คัดลอกเบอร์</button></div></div>`;
+const pcFmt=n=>{n=String(n||'').replace(/\D/g,'');return n.length===10?n.replace(/(\d{3})(\d{3})(\d{4})/,'$1 $2 $3'):n.length===13?n.replace(/(\d)(\d{4})(\d{5})(\d{2})(\d)/,'$1-$2-$3-$4-$5'):n};
+const ppPoster=(pp,amt,o={})=>`<div class="ppc" style="--pc-bg:url(${o.bg});--pc-pos:${o.pos||'center'};--pc-size:${o.size||'cover'};--pc-rep:${o.rep||'no-repeat'}"><div class="ppc-in">
+  <div class="ppc-l${o.htop?' top':''}">${o.sign?`<img class="ppc-sign" src="${o.sign}" alt="">`:''}</div>
+  <div class="ppc-r"><div class="ppc-qr"><div class="ppc-qh"><i>🏛️</i>QR CODE</div>${qrSvg(ppPayload(pp,amt))}<div class="ppc-amt">ยอดโอน <b>${baht(amt)}</b></div></div>
+  ${o.name?`<div class="ppc-pill"><div><span>ชื่อบัญชี</span><b>${esc(o.name)}</b></div></div>`:''}
+  <div class="ppc-pill"><div><span>พร้อมเพย์</span><b>${pcFmt(pp)}</b></div><button type="button" class="ppc-cpy" data-pcp="${String(pp).replace(/\D/g,'')}" aria-label="คัดลอกเลขพร้อมเพย์">📋</button></div>
+  <p class="ppc-ft">${o.foot||'โอนเรียบร้อยแล้ว<br>กรุณาแนบสลิป ขอบคุณค่ะ'}</p></div></div></div>`;
+document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-pcp]');if(!b)return;e.preventDefault();e.stopPropagation();const t=b.dataset.pcp;let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(_){try{const x=document.createElement('textarea');x.value=t;x.style.position='fixed';x.style.opacity='0';document.body.appendChild(x);x.select();ok=document.execCommand('copy');x.remove()}catch(__){}}
+  if(ok){b.textContent='✓';b.classList.add('ok');setTimeout(()=>{b.textContent='📋';b.classList.remove('ok')},1800)}},true);
+const ppBox=(pp,amt,name)=>ppPoster(pp,amt,{bg:'images/bg-po-m.jpg',pos:'left top',size:'auto 100%',rep:'repeat-x',name});
 const poDue=o=>Math.max(0,(+o.total||0)-(+o.paidAmt||0));
 async function loadMy(){const a=myOrders();if(!a.length||!sb)return;S.myBusy=true;try{const {data}=await sb.rpc('po_my',{p_list:a.slice(0,30).map(x=>({id:x.id,t:x.token}))});if(Array.isArray(data)){const M={};data.forEach(m=>M[m.id]=m);S.myStat=M;const q=new Set(a.slice(0,30).map(x=>x.id));const keep=myOrders().filter(x=>!q.has(x.id)||M[x.id]);if(keep.length!==myOrders().length){lsSet(MY_KEY,keep);if(S.view==='menu')render()}}}catch(e){}S.myBusy=false;S.myAt=Date.now();if(S.view==='mine'||S.view==='board')render()}
 const CX_DEF=['สั่งผิด / เลือกเมนูผิด','เปลี่ยนใจ ไม่สะดวกรับของ','สั่งซ้ำ','อยากแก้รายการ จะสั่งใหม่','ไม่สะดวกโอนเงิน'];

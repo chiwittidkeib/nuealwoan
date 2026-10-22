@@ -71,25 +71,29 @@ button,input{font:inherit;color:inherit}
 .ppbox{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:10px 12px;border-radius:14px;background:#fff8ec;border:1px solid #e9cfa8;width:100%;box-sizing:border-box}.ppbox div{display:flex;flex-direction:column;text-align:left}.ppbox small{color:#8a6a4a;font-size:12px}.ppbox b{font-size:20px;letter-spacing:.5px;color:#3e2410;user-select:all;-webkit-user-select:all}
 .cpy{flex:none;border:0;border-radius:999px;padding:9px 14px;font:inherit;font-weight:700;color:#fff;background:linear-gradient(135deg,#c8792a,#6b3e1f);box-shadow:0 3px 10px rgba(107,62,31,.3);cursor:pointer}.cpy.ok{background:linear-gradient(135deg,#22c55e,#15803d)}
 
-/* การ์ด QR พร้อมเพย์ ลายร้าน (โปสเตอร์ ซ้ายหัวข้อ+ภาพ ขวา QR) */
-.ppc{margin-top:12px;border-radius:22px;overflow:hidden;position:relative;background:#24140a url(images/bg-kn-m.jpg?v=1) center 30%/cover no-repeat;box-shadow:0 10px 28px rgba(36,20,10,.35);border:2px solid #d9a441}
-.ppc::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(36,20,10,.82) 0%,rgba(36,20,10,.55) 50%,rgba(36,20,10,.35) 100%),linear-gradient(0deg,rgba(36,20,10,.7),transparent 40%)}
-.ppc::after{content:"";position:absolute;inset:7px;border:1.5px solid rgba(255,207,122,.75);border-radius:16px;pointer-events:none}
-.ppc-in{position:relative;z-index:1;padding:16px 14px 12px;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:10px;align-items:stretch}
-.ppc-l{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
-.ppc-logo{width:52px;height:52px;border-radius:50%;border:2px solid #ffcf7a;box-shadow:0 0 0 3px rgba(255,207,122,.25),0 4px 10px rgba(0,0,0,.4);background:#24140a}
-.ppc-l h3{margin:8px 0 0;display:grid;grid-template-columns:auto 1fr;align-items:end;column-gap:4px;line-height:1.25}
-.ppc-l h3 span{padding-top:8px;font-size:37px;font-weight:800;background:linear-gradient(180deg,#fff6d8 10%,#ffcf7a 55%,#d48a2c);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #5a300f) drop-shadow(0 3px 6px rgba(0,0,0,.5))}
-.ppc-l h3 small{font-size:17px;white-space:nowrap;font-weight:700;color:#ffe9c2;padding-bottom:7px;text-shadow:0 2px 4px rgba(0,0,0,.6)}
-.ppc-r{display:flex;flex-direction:column;gap:7px;min-width:0}
-.ppc-qr{background:#fffdf8;border-radius:16px;padding:0 10px 8px;box-shadow:0 8px 22px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;overflow:hidden}
-.ppc-qh{width:calc(100% + 20px);background:linear-gradient(135deg,#c8792a,#6b3e1f);color:#fff;font-weight:700;text-align:center;padding:6px 0;margin-bottom:8px;font-size:14px}
-.ppc-qr svg{width:100%;height:auto;display:block}
-.ppc-amt{margin-top:6px;font-size:13px;color:#6b3e1f;white-space:nowrap}.ppc-amt b{font-size:20px;color:#3e2410;margin-left:3px}
-.ppc-pill{display:flex;flex-direction:column;align-items:flex-start;background:rgba(255,248,236,.96);border:1.5px solid #ffcf7a;border-radius:14px;padding:6px 10px;box-shadow:0 3px 10px rgba(0,0,0,.25);line-height:1.3;min-width:0}
-.ppc-pill span{color:#8a5a2b;font-size:11.5px}.ppc-pill b{color:#3e2410;font-size:15.5px;max-width:100%;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all}
-.ppc-pill .cpy{margin-top:5px;align-self:stretch;padding:6px 8px;font-size:13px}
-.ppc-ft{grid-column:1/-1;margin:2px 0 0;color:#ffe9c2;font-size:13.5px;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+/* การ์ด QR พร้อมเพย์แบบโปสเตอร์ v2 (ภาพร้านเต็มใบ) */
+.ppc{margin:10px 0;border-radius:20px;overflow:hidden;position:relative;background:#2a1a10 var(--pc-bg) no-repeat;background-size:var(--pc-size,cover);background-position:var(--pc-pos,center);box-shadow:0 10px 28px rgba(0,0,0,.3);text-align:left;min-height:340px;background-repeat:var(--pc-rep,no-repeat)}
+.ppc::before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.28),transparent 45%),linear-gradient(270deg,rgba(0,0,0,.18),transparent 55%);pointer-events:none}
+.ppc-in{position:relative;min-height:340px;box-sizing:border-box;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);padding:12px 10px 10px 12px;gap:8px}
+.ppc-l{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;min-width:0;padding-bottom:4px}.ppc-l h3{margin-top:auto!important}.ppc-l.top h3{margin-top:0!important;margin-bottom:auto;padding-top:4px}
+.ppc-sign{width:100%;max-width:170px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+.ppc-l h3{margin:0;font-family:Kanit,var(--f-display,system-ui),sans-serif;line-height:1.08;display:flex;flex-direction:column;transform:rotate(-3deg);transform-origin:left bottom}
+.ppc-l h3 em{font-style:normal;white-space:nowrap}
+.ppc-l h3 span,.ppc-l h3 small{color:#fff4dc;-webkit-text-stroke:5px #7a4a24;paint-order:stroke fill;font-weight:900;text-shadow:0 0 0 #fff,0 4px 0 #fff,0 6px 10px rgba(0,0,0,.35)}
+.ppc-l h3 span{font-size:36px;letter-spacing:-.5px}.ppc-l h3 small{font-size:19px;margin-left:1px}
+.ppc-r{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ppc-qr{background:#fff;border-radius:18px;padding:0 10px 6px;box-shadow:0 6px 18px rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.ppc-qh{width:calc(100% + 20px);background:linear-gradient(180deg,#f7e6c8,#eed3a6);color:#7a4a24;font-weight:900;text-align:center;padding:5px 0;margin-bottom:6px;font-size:15px;font-family:Kanit,var(--f-display,system-ui),sans-serif;display:flex;align-items:center;justify-content:center;gap:6px}
+.ppc-qh i{font-style:normal;width:22px;height:22px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.ppc-qr svg{width:100%!important;height:auto!important;display:block;max-width:none!important;margin:0!important}
+.ppc-amt{margin-top:3px;font-size:12.5px;color:#7a4a24;white-space:nowrap;font-weight:600}.ppc-amt b{font-size:19px;color:#3e2410;margin-left:3px}
+.ppc-pill{display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,#fbeed6,#f1dbb5);border:2.5px solid #fff;border-radius:999px;padding:4px 4px 4px 12px;box-shadow:0 3px 10px rgba(0,0,0,.28);min-width:0;line-height:1.2}
+.ppc-pill>div{display:flex;flex-direction:column;min-width:0;flex:1}
+.ppc-pill span{color:#8a5a2b;font-size:10.5px;font-weight:600}.ppc-pill b{color:#5a3216;font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:all;-webkit-user-select:all}
+.ppc-pill:not(:has(.ppc-cpy)){padding-right:12px}
+.ppc-cpy{flex:none;border:0;border-radius:50%;width:32px;height:32px;padding:0;font:inherit;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(135deg,#d9822b,#7a4a24);box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:pointer}.ppc-cpy.ok{background:linear-gradient(135deg,#22c55e,#15803d)}
+.ppc-ft{margin:auto 0 0;color:#d2691e;font-size:12.5px;font-weight:800;text-align:center;line-height:1.3;-webkit-text-stroke:3px #fff;paint-order:stroke fill;font-family:Kanit,var(--f-display,system-ui),sans-serif}
+@media (max-width:360px){.ppc-l h3 span{font-size:38px}.ppc-l h3 small{font-size:20px}}
 </style>
 </head>
 <body>
@@ -120,12 +124,16 @@ const ppFmt=n=>n.length===10?n.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3'):n.len
 const ppBox=pp=>`<div class="ppbox"><div><small>พร้อมเพย์</small><b>${ppFmt(pp)}</b></div><button type="button" class="cpy" data-cp="${pp}">📋 คัดลอก</button></div>`;
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-cp]');if(!b)return;const t=b.dataset.cp;let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(_){try{const x=document.createElement('textarea');x.value=t;x.style.position='fixed';x.style.opacity='0';document.body.appendChild(x);x.select();ok=document.execCommand('copy');x.remove()}catch(__){}}
   if(ok){b.textContent='✓ คัดลอกแล้ว';b.classList.add('ok');setTimeout(()=>{b.textContent='📋 คัดลอก';b.classList.remove('ok')},1800)}else toast('คัดลอกไม่ได้ · กดค้างที่เบอร์เพื่อคัดลอก')});
-const ppCard=(pp,amt,foot)=>`<div class="ppc"><div class="ppc-in">
-  <div class="ppc-l"><img class="ppc-logo" src="images/logo-kn-s.png?v=20261022" alt=""><h3><span>โอน</span><small>เมื่อใด</small><span>เฮง</span><small>เมื่อนั้น</small></h3></div>
-  <div class="ppc-r"><div class="ppc-qr"><div class="ppc-qh">🏦 QR พร้อมเพย์</div>${qrSvg(ppPayload(pp,amt))}<div class="ppc-amt">ยอดโอน <b>${baht(amt)}</b></div></div>
-  ${S.shop&&S.shop.ppName?`<div class="ppc-pill"><span>ชื่อบัญชี</span><b>${esc(S.shop.ppName)}</b></div>`:''}
-  <div class="ppc-pill"><span>พร้อมเพย์</span><b>${ppFmt(pp)}</b><button type="button" class="cpy" data-cp="${pp}">📋 คัดลอกเลข</button></div></div>
-  <p class="ppc-ft">${foot}</p></div></div>`;
+const pcFmt=n=>{n=String(n||'').replace(/\D/g,'');return n.length===10?n.replace(/(\d{3})(\d{3})(\d{4})/,'$1 $2 $3'):n.length===13?n.replace(/(\d)(\d{4})(\d{5})(\d{2})(\d)/,'$1-$2-$3-$4-$5'):n};
+const ppPoster=(pp,amt,o={})=>`<div class="ppc" style="--pc-bg:url(${o.bg});--pc-pos:${o.pos||'center'};--pc-size:${o.size||'cover'};--pc-rep:${o.rep||'no-repeat'}"><div class="ppc-in">
+  <div class="ppc-l${o.htop?' top':''}">${o.sign?`<img class="ppc-sign" src="${o.sign}" alt="">`:''}</div>
+  <div class="ppc-r"><div class="ppc-qr"><div class="ppc-qh"><i>🏛️</i>QR CODE</div>${qrSvg(ppPayload(pp,amt))}<div class="ppc-amt">ยอดโอน <b>${baht(amt)}</b></div></div>
+  ${o.name?`<div class="ppc-pill"><div><span>ชื่อบัญชี</span><b>${esc(o.name)}</b></div></div>`:''}
+  <div class="ppc-pill"><div><span>พร้อมเพย์</span><b>${pcFmt(pp)}</b></div><button type="button" class="ppc-cpy" data-pcp="${String(pp).replace(/\D/g,'')}" aria-label="คัดลอกเลขพร้อมเพย์">📋</button></div>
+  <p class="ppc-ft">${o.foot||'โอนเรียบร้อยแล้ว<br>กรุณาแนบสลิป ขอบคุณค่ะ'}</p></div></div></div>`;
+document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-pcp]');if(!b)return;e.preventDefault();e.stopPropagation();const t=b.dataset.pcp;let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(_){try{const x=document.createElement('textarea');x.value=t;x.style.position='fixed';x.style.opacity='0';document.body.appendChild(x);x.select();ok=document.execCommand('copy');x.remove()}catch(__){}}
+  if(ok){b.textContent='✓';b.classList.add('ok');setTimeout(()=>{b.textContent='📋';b.classList.remove('ok')},1800)}},true);
+const ppCard=(pp,amt,foot)=>ppPoster(pp,amt,{bg:'images/bg-kn.jpg',pos:'100% 0%',size:'auto 108%',name:S.shop&&S.shop.ppName,foot});
 const hdr=()=>`<div class="hd"><img src="images/logo-kn.png?v=20261022" alt=""><div><h1>${esc((S.shop&&S.shop.shopName)||'ล้านฅนเมียง')}</h1><small>อาหารเหนือ · สั่งเองผ่านมือถือ</small></div></div>`;
 function render(){const a=$('#app');
   if(S.view==='status')return renderStatus();
@@ -166,7 +174,7 @@ function renderCart(){const a=$('#app'),pp=(S.shop.promptpay||'').replace(/\D/g,
    <div class="tot"><span>รวม ${cN()} รายการ</span><b>${baht(cTot())}</b></div></div>
    <div class="card"><label class="name"><span>ชื่อลูกค้า คุณ</span><input id="nm" maxlength="40" value="${esc(S.name)}" placeholder="ชื่อเล่น (ไว้เรียกคิว)"></label></div>
    <div class="card"><h2>ชำระเงิน</h2><div class="pays">${pp?`<button class="pay${S.pay==='qr'?' on':''}" data-p="qr">📱 โอน / สแกนจ่าย<small>สแกน QR แล้วแนบสลิป</small></button>`:''}<button class="pay${S.pay==='cash'?' on':''}" data-p="cash">💵 จ่ายเงินสด<small>ที่เคาน์เตอร์หน้าร้าน</small></button></div>
-   ${S.pay==='qr'&&pp?(cTot()>0?`${ppCard(pp,cTot(),'① สแกนจ่ายแล้ว ② แนบสลิปด้านล่างได้เลยเจ้า')}
+   ${S.pay==='qr'&&pp?(cTot()>0?`${ppCard(pp,cTot(),'โอนเรียบร้อยแล้ว แนบสลิป<br>ด้านล่างได้เลยเจ้า')}
    ${S.slipImg?`<div class="slipok"><img src="${S.slipImg}" alt="สลิป"><div><b>✅ แนบสลิปแล้ว</b><small>ตรวจดูว่าเป็นสลิปที่ถูกต้อง</small><label class="lnk">เปลี่ยนสลิป<input type="file" accept="image/*" id="cslip" hidden></label></div></div>`:`<label class="btn pri" style="margin-top:10px">📎 ② แนบสลิปการโอน<input type="file" accept="image/*" id="cslip" hidden></label>`}`:'<div class="msg warn" style="margin-top:10px">เมนูนี้ร้านยังไม่ได้ตั้งราคา (฿0) · กรุณาแจ้งพนักงาน หรือเลือกจ่ายเงินสดที่เคาน์เตอร์</div>'):''}</div>
    <button class="btn pri" id="go" ${!S.cart.length||S.busy||needSlip?'disabled':''}>${S.busy?'⏳ กำลังส่ง…':needSlip?'📎 แนบสลิปก่อน จึงกดยืนยันได้':'✅ ยืนยันสั่ง '+baht(cTot())}</button>
    <button class="btn" id="back" style="margin-top:10px">← เลือกเมนูเพิ่ม</button>`;
@@ -192,7 +200,7 @@ function renderStatus(){const a=$('#app'),o=S.st;if(!o){a.innerHTML=hdr()+'<div 
    ${vd?'<div class="msg bad" style="margin-top:10px">ออร์เดอร์นี้ถูกยกเลิก ติดต่อพนักงานหน้าร้าน</div>':`<div class="stp">${stp.map((x,i)=>`<div class="${i<=ix?'on':''}"><i>${i<ix?'✓':i+1}</i>${x[1]}</div>`).join('')}</div>`}
    ${!vd&&o.q==='ready'?'<div class="msg ok">🔔 อาหารพร้อมแล้ว! มารับที่เคาน์เตอร์ได้เลยเจ้า</div>':''}
    ${!vd&&!paid&&o.pay==='cash'?'<div class="msg warn">💵 ไปจ่ายเงินสดที่เคาน์เตอร์ บอกเลขคิวกับพนักงาน แล้วร้านจะเริ่มทำให้</div>':''}
-   ${!vd&&!paid&&o.pay==='qr'?(o.slip?`<div class="msg warn">⏳ ส่งสลิปแล้ว รอร้านตรวจสอบ…</div>`:`${o.slipBad?`<div class="msg bad">สลิปไม่ผ่าน: ${esc(o.slipBad)} · แนบใหม่อีกครั้ง</div>`:''}${pp?ppCard(pp,+o.total,'โอนเรียบร้อยแล้ว แนบสลิปด้านล่างได้เลยเจ้า'):''}<label class="btn pri" style="margin-top:10px">📎 แนบสลิป<input type="file" accept="image/*" id="slip" hidden></label>`):''}
+   ${!vd&&!paid&&o.pay==='qr'?(o.slip?`<div class="msg warn">⏳ ส่งสลิปแล้ว รอร้านตรวจสอบ…</div>`:`${o.slipBad?`<div class="msg bad">สลิปไม่ผ่าน: ${esc(o.slipBad)} · แนบใหม่อีกครั้ง</div>`:''}${pp?ppCard(pp,+o.total,'โอนเรียบร้อยแล้ว แนบสลิป<br>ด้านล่างได้เลยเจ้า'):''}<label class="btn pri" style="margin-top:10px">📎 แนบสลิป<input type="file" accept="image/*" id="slip" hidden></label>`):''}
    ${paid?`<a class="btn pri" style="margin-top:10px;text-decoration:none" href="${esc(rc)}">🧾 ดูใบเสร็จ</a>`:''}</div>
    <div class="card"><h2>รายการ</h2>${(o.items||[]).map(l=>`<div class="row"><div class="t"><b>${num(l.qty)} × ${esc(l.name)}</b>${(l.opts||[]).length?`<small>${esc(l.opts.map(x=>x.n).join(', '))}</small>`:''}</div><b>${baht(l.price*l.qty)}</b></div>`).join('')}</div>
    <button class="btn" id="newO">🍽️ สั่งเพิ่ม / ออร์เดอร์ใหม่</button>`;
