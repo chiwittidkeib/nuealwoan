@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.22-135828">
+<meta name="app-version" content="2026.10.22-140713">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1395,6 +1395,7 @@ body.shop-kn #hdrShop:not(.closed){color:#14532d;background:linear-gradient(180d
 .knsp-i img,.knsp-i .ph{width:64px;height:64px;border-radius:12px;object-fit:cover;flex:none}.knsp-i .ph{display:grid;place-items:center;background:linear-gradient(135deg,#e9a54b,#6b3e1f);color:#fff;font-weight:800;font-size:26px}
 .knsp-t{flex:1;min-width:0;display:flex;flex-direction:column}.knsp-t b{font-size:16px}.knsp-t small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.knsp-t em{font-style:normal;font-weight:800;color:#b45309;font-size:17px}
 .knsp-add{font-style:normal;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#c8792a,#6b3e1f);color:#fff;font-size:20px;font-weight:800;flex:none}
+.kncash{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1.5px solid #d9b994;background:rgba(255,250,242,.95);font:inherit;font-size:14px;color:#4a2c16;cursor:pointer}.kncash b{color:#b91c1c}.kncash.on{border-color:#22c55e}.kncash.on b{color:#15803d}
 </style>
 </head>
 <body>
@@ -3345,6 +3346,7 @@ Object.assign(ACT,{
     const ok=await write('cash_sessions/'+c.id,r=>r.update(upd));if(!ok)return;Object.assign(c,upd);
     if(sh!=='kn'&&!shopClosed(sh)&&s.alsoClose!==false){await SB.rpc('shop_session',{p_closed:true,p_shop:sh});const key=sh==='po'?'shopSessionPo':'shopSession';S.lists=S.lists||{};S.lists[key]={...(S.lists[key]||{}),closed:true,closedAt:now}}
     closeSheet();render();toast('🔒 ปิดร้านแล้ว · เงินสดสุทธิ '+baht(upd.net)+(upd.diff!=null&&Math.abs(upd.diff)>=.01?(upd.diff>0?' · เกิน ':' · ขาด ')+baht(Math.abs(upd.diff)):''))},
+  cashFloat:async()=>{const c=cashCur();if(!c)return;const v=prompt('แก้เงินทอนตั้งต้น (บาท)',String(c.float||0));if(v==null)return;const f=r2(+String(v).replace(/[^0-9.]/g,'')||0);c.float=f;render();await write('cash_sessions/'+c.id,r=>r.update({float:f}));toast('เงินทอน '+baht(f))},
   knShop:()=>{if(!canPo())return deny();openSheet({type:cashCur('kn')?'cashClose':'cashOpen'})},
   knQToggle:async()=>{if(!canPo())return deny();const on=knCfg().queueOn===false;if(!confirm(on?'เปิดใช้ระบบคิว?\n\n• ทุกบิลได้เลขคิว + ใส่ชื่อลูกค้า\n• มีแท็บ "คิว" ไว้เรียกลูกค้า':'ปิดระบบคิว?\n\n• ขายจบทันที ไม่มีเลขคิว ไม่ต้องใส่ชื่อ\n• ซ่อนแท็บ "คิว" (คิวที่ค้างยังอยู่ เปิดกลับมาดูได้)'))return;const c={...(S.kn||{}),queueOn:on};const ok=await write('config/kn',r=>r.set(c));if(ok){S.kn=c;render();toast(on?'🔔 เปิดใช้ระบบคิวแล้ว':'ปิดระบบคิวแล้ว · ขายจบได้ทันที')}},
   knSoldMode:()=>{S.knSO=!S.knSO;render();if(S.knSO)toast('แตะเมนูเพื่อตั้ง "หมดแล้ว" / เปิดขายอีกครั้ง')},
@@ -3361,12 +3363,12 @@ const knCartTot=()=>S.knCart.reduce((a,l)=>a+((+l.price||0)+(+l.extra||0))*l.qty
 const knPP=()=>String(knCfg().promptpay||S.settings.promptpay||'').replace(/\D/g,'');
 function knAdd(m,sel){const extra=(sel.opts||[]).reduce((a,o)=>a+(+o.p||0),0),key=m.id+'|'+(sel.opts||[]).map(o=>o.cid).join(',')+'|'+(sel.note||'');
   const ex=S.knCart.find(l=>l.key===key);if(ex)ex.qty+=sel.qty||1;else S.knCart.push({key,menuId:m.id,name:m.name,price:+m.price||0,extra,opts:sel.opts||[],note:sel.note||'',qty:sel.qty||1,cost:+m.cost||0});render()}
-function viewKnSell(){const cats=curCats(),M=S.menu.filter(m=>!m.hidden),cat=S.knCat||'all',q=String(S.knQ||'').trim().toLowerCase();
+function viewKnSell(){S.knSO=false;const cats=curCats(),M=S.menu.filter(m=>!m.hidden),cat=S.knCat||'all',q=String(S.knQ||'').trim().toLowerCase();
   const allCats=[...cats.filter(c=>M.some(m=>m.cat===c)),...[...new Set(M.map(m=>m.cat||'อื่นๆ'))].filter(c=>!cats.includes(c))],usedCats=allCats,cnt=c=>M.filter(m=>(m.cat||'อื่นๆ')===c).length;
   const L=M.filter(m=>(cat==='all'||(m.cat||'อื่นๆ')===cat)&&(!q||String(m.name).toLowerCase().includes(q)));const tot=knCartTot(),n=S.knCart.reduce((a,l)=>a+l.qty,0),SP=M.filter(m=>m.special&&!isSoldOut(m));
   const qOn=knCfg().queueOn!==false,adm=canPo();
-  return `${adm&&!cashCur('kn')?`<div class="knopen"><span><b>ยังไม่ได้เปิดร้านวันนี้</b><small>ใส่เงินทอนตั้งต้นก่อน ตอนปิดร้านระบบจะหักออกให้</small></span><button type="button" class="btn pri sm" data-act="knShop">💵 เปิดร้าน</button></div>`:''}
-   ${adm?`<div class="knbar2"><button type="button" class="qsw${qOn?' on':''}" role="switch" aria-checked="${qOn}" data-act="knQToggle"><span class="qsw-t"><i></i></span><b>ระบบคิว</b><em>${qOn?'เปิด':'ปิด'}</em></button><button type="button" class="chip${S.knSO?' so':''}" aria-pressed="${!!S.knSO}" data-act="knSoldMode">${S.knSO?'✓ เสร็จ · ตั้งเมนูหมด':'⛔ ตั้งเมนูหมด'}</button></div>`:''}
+  return `
+   ${adm?`<div class="knbar2"><button type="button" class="qsw${qOn?' on':''}" role="switch" aria-checked="${qOn}" data-act="knQToggle"><span class="qsw-t"><i></i></span><b>ระบบคิว</b><em>${qOn?'เปิด':'ปิด'}</em></button>${(()=>{const c=cashCur('kn');return `<button type="button" class="kncash${c?' on':''}" data-act="${c?'cashFloat':'knShop'}">💵 เงินทอน <b>${c?baht(c.float||0):'ยังไม่ใส่'}</b></button>`})()}</div>`:''}
    <div class="kns">
    <div class="kns-m">
     <div class="knsrch"><input id="knQ" type="search" placeholder="🔍 ค้นหาเมนู" value="${esc(S.knQ||'')}" autocomplete="off" aria-label="ค้นหาเมนู"></div>
