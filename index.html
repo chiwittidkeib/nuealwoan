@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.22-144011">
+<meta name="app-version" content="2026.10.22-173428">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -3381,7 +3381,10 @@ Object.assign(ACT,{
 /* ======================= ร้านล้านฅนเมียง (ขายหน้าร้าน ไม่มีโต๊ะ) ======================= */
 function knBoot(db){
   db.doc('config/kn').onSnapshot(s=>{S.kn=s.exists?s.data():null;if(isKn()){sortMenu();renderSoon()}},()=>{});
-  db.collection('kn_sales').where('at','>=',sod()-40*DAY).onSnapshot(s=>{const prev=S.knSeen;S.knSales=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);S.knSeen=new Set(S.knSales.map(o=>o.id));if(prev&&isKn())S.knSales.filter(o=>o.src==='qr'&&!prev.has(o.id)).forEach(o=>{toast('📱 ออร์เดอร์ใหม่ '+o.no+' คุณ'+(o.name||'')+' · '+baht(o.total));try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}});if(isKn())renderSoon();if(S.sheet&&S.sheet.type==='knSale')renderSheet()},()=>{})}
+  db.collection('kn_sales').where('at','>=',sod()-40*DAY).onSnapshot(s=>{const prev=S.knSeen;S.knSales=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.at-a.at);S.knSeen=new Set(S.knSales.map(o=>o.id));const pSl=S.knSlipSeen;S.knSlipSeen=new Map(S.knSales.filter(o=>o.slipAt).map(o=>[o.id,o.slipAt]));
+    if(prev&&isKn()&&S.state==='ready'){const nw=S.knSales.filter(o=>o.src==='qr'&&!prev.has(o.id)),sl=S.knSales.filter(o=>o.slipAt&&o.status==='unpaid'&&(pSl&&pSl.get(o.id))!==o.slipAt);
+      if(sl.length){toast('💳 ลูกค้าแนบสลิปแล้ว '+sl.map(o=>o.no+' คุณ'+(o.name||'')+' '+baht(o.total)).join(', ')+' · รอตรวจยอด');try{Bell.ring('pay',null,'ลูกค้าแนบสลิปแล้ว คิว '+sl[0].no+' กรุณาตรวจยอดค่ะ')}catch(e){}}
+      else if(nw.length){toast('📱 ออร์เดอร์ใหม่ '+nw.map(o=>o.no+' คุณ'+(o.name||'')+' · '+baht(o.total)).join(', '));try{Bell.ring('staff',null,'มีออร์เดอร์ใหม่ คิว '+nw[0].no+' ค่ะ')}catch(e){}}}if(isKn())renderSoon();if(S.sheet&&S.sheet.type==='knSale')renderSheet()},()=>{})}
 const knLive=o=>!o.status||o.status==='paid';
 const knTok=()=>[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
 const knRcUrl=o=>{const u=new URL('receipt.html',location.href);return u.origin+u.pathname+'?s=kn&r='+encodeURIComponent(o.id)+'&t='+encodeURIComponent(o.tok||'')};

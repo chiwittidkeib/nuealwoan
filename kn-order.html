@@ -66,6 +66,8 @@ button,input{font:inherit;color:inherit}
 .og.bad h3{color:var(--bad)}
 .note{width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);font-size:15px}
 .toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:60;padding:10px 16px;border-radius:12px;background:#2e1a0e;color:#fff;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.slipok{display:flex;gap:12px;align-items:center;margin-top:10px;padding:10px;border-radius:14px;background:#f0fdf4;border:1px solid #86efac}.slipok img{width:64px;height:84px;object-fit:cover;border-radius:8px;border:1px solid #d6c3a8}.slipok div{display:flex;flex-direction:column;gap:2px}.slipok b{color:#166534}.slipok small{color:#6b7280}.slipok .lnk{color:#a0561c;text-decoration:underline;cursor:pointer;font-size:14px;margin-top:4px}
+#go:disabled{opacity:.6;filter:grayscale(.3)}
 </style>
 </head>
 <body>
@@ -127,19 +129,25 @@ function pick(m){if(!m)return;const G=(m.options||[]).filter(g=>g&&g.name&&(g.ch
     if(b.dataset.q){qty=Math.max(1,Math.min(20,qty+ +b.dataset.q));draw();el.querySelector('#on').value=note;return}
     if(b.dataset.add){if(miss().length){warn=true;draw();el.querySelector('#on').value=note;return}el.remove();add(m,Object.values(P).flat(),note.trim(),qty)}}}
 function renderCart(){const a=$('#app'),pp=(S.shop.promptpay||'').replace(/\D/g,'');if(!pp&&S.pay==='qr')S.pay='cash';
+  if(S.slipImg&&S.slipTot!==cTot()){S.slipImg='';toast('ยอดเปลี่ยน กรุณาโอนและแนบสลิปใหม่')}const needSlip=S.pay==='qr'&&!S.slipImg;
   a.innerHTML=hdr()+`<div class="card"><h2>🧺 ตะกร้าของคุณ${S.name?esc(S.name):''}</h2>${S.cart.map((l,i)=>`<div class="row"><div class="t"><b>${esc(l.name)}</b>${l.optN?`<small>${esc(l.optN)}</small>`:''}${l.note?`<small>📝 ${esc(l.note)}</small>`:''}</div><div class="st"><button data-i="${i}" data-d="-1">−</button><span>${l.qty}</span><button data-i="${i}" data-d="1">+</button></div><b>${baht(l.unit*l.qty)}</b></div>`).join('')||'<p>ตะกร้าว่าง</p>'}
    <div class="tot"><span>รวม ${cN()} รายการ</span><b>${baht(cTot())}</b></div></div>
    <div class="card"><label class="name"><span>ชื่อลูกค้า คุณ</span><input id="nm" maxlength="40" value="${esc(S.name)}" placeholder="ชื่อเล่น (ไว้เรียกคิว)"></label></div>
-   <div class="card"><h2>ชำระเงิน</h2><div class="pays">${pp?`<button class="pay${S.pay==='qr'?' on':''}" data-p="qr">📱 โอน / สแกนจ่าย<small>แนบสลิปในขั้นถัดไป</small></button>`:''}<button class="pay${S.pay==='cash'?' on':''}" data-p="cash">💵 จ่ายเงินสด<small>ที่เคาน์เตอร์หน้าร้าน</small></button></div></div>
-   <button class="btn pri" id="go" ${!S.cart.length||S.busy?'disabled':''}>✅ ยืนยันสั่ง ${baht(cTot())}</button>
+   <div class="card"><h2>ชำระเงิน</h2><div class="pays">${pp?`<button class="pay${S.pay==='qr'?' on':''}" data-p="qr">📱 โอน / สแกนจ่าย<small>สแกน QR แล้วแนบสลิป</small></button>`:''}<button class="pay${S.pay==='cash'?' on':''}" data-p="cash">💵 จ่ายเงินสด<small>ที่เคาน์เตอร์หน้าร้าน</small></button></div>
+   ${S.pay==='qr'&&pp?(cTot()>0?`<div class="qr" style="margin-top:12px">${qrSvg(ppPayload(pp,cTot()))}<small>① สแกนจ่าย <b>${baht(cTot())}</b> ด้วยแอปธนาคาร</small></div>
+   ${S.slipImg?`<div class="slipok"><img src="${S.slipImg}" alt="สลิป"><div><b>✅ แนบสลิปแล้ว</b><small>ตรวจดูว่าเป็นสลิปที่ถูกต้อง</small><label class="lnk">เปลี่ยนสลิป<input type="file" accept="image/*" id="cslip" hidden></label></div></div>`:`<label class="btn pri" style="margin-top:10px">📎 ② แนบสลิปการโอน<input type="file" accept="image/*" id="cslip" hidden></label>`}`:'<div class="msg warn" style="margin-top:10px">ยอดเป็น ฿0 · กรุณาแจ้งพนักงาน</div>'):''}</div>
+   <button class="btn pri" id="go" ${!S.cart.length||S.busy||needSlip?'disabled':''}>${S.busy?'⏳ กำลังส่ง…':needSlip?'📎 แนบสลิปก่อน จึงกดยืนยันได้':'✅ ยืนยันสั่ง '+baht(cTot())}</button>
    <button class="btn" id="back" style="margin-top:10px">← เลือกเมนูเพิ่ม</button>`;
   a.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const l=S.cart[+b.dataset.i];l.qty+= +b.dataset.d;if(l.qty<=0)S.cart.splice(+b.dataset.i,1);render()});
   a.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.pay=b.dataset.p;render()});
-  $('#nm').oninput=e=>{S.name=e.target.value;LS.set('kn_name',S.name)};$('#back').onclick=()=>{S.view='menu';render()};$('#go').onclick=submit}
-async function submit(){if(!S.name.trim()){toast('ใส่ชื่อก่อนนะเจ้า (ไว้เรียกคิว)');const n=$('#nm');if(n)n.focus();return}
+  $('#nm').oninput=e=>{S.name=e.target.value;LS.set('kn_name',S.name)};$('#back').onclick=()=>{S.view='menu';render()};$('#go').onclick=submit;
+  const cs=$('#cslip');if(cs)cs.onchange=async()=>{const file=cs.files[0];if(!file)return;try{S.slipImg=await shrink(file);S.slipTot=cTot();render();toast('แนบสลิปแล้ว กดยืนยันสั่งได้เลย')}catch(e){toast('อ่านรูปสลิปไม่ได้ ลองใหม่')}}}
+async function submit(){if(S.pay==='qr'&&!S.slipImg){toast('สแกนจ่ายแล้วแนบสลิปก่อนนะเจ้า');return}if(!S.name.trim()){toast('ใส่ชื่อก่อนนะเจ้า (ไว้เรียกคิว)');const n=$('#nm');if(n)n.focus();return}
   S.busy=true;render();const {data,error}=await sb.rpc('kn_order_add',{p_items:S.cart.map(l=>({menuId:l.menuId,qty:l.qty,opts:l.opts,note:l.note})),p_name:S.name.trim(),p_pay:S.pay,p_k:QK||null});S.busy=false;
   if(error){const m=String(error.message||'');if(/qr_expired/.test(m)){S.shop.open=false;S.shop.expired=true;render();return}toast(/shop_closed/.test(m)?'ร้านปิดรับสั่งออนไลน์แล้ว':/menu_gone/.test(m)?'มีเมนูที่หมดแล้ว ลองเลือกใหม่':/busy/.test(m)?'คนสั่งเยอะ ลองใหม่อีกครั้ง':'สั่งไม่สำเร็จ ลองใหม่');await load();return render()}
-  S.ord={id:data.id,tok:data.tok};LS.set('kn_ord',S.ord);S.cart=[];S.view='status';S.st=null;poll()}
+  S.ord={id:data.id,tok:data.tok};LS.set('kn_ord',S.ord);
+  if(S.pay==='qr'&&S.slipImg){for(let i=0;i<2;i++){const r=await sb.rpc('kn_order_slip',{p_id:data.id,p_tok:data.tok,p_img:S.slipImg});if(!r.error)break;if(i)toast('ส่งสลิปไม่สำเร็จ แนบใหม่ในหน้าถัดไป')}}
+  S.slipImg='';S.cart=[];S.view='status';S.st=null;poll()}
 let pollT=0;
 async function poll(){clearTimeout(pollT);if(!S.ord){S.view='menu';return render()}
   const {data,error}=await sb.rpc('kn_order_get',{p_id:S.ord.id,p_tok:S.ord.tok});if(error){S.ord=null;LS.set('kn_ord',null);S.view='menu';return render()}
