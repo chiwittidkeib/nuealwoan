@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.22-143029">
+<meta name="app-version" content="2026.10.22-144011">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -3362,7 +3362,7 @@ function cashHistHtml(sh){const L=(S.cashS||[]).filter(x=>x.shop===sh).slice(0,1
   return `<div class="card"><h3>💵 ลิ้นชักเงินสด (ล่าสุด)</h3><div class="list">${L.map(c=>{const X=c.closeAt?{cash:c.cashSales,qr:c.qrSales}:cashSales(c);return `<div class="row"><div class="grow"><div class="t">${dshort(c.at)} ${hm(c.at)}${c.closeAt?' – '+hm(c.closeAt):' · <span class="pill ok">เปิดอยู่</span>'}</div><div class="s">ทอนตั้งต้น ${baht(c.float||0)} · สด ${baht(X.cash||0)} · โอน ${baht(X.qr||0)}${c.closeAt&&c.counted!=null?` · นับได้ ${baht(c.counted)}`:''}</div></div>${c.closeAt&&c.diff!=null?`<b class="${Math.abs(c.diff)<.01?'':c.diff>0?'up':'dn'}">${Math.abs(c.diff)<.01?'ตรง':(c.diff>0?'เกิน ':'ขาด ')+baht(Math.abs(c.diff))}</b>`:''}</div>`}).join('')}</div></div>`}
 Object.assign(ACT,{
   cfSet:d=>{const i=$('#cfIn');i.value=d.v;S.sheet.f=d.v;$('#cfShow').textContent=baht(+d.v)},
-  cfSave:async()=>{const sh=cashShop(),f=+(S.sheet.f??val('cfIn'))||0;if(cashCur(sh)){closeSheet();return toast('ลิ้นชักเปิดอยู่แล้ว')}const now=Date.now(),id=sh+'-'+now,doc={shop:sh,at:now,float:r2(f),by:S.me||''};
+  cfSave:async()=>{const sh=cashShop(),f=+(S.sheet.f??val('cfIn'))||0;if(cashCur(sh)){closeSheet();return toast('ลิ้นชักเปิดอยู่แล้ว')}const now=Date.now(),id=sh+'-'+now,doc={shop:sh,at:now,float:r2(f),by:S.me||'',...(sh==='kn'?{qk:newQrKey()+newQrKey()}:{})};
     const ok=await write('cash_sessions/'+id,r=>r.set(doc));if(!ok)return;S.cashS=[{id,...doc},...(S.cashS||[])];
     if(sh==='kn'&&$('#cfReact')&&$('#cfReact').checked){for(const m of S.knMenu.filter(m=>m.active===false)){m.active=true;write('menu/'+m.id,r=>r.update({active:true}))}}
     closeSheet();render();toast('🔓 เปิดร้านแล้ว · เงินทอน '+baht(f))},
@@ -3385,7 +3385,7 @@ function knBoot(db){
 const knLive=o=>!o.status||o.status==='paid';
 const knTok=()=>[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
 const knRcUrl=o=>{const u=new URL('receipt.html',location.href);return u.origin+u.pathname+'?s=kn&r='+encodeURIComponent(o.id)+'&t='+encodeURIComponent(o.tok||'')};
-const knOrderUrl=()=>{const u=new URL('kn-order.html',location.href);return u.origin+u.pathname};
+const knOrderUrl=()=>{const u=new URL('kn-order.html',location.href),c=cashCur('kn');return u.origin+u.pathname+(c?'?k='+encodeURIComponent(c.qk||c.id):'')};
 const knToday=()=>(S.knSales||[]).filter(o=>+o.at>=sod());
 const knSold=mid=>knToday().filter(knLive).reduce((a,o)=>a+(o.items||[]).filter(l=>l.menuId===mid).reduce((b,l)=>b+(+l.qty||0),0),0);
 const knWaiting=()=>knToday().filter(o=>o.status!=='void'&&['wait','pay'].includes(o.q||'wait'));
@@ -3441,7 +3441,7 @@ function sheetKnRc(){const o=(S.knSales||[]).find(x=>x.id===S.sheet.id);if(!o||!
   $('#panel').innerHTML=head('🧾 ใบเสร็จ '+esc(o.no),'ให้ลูกค้าสแกนเพื่อรับใบเสร็จ (มีตราประทับชำระแล้ว)')+`<div class="sh-body"><div class="knp-qr">${qrSvg(u)}<small>${baht(o.total)} · ${hm(o.at)}${o.name?' · คุณ'+esc(o.name):''}</small></div>
    <div class="inrow" style="gap:8px;flex-wrap:wrap;justify-content:center"><a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener">เปิดใบเสร็จ</a><button class="btn sm" data-act="knCopy" data-v="${esc(u)}" type="button">📋 คัดลอกลิงก์</button></div></div>
    <div class="sh-foot"><button class="btn wide" data-act="close" type="button">ปิด</button></div>`}
-function sheetKnQr(){const u=knOrderUrl();$('#panel').innerHTML=head('📱 QR ให้ลูกค้าสั่งเอง','ลูกค้าสแกน → ใส่ชื่อ → เลือกเมนู → จ่ายเงิน · ใช้ได้เฉพาะตอนเปิดร้าน + เปิดระบบคิว')+`<div class="sh-body"><div class="knp-qr knqr-big">${qrSvg(u)}<b>สแกนสั่งอาหาร · ${esc(knCfg().shopName||'ล้านฅนเมียง')}</b></div>
+function sheetKnQr(){const u=knOrderUrl();if(!cashCur('kn')){$('#panel').innerHTML=head('📱 QR ให้ลูกค้าสั่งเอง','')+`<div class="sh-body"><div class="empty"><b>ยังไม่ได้เปิดร้าน</b>QR สั่งเองจะสร้างใหม่ทุกครั้งที่เปิดร้าน · กด "เปิดร้าน" ใส่เงินทอนก่อน</div></div><div class="sh-foot"><button class="btn wide" data-act="close" type="button">ปิด</button></div>`;return}$('#panel').innerHTML=head('📱 QR ให้ลูกค้าสั่งเอง','ลูกค้าสแกน → ใส่ชื่อ → เลือกเมนู → จ่ายเงิน · ใช้ได้เฉพาะตอนเปิดร้าน + เปิดระบบคิว')+`<div class="sh-body"><p class="help" style="text-align:center;margin:0 0 8px">🔄 QR นี้ใช้ได้เฉพาะรอบเปิดร้านนี้ · ปิดร้านแล้วเปิดใหม่ QR จะเปลี่ยน (QR เก่าสั่งไม่ได้)</p><div class="knp-qr knqr-big">${qrSvg(u)}<b>สแกนสั่งอาหาร · ${esc(knCfg().shopName||'ล้านฅนเมียง')}</b></div>
    <div class="inrow" style="gap:8px;flex-wrap:wrap;justify-content:center"><a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener">ลองเปิดหน้าลูกค้า</a><button class="btn sm" data-act="knCopy" data-v="${esc(u)}" type="button">📋 คัดลอกลิงก์</button><button class="btn sm" data-act="knQrPrint" type="button">🖨️ พิมพ์ QR</button></div></div>
    <div class="sh-foot"><button class="btn wide" data-act="close" type="button">ปิด</button></div>`}
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='knCName')S.knName=e.target.value});
@@ -3502,7 +3502,7 @@ Object.assign(ACT,{
   knRc:async d=>{const o=(S.knSales||[]).find(x=>x.id===d.id);if(!o)return;if(!o.tok){const t=knTok();o.tok=t;await write('kn_sales/'+o.id,r=>r.update({tok:t}))}openSheet({type:'knRc',id:o.id})},
   knQr:()=>openSheet({type:'knQr'}),
   knCopy:d=>{try{navigator.clipboard.writeText(d.v);toast('คัดลอกลิงก์แล้ว')}catch(e){prompt('คัดลอกลิงก์',d.v)}},
-  knQrPrint:()=>{const w=window.open('','_blank');if(!w)return;w.document.write('<html><head><title>QR สั่งอาหาร</title><style>body{font-family:sans-serif;text-align:center;padding:30px}svg{width:340px;height:340px}h1{margin:10px 0}</style></head><body><h1>'+esc(knCfg().shopName||'ล้านฅนเมียง')+'</h1><p style="font-size:22px">📱 สแกนสั่งอาหาร · ใส่ชื่อ · จ่ายเงิน</p>'+qrSvg(knOrderUrl())+'<p>รอเรียกคิวที่หน้าร้าน</p><script>setTimeout(()=>print(),300)<\/script></body></html>');w.document.close()},
+  knQrPrint:()=>{const w=window.open('','_blank');if(!w)return;w.document.write('<html><head><title>QR สั่งอาหาร</title><style>body{font-family:sans-serif;text-align:center;padding:30px}svg{width:340px;height:340px}h1{margin:10px 0}</style></head><body><h1>'+esc(knCfg().shopName||'ล้านฅนเมียง')+'</h1><p style="font-size:22px">📱 สแกนสั่งอาหาร · ใส่ชื่อ · จ่ายเงิน</p>'+qrSvg(knOrderUrl())+'<p>รอเรียกคิวที่หน้าร้าน</p><p style="color:#888;font-size:13px">QR ประจำวันที่ '+dshort(Date.now())+' · เปลี่ยนใหม่ทุกครั้งที่เปิดร้าน</p><script>setTimeout(()=>print(),300)<\/script></body></html>');w.document.close()},
   knR:d=>{S.knR=d.v;render()},
   knSet:()=>{if(S.role!=='owner')return deny();openSheet({type:'knSet'})},
   knSetSave:async()=>{const c={...(S.kn||{}),shopName:val('knSN')||'ล้านฅนเมียง',promptpay:val('knPP').replace(/\D/g,''),qPre:val('knPre').trim().slice(0,3),queueOn:$('#knQOn').checked,floatDef:+val('knFl')||0};const ok=await write('config/kn',r=>r.set(c));if(ok){S.kn=c;closeSheet();render();toast('บันทึกแล้ว')}}

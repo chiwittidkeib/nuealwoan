@@ -96,7 +96,7 @@ const hdr=()=>`<div class="hd"><img src="images/logo-kn.png?v=20261022" alt=""><
 function render(){const a=$('#app');
   if(S.view==='status')return renderStatus();
   if(!S.shop)return;
-  if(!S.shop.open){a.innerHTML=hdr()+`<div class="card closed"><b>ตอนนี้ยังไม่เปิดรับสั่งออนไลน์</b>สั่งที่หน้าร้านได้เลยเจ้า</div>${S.ord?'<button class="btn" id="goSt">ดูออร์เดอร์ล่าสุดของฉัน</button>':''}`;const g=$('#goSt');if(g)g.onclick=()=>{S.view='status';poll()};return}
+  if(!S.shop.open){a.innerHTML=hdr()+(S.shop.expired?`<div class="card closed"><b>QR นี้หมดอายุแล้ว</b>กรุณาสแกน QR ล่าสุดที่หน้าร้านเจ้า</div>`:`<div class="card closed"><b>ตอนนี้ยังไม่เปิดรับสั่งออนไลน์</b>สั่งที่หน้าร้านได้เลยเจ้า</div>`)+`${S.ord?'<button class="btn" id="goSt">ดูออร์เดอร์ล่าสุดของฉัน</button>':''}`;const g=$('#goSt');if(g)g.onclick=()=>{S.view='status';poll()};return}
   if(S.view==='cart')return renderCart();
   const M=S.shop.menu||[],cats=[...(S.shop.cats||[]).filter(c=>M.some(m=>m.cat===c)),...[...new Set(M.map(m=>m.cat||'อื่นๆ'))].filter(c=>!(S.shop.cats||[]).includes(c))];
   const L=M.filter(m=>S.cat==='all'||(m.cat||'อื่นๆ')===S.cat),SP=M.filter(m=>m.special),inC=id=>S.cart.filter(l=>l.menuId===id).reduce((x,l)=>x+l.qty,0);
@@ -137,8 +137,8 @@ function renderCart(){const a=$('#app'),pp=(S.shop.promptpay||'').replace(/\D/g,
   a.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.pay=b.dataset.p;render()});
   $('#nm').oninput=e=>{S.name=e.target.value;LS.set('kn_name',S.name)};$('#back').onclick=()=>{S.view='menu';render()};$('#go').onclick=submit}
 async function submit(){if(!S.name.trim()){toast('ใส่ชื่อก่อนนะเจ้า (ไว้เรียกคิว)');const n=$('#nm');if(n)n.focus();return}
-  S.busy=true;render();const {data,error}=await sb.rpc('kn_order_add',{p_items:S.cart.map(l=>({menuId:l.menuId,qty:l.qty,opts:l.opts,note:l.note})),p_name:S.name.trim(),p_pay:S.pay});S.busy=false;
-  if(error){const m=String(error.message||'');toast(/shop_closed/.test(m)?'ร้านปิดรับสั่งออนไลน์แล้ว':/menu_gone/.test(m)?'มีเมนูที่หมดแล้ว ลองเลือกใหม่':/busy/.test(m)?'คนสั่งเยอะ ลองใหม่อีกครั้ง':'สั่งไม่สำเร็จ ลองใหม่');await load();return render()}
+  S.busy=true;render();const {data,error}=await sb.rpc('kn_order_add',{p_items:S.cart.map(l=>({menuId:l.menuId,qty:l.qty,opts:l.opts,note:l.note})),p_name:S.name.trim(),p_pay:S.pay,p_k:QK||null});S.busy=false;
+  if(error){const m=String(error.message||'');if(/qr_expired/.test(m)){S.shop.open=false;S.shop.expired=true;render();return}toast(/shop_closed/.test(m)?'ร้านปิดรับสั่งออนไลน์แล้ว':/menu_gone/.test(m)?'มีเมนูที่หมดแล้ว ลองเลือกใหม่':/busy/.test(m)?'คนสั่งเยอะ ลองใหม่อีกครั้ง':'สั่งไม่สำเร็จ ลองใหม่');await load();return render()}
   S.ord={id:data.id,tok:data.tok};LS.set('kn_ord',S.ord);S.cart=[];S.view='status';S.st=null;poll()}
 let pollT=0;
 async function poll(){clearTimeout(pollT);if(!S.ord){S.view='menu';return render()}
@@ -158,7 +158,8 @@ function renderStatus(){const a=$('#app'),o=S.st;if(!o){a.innerHTML=hdr()+'<div 
    <button class="btn" id="newO">🍽️ สั่งเพิ่ม / ออร์เดอร์ใหม่</button>`;
   const f=$('#slip');if(f)f.onchange=async()=>{const file=f.files[0];if(!file)return;toast('กำลังส่งสลิป…');try{const img=await shrink(file);const {error}=await sb.rpc('kn_order_slip',{p_id:S.ord.id,p_tok:S.ord.tok,p_img:img});if(error)throw error;toast('ส่งสลิปแล้ว');poll()}catch(e){toast('ส่งสลิปไม่สำเร็จ ลองใหม่')}};
   $('#newO').onclick=async()=>{S.view='menu';clearTimeout(pollT);await load();render()}}
-async function load(){const {data,error}=await sb.rpc('public_kn');if(error||!data){$('#app').innerHTML=hdr()+'<div class="card closed"><b>เชื่อมต่อไม่ได้</b>ลองใหม่อีกครั้ง</div>';return false}S.shop=data;return true}
+const QK=(new URLSearchParams(location.search).get('k')||'').slice(0,64);
+async function load(){const {data,error}=await sb.rpc('public_kn',{p_k:QK||null});if(error||!data){const nf=error&&/could not find|does not exist|PGRST202|42883/i.test((error.message||'')+' '+(error.code||''));$('#app').innerHTML=hdr()+(nf?'<div class="card closed"><b>ระบบสั่งเองยังไม่พร้อม</b>ร้านยังไม่ได้ติดตั้งฐานข้อมูลส่วนนี้ (รัน nuealwoan-update.sql)</div>':'<div class="card closed"><b>เชื่อมต่อไม่ได้</b>ลองใหม่อีกครั้ง<br><button type="button" onclick="location.reload()" style="margin-top:10px;padding:8px 18px;border-radius:999px;border:0;background:#6b3e1f;color:#fff;font:inherit">🔄 ลองใหม่</button></div>');return false}S.shop=data;return true}
 (async()=>{const c=window.APP_CONFIG||{};if(!window.supabase||!c.SUPABASE_URL){$('#app').innerHTML='<div class="card closed"><b>ระบบยังไม่พร้อม</b></div>';return}
   sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_KEY,{auth:{persistSession:false}});
   if(!await load())return;if(S.ord&&new URLSearchParams(location.search).get('v')!=='menu'){S.view='status';poll()}else render()})();
