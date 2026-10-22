@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6b3e1f">
+<title>ล้านฅนเมียง · สั่งอาหาร</title>
+<link rel="icon" href="images/logo-kn-s.png?v=20261022">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#fbf6ee;--card:#fff;--sunk:#f4ece0;--line:#e8d9c2;--fg:#2e1a0e;--muted:#7d5a3f;--acc:#c8792a;--acc2:#6b3e1f;--ok:#15803d;--bad:#b91c1c;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:'IBM Plex Sans Thai',system-ui,sans-serif;color:var(--fg);background:#2e1a0e;font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(46,26,14,.15),rgba(46,26,14,.55)),url(images/bg-kn-m.jpg?v=20261022c) center/cover no-repeat,#2e1a0e}
+@media (min-width:760px){body::before{background:linear-gradient(180deg,rgba(46,26,14,.2),rgba(46,26,14,.6)),url(images/bg-kn.jpg?v=20261022b) center/cover no-repeat,#2e1a0e}}
+button,input{font:inherit;color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:14px 14px 120px}
+.hd{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:20px;background:rgba(255,250,242,.94);box-shadow:0 10px 26px rgba(0,0,0,.25);margin-bottom:12px}
+.hd img{width:56px;height:56px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px #c8792a}
+.hd h1{margin:0;font-family:Kanit,sans-serif;font-weight:800;font-size:24px;color:#6b3e1f;line-height:1.15}
+.hd small{color:var(--muted)}
+.card{background:rgba(255,253,249,.97);border-radius:18px;padding:14px;box-shadow:0 8px 22px rgba(0,0,0,.18);margin-bottom:12px}
+.card h2{margin:0 0 8px;font-size:17px}
+.name{display:flex;align-items:center;gap:8px}.name span{font-weight:700;color:#6b3e1f;white-space:nowrap}
+.name input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:12px;background:#fff;padding:8px 12px;font-size:18px;font-weight:700;outline:none}.name input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(200,121,42,.18)}
+.tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px;margin:4px 0 10px}.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:8px 14px;border-radius:999px;border:1.5px solid #d9b994;background:rgba(255,250,242,.96);font-weight:700;cursor:pointer;white-space:nowrap}
+.tab.on{background:linear-gradient(135deg,#c8792a,#6b3e1f);border-color:#6b3e1f;color:#fff}
+.sp{border:2px solid #e9a54b;background:linear-gradient(135deg,#fff4d6,#fde0ab)}
+.sp .badge{display:inline-block;padding:3px 12px;border-radius:99px;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;font-weight:800;font-size:13px;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.mi{position:relative;display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:16px;border:1px solid var(--line);background:#fff;cursor:pointer;text-align:left;box-shadow:0 4px 12px rgba(62,36,16,.08)}
+.mi:active{transform:scale(.97)}.mi.in{border:2px solid var(--acc2)}
+.mi .im{aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#e9a54b,#6b3e1f);display:grid;place-items:center;color:#fff;font-size:30px;font-weight:800}
+.mi .im img{width:100%;height:100%;object-fit:cover}
+.mi b{font-size:14.5px}.mi em{font-style:normal;font-weight:800;color:#a0561c}
+.mi i.n{position:absolute;top:4px;right:4px;min-width:26px;height:26px;border-radius:13px;background:#e9a54b;color:#2e1a0e;font-style:normal;font-weight:800;display:grid;place-items:center}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.row .t{flex:1;min-width:0}.row small{display:block;color:var(--muted);font-size:12.5px}
+.st{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px}.st button{width:32px;height:32px;border:0;background:none;font-size:18px;cursor:pointer;color:var(--acc2)}.st span{min-width:22px;text-align:center;font-weight:700}
+.bar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:536px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:14px 18px;border:0;border-radius:18px;color:#fff;background:linear-gradient(135deg,#c8792a,#6b3e1f);box-shadow:0 12px 28px rgba(0,0,0,.35);font-weight:700;cursor:pointer}
+.bar b{font-size:20px}.bar em{margin-left:auto;font-style:normal}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border-radius:16px;border:1.5px solid var(--line);background:#fff;font-weight:700;font-size:16px;cursor:pointer}
+.btn.pri{border:0;color:#fff;background:linear-gradient(135deg,#e9a54b,#c8792a 45%,#6b3e1f);box-shadow:0 8px 20px rgba(107,62,31,.35)}
+.btn:disabled{opacity:.55}
+.pays{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pay{padding:14px 10px;border-radius:16px;border:2px solid var(--line);background:#fff;font-weight:700;cursor:pointer;text-align:center}
+.pay small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.pay.on{border-color:var(--acc);background:#fff7ea;box-shadow:0 0 0 4px rgba(200,121,42,.18)}
+.tot{display:flex;justify-content:space-between;align-items:baseline;margin:10px 0}.tot b{font-size:28px;color:#6b3e1f}
+.q{text-align:center;padding:18px;border-radius:20px;color:#fff;background:linear-gradient(135deg,#e9a54b,#c8792a 45%,#6b3e1f)}
+.q small{display:block;opacity:.9}.q b{display:block;font-family:Kanit,sans-serif;font-size:64px;line-height:1.05;letter-spacing:2px}
+.stp{display:flex;justify-content:space-between;gap:4px;margin:12px 0}.stp div{flex:1;text-align:center;font-size:12px;color:var(--muted)}.stp i{display:block;width:28px;height:28px;margin:0 auto 4px;border-radius:50%;background:var(--sunk);border:2px solid var(--line);font-style:normal;line-height:24px;font-weight:800}
+.stp .on{color:var(--fg);font-weight:700}.stp .on i{background:#22c55e;border-color:#15803d;color:#fff}
+.qr{display:flex;flex-direction:column;align-items:center;gap:6px}.qr svg{width:230px;height:230px;background:#fff;border-radius:14px;padding:6px;border:1px solid var(--line)}
+.msg{padding:12px 14px;border-radius:14px;font-weight:600}.msg.ok{background:#ecfdf5;color:#065f46}.msg.warn{background:#fffbeb;color:#92400e}.msg.bad{background:#fef2f2;color:#991b1b}
+.closed{text-align:center;padding:30px 16px}.closed b{display:block;font-size:20px;margin-bottom:6px}
+.pop{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
+.pop .in{width:100%;max-width:560px;max-height:88vh;overflow:auto;background:#fffdf9;border-radius:22px 22px 0 0;padding:16px}
+.og{margin:10px 0}.og h3{margin:0 0 6px;font-size:15px}.og h3 small{font-weight:500;color:var(--muted)}
+.oc{display:flex;justify-content:space-between;width:100%;padding:10px 12px;margin-bottom:6px;border-radius:12px;border:1.5px solid var(--line);background:#fff;cursor:pointer;text-align:left}
+.oc.on{border-color:var(--acc);background:#fff7ea;font-weight:700}
+.og.bad h3{color:var(--bad)}
+.note{width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);font-size:15px}
+.toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:60;padding:10px 16px;border-radius:12px;background:#2e1a0e;color:#fff;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="card closed"><b>กำลังโหลด…</b></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="js/config.js"></script>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=n=>(+n||0).toLocaleString('th-TH',{maximumFractionDigits:2});
+const baht=n=>'฿'+num(n);
+function crc16(s){let c=0xFFFF;for(let i=0;i<s.length;i++){c^=s.charCodeAt(i)<<8;for(let j=0;j<8;j++)c=(c&0x8000)?((c<<1)^0x1021):(c<<1);c&=0xFFFF}return c.toString(16).toUpperCase().padStart(4,'0')}
+function ppPayload(id,amount){let t=String(id||'').replace(/\D/g,''),tag;if(t.length===15)tag='03';else if(t.length>=13){tag='02';t=t.slice(0,13)}else{tag='01';t=('0000000000000'+t.replace(/^0/,'66')).slice(-13)}
+  const f=(k,v)=>k+String(v.length).padStart(2,'0')+v;let p=f('00','01')+f('01',amount>0?'12':'11')+f('29',f('00','A000000677010111')+f(tag,t))+f('58','TH')+f('53','764');if(amount>0)p+=f('54',amount.toFixed(2));p+='6304';return p+crc16(p)}
+function qrSvg(t){try{const q=qrcode(0,'M');q.addData(t);q.make();return q.createSvgTag({cellSize:6,margin:2,scalable:true})}catch(e){return ''}}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+function shrink(file){return new Promise((ok,no)=>{const fr=new FileReader();fr.onerror=no;fr.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{
+  let w=im.width,h=im.height,mx=1400;if(Math.max(w,h)>mx){const r=mx/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r)}
+  const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);let q=.8,u=c.toDataURL('image/jpeg',q);while(u.length>600000&&q>.35){q-=.1;u=c.toDataURL('image/jpeg',q)}ok(u)};im.src=fr.result};fr.readAsDataURL(file)})}
+const LS={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const S={shop:null,cart:[],cat:'all',name:LS.get('kn_name',''),pay:'qr',view:'menu',ord:LS.get('kn_ord',null),st:null,busy:false};
+let sb=null;
+const oKey=l=>l.menuId+'|'+(l.opts||[]).join(',')+'|'+(l.note||'');
+const cTot=()=>S.cart.reduce((a,l)=>a+l.unit*l.qty,0),cN=()=>S.cart.reduce((a,l)=>a+l.qty,0);
+const hdr=()=>`<div class="hd"><img src="images/logo-kn.png?v=20261022" alt=""><div><h1>${esc((S.shop&&S.shop.shopName)||'ล้านฅนเมียง')}</h1><small>อาหารเหนือ · สั่งเองผ่านมือถือ</small></div></div>`;
+function render(){const a=$('#app');
+  if(S.view==='status')return renderStatus();
+  if(!S.shop)return;
+  if(!S.shop.open){a.innerHTML=hdr()+`<div class="card closed"><b>ตอนนี้ยังไม่เปิดรับสั่งออนไลน์</b>สั่งที่หน้าร้านได้เลยเจ้า</div>${S.ord?'<button class="btn" id="goSt">ดูออร์เดอร์ล่าสุดของฉัน</button>':''}`;const g=$('#goSt');if(g)g.onclick=()=>{S.view='status';poll()};return}
+  if(S.view==='cart')return renderCart();
+  const M=S.shop.menu||[],cats=[...(S.shop.cats||[]).filter(c=>M.some(m=>m.cat===c)),...[...new Set(M.map(m=>m.cat||'อื่นๆ'))].filter(c=>!(S.shop.cats||[]).includes(c))];
+  const L=M.filter(m=>S.cat==='all'||(m.cat||'อื่นๆ')===S.cat),SP=M.filter(m=>m.special),inC=id=>S.cart.filter(l=>l.menuId===id).reduce((x,l)=>x+l.qty,0);
+  const tile=m=>`<button class="mi${inC(m.id)?' in':''}" data-m="${esc(m.id)}"><span class="im">${m.img?`<img src="${esc(m.img)}" alt="" loading="lazy">`:esc(String(m.name).slice(0,1))}</span><b>${esc(m.name)}</b><em>${baht(m.price)}</em>${inC(m.id)?`<i class="n">${inC(m.id)}</i>`:''}</button>`;
+  a.innerHTML=hdr()+`<div class="card"><label class="name"><span>ชื่อลูกค้า คุณ</span><input id="nm" maxlength="40" value="${esc(S.name)}" placeholder="ชื่อเล่น (ไว้เรียกคิว)" autocomplete="given-name"></label></div>
+   ${SP.length&&S.cat==='all'?`<div class="card sp"><span class="badge">⭐ เมนูพิเศษประจำวัน</span><div class="grid">${SP.map(tile).join('')}</div></div>`:''}
+   ${cats.length>1?`<div class="tabs"><button class="tab${S.cat==='all'?' on':''}" data-c="all">🍽️ ทั้งหมด</button>${cats.map(c=>`<button class="tab${S.cat===c?' on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div>`:''}
+   <div class="card">${L.length?`<div class="grid">${L.map(tile).join('')}</div>`:'<p style="margin:0">ยังไม่มีเมนู</p>'}</div>
+   ${S.ord?'<button class="btn" id="goSt" style="margin-bottom:12px">📋 ดูออร์เดอร์ล่าสุดของฉัน</button>':''}
+   ${cN()?`<button class="bar" id="goCart"><span>🧺 ${cN()} รายการ</span><b>${baht(cTot())}</b><em>ตะกร้า ›</em></button>`:''}`;
+  $('#nm').oninput=e=>{S.name=e.target.value;LS.set('kn_name',S.name)};
+  a.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{S.cat=b.dataset.c;render()});
+  a.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>pick(M.find(m=>m.id===b.dataset.m)));
+  const gc=$('#goCart');if(gc)gc.onclick=()=>{S.view='cart';render();scrollTo(0,0)};const gs=$('#goSt');if(gs)gs.onclick=()=>{S.view='status';poll()}}
+function add(m,opts,note,qty){const G=(m.options||[]),sel=[];G.forEach(g=>(g.choices||[]).forEach(c=>{if(opts.includes(c.id))sel.push({cid:c.id,n:c.name,p:+c.price||0})}));
+  const l={menuId:m.id,name:m.name,opts:sel.map(o=>o.cid),optN:sel.map(o=>o.n).join(', '),note,qty,unit:(+m.price||0)+sel.reduce((x,o)=>x+o.p,0)},k=oKey(l),ex=S.cart.find(x=>oKey(x)===k);
+  if(ex)ex.qty+=qty;else S.cart.push(l);toast('ใส่ตะกร้า '+m.name);render()}
+function pick(m){if(!m)return;const G=(m.options||[]).filter(g=>g&&g.name&&(g.choices||[]).length);if(!G.length)return add(m,[],'',1);
+  const P={};G.forEach(g=>P[g.id]=[]);let qty=1,warn=false;const el=document.createElement('div');el.className='pop';document.body.appendChild(el);
+  const miss=()=>G.filter(g=>g.req&&!P[g.id].length);
+  const draw=()=>{const ms=miss();el.innerHTML=`<div class="in"><h2 style="margin:0 0 4px">${esc(m.name)}</h2><b style="color:#a0561c">${baht(m.price)}</b>
+    ${G.map(g=>`<div class="og${warn&&ms.includes(g)?' bad':''}"><h3>${esc(g.name)} <small>${g.req?'(ต้องเลือก)':+g.max===1?'(เลือกได้ 1)':'(เลือกได้หลายอย่าง)'}</small></h3>${g.choices.map(c=>`<button class="oc${P[g.id].includes(c.id)?' on':''}" data-g="${esc(g.id)}" data-c="${esc(c.id)}"><span>${esc(c.name)}</span><span>${+c.price?'+'+num(c.price):''}</span></button>`).join('')}</div>`).join('')}
+    <input class="note" id="on" maxlength="80" placeholder="บอกร้าน เช่น ไม่เผ็ด"><div style="display:flex;gap:10px;align-items:center;margin-top:12px"><div class="st"><button data-q="-1">−</button><span>${qty}</span><button data-q="1">+</button></div><button class="btn pri" data-add="1">ใส่ตะกร้า</button></div>
+    <button class="btn" data-x="1" style="margin-top:8px">ยกเลิก</button></div>`};draw();
+  el.onclick=e=>{if(e.target===el)return el.remove();const b=e.target.closest('button');if(!b)return;const note=(el.querySelector('#on')||{}).value||'';
+    if(b.dataset.x)return el.remove();
+    if(b.dataset.g){const g=G.find(x=>x.id===b.dataset.g),a=P[g.id],c=b.dataset.c;if(+g.max===1)P[g.id]=a.includes(c)&&!g.req?[]:[c];else P[g.id]=a.includes(c)?a.filter(x=>x!==c):[...a,c];draw();el.querySelector('#on').value=note;return}
+    if(b.dataset.q){qty=Math.max(1,Math.min(20,qty+ +b.dataset.q));draw();el.querySelector('#on').value=note;return}
+    if(b.dataset.add){if(miss().length){warn=true;draw();el.querySelector('#on').value=note;return}el.remove();add(m,Object.values(P).flat(),note.trim(),qty)}}}
+function renderCart(){const a=$('#app'),pp=(S.shop.promptpay||'').replace(/\D/g,'');if(!pp&&S.pay==='qr')S.pay='cash';
+  a.innerHTML=hdr()+`<div class="card"><h2>🧺 ตะกร้าของคุณ${S.name?esc(S.name):''}</h2>${S.cart.map((l,i)=>`<div class="row"><div class="t"><b>${esc(l.name)}</b>${l.optN?`<small>${esc(l.optN)}</small>`:''}${l.note?`<small>📝 ${esc(l.note)}</small>`:''}</div><div class="st"><button data-i="${i}" data-d="-1">−</button><span>${l.qty}</span><button data-i="${i}" data-d="1">+</button></div><b>${baht(l.unit*l.qty)}</b></div>`).join('')||'<p>ตะกร้าว่าง</p>'}
+   <div class="tot"><span>รวม ${cN()} รายการ</span><b>${baht(cTot())}</b></div></div>
+   <div class="card"><label class="name"><span>ชื่อลูกค้า คุณ</span><input id="nm" maxlength="40" value="${esc(S.name)}" placeholder="ชื่อเล่น (ไว้เรียกคิว)"></label></div>
+   <div class="card"><h2>ชำระเงิน</h2><div class="pays">${pp?`<button class="pay${S.pay==='qr'?' on':''}" data-p="qr">📱 โอน / สแกนจ่าย<small>แนบสลิปในขั้นถัดไป</small></button>`:''}<button class="pay${S.pay==='cash'?' on':''}" data-p="cash">💵 จ่ายเงินสด<small>ที่เคาน์เตอร์หน้าร้าน</small></button></div></div>
+   <button class="btn pri" id="go" ${!S.cart.length||S.busy?'disabled':''}>✅ ยืนยันสั่ง ${baht(cTot())}</button>
+   <button class="btn" id="back" style="margin-top:10px">← เลือกเมนูเพิ่ม</button>`;
+  a.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const l=S.cart[+b.dataset.i];l.qty+= +b.dataset.d;if(l.qty<=0)S.cart.splice(+b.dataset.i,1);render()});
+  a.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.pay=b.dataset.p;render()});
+  $('#nm').oninput=e=>{S.name=e.target.value;LS.set('kn_name',S.name)};$('#back').onclick=()=>{S.view='menu';render()};$('#go').onclick=submit}
+async function submit(){if(!S.name.trim()){toast('ใส่ชื่อก่อนนะเจ้า (ไว้เรียกคิว)');const n=$('#nm');if(n)n.focus();return}
+  S.busy=true;render();const {data,error}=await sb.rpc('kn_order_add',{p_items:S.cart.map(l=>({menuId:l.menuId,qty:l.qty,opts:l.opts,note:l.note})),p_name:S.name.trim(),p_pay:S.pay});S.busy=false;
+  if(error){const m=String(error.message||'');toast(/shop_closed/.test(m)?'ร้านปิดรับสั่งออนไลน์แล้ว':/menu_gone/.test(m)?'มีเมนูที่หมดแล้ว ลองเลือกใหม่':/busy/.test(m)?'คนสั่งเยอะ ลองใหม่อีกครั้ง':'สั่งไม่สำเร็จ ลองใหม่');await load();return render()}
+  S.ord={id:data.id,tok:data.tok};LS.set('kn_ord',S.ord);S.cart=[];S.view='status';S.st=null;poll()}
+let pollT=0;
+async function poll(){clearTimeout(pollT);if(!S.ord){S.view='menu';return render()}
+  const {data,error}=await sb.rpc('kn_order_get',{p_id:S.ord.id,p_tok:S.ord.tok});if(error){S.ord=null;LS.set('kn_ord',null);S.view='menu';return render()}
+  if(data.q==='done'&&Date.now()-(+data.at||0)>3*3600e3&&S.view==='status'&&!S.keep){S.ord=null;LS.set('kn_ord',null);S.view='menu';return render()}S.keep=true;
+  S.st=data;renderStatus();if(data.status!=='void'&&data.q!=='done')pollT=setTimeout(poll,5000)}
+function renderStatus(){const a=$('#app'),o=S.st;if(!o){a.innerHTML=hdr()+'<div class="card closed"><b>กำลังโหลด…</b></div>';return}
+  const pp=((S.shop&&S.shop.promptpay)||'').replace(/\D/g,''),paid=o.status==='paid',vd=o.status==='void',stp=[['pay','ชำระเงิน'],['wait','กำลังทำ'],['ready','พร้อมรับ'],['done','รับแล้ว']],ix=stp.findIndex(x=>x[0]===o.q);
+  const rc=paid?(()=>{const u=new URL('receipt.html',location.href);return u.origin+u.pathname+'?s=kn&r='+encodeURIComponent(S.ord.id)+'&t='+encodeURIComponent(S.ord.tok)})():'';
+  a.innerHTML=hdr()+`<div class="card"><div class="q"><small>คิวของคุณ${esc(o.name||'')}</small><b>${esc(o.no)}</b><small>ยอด ${baht(o.total)} · ${o.pay==='qr'?'โอน/สแกนจ่าย':'เงินสด'}</small></div>
+   ${vd?'<div class="msg bad" style="margin-top:10px">ออร์เดอร์นี้ถูกยกเลิก ติดต่อพนักงานหน้าร้าน</div>':`<div class="stp">${stp.map((x,i)=>`<div class="${i<=ix?'on':''}"><i>${i<ix?'✓':i+1}</i>${x[1]}</div>`).join('')}</div>`}
+   ${!vd&&o.q==='ready'?'<div class="msg ok">🔔 อาหารพร้อมแล้ว! มารับที่เคาน์เตอร์ได้เลยเจ้า</div>':''}
+   ${!vd&&!paid&&o.pay==='cash'?'<div class="msg warn">💵 ไปจ่ายเงินสดที่เคาน์เตอร์ บอกเลขคิวกับพนักงาน แล้วร้านจะเริ่มทำให้</div>':''}
+   ${!vd&&!paid&&o.pay==='qr'?(o.slip?`<div class="msg warn">⏳ ส่งสลิปแล้ว รอร้านตรวจสอบ…</div>`:`${o.slipBad?`<div class="msg bad">สลิปไม่ผ่าน: ${esc(o.slipBad)} · แนบใหม่อีกครั้ง</div>`:''}<div class="qr">${pp?qrSvg(ppPayload(pp,+o.total)):''}<small>สแกนจ่าย ${baht(o.total)} แล้วแนบสลิป</small></div><label class="btn pri" style="margin-top:10px">📎 แนบสลิป<input type="file" accept="image/*" id="slip" hidden></label>`):''}
+   ${paid?`<a class="btn pri" style="margin-top:10px;text-decoration:none" href="${esc(rc)}">🧾 ดูใบเสร็จ</a>`:''}</div>
+   <div class="card"><h2>รายการ</h2>${(o.items||[]).map(l=>`<div class="row"><div class="t"><b>${num(l.qty)} × ${esc(l.name)}</b>${(l.opts||[]).length?`<small>${esc(l.opts.map(x=>x.n).join(', '))}</small>`:''}</div><b>${baht(l.price*l.qty)}</b></div>`).join('')}</div>
+   <button class="btn" id="newO">🍽️ สั่งเพิ่ม / ออร์เดอร์ใหม่</button>`;
+  const f=$('#slip');if(f)f.onchange=async()=>{const file=f.files[0];if(!file)return;toast('กำลังส่งสลิป…');try{const img=await shrink(file);const {error}=await sb.rpc('kn_order_slip',{p_id:S.ord.id,p_tok:S.ord.tok,p_img:img});if(error)throw error;toast('ส่งสลิปแล้ว');poll()}catch(e){toast('ส่งสลิปไม่สำเร็จ ลองใหม่')}};
+  $('#newO').onclick=async()=>{S.view='menu';clearTimeout(pollT);await load();render()}}
+async function load(){const {data,error}=await sb.rpc('public_kn');if(error||!data){$('#app').innerHTML=hdr()+'<div class="card closed"><b>เชื่อมต่อไม่ได้</b>ลองใหม่อีกครั้ง</div>';return false}S.shop=data;return true}
+(async()=>{const c=window.APP_CONFIG||{};if(!window.supabase||!c.SUPABASE_URL){$('#app').innerHTML='<div class="card closed"><b>ระบบยังไม่พร้อม</b></div>';return}
+  sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_KEY,{auth:{persistSession:false}});
+  if(!await load())return;if(S.ord&&new URLSearchParams(location.search).get('v')!=='menu'){S.view='status';poll()}else render()})();
+</script>
+</body>
+</html>

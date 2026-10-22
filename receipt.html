@@ -85,6 +85,7 @@ tr.prow td.i{color:#c2410c;font-weight:600}
 @media print{body{background:#fff}.bar{display:none}.wrap{padding:0;max-width:none}.rc{box-shadow:none;border-radius:0}@page{margin:10mm}}
 body.theme-po{--brown:#9e1020;--brown2:#b5121b;--gold:#d9a441;--red:#c8102e;--line:#f0dcc4}
 body.theme-po .en{color:#b5121b}
+body.theme-kn{--brown:#6b3e1f;--brown2:#8a5a2b;--gold:#c8792a;--red:#a0561c;--line:#ead7bd}body.theme-kn .en{color:#8a5a2b}body.theme-kn .logo{width:150px;border-radius:50%}
 .logo.po{width:190px;max-width:58%}
 .meta b{min-width:48px}
 .join{margin-top:10px;display:flex;gap:12px;align-items:center;border:1.5px dashed var(--gold);border-radius:12px;padding:10px;background:#fffaf2}
@@ -171,7 +172,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=n=>(Math.round((+n||0)*100)/100).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 const safeUrl=u=>/^https?:\/\//i.test(String(u||''))?String(u):'';
-const P=new URLSearchParams(location.search),SHOP=P.get('s')==='po'?'po':'nl',RID=(P.get('r')||'').slice(0,80),TOK=(P.get('t')||'').replace(/[^0-9a-f]/gi,'').slice(0,32);
+const P=new URLSearchParams(location.search),SHOP=P.get('s')==='po'?'po':P.get('s')==='kn'?'kn':'nl',RID=(P.get('r')||'').slice(0,80),TOK=(P.get('t')||'').replace(/[^0-9a-f]/gi,'').slice(0,32);
 const EMBED=P.get('embed')==='1';
 let JOIN_PER=0;const joinUrl=()=>{const u=new URL('member.html',location.href);return u.origin+u.pathname+(JOIN_PER?'?per='+JOIN_PER:'')};
 function joinQr(){try{const q=qrcode(0,'M');q.addData(joinUrl());q.make();return q.createDataURL(4,1)}catch(e){return ''}}
@@ -181,7 +182,7 @@ const IC={fb:'<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M1
 const METHOD={cod:'ชำระเงินตอนรับของ',cash:'เงินสด',promptpay:'โอน / พร้อมเพย์',lineman:'LINE MAN',grab:'Grab',shopee:'ShopeeFood'};
 function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bill,dt=new Date(+b.paidAt||Date.now());
   const date=dt.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Bangkok'}),time=dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
-  const po=s.theme==='po';document.body.classList.toggle('theme-po',po);
+  const po=s.theme==='po',kn=s.theme==='kn';document.body.classList.toggle('theme-po',po);document.body.classList.toggle('theme-kn',kn);
   const where=po?(b.place||'-'):b.table&&b.table!=='TA'?b.table:(b.label||'กลับบ้าน');
   const dd=po&&b.deliverDate?new Date(b.deliverDate+'T00:00:00+07:00').toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Bangkok'}):'';
   let items=b.items||[];
@@ -201,12 +202,12 @@ function render(d){JOIN_PER=+(d.shop&&d.shop.pointsPer)||0;const s=d.shop,b=d.bi
   const telHtml=s.phone?`<a href="tel:${esc(String(s.phone).replace(/[^\d+]/g,''))}">${IC.tel}${esc(s.phone)}</a>`:'';
   const mapHtml=s.mapText||safeUrl(s.mapUrl)?(safeUrl(s.mapUrl)?`<a class="map" href="${esc(safeUrl(s.mapUrl))}" target="_blank" rel="noopener">${IC.pin}${esc(s.mapText||'ดูแผนที่ร้าน')}</a>`:`<span class="map">${IC.pin}${esc(s.mapText)}</span>`):'';
   $('#view').innerHTML=`<div class="rc" id="rc">
-   <img class="logo${po?' po':''}" src="${esc(safeUrl(s.logo)||(po?'images/logo-po-t.png?v=20261018':'images/logo-nl-t.png?v=20261016b'))}" alt="" crossorigin="anonymous">
+   <img class="logo${po?' po':''}" src="${esc(safeUrl(s.logo)||(po?'images/logo-po-t.png?v=20261018':kn?'images/logo-kn.png?v=20261022':'images/logo-nl-t.png?v=20261016b'))}" alt="" crossorigin="anonymous">
    <h2 class="nm">${esc(s.name)}</h2>${s.nameEn?`<div class="en">${esc(s.nameEn)}</div>`:''}${s.tagline&&!(s.theme!=='po'&&s.tagline==='BEEF NOODLES • BRAISED BEEF • KHAO SOI')?`<div class="tag">${esc(s.tagline)}</div>`:''}
    ${fbHtml||telHtml||mapHtml?`<div class="contact">${fbHtml}${telHtml}${mapHtml}</div>`:''}
    <hr class="br">
    <div class="head"><div class="title"><h1 class="${taxInv?'long':''}">${taxInv?'ใบเสร็จรับเงิน/<br>ใบกำกับภาษีอย่างย่อ':'ใบเสร็จรับเงิน'}</h1><small>RECEIPT</small><div class="rno">Receipt No. : <b>${esc(b.billNo||'-')}</b></div>${taxInv?`<small class="tax">เลขประจำตัวผู้เสียภาษี ${esc(s.taxId)}</small>`:''}</div>
-     <div class="meta"><div><b>วันที่ :</b><span>${esc(date)}</span></div><div><b>เวลา :</b><span>${esc(time)}</span></div>${po?`${dd?`<div><b>รับ :</b><span>${esc(dd)}</span></div>`:''}<div><b>ที่ :</b><span>${esc(where)}</span></div>${b.customer?`<div><b>ลูกค้า :</b><span>${esc(b.customer)}</span></div>`:''}`:`<div><b>โต๊ะ :</b><span>${esc(where)}</span></div>`}</div></div>
+     <div class="meta"><div><b>วันที่ :</b><span>${esc(date)}</span></div><div><b>เวลา :</b><span>${esc(time)}</span></div>${po?`${dd?`<div><b>รับ :</b><span>${esc(dd)}</span></div>`:''}<div><b>ที่ :</b><span>${esc(where)}</span></div>${b.customer?`<div><b>ลูกค้า :</b><span>${esc(b.customer)}</span></div>`:''}`:kn?`<div><b>คิว :</b><span>${esc(b.queue||'-')}</span></div>${b.customer?`<div><b>ลูกค้า :</b><span>คุณ${esc(b.customer)}</span></div>`:''}`:`<div><b>โต๊ะ :</b><span>${esc(where)}</span></div>`}</div></div>
    <table><thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>ราคา</th><th>รวมเงิน</th></tr></thead><tbody>${rows}${pad}</tbody></table>${(b.changes||[]).length?`<div class="chgnote">🔄 <b>มีการเปลี่ยนแปลงรายการ</b> ${b.changes.map(c=>esc(c.list.join(' · '))+(c.why?' ('+esc(c.why)+')':'')).join(' · ')}</div>`:''}
    <div class="sum"><div class="no"><div class="stamp" aria-label="ชำระเงินแล้ว">ชำระเงินแล้ว<i>PAID</i></div></div><div class="tot">
      <div><span>รวมเงิน</span><span>${num(b.subtotal)}</span></div>
@@ -225,7 +226,7 @@ async function start(){const cfg=window.APP_CONFIG||{};
   if(!RID||!TOK)return $('#view').innerHTML='<div class="msg"><h2>ไม่พบใบเสร็จ</h2>ลิงก์ไม่ครบ ขอลิงก์ใหม่จากพนักงาน</div>';
   if(!window.supabase||!cfg.SUPABASE_URL)return $('#view').innerHTML='<div class="msg"><h2>ระบบยังไม่พร้อม</h2>ลองใหม่อีกครั้ง</div>';
   const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}});
-  const {data,error}=await sb.rpc(SHOP==='po'?'public_po_receipt':'public_receipt',{p_id:RID,p_tok:TOK});
+  const {data,error}=await sb.rpc(SHOP==='po'?'public_po_receipt':SHOP==='kn'?'public_kn_receipt':'public_receipt',{p_id:RID,p_tok:TOK});
   if(error||!data)return $('#view').innerHTML='<div class="msg"><h2>ไม่พบใบเสร็จ</h2>ลิงก์อาจไม่ถูกต้อง หรือบิลถูกยกเลิก</div>';
   render(data)}
 const loadScript=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
