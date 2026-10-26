@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.22-235834">
+<meta name="app-version" content="2026.10.26-133207">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1457,6 +1457,32 @@ body.shop-kn .closedtx span{color:#f6e7d4}body.shop-kn .closedtx small{color:#d9
 .kngi b{overflow-wrap:anywhere}
 .kns-c,.knc,.kns-c *{max-width:100%;box-sizing:border-box}
 #view{max-width:100vw;overflow-x:hidden}
+
+/* การ์ด QR พร้อมเพย์แบบโปสเตอร์ v2 (ภาพร้านเต็มใบ) */
+.ppc{margin:10px 0;border-radius:20px;overflow:hidden;position:relative;isolation:isolate;-webkit-mask-image:-webkit-radial-gradient(white,black);background:#2a1a10 var(--pc-bg) no-repeat;background-size:var(--pc-size,cover);background-position:var(--pc-pos,center);box-shadow:0 10px 28px rgba(0,0,0,.3);text-align:left;min-height:340px;background-repeat:var(--pc-rep,no-repeat)}
+.ppc::before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.28),transparent 45%),linear-gradient(270deg,rgba(0,0,0,.18),transparent 55%);pointer-events:none}
+.ppc-in{position:relative;min-height:340px;box-sizing:border-box;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);padding:12px 10px 10px 12px;gap:8px}
+.ppc-l{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;min-width:0;padding-bottom:4px}.ppc-l h3{margin-top:auto!important}.ppc-l.top h3{margin-top:0!important;margin-bottom:auto;padding-top:4px}
+.ppc-sign{width:100%;max-width:170px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+.ppc-l h3{margin:0;font-family:Kanit,var(--f-display,system-ui),sans-serif;line-height:1.08;display:flex;flex-direction:column;transform:rotate(-3deg);transform-origin:left bottom}
+.ppc-l h3 em{font-style:normal;white-space:nowrap}
+.ppc-l h3 span,.ppc-l h3 small{color:#fff4dc;-webkit-text-stroke:5px #7a4a24;paint-order:stroke fill;font-weight:900;text-shadow:0 0 0 #fff,0 4px 0 #fff,0 6px 10px rgba(0,0,0,.35)}
+.ppc-l h3 span{font-size:36px;letter-spacing:-.5px}.ppc-l h3 small{font-size:19px;margin-left:1px}
+.ppc-r{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ppc-qr{background:#fff;border-radius:18px;padding:0 10px 6px;box-shadow:0 6px 18px rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.ppc-qh{width:calc(100% + 20px);background:linear-gradient(180deg,#f7e6c8,#eed3a6);color:#7a4a24;font-weight:900;text-align:center;padding:5px 0;margin-bottom:6px;font-size:15px;font-family:Kanit,var(--f-display,system-ui),sans-serif;display:flex;align-items:center;justify-content:center;gap:6px}
+.ppc-qh i{font-style:normal;width:22px;height:22px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.ppc-qr svg{width:100%!important;height:auto!important;display:block;max-width:none!important;margin:0!important}
+.ppc-amt{margin-top:3px;font-size:12.5px;color:#7a4a24;white-space:nowrap;font-weight:600}.ppc-amt b{font-size:19px;color:#3e2410;margin-left:3px}
+.ppc-pill{display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,#fbeed6,#f1dbb5);border:2.5px solid #fff;border-radius:999px;padding:4px 4px 4px 12px;box-shadow:0 3px 10px rgba(0,0,0,.28);min-width:0;line-height:1.2}
+.ppc-pill>div{display:flex;flex-direction:column;min-width:0;flex:1}
+.ppc-pill span{color:#8a5a2b;font-size:10.5px;font-weight:600}.ppc-pill b{color:#5a3216;font-size:clamp(12px,3.5vw,14.5px);font-weight:800;white-space:nowrap;overflow:visible;letter-spacing:-.2px;user-select:all;-webkit-user-select:all}
+.ppc-pill:not(:has(.ppc-cpy)){padding-right:12px}
+.ppc-cpy{flex:none;border:0;border-radius:50%;width:32px;height:32px;padding:0;font:inherit;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(135deg,#d9822b,#7a4a24);box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:pointer}.ppc-cpy.ok{background:linear-gradient(135deg,#22c55e,#15803d)}
+.ppc-ft{margin:auto 0 0;color:#d2691e;font-size:12.5px;font-weight:800;text-align:center;line-height:1.3;-webkit-text-stroke:3px #fff;paint-order:stroke fill;font-family:Kanit,var(--f-display,system-ui),sans-serif}
+@media (max-width:360px){.ppc-l h3 span{font-size:38px}.ppc-l h3 small{font-size:20px}}
+
+.sh-body .ppc{width:100%;max-width:420px;margin:6px auto;align-self:center}
 </style>
 </head>
 <body>
@@ -1705,6 +1731,17 @@ function toast(msg,kind){const t=$('#toast');t.textContent=msg;t.className='toas
 
 /* ---------- PromptPay (EMVCo) ---------- */
 function crc16(s){let c=0xFFFF;for(let i=0;i<s.length;i++){c^=s.charCodeAt(i)<<8;for(let j=0;j<8;j++)c=(c&0x8000)?((c<<1)^0x1021):(c<<1);c&=0xFFFF}return c.toString(16).toUpperCase().padStart(4,'0')}
+const pcFmt=n=>{n=String(n||'').replace(/\D/g,'');return n.length===10?n.replace(/(\d{3})(\d{3})(\d{4})/,'$1 $2 $3'):n.length===13?n.replace(/(\d)(\d{4})(\d{5})(\d{2})(\d)/,'$1-$2-$3-$4-$5'):n};
+const ppPoster=(pp,amt,o={})=>`<div class="ppc" style="--pc-bg:url(${o.bg});--pc-pos:${o.pos||'center'};--pc-size:${o.size||'cover'};--pc-rep:${o.rep||'no-repeat'}"><div class="ppc-in">
+  <div class="ppc-l${o.htop?' top':''}">${o.sign?`<img class="ppc-sign" src="${o.sign}" alt="">`:''}</div>
+  <div class="ppc-r"><div class="ppc-qr"><div class="ppc-qh"><i>🏛️</i>QR CODE</div>${qrSvg(ppPayload(pp,amt))}<div class="ppc-amt">ยอดโอน <b>${baht(amt)}</b></div></div>
+  ${o.name?`<div class="ppc-pill"><div><span>ชื่อบัญชี</span><b>${esc(o.name)}</b></div></div>`:''}
+  <div class="ppc-pill"><div><span>พร้อมเพย์</span><b>${pcFmt(pp)}</b></div><button type="button" class="ppc-cpy" data-pcp="${String(pp).replace(/\D/g,'')}" aria-label="คัดลอกเลขพร้อมเพย์">📋</button></div>
+  <p class="ppc-ft">${o.foot||'โอนเรียบร้อยแล้ว<br>กรุณาแนบสลิป ขอบคุณค่ะ'}</p></div></div></div>`;
+document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-pcp]');if(!b)return;e.preventDefault();e.stopPropagation();const t=b.dataset.pcp;let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(_){try{const x=document.createElement('textarea');x.value=t;x.style.position='fixed';x.style.opacity='0';document.body.appendChild(x);x.select();ok=document.execCommand('copy');x.remove()}catch(__){}}
+  if(ok){b.textContent='✓';b.classList.add('ok');setTimeout(()=>{b.textContent='📋';b.classList.remove('ok')},1800)}},true);
+const ppShopOpt=(sh=S.shop)=>sh==='kn'?{bg:'images/bg-kn.jpg',pos:'100% 0%',size:'auto 108%'}:sh==='po'?{bg:'images/bg-po-m.jpg',pos:'left top',size:'auto 100%',rep:'repeat-x'}:{bg:'images/bg-m.jpg',pos:'left top',size:'auto 100%',rep:'repeat-x',htop:1};
+const ppShopCard=(pp,amt,foot,sh)=>ppPoster(pp,amt,{...ppShopOpt(sh),name:S.settings.ppName||'',foot:foot||'สแกนจ่ายแล้ว<br>แจ้งพนักงานได้เลยค่ะ'});
 function ppPayload(id,amount){
   let t=String(id||'').replace(/\D/g,''),tag;
   if(t.length===15)tag='03';else if(t.length>=13){tag='02';t=t.slice(0,13)}else{tag='01';t=('0000000000000'+t.replace(/^0/,'66')).slice(-13)}
@@ -2415,7 +2452,7 @@ function payUpdate(){const o=S.open[S.sheet?.id];if(!o||!$('#payTotal'))return;c
   const ch=$('#payChange');ch.textContent=c.recv?(c.change>=0?baht(c.change):'ขาดอีก '+baht(-c.change)):'฿0';ch.style.color=c.recv&&c.change<0?'var(--chili)':'';
   const id=S.settings.promptpay;
   if(s.method==='promptpay'){const k='pp'+c.total+id;const box=$('#payPP');if(box.dataset.k!==k){box.dataset.k=k;
-    box.innerHTML=ppValid(id)?`<div class="qrbox">${qrSvg(ppPayload(id,c.total))}<div class="pp">PROMPTPAY</div><div class="amt">${baht(c.total)}</div><div style="font-size:13px">${esc(S.settings.shopName)} · ${esc(String(id).replace(/\D/g,'').replace(/^(\d{3})\d+(\d{3})$/,'$1-xxx-$2'))}</div></div><p class="help" style="margin:0">ให้ลูกค้าสแกนด้วยแอปธนาคาร ตรวจยอดเข้าในแอปของร้านก่อนกดยืนยัน</p>`
+    box.innerHTML=ppValid(id)?`${ppShopCard(String(id).replace(/\D/g,''),c.total,null,'noodle')}<p class="help" style="margin:0">ให้ลูกค้าสแกนด้วยแอปธนาคาร ตรวจยอดเข้าในแอปของร้านก่อนกดยืนยัน</p>`
     :`<div class="empty"><b>ยังไม่ได้ตั้งเบอร์พร้อมเพย์</b>ใส่เบอร์มือถือ 10 หลัก หรือเลขบัตรประชาชน 13 หลักของร้าน<div style="margin-top:10px"><button class="btn sm pri" data-act="settings" type="button">ไปที่ตั้งค่าร้าน</button></div></div>`}}
   const plat=DELIV.includes(s.method);
   if(plat){const pb=$('#payPlat');if(pb)pb.innerHTML=`<h3>ชำระผ่าน ${CH[s.method].n}</h3><div class="kv"><span>ยอดขายตามแอป</span><span>${baht(c.total)}</span></div><div class="kv"><span>หัก GP ${c.gpPct}%</span><span>${baht(-c.gp)}</span></div><div class="kv tot"><span>ร้านได้รับสุทธิ</span><span>${baht(c.net)}</span></div><p class="help" style="margin:0">แพลตฟอร์มโอนเงินให้ร้านตามรอบ ไม่ต้องรับเงินจากไรเดอร์${c.gpPct?'':' · ตั้ง % GP ได้ที่ ตั้งค่าร้าน → ช่องทางเดลิเวอรี่'}</p>`}
@@ -3481,7 +3518,7 @@ function knCartHtml(qOn,n,tot){return `
 function sheetKnPay(){const s=S.sheet,tot=knCartTot(),qr=s.m==='qr',pp=knPP(),got=+s.got||0,ch=got-tot;
   $('#panel').innerHTML=head(qr?'📱 รับเงินพร้อมเพย์':'💵 รับเงินสด','ยอดที่ต้องชำระ '+baht(tot))+`<div class="sh-body knp">
    <div class="knp-tot"><small>ยอดชำระ</small><b>${baht(tot)}</b></div>
-   ${qr?(pp?`<div class="knp-qr">${qrSvg(ppPayload(pp,tot))}<small>พร้อมเพย์ ${esc(pp.replace(/(\d{3})(\d{3})(\d+)/,'$1-$2-$3'))}</small></div><p class="help" style="margin:0;text-align:center">ให้ลูกค้าสแกนจ่าย แล้วตรวจยอดเข้าก่อนกดยืนยัน</p>`:'<div class="empty"><b>ยังไม่ได้ตั้งเลขพร้อมเพย์</b>ตั้งได้ที่ ⚙️ ตั้งค่าร้าน</div>')
+   ${qr?(pp?`${ppShopCard(pp,tot,'สแกนจ่ายแล้ว<br>แจ้งพนักงานได้เลยเจ้า','kn')}<p class="help" style="margin:0;text-align:center">ให้ลูกค้าสแกนจ่าย แล้วตรวจยอดเข้าก่อนกดยืนยัน</p>`:'<div class="empty"><b>ยังไม่ได้ตั้งเลขพร้อมเพย์</b>ตั้งได้ที่ ⚙️ ตั้งค่าร้าน</div>')
     :`<div class="field"><label for="knGot">รับเงินมา (บาท)</label><input id="knGot" inputmode="decimal" value="${s.got??''}" placeholder="${num(tot)}"></div>
      <div class="chips">${[tot,...[20,50,100,500,1000].filter(v=>v>tot)].filter((v,i,a)=>a.indexOf(v)===i).slice(0,5).map(v=>`<button type="button" class="chip" data-act="knGot" data-v="${v}">${v===tot?'พอดี':baht(v)}</button>`).join('')}</div>
      <div class="knp-ch ${got&&ch<0?'bad':''}"><small>เงินทอน</small><b id="knCh">${got?(ch<0?'ขาดอีก '+baht(-ch):baht(ch)):'-'}</b></div>`}
@@ -3804,7 +3841,7 @@ function sheetPoPick(){const o=(S.poOrders||[]).find(x=>x.id===S.sheet.id);if(!o
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn wide" data-act="poScan" type="button">📷 สแกนคนถัดไป</button></div>`}
 function sheetPoPayQr(){const o=(S.poOrders||[]).find(x=>x.id===S.sheet.id);if(!o)return closeSheet();const pp=String(poCfg().promptpay||S.settings.promptpay||'').replace(/\D/g,''),due=poDue(o);
   $('#panel').innerHTML=head('📱 สแกนจ่าย · '+esc(poShort(o)),'คุณ'+esc(o.name))+`<div class="sh-body" style="align-items:center;text-align:center">
-   ${ppValid(pp)?`<div class="qrbig" style="max-width:300px;margin:0 auto">${qrSvg(ppPayload(pp,due))}</div><b style="font-size:30px">${baht(due)}</b><div class="muted">พร้อมเพย์ ${esc(pp.replace(/^(\d{3})(\d{3})(\d+)$/,'$1-$2-$3'))}${poCfg().ppName?' · '+esc(poCfg().ppName):''}</div>`
+   ${ppValid(pp)?`${ppShopCard(pp,due,null,'po')}`
      :'<div class="notice">ยังไม่ได้ตั้งเบอร์พร้อมเพย์ · ตั้งที่ "ตั้งค่าร้านพรีออเดอร์"</div>'}
    <p class="help" style="margin:0">ให้ลูกค้าสแกนด้วยแอปธนาคาร · เห็นเงินเข้าแล้วกด "ได้รับเงินแล้ว"</p></div>
    <div class="sh-foot"><button class="btn" data-act="poPickBack" data-id="${esc(o.id)}" type="button">ย้อนกลับ</button><button class="btn pri wide" data-act="poPaidQr" data-id="${esc(o.id)}" data-confirm="1" type="button">✓ ได้รับเงินแล้ว</button></div>`}
