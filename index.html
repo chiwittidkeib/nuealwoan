@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.22-193101">
+<meta name="app-version" content="2026.10.22-235834">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1439,6 +1439,24 @@ body.shop-kn .closedtx span{color:#f6e7d4}body.shop-kn .closedtx small{color:#d9
 .btn[data-armed] *,button[data-armed] *{color:#fff!important}
 
 .cfscan{margin-top:6px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px;border-radius:14px;border:1.5px dashed #2563eb;background:linear-gradient(180deg,#eff6ff,#dbeafe);color:#1e40af;font-weight:800}.cfscan small{font-weight:500;color:#3b5bab;font-size:12px}
+
+.msort-tip{margin:4px 0 8px!important;padding:8px 12px;border-radius:12px;background:var(--surface,#fffaf2);color:var(--fg)!important;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.msort-h{font-weight:800;color:var(--acc2,#6b3e1f);padding:10px 4px 4px;font-size:14px}
+.msort-r{gap:10px;align-items:center}.msort-r .thumb{width:44px;height:44px}
+.msort-n{flex:none;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:rgba(var(--acc-rgb,200,121,42),.15);color:var(--acc2,#6b3e1f)}
+.msort-b{flex:none;width:42px;height:38px;padding:0!important;justify-content:center;font-size:15px}.msort-b:disabled{opacity:.3}
+
+/* กันการ์ดเมนูขยายเกินจอ (Safari: รูปใหญ่ดันคอลัมน์) */
+.kns{grid-template-columns:minmax(0,1fr) 340px}.kns>*{min-width:0}
+@media (max-width:760px){.kns{grid-template-columns:minmax(0,1fr)!important}}
+.kng{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+@media (min-width:761px){.kng{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important}}
+.kng>*,.kngi{min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}
+.kngi-img{position:relative;width:100%;height:auto;aspect-ratio:4/3}
+.kngi-img img{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:100%;object-fit:cover}
+.kngi b{overflow-wrap:anywhere}
+.kns-c,.knc,.kns-c *{max-width:100%;box-sizing:border-box}
+#view{max-width:100vw;overflow-x:hidden}
 </style>
 </head>
 <body>
@@ -1893,7 +1911,7 @@ function renderCalls(){const el=$('#callbar');if(!el)return;const list=S.state==
     return `<div class="callcard${c.kind==='paid'?' paid':''}" role="alert"><span style="font-size:22px">🔔</span><div class="grow"><b>${esc(where)} · ${esc(callLabel(c.kind))}</b><small>${c.slip?'<b style="color:#1b5e20;font-size:inherit">📎 แนบสลิปแล้ว</b> · ':''}${c.name&&!where.includes(c.name)?'คุณ'+esc(c.name)+' · ':''}${ago(c.at).replace('เพิ่งเปิด','เมื่อสักครู่')}${/นาที|ชม/.test(ago(c.at))?'ที่แล้ว':''}</small></div>${o&&(c.slip||o.slipAt)?`<button class="btn sm" data-act="viewSlip" data-id="${o.id}" type="button">ดูสลิป</button>`:''}${o&&isPayKind(c.kind)&&can('pay')?`<button class="btn sm" data-act="callBill" data-id="${o.id}" data-c="${esc(c.id)}" type="button">เก็บเงิน</button>`:o?`<button class="btn sm ghost" data-act="openOrder" data-id="${o.id}" type="button">ดูบิล</button>`:''}<button class="btn sm${o&&isPayKind(c.kind)?' ghost':''}" data-act="callAck" data-c="${esc(c.id)}" type="button">รับทราบ</button></div>`}).join('')+dq.map(dlCallCard).join('');}
 setInterval(()=>{if(S.calls.length)renderCalls()},30000);
 document.addEventListener('pointerdown',()=>{Bell.unlock();Bell.speechUnlock()},true);document.addEventListener('keydown',()=>{Bell.unlock();Bell.speechUnlock()},true);
-function sortMenu(both){if(both){const k=S.shop;['noodle','po','kn'].filter(x=>x!==k).forEach(x=>{S.shop=x;sortMenu()});S.shop=k}const cats=curCats();S.menu.sort((a,b)=>{const ca=cats.indexOf(a.cat),cb=cats.indexOf(b.cat);return (ca<0?99:ca)-(cb<0?99:cb)||String(a.name).localeCompare(String(b.name),'th')})}
+function sortMenu(both){if(both){const k=S.shop;['noodle','po','kn'].filter(x=>x!==k).forEach(x=>{S.shop=x;sortMenu()});S.shop=k}const cats=curCats();S.menu.sort((a,b)=>{const ca=cats.indexOf(a.cat),cb=cats.indexOf(b.cat);return (ca<0?99:ca)-(cb<0?99:cb)||((a.ord??1e9)-(b.ord??1e9))||String(a.name).localeCompare(String(b.name),'th')})}
 
 /* ---------- main render ---------- */
 (function(){const vv=window.visualViewport;let base=0;const chk=()=>{const h=vv?vv.height:innerHeight;base=Math.max(base,innerHeight,h);const a=document.activeElement,typing=a&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|file|range|color)$/.test(a.type)));document.body.classList.toggle('kb',!!(typing&&vv&&base-vv.height>150))};
@@ -2025,10 +2043,14 @@ function poLivePromoIds(){const ids=new Set();poPromos().filter(p=>poPromoState(
 function viewMenu(){
   const cats=curCats(),pIds=poLivePromoIds(),pN=S.menu.filter(m=>pIds.has(m.id)).length;
   if(S.menuCat==='__promo'&&!pN)S.menuCat='all';
-  let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'||(isPo()&&poAdmin())?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+(isPo()?'':'<button class="btn sm combob" data-act="combos" type="button">🎁 Combo เซ็ต</button>')+(promoCan()?'<button class="btn sm combob" data-act="poPromos" type="button">🎁 โปรโมชั่น</button>':'')+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
+  let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'||(isPo()&&poAdmin())?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+`<button class="btn sm${S.menuSort?' pri':''}" data-act="menuSortMode" type="button">${S.menuSort?'✓ เสร็จ (จัดลำดับ)':'↕️ จัดลำดับเมนู'}</button>`+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+(isPo()?'':'<button class="btn sm combob" data-act="combos" type="button">🎁 Combo เซ็ต</button>')+(promoCan()?'<button class="btn sm combob" data-act="poPromos" type="button">🎁 โปรโมชั่น</button>':'')+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
   <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${pN?`<button class="chip chip-promo" aria-pressed="${S.menuCat==='__promo'}" data-act="menuCat" data-v="__promo" type="button">📢 ${esc(poPromoTab())} (${pN})</button>`:''}${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div><div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
   const list=S.menu.filter(m=>S.menuCat==='__promo'?pIds.has(m.id):S.menuCat==='all'||m.cat===S.menuCat);
   if(pIds.size){const ci=c=>{const i=cats.indexOf(c);return i<0?999:i};list.sort((a,b)=>(S.menuCat==='all'?ci(a.cat)-ci(b.cat):0)||(pIds.has(b.id)-pIds.has(a.id)))}
+  if(S.menuSort&&list.length&&S.menuCat!=='__promo'){h+='<p class="help msort-tip">กด ▲ ▼ เพื่อเลื่อนลำดับ · เลื่อนได้ภายในหมวดเดียวกัน · หน้าขายและหน้าลูกค้าจะเรียงตามนี้</p><div class="list msort">';let pc=null;
+    list.forEach(m=>{const sib=S.menu.filter(x=>x.cat===m.cat),i=sib.indexOf(m);if(S.menuCat==='all'&&m.cat!==pc){h+=`<div class="msort-h">${esc(m.cat||'ไม่มีหมวด')}</div>`;pc=m.cat}
+      h+=`<div class="row msort-r"><span class="msort-n">${i+1}</span>${thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)}</div><div class="s">${baht(+m.price||0)}</div></div><button class="btn sm msort-b" data-act="menuMove" data-id="${m.id}" data-d="-1" type="button" ${i===0?'disabled':''} aria-label="เลื่อนขึ้น">▲</button><button class="btn sm msort-b" data-act="menuMove" data-id="${m.id}" data-d="1" type="button" ${i===sib.length-1?'disabled':''} aria-label="เลื่อนลง">▼</button></div>`});
+    return h+'</div>'}
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุน</div>`;
   const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':' offsale'}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิดการขาย'}</button>`:'';
   if(S.menuLay==='grid'){h+='<div class="mtgrid">';
@@ -3216,6 +3238,10 @@ const ACT={
   obSave:optBulkSave,
   catOpen:()=>{if(S.role!=='owner'&&!(isPo()&&poAdmin()))return deny();openSheet({type:'cats',back:S.sheet&&S.sheet.type==='optBulk'?{...S.sheet}:null})},
   catBack:()=>{const b=S.sheet.back;if(b)openSheet(b);else closeSheet()},
+  menuSortMode:()=>{if(!can('menu_edit'))return deny();S.menuSort=!S.menuSort;render()},
+  menuMove:async d=>{const m=S.menu.find(x=>x.id===d.id);if(!m)return;const sib=S.menu.filter(x=>x.cat===m.cat),i=sib.indexOf(m),j=i+ +d.d;if(j<0||j>=sib.length)return;
+    [sib[i],sib[j]]=[sib[j],sib[i]];const ch=[];sib.forEach((x,k)=>{const o=(k+1)*10;if(x.ord!==o){x.ord=o;ch.push(x)}});sortMenu();render();
+    const r=await Promise.all(ch.map(x=>write('menu/'+x.id,w=>w.update({ord:x.ord}))));if(r.some(v=>!v))toast('บันทึกลำดับไม่สำเร็จบางรายการ','bad')},
   catAdd:async()=>{if(await addCat())sheetCats()},
   catMove:async d=>{const c=curCats().slice(),i=+d.i,j=i+ +d.d;if(j<0||j>=c.length)return;[c[i],c[j]]=[c[j],c[i]];if(await saveCats(c)){sortMenu();sheetCats();render()}},
   catRename:async d=>{const c=curCats().slice(),old=c[+d.i];const n=(prompt('ชื่อหมวดใหม่',old)||'').trim().slice(0,30);if(!n||n===old)return;if(c.includes(n))return toast('มีหมวดนี้อยู่แล้ว','bad');
