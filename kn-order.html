@@ -98,6 +98,10 @@ button,input{font:inherit;color:inherit}
 .grid>*,.mi{min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}
 .mi .im{position:relative;width:100%}.mi .im img{position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:cover}
 .mi b{overflow-wrap:anywhere}
+
+/* กันวรรณยุกต์/สระบนภาษาไทยโดนตัดในช่องกรอก */
+input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,select{line-height:1.6!important;overflow:visible}
+input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8px,var(--ipt,0px));padding-bottom:max(8px,var(--ipb,0px));height:auto}
 </style>
 </head>
 <body>

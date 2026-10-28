@@ -74,6 +74,10 @@ button:disabled{opacity:.5}
 .mcard.mc-po .mc-logos img{border-color:#d9a441}
 .mcard.mc-po>.mc-shine{background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%)}
 #dcard{display:flex;justify-content:center;width:100%}#dcard .mcard{width:100%;text-align:left}
+
+/* กันวรรณยุกต์/สระบนภาษาไทยโดนตัดในช่องกรอก */
+input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,select{line-height:1.6!important;overflow:visible}
+input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8px,var(--ipt,0px));padding-bottom:max(8px,var(--ipb,0px));height:auto}
 </style>
 </head>
 <body>

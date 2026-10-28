@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.26-133207">
+<meta name="app-version" content="2026.10.28-094903">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1483,6 +1483,23 @@ body.shop-kn .closedtx span{color:#f6e7d4}body.shop-kn .closedtx small{color:#d9
 @media (max-width:360px){.ppc-l h3 span{font-size:38px}.ppc-l h3 small{font-size:20px}}
 
 .sh-body .ppc{width:100%;max-width:420px;margin:6px auto;align-self:center}
+
+.msort-tg{border:1.5px solid var(--acc,#c8792a);background:var(--surface,#fff);color:var(--acc2,#6b3e1f);font:inherit;font-weight:800;font-size:13.5px;padding:7px 14px;border-radius:999px;cursor:pointer;margin-right:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);white-space:nowrap}
+.msort-tg.on{background:linear-gradient(135deg,var(--acc,#c8792a),var(--acc2,#6b3e1f));color:#fff;border-color:transparent}
+.msort-hd{flex:none;width:34px;height:40px;display:inline-flex;align-items:center;justify-content:center;font-size:22px;color:var(--muted);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:10px}
+.msort-hd:active{cursor:grabbing;background:rgba(0,0,0,.06)}
+.msort-r.dragging{position:relative;z-index:5;transform:scale(1.02);box-shadow:0 10px 26px rgba(0,0,0,.25);background:var(--surface,#fff);border-radius:14px}
+body.msort-busy{user-select:none;-webkit-user-select:none;overscroll-behavior:contain}
+
+/* กันวรรณยุกต์/สระบนภาษาไทยโดนตัดในช่องกรอก */
+input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,select{line-height:1.6!important;overflow:visible}
+input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8px,var(--ipt,0px));padding-bottom:max(8px,var(--ipb,0px));height:auto}
+
+
+.msort-r.moved{animation:msMoved 1.4s ease-out}
+@keyframes msMoved{0%{background:rgba(250,204,21,.55);box-shadow:inset 4px 0 0 #f59e0b}60%{background:rgba(250,204,21,.25);box-shadow:inset 4px 0 0 #f59e0b}100%{background:transparent;box-shadow:inset 0 0 0 transparent}}
+.msort-r.mup .msort-n.pop,.msort-r.mdn .msort-n.pop{animation:msPop .6s ease-out;background:#f59e0b;color:#fff}
+@keyframes msPop{0%{transform:scale(1.5)}100%{transform:scale(1)}}
 </style>
 </head>
 <body>
@@ -1742,6 +1759,18 @@ document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.c
   if(ok){b.textContent='✓';b.classList.add('ok');setTimeout(()=>{b.textContent='📋';b.classList.remove('ok')},1800)}},true);
 const ppShopOpt=(sh=S.shop)=>sh==='kn'?{bg:'images/bg-kn.jpg',pos:'100% 0%',size:'auto 108%'}:sh==='po'?{bg:'images/bg-po-m.jpg',pos:'left top',size:'auto 100%',rep:'repeat-x'}:{bg:'images/bg-m.jpg',pos:'left top',size:'auto 100%',rep:'repeat-x',htop:1};
 const ppShopCard=(pp,amt,foot,sh)=>ppPoster(pp,amt,{...ppShopOpt(sh),name:S.settings.ppName||'',foot:foot||'สแกนจ่ายแล้ว<br>แจ้งพนักงานได้เลยค่ะ'});
+
+/* ลากจัดลำดับเมนู (ใช้ได้ทั้งเมาส์และนิ้ว) */
+(function(){let drag=null;
+ document.addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('.msort-hd');if(!h)return;const row=h.closest('.msort-r');if(!row)return;e.preventDefault();
+   drag={row,cat:row.dataset.cat,id:e.pointerId};row.classList.add('dragging');try{h.setPointerCapture(e.pointerId)}catch(_){}document.body.classList.add('msort-busy')});
+ document.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;e.preventDefault();const y=e.clientY;
+   drag.row.style.pointerEvents='none';const el=document.elementFromPoint(e.clientX,y),r=el&&el.closest('.msort-r');drag.row.style.pointerEvents='';
+   if(r&&r!==drag.row&&r.dataset.cat===drag.cat&&r.parentNode===drag.row.parentNode){const b=r.getBoundingClientRect(),grid=drag.row.classList.contains('msort-t');const after=grid?(e.clientX>b.left+b.width/2):(y>b.top+b.height/2);if(after){if(r.nextSibling!==drag.row)r.after(drag.row)}else if(r.previousSibling!==drag.row)r.before(drag.row)}
+   const H=innerHeight;if(y<90)scrollBy(0,-12);else if(y>H-110)scrollBy(0,12)},{passive:false});
+ const end=e=>{if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;d.row.classList.remove('dragging');document.body.classList.remove('msort-busy');
+   const ids=[...d.row.parentNode.querySelectorAll('.msort-r')].filter(r=>r.dataset.cat===d.cat).map(r=>r.dataset.mid);ACT.menuSortApply(d.cat,ids)};
+ document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end)})();
 function ppPayload(id,amount){
   let t=String(id||'').replace(/\D/g,''),tag;
   if(t.length===15)tag='03';else if(t.length>=13){tag='02';t=t.slice(0,13)}else{tag='01';t=('0000000000000'+t.replace(/^0/,'66')).slice(-13)}
@@ -2081,12 +2110,12 @@ function viewMenu(){
   const cats=curCats(),pIds=poLivePromoIds(),pN=S.menu.filter(m=>pIds.has(m.id)).length;
   if(S.menuCat==='__promo'&&!pN)S.menuCat='all';
   let h=`<div class="sec-h"><h2>${isPo()?'เมนูร้านพรีออเดอร์':'เมนูและราคา'}${can('menu_edit')?'':' <span class="pill mute" style="font-size:12px;vertical-align:middle">👁 ดูอย่างเดียว</span>'}</h2>${can('menu_edit')?(S.role==='owner'||(isPo()&&poAdmin())?'<button class="btn sm" data-act="catOpen" type="button">จัดการหมวด</button>':'')+`<button class="btn sm${S.menuSort?' pri':''}" data-act="menuSortMode" type="button">${S.menuSort?'✓ เสร็จ (จัดลำดับ)':'↕️ จัดลำดับเมนู'}</button>`+'<button class="btn sm" data-act="optBulk" type="button">ตั้งตัวเลือกหลายเมนู</button>'+(isPo()?'':'<button class="btn sm combob" data-act="combos" type="button">🎁 Combo เซ็ต</button>')+(promoCan()?'<button class="btn sm combob" data-act="poPromos" type="button">🎁 โปรโมชั่น</button>':'')+'<button class="btn pri sm" data-act="menuEdit" type="button">+ เพิ่มเมนู</button>':''}</div>
-  <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${pN?`<button class="chip chip-promo" aria-pressed="${S.menuCat==='__promo'}" data-act="menuCat" data-v="__promo" type="button">📢 ${esc(poPromoTab())} (${pN})</button>`:''}${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div><div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
+  <div class="chips-row"><div class="chips"><button class="chip" aria-pressed="${S.menuCat==='all'}" data-act="menuCat" data-v="all" type="button">ทั้งหมด (${S.menu.length})</button>${pN?`<button class="chip chip-promo" aria-pressed="${S.menuCat==='__promo'}" data-act="menuCat" data-v="__promo" type="button">📢 ${esc(poPromoTab())} (${pN})</button>`:''}${cats.map(c=>`<button class="chip" aria-pressed="${S.menuCat===c}" data-act="menuCat" data-v="${esc(c)}" type="button">${esc(c)}</button>`).join('')}</div>${can('menu_edit')?`<button type="button" class="msort-tg${S.menuSort?' on':''}" data-act="menuSortMode">${S.menuSort?'✓ เสร็จ':'↕️ จัดลำดับ'}</button>`:''}<div class="mlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="menuLay" data-v="list" aria-pressed="${S.menuLay!=='grid'}" title="แบบรายการ">☰ รายการ</button><button type="button" data-act="menuLay" data-v="grid" aria-pressed="${S.menuLay==='grid'}" title="แบบตาราง">▦ ตาราง</button></div></div>`;
   const list=S.menu.filter(m=>S.menuCat==='__promo'?pIds.has(m.id):S.menuCat==='all'||m.cat===S.menuCat);
   if(pIds.size){const ci=c=>{const i=cats.indexOf(c);return i<0?999:i};list.sort((a,b)=>(S.menuCat==='all'?ci(a.cat)-ci(b.cat):0)||(pIds.has(b.id)-pIds.has(a.id)))}
-  if(S.menuSort&&list.length&&S.menuCat!=='__promo'){h+='<p class="help msort-tip">กด ▲ ▼ เพื่อเลื่อนลำดับ · เลื่อนได้ภายในหมวดเดียวกัน · หน้าขายและหน้าลูกค้าจะเรียงตามนี้</p><div class="list msort">';let pc=null;
+  if(S.menuSort&&list.length&&S.menuCat!=='__promo'){h+='<p class="help msort-tip">กดค้างที่ ⠿ แล้วลากขึ้นลง หรือกด ▲ ▼ เพื่อเลื่อนลำดับ · เลื่อนได้ภายในหมวดเดียวกัน · หน้าขายและหน้าลูกค้าจะเรียงตามนี้</p><div class="list msort">';let pc=null;
     list.forEach(m=>{const sib=S.menu.filter(x=>x.cat===m.cat),i=sib.indexOf(m);if(S.menuCat==='all'&&m.cat!==pc){h+=`<div class="msort-h">${esc(m.cat||'ไม่มีหมวด')}</div>`;pc=m.cat}
-      h+=`<div class="row msort-r"><span class="msort-n">${i+1}</span>${thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)}</div><div class="s">${baht(+m.price||0)}</div></div><button class="btn sm msort-b" data-act="menuMove" data-id="${m.id}" data-d="-1" type="button" ${i===0?'disabled':''} aria-label="เลื่อนขึ้น">▲</button><button class="btn sm msort-b" data-act="menuMove" data-id="${m.id}" data-d="1" type="button" ${i===sib.length-1?'disabled':''} aria-label="เลื่อนลง">▼</button></div>`});
+      h+=`<div class="row msort-r" data-mid="${m.id}" data-cat="${esc(m.cat||'')}"><span class="msort-hd" title="กดค้างแล้วลาก" aria-label="ลากเพื่อย้าย">⠿</span><span class="msort-n">${i+1}</span>${thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)}</div><div class="s">${baht(+m.price||0)}</div></div><button class="btn sm msort-b" data-act="menuMove" data-id="${m.id}" data-d="-1" type="button" ${i===0?'disabled':''} aria-label="เลื่อนขึ้น">▲</button><button class="btn sm msort-b" data-act="menuMove" data-id="${m.id}" data-d="1" type="button" ${i===sib.length-1?'disabled':''} aria-label="เลื่อนลง">▼</button></div>`});
     return h+'</div>'}
   if(!list.length)return h+`<div class="empty"><b>ยังไม่มีเมนูในหมวดนี้</b>กด "เพิ่มเมนู" แล้วใส่ชื่อ ราคาขาย และต้นทุน</div>`;
   const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':' offsale'}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิดการขาย'}</button>`:'';
@@ -2746,7 +2775,7 @@ async function saveMenu(){readIng();const name=val('mName');if(!name)return toas
   const data={name,desc:val('mDesc'),cat:val('mCat'),price:nval('mPrice'),cost:($('#mCostMan')&&!$('#mCostMan').checked)?(+$('#mCost').dataset.auto||0):nval('mCost'),...($('#mCostMan')?{costManual:$('#mCostMan').checked}:{}),active:$('#mActive').checked,hidden:$('#mHidden').checked,noNote:!$('#mNote').checked,special:$('#mSpecial').checked,dailyLimit:(v=>v===''?null:Math.max(0,Math.round(+v)||0))(val('mLimit').replace(/[^0-9]/g,'')),recipe:S.sheet.recipe.filter(g=>g.stockId&&g.qty>0),options:cleanOpts(S.sheet.opts)};if(isPo()||(S.menu.find(m=>m.id===S.sheet.id)||{}).shop==='po')data.shop='po';if(isKn()||(S.menu.find(m=>m.id===S.sheet.id)||{}).shop==='kn')data.shop='kn';
   {const ex=S.menu.find(m=>m.id===S.sheet.id)||{};const cOn=$('#mConsign')&&$('#mConsign').checked;
    if(cOn){const owner=val('mOwner');if(!owner)return toast('ใส่ชื่อผู้ฝากขายก่อน','bad');data.consign={owner:owner.slice(0,40)}}
-   ['consignIn','consignSold','consignRet','consignPaidQty'].forEach(k=>{if(ex[k]!=null)data[k]=ex[k]})}
+   ['consignIn','consignSold','consignRet','consignPaidQty','ord'].forEach(k=>{if(ex[k]!=null)data[k]=ex[k]})}
   const id=S.sheet.id||S.sheet.newId||(S.sheet.newId=S.db.collection('menu').doc().id);
   const ph=S.sheet.photo,oldPath=ph.path;let drop=null;
   if(ph.file){const btn=document.querySelector('[data-act="saveMenu"]');btn.disabled=true;btn.textContent='กำลังอัปโหลดรูป…';
@@ -3275,9 +3304,15 @@ const ACT={
   obSave:optBulkSave,
   catOpen:()=>{if(S.role!=='owner'&&!(isPo()&&poAdmin()))return deny();openSheet({type:'cats',back:S.sheet&&S.sheet.type==='optBulk'?{...S.sheet}:null})},
   catBack:()=>{const b=S.sheet.back;if(b)openSheet(b);else closeSheet()},
+  menuSortApply:async(cat,ids)=>{const sib=ids.map(id=>S.menu.find(x=>x.id===id)).filter(Boolean);const ch=[];sib.forEach((x,k)=>{const o=(k+1)*10;if(x.ord!==o){x.ord=o;ch.push(x)}});if(!ch.length)return;sortMenu();render();
+    const r=await Promise.all(ch.map(x=>write('menu/'+x.id,w=>w.update({ord:x.ord}))));if(r.some(v=>!v))toast('บันทึกลำดับไม่สำเร็จบางรายการ','bad');else toast('จัดลำดับแล้ว')},
   menuSortMode:()=>{if(!can('menu_edit'))return deny();S.menuSort=!S.menuSort;render()},
   menuMove:async d=>{const m=S.menu.find(x=>x.id===d.id);if(!m)return;const sib=S.menu.filter(x=>x.cat===m.cat),i=sib.indexOf(m),j=i+ +d.d;if(j<0||j>=sib.length)return;
+    const r0=document.querySelector(`.msort-r[data-mid="${m.id}"]`),t0=r0?r0.getBoundingClientRect().top:null;
     [sib[i],sib[j]]=[sib[j],sib[i]];const ch=[];sib.forEach((x,k)=>{const o=(k+1)*10;if(x.ord!==o){x.ord=o;ch.push(x)}});sortMenu();render();
+    const r1=document.querySelector(`.msort-r[data-mid="${m.id}"]`);if(r1){if(t0!=null)scrollBy(0,r1.getBoundingClientRect().top-t0);r1.classList.remove('moved');void r1.offsetWidth;r1.classList.add('moved',+d.d<0?'mup':'mdn');
+      const b=r1.querySelector('.msort-n');if(b)b.classList.add('pop')}
+    toast((+d.d<0?'⬆️ ':'⬇️ ')+m.name+' → ลำดับที่ '+(j+1));
     const r=await Promise.all(ch.map(x=>write('menu/'+x.id,w=>w.update({ord:x.ord}))));if(r.some(v=>!v))toast('บันทึกลำดับไม่สำเร็จบางรายการ','bad')},
   catAdd:async()=>{if(await addCat())sheetCats()},
   catMove:async d=>{const c=curCats().slice(),i=+d.i,j=i+ +d.d;if(j<0||j>=c.length)return;[c[i],c[j]]=[c[j],c[i]];if(await saveCats(c)){sortMenu();sheetCats();render()}},
