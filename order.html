@@ -318,6 +318,8 @@ body.dark .sph,[data-theme=dark] .sph{color:#fbbf24!important}
 /* กันวรรณยุกต์/สระบนภาษาไทยโดนตัดในช่องกรอก */
 input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,select{line-height:1.6!important;overflow:visible}
 input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8px,var(--ipt,0px));padding-bottom:max(8px,var(--ipb,0px));height:auto}
+
+.pdpa-note{margin:8px 0 0;font-size:12px;line-height:1.5;color:#7a6a5a;opacity:.9}
 </style>
 </head>
 <body>
@@ -651,7 +653,7 @@ function render(){
         ${bc.vat?`<div class="row"><div class="g muted">${bc.mode==='excl'?'รวมก่อนภาษี':'ยอดรวม'}</div><div class="r">${baht(bc.sub)}</div></div><div class="row"><div class="g muted">VAT ${bc.rate}%${bc.mode==='incl'?' (รวมในราคาแล้ว)':''}</div><div class="r">${baht(bc.vat)}</div></div>`:''}
         ${bc.round?`<div class="row"><div class="g muted">ส่วนลดปัดเศษ</div><div class="r" style="color:var(--chili)">−${baht(bc.round)}</div></div>`:''}<div class="row sum"><div class="g"><b>ยอดที่ต้องชำระ</b></div><div class="r"><b>${baht(bc.total)}</b></div></div></div>
         ${st.waiting?`<p class="muted" style="margin:0">ยังมี ${st.waiting} รายการที่กำลังทำ ยอดนี้รวมไว้แล้ว</p>`:''}
-        ${memBox(st,bc)}
+        ${(h=>h?h+'<p class="pdpa-note">🔒 เบอร์โทรใช้สะสมแต้มเท่านั้น ไม่เปิดเผยให้ผู้อื่น · ขอลบข้อมูลได้ที่ร้าน</p>':'')(memBox(st,bc))}
         ${pp&&bc.total>0?`${ppPoster(pp,bc.total,{name:window.PPN||'',bg:'images/bg-m.jpg',pos:'left top',size:'auto 100%',rep:'repeat-x',htop:1})}`:''}
         <div class="stack">${pp&&bc.total>0?slipBox(st):''}${S.slipSent&&S.slipSent.o===(st.orderNo||'')?'':`<button class="btn${pp?'':' pri'}" data-a="call" data-v="pay" type="button">ชำระเงินสด / เรียกพนักงานเก็บเงิน</button>`}</div>
         <p class="muted" style="margin:0;font-size:13px">ส่วนลดหรือแต้มสะสม พนักงานจะหักให้ตอนชำระเงิน ยอดสุดท้ายตามใบเสร็จ</p>`:'<p class="muted">ยังไม่มีรายการ</p>');

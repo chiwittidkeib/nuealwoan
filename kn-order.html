@@ -102,6 +102,9 @@ button,input{font:inherit;color:inherit}
 /* กันวรรณยุกต์/สระบนภาษาไทยโดนตัดในช่องกรอก */
 input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,select{line-height:1.6!important;overflow:visible}
 input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8px,var(--ipt,0px));padding-bottom:max(8px,var(--ipb,0px));height:auto}
+
+.pdpa-note{margin:8px 0 0;font-size:12px;line-height:1.5;color:#7a6a5a;opacity:.9}
+.pdpa-ck{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5;margin:6px 0 10px;text-align:left}.pdpa-ck input{width:18px;height:18px;flex:none;margin-top:2px}
 </style>
 </head>
 <body>
@@ -181,7 +184,7 @@ function renderCart(){const a=$('#app'),pp=(S.shop.promptpay||'').replace(/\D/g,
   a.innerHTML=hdr()+`<div class="card"><h2>🧺 ตะกร้าของคุณ${S.name?esc(S.name):''}</h2>${S.cart.map((l,i)=>`<div class="row"><div class="t"><b>${esc(l.name)}</b>${l.optN?`<small>${esc(l.optN)}</small>`:''}${l.note?`<small>📝 ${esc(l.note)}</small>`:''}</div><div class="st"><button data-i="${i}" data-d="-1">−</button><span>${l.qty}</span><button data-i="${i}" data-d="1">+</button></div><b>${baht(l.unit*l.qty)}</b></div>`).join('')||'<p>ตะกร้าว่าง</p>'}
    <div class="tot"><span>รวม ${cN()} รายการ</span><b>${baht(cTot())}</b></div></div>
    <div class="card"><label class="name"><span>ชื่อลูกค้า คุณ</span><input id="nm" maxlength="40" value="${esc(S.name)}" placeholder="ชื่อเล่น (ไว้เรียกคิว)"></label></div>
-   <div class="card"><h2>ชำระเงิน</h2><div class="pays">${pp?`<button class="pay${S.pay==='qr'?' on':''}" data-p="qr">📱 โอน / สแกนจ่าย<small>สแกน QR แล้วแนบสลิป</small></button>`:''}${S.shop.cashOk===false?'':`<button class="pay${S.pay==='cash'?' on':''}" data-p="cash">💵 จ่ายเงินสด<small>ที่เคาน์เตอร์หน้าร้าน</small></button>`}</div>
+   <p class="pdpa-note" style="margin:-4px 4px 10px">🔒 ร้านเก็บชื่อและเบอร์โทรไว้ใช้ทำออร์เดอร์และติดต่อกลับเท่านั้น ไม่เปิดเผยให้ผู้อื่น · รูปสลิปลบอัตโนมัติ · ขอดูหรือลบข้อมูลได้ที่ร้าน</p><div class="card"><h2>ชำระเงิน</h2><div class="pays">${pp?`<button class="pay${S.pay==='qr'?' on':''}" data-p="qr">📱 โอน / สแกนจ่าย<small>สแกน QR แล้วแนบสลิป</small></button>`:''}${S.shop.cashOk===false?'':`<button class="pay${S.pay==='cash'?' on':''}" data-p="cash">💵 จ่ายเงินสด<small>ที่เคาน์เตอร์หน้าร้าน</small></button>`}</div>
    ${S.pay==='qr'&&pp?(cTot()>0?`${ppCard(pp,cTot(),'โอนเรียบร้อยแล้ว แนบสลิป<br>ด้านล่างได้เลยเจ้า')}
    ${S.slipImg?`<div class="slipok"><img src="${S.slipImg}" alt="สลิป"><div><b>✅ แนบสลิปแล้ว</b><small>ตรวจดูว่าเป็นสลิปที่ถูกต้อง</small><label class="lnk">เปลี่ยนสลิป<input type="file" accept="image/*" id="cslip" hidden></label></div></div>`:`<label class="btn pri" style="margin-top:10px">📎 ② แนบสลิปการโอน<input type="file" accept="image/*" id="cslip" hidden></label>`}`:'<div class="msg warn" style="margin-top:10px">เมนูนี้ร้านยังไม่ได้ตั้งราคา (฿0) · กรุณาแจ้งพนักงาน หรือเลือกจ่ายเงินสดที่เคาน์เตอร์</div>'):''}</div>
    <button class="btn pri" id="go" ${!S.cart.length||S.busy||needSlip?'disabled':''}>${S.busy?'⏳ กำลังส่ง…':needSlip?'📎 แนบสลิปก่อน จึงกดยืนยันได้':'✅ ยืนยันสั่ง '+baht(cTot())}</button>

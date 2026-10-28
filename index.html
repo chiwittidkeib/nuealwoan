@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.28-110421">
+<meta name="app-version" content="2026.10.28-114758">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1529,6 +1529,13 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8
 .limb-bar{display:block;height:7px;border-radius:99px;background:rgba(0,0,0,.1);overflow:hidden}
 .limb-bar span{display:block;height:100%;border-radius:99px;transition:width .3s}
 .limb.sm{max-width:none;margin-top:2px}.limb.sm .limb-t{font-size:11.5px}
+
+.seclist{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow:auto;padding-right:2px}
+.secr{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:12px;background:var(--sunk);font-size:13.5px}
+.secr.crit{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.35)}.secr.warn{background:rgba(245,158,11,.1)}
+.secr i{font-style:normal}.secr>div{display:flex;flex-direction:column;gap:2px;min-width:0}.secr small{color:var(--muted)}
+.secd{display:flex;flex-direction:column;gap:1px;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.secck{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
 </style>
 </head>
 <body>
@@ -1762,7 +1769,7 @@ try{S.menuLay=localStorage.getItem('nl_menulay')==='grid'?'grid':'list'}catch(e)
 const curCats=()=>S.shop==='po'?((S.po&&S.po.cats)||[]):S.shop==='kn'?((S.kn&&S.kn.cats)||[]):(S.settings.cats||[]);
 /* ---------- db writes: one at a time per document ---------- */
 const queues={};
-function errMsg(e){const c=e&&e.code;if(/shop_closed/.test(String((e&&e.message)||'')))return '🔒 ร้านปิดอยู่ · เปิดบิลใหม่ / เพิ่มรายการไม่ได้ (แอดมินกด "เปิดร้าน" ก่อน)';
+function errMsg(e){const c=e&&e.code;if(/locked_paid/.test(String((e&&e.message)||'')))return '🔒 บิลที่ชำระแล้วแก้ยอดหรือลบไม่ได้ · ต้องเป็นแอดมิน หรือมีสิทธิ์ "ยกเลิกบิล"';if(/no_menu_edit/.test(String((e&&e.message)||'')))return '🔒 บัญชีนี้ไม่มีสิทธิ์แก้เมนูและราคา';if(/shop_closed/.test(String((e&&e.message)||'')))return '🔒 ร้านปิดอยู่ · เปิดบิลใหม่ / เพิ่มรายการไม่ได้ (แอดมินกด "เปิดร้าน" ก่อน)';
   if(c==='not_found')return 'ไม่พบรายการนี้แล้ว อาจถูกลบหรือปิดจากอีกเครื่อง';
   if(c==='quota_exceeded')return 'พื้นที่ฐานข้อมูลเต็ม ลบบิลหรือรายการเก่าบางส่วนก่อน';
   if(c==='invalid_argument')return 'บันทึกไม่สำเร็จ บัญชีนี้ไม่มีสิทธิ์แก้ไข หรือข้อมูลไม่ถูกต้อง';
@@ -1803,6 +1810,7 @@ const ppShopCard=(pp,amt,foot,sh)=>ppPoster(pp,amt,{...ppShopOpt(sh),name:S.sett
  const end=e=>{if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;d.row.classList.remove('dragging');document.body.classList.remove('msort-busy');
    const ids=[...d.row.parentNode.querySelectorAll('.msort-r')].filter(r=>r.dataset.cat===d.cat).map(r=>r.dataset.mid);ACT.menuSortApply(d.cat,ids)};
  document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end)})();
+
 function ppPayload(id,amount){
   let t=String(id||'').replace(/\D/g,''),tag;
   if(t.length===15)tag='03';else if(t.length>=13){tag='02';t=t.slice(0,13)}else{tag='01';t=('0000000000000'+t.replace(/^0/,'66')).slice(-13)}
@@ -1877,7 +1885,7 @@ async function startData(){
   let u;try{u=await tmo(SB.auth.getUser(),15000)}catch(e){u={data:{user:null}}}S.me=emailToUser(u.data.user?.email||'');S.email=String(u.data.user?.email||'').toLowerCase();
 
   const db=makeDb(SB);
-  S.db=db;S.state='ready';render();
+  S.db=db;S.state='ready';render();setTimeout(pdpaAuto,8000);
   pushBoot();loadQrDay();setInterval(()=>{const d=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);if(!S.qrDay||S.qrDay.day!==d)loadQrDay()},10*60000);
   if(S.role!=='owner'){gateCheck();setInterval(gateCheck,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)gateCheck()})}
   db.doc('config/permissions').onSnapshot(s=>{S.perms=s.exists?(s.data().roles||null):null;renderSoon();refreshSheet()},onErr);
@@ -3033,7 +3041,7 @@ function sheetAccount(){$('#panel').innerHTML=head('บัญชีของฉ�
 function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.settings,SYS=S.sheet.scope!=='shop',SG=S.sheet.sg||(SYS?6:1),sh=k=>SG==k?'':'hidden';
   $('#panel').innerHTML=head(SYS?'⚙️ ตั้งค่าระบบส่วนกลาง':'🏪 ตั้งค่าร้าน'+esc(s.rcName||'เนื้อล้วนๆ'),SYS?'ใช้ร่วมกันทุกร้าน · พนักงาน · พร้อมเพย์ · เบอร์โทร · สะสมแต้ม · เสียงแจ้งเตือน':'เฉพาะร้านนี้ · โต๊ะ · ใบเสร็จ · QR สั่งอาหาร · เดลิเวอรี่')+
   `<form class="sh-body">
-  <div class="sgtabs" role="tablist">${(SYS?[['6','👥','พนักงาน & สิทธิ์'],['2','💳','พร้อมเพย์ & เบอร์โทร'],['3','⭐','สะสมแต้ม'],['8','🔔','เสียงแจ้งเตือน']]:[['1','🏪','ร้าน & โต๊ะ'],['7','🧾','VAT & ใบเสร็จ'],['4','📷','QR สั่งอาหาร'],['5','🛵','เดลิเวอรี่']]).map(([k,i,t])=>`<button type="button" role="tab" data-act="sgTab" data-v="${k}" aria-selected="${SG==k}"><span>${i}</span>${t}</button>`).join('')}</div>
+  <div class="sgtabs" role="tablist">${(SYS?[['6','👥','พนักงาน & สิทธิ์'],['2','💳','พร้อมเพย์ & เบอร์โทร'],['3','⭐','สะสมแต้ม'],['8','🔔','เสียงแจ้งเตือน'],['9','🛡️','ความปลอดภัย & PDPA']]:[['1','🏪','ร้าน & โต๊ะ'],['7','🧾','VAT & ใบเสร็จ'],['4','📷','QR สั่งอาหาร'],['5','🛵','เดลิเวอรี่']]).map(([k,i,t])=>`<button type="button" role="tab" data-act="sgTab" data-v="${k}" aria-selected="${SG==k}"><span>${i}</span>${t}</button>`).join('')}</div>
   <section class="sg" data-sg="1" ${sh(1)}><h3 class="sg-h">🏪 ข้อมูลร้าน · โต๊ะ · หมวดหมู่</h3>
   <div class="field"><label for="cName">ชื่อร้าน</label><input id="cName" value="${esc(s.shopName)}"></div>
   <div class="grid2"><div class="field"><label for="cTables">จำนวนโต๊ะ</label><input id="cTables" inputmode="numeric" value="${s.tables}"></div><div class="field"><label for="cExtra">ราคา "พิเศษ" (บาท)</label><input id="cExtra" inputmode="decimal" value="${s.extraPrice??10}"></div></div>
@@ -3100,6 +3108,7 @@ function sheetSettings(){if(S.role!=='owner')return sheetAccount();const s=S.set
   ${bgCard()}
   </section>
   <section class="sg" data-sg="8" ${sh(8)}><h3 class="sg-h">🔔 เสียงแจ้งเตือน (ใช้ทุกร้าน)</h3>${bellCard()}</section>
+  <section class="sg" data-sg="9" ${sh(9)}><h3 class="sg-h">🛡️ ความปลอดภัยข้อมูล · PDPA</h3>${secCard()}</section>
   <section class="sg" data-sg="5" ${sh(5)}><h3 class="sg-h">🛵 เดลิเวอรี่</h3>${rdSettingsCard()}${oaSettingsCard()}
   <div class="card"><h3>ช่องทางเดลิเวอรี่</h3><p class="help" style="margin:0">ราคาบวกเพิ่มใช้ตอนเพิ่มรายการในออร์เดอร์ของช่องทางนั้น GP ใช้คิดเงินที่ร้านได้รับจริงในรายงาน ใส่ตามสัญญาของร้าน</p>
    <div class="perm-wrap"><table class="perm"><thead><tr><th>ช่องทาง</th><th>เปิดใช้</th><th>ราคา +%</th><th>GP %</th></tr></thead><tbody>${DELIV.map(c=>{const g=chCfg(c);return `<tr><td><span class="chip-ch" style="--chc:${CH[c].c}">${CH[c].n}</span></td><td class="c"><input type="checkbox" id="chOn_${c}" ${g.on?'checked':''} aria-label="เปิดใช้ ${CH[c].n}"></td><td class="c"><input class="pct" id="chMk_${c}" inputmode="decimal" value="${g.markup||0}" aria-label="ราคาบวกเพิ่ม ${CH[c].n}"></td><td class="c"><input class="pct" id="chGp_${c}" inputmode="decimal" value="${g.gp||0}" aria-label="GP ${CH[c].n}"></td></tr>`}).join('')}</tbody></table></div></div>
@@ -3465,6 +3474,44 @@ $('#hdrMode').addEventListener('change',e=>{const v=e.target.value;e.target.data
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet()});
 setInterval(()=>{if(S.state==='ready'&&(!S.sheet||S.sheet.type!=='pay'))render()},60000);
 /* ---------- แจ้งเตือนเวอร์ชันใหม่ (กันมือถือจำหน้าเก่าไว้) ---------- */
+/* ---------- ความปลอดภัยข้อมูล + PDPA ---------- */
+const SEC_F={all:'ทั้งหมด',crit:'🔴 สำคัญ',money:'💰 การเงิน',set:'⚙️ ตั้งค่า/สิทธิ์',menu:'🍽️ เมนู',pdpa:'🧾 PDPA'};
+function secCard(){const p=(S.settings.pdpa)||{},sd=p.slipDays??60,pd=p.piiDays??365;
+  return `<div class="card"><div class="sec-h" style="margin:0"><h3>📜 บันทึกการใช้งาน</h3><button type="button" class="btn sm" data-act="secLoad">🔄 โหลดใหม่</button></div>
+   <p class="help" style="margin:0">ระบบบันทึกเองทุกครั้งที่มีการรับเงิน ยกเลิก/ลบบิล แก้ราคาเมนู แก้ตั้งค่า เปลี่ยนพร้อมเพย์ เปลี่ยนสิทธิ์ เพิ่ม/ลบพนักงาน เปิด-ปิดลิ้นชัก รายจ่าย และสมาชิก · <b>แก้หรือลบบันทึกไม่ได้ แม้แต่แอดมิน</b> · 🔴 จะแจ้งเตือนเข้ามือถือแอดมิน</p>
+   <div class="chips" id="secF">${Object.entries(SEC_F).map(([k,t])=>`<button type="button" class="chip" aria-pressed="${(S.secF||'all')===k}" data-act="secF" data-v="${k}">${t}</button>`).join('')}</div>
+   <div id="secList" class="seclist"><p class="help">กำลังโหลด…</p></div></div>
+  <div class="card"><h3>🧾 PDPA · เก็บข้อมูลลูกค้าเท่าที่จำเป็น</h3>
+   <div class="grid2"><div class="field"><label for="pdSlip">ลบรูปสลิปโอนเงินหลัง (วัน)</label><input id="pdSlip" inputmode="numeric" value="${sd}"></div>
+   <div class="field"><label for="pdPii">ปิดบังชื่อ/เบอร์/ที่อยู่ในบิลเก่าหลัง (วัน)</label><input id="pdPii" inputmode="numeric" value="${pd}"></div></div>
+   <p class="help" style="margin:0">ยอดขาย รายการอาหาร และรายงานยังอยู่ครบ · ลบ/ปิดบังเฉพาะข้อมูลส่วนบุคคล · ระบบทำให้อัตโนมัติวันละครั้ง (ตอนแอดมินเปิดแอป)</p>
+   <div class="inrow" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn sm pri" data-act="pdSave">บันทึกกำหนดเวลา</button><button type="button" class="btn sm" data-act="pdRun">ลบตามกำหนดตอนนี้</button></div></div>
+  <div class="card"><h3>🙋 ลูกค้าขอลบข้อมูล (สิทธิ์ตาม PDPA)</h3>
+   <p class="help" style="margin:0">ลบข้อมูลสมาชิก แต้ม และลบชื่อ/เบอร์/ที่อยู่ในทุกบิลของเบอร์นี้ (ยอดขายยังอยู่) · ย้อนกลับไม่ได้</p>
+   <div class="inrow" style="gap:8px"><input id="pdPh" inputmode="tel" placeholder="เบอร์โทรลูกค้า" style="flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid var(--line)"><button type="button" class="btn sm danger" data-act="pdForget" data-confirm="1">ลบข้อมูล</button></div></div>
+  <div class="card"><h3>💾 สำรองข้อมูล</h3><p class="help" style="margin:0">ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์ (เก็บไว้ในที่ปลอดภัย ไฟล์มีข้อมูลลูกค้า)</p><button type="button" class="btn sm" data-act="secBackup" style="align-self:flex-start">⬇️ ดาวน์โหลดไฟล์สำรอง</button></div>
+  <div class="card"><h3>✅ เช็กลิสต์ที่เจ้าของต้องตั้งเอง</h3><ol class="secck">
+   <li>เปิดยืนยัน 2 ชั้น (2FA) ทุกบัญชี: อีเมลหลัก/Google · GitHub · Supabase · LINE Developers</li>
+   <li>Supabase → Advisors → <b>Security Advisor</b> ต้องไม่มีรายการสีแดง (ดูทุกเดือน)</li>
+   <li>Supabase → Authentication → <b>Rate Limits</b> ลดจำนวนครั้งล็อกอินต่อชั่วโมง · Attack Protection เปิด CAPTCHA</li>
+   <li>Supabase → Billing ตั้งแจ้งเตือนค่าใช้จ่าย · บิลพุ่ง = อาจถูกขโมยกุญแจ</li>
+   <li>ไม่ส่งรหัสผ่าน/คีย์ทางแชต · เปลี่ยนรหัสพนักงานที่ลาออกทันที (ลบออกจากรายชื่อ)</li>
+   <li>หมุนเปลี่ยนคีย์ LINE / Google ทุก 6 เดือน หรือทันทีเมื่อสงสัย</li>
+   <li>ถ้าข้อมูลรั่ว: เปลี่ยนรหัส/คีย์ทุกบริการ · ดูบันทึกด้านบนว่าเข้าถึงอะไร · ข้อมูลส่วนบุคคลรั่วต้องแจ้ง สคส. ภายใน 72 ชม. (PDPA)</li></ol></div>`}
+const secCat=r=>r.sev==='crit'?'crit':['orders','kn_sales','po_orders','cash_sessions','expenses','incomes'].includes(r.col)?'money':['config','staff'].includes(r.col)?'set':r.col==='menu'?'menu':r.col==='pdpa'||/slips/.test(r.col||'')?'pdpa':'other';
+async function secLoad(){const box=$('#secList');if(!box||!SB)return;try{const {data,error}=await SB.from('audit_log').select('*').order('id',{ascending:false}).limit(300);if(error)throw error;S.secRows=data||[];secRender()}
+  catch(e){box.innerHTML='<p class="help">'+(/audit_log|relation|schema cache/i.test(String(e.message||''))?'ยังไม่ได้รัน nuealwoan-update.sql (ส่วนความปลอดภัย)':'โหลดไม่ได้ ลองใหม่')+'</p>'}}
+function secRender(){const box=$('#secList');if(!box)return;const f=S.secF||'all',L=(S.secRows||[]).filter(r=>f==='all'||(f==='crit'?r.sev==='crit':secCat(r)===f));
+  const fv=v=>v==null?'–':typeof v==='object'?JSON.stringify(v).slice(0,60):String(v).slice(0,60);
+  box.innerHTML=L.length?L.map(r=>{const d=r.diff&&typeof r.diff==='object'?Object.entries(r.diff).filter(([,v])=>Array.isArray(v)).slice(0,4).map(([k,v])=>`<span>${esc(k)}: ${esc(fv(v[0]))} → <b>${esc(fv(v[1]))}</b></span>`).join(''):'';const t=new Date(r.at);
+    return `<div class="secr ${r.sev||''}"><i>${r.sev==='crit'?'🔴':r.sev==='warn'?'🟠':'⚪'}</i><div><b>${esc(r.summary||'')}</b><small>${dshort(+t)} ${hm(+t)} น. · ${esc(emailToUser(r.actor||'')||r.actor||'')}${r.role?' ('+esc(r.role)+')':''}</small>${d?`<div class="secd">${d}</div>`:''}</div></div>`}).join(''):'<p class="help">ยังไม่มีรายการ</p>'}
+Object.assign(ACT,{secLoad:()=>secLoad(),secF:d=>{S.secF=d.v;document.querySelectorAll('#secF .chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===d.v)));secRender()},
+  pdSave:async()=>{const sd=Math.max(7,Math.round(+val('pdSlip')||60)),pd=Math.max(30,Math.round(+val('pdPii')||365));const ok=await write('config/settings',r=>r.update({pdpa:{slipDays:sd,piiDays:pd}}));if(ok){S.settings={...S.settings,pdpa:{slipDays:sd,piiDays:pd}};toast('บันทึกกำหนดเวลาแล้ว')}},
+  pdRun:async()=>{const {data,error}=await SB.rpc('pdpa_purge');if(error)return toast('ทำไม่สำเร็จ: '+(error.message||''),'bad');toast(`ลบรูปสลิป ${num(data.slips||0)} รูป · ปิดบังบิลเก่า ${num(data.pii||0)} บิล`);secLoad()},
+  pdForget:async()=>{const ph=val('pdPh').replace(/\D/g,'');if(!/^0\d{8,9}$/.test(ph))return toast('ใส่เบอร์โทรให้ถูกต้อง','bad');const {data,error}=await SB.rpc('pdpa_forget',{p_phone:ph});if(error)return toast('ทำไม่สำเร็จ: '+(error.message||''),'bad');toast(`ลบข้อมูลแล้ว · สมาชิก ${data.members} · บิล ${data.bills}`);const i=$('#pdPh');if(i)i.value='';secLoad()},
+  secBackup:async()=>{toast('กำลังเตรียมไฟล์…');try{const all=[];for(let from=0;;from+=1000){const {data,error}=await SB.from('docs').select('collection,id,data,updated_at').range(from,from+999);if(error)throw error;all.push(...data);if(data.length<1000)break}
+    const b=new Blob([JSON.stringify({at:new Date().toISOString(),count:all.length,docs:all})],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='nuealwoan-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);toast('ดาวน์โหลดแล้ว '+num(all.length)+' รายการ')}catch(e){toast('สำรองไม่สำเร็จ','bad')}}});
+function pdpaAuto(){if(S.role!=='owner'||!SB)return;let d='';try{d=localStorage.getItem('nl_pdpa_day')||''}catch(e){}const t=bkDay();if(d===t)return;SB.rpc('pdpa_purge').then(({error})=>{if(!error)try{localStorage.setItem('nl_pdpa_day',t)}catch(e){}})}
 try{if(localStorage.getItem('nl_hdr_open')==='1')document.body.classList.add('hdr-open')}catch(e){}
 try{S.knLay=localStorage.getItem('nl_kn_lay')||'grid'}catch(e){}
 const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||'';
@@ -4901,7 +4948,7 @@ Object.assign(ACT,{
   staffName:async d=>{const n=prompt('ชื่อเรียกของ '+d.user+' (เว้นว่าง = ใช้ชื่อผู้ใช้)',d.name||'');if(n===null)return;
     const {error}=await SB.from('staff').update({display_name:n.trim().slice(0,40)||null}).eq('email',d.email);
     if(error)return toast(/display_name|column/i.test(error.message||'')?'ยังไม่ได้รัน SQL ชื่อพนักงาน (nuealwoan-patch-staffname.sql)':'ตั้งชื่อไม่สำเร็จ','bad');toast('บันทึกชื่อแล้ว');loadStaff()},
-  sgTab:d=>{S.sheet.sg=+d.v;document.querySelectorAll('#panel .sg').forEach(x=>x.hidden=x.dataset.sg!==d.v);document.querySelectorAll('#panel .sgtabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===d.v)));const b=$('#panel .sh-body');if(b)b.scrollTop=0;
+  sgTab:d=>{S.sheet.sg=+d.v;if(d.v==='9')setTimeout(secLoad,0);document.querySelectorAll('#panel .sg').forEach(x=>x.hidden=x.dataset.sg!==d.v);document.querySelectorAll('#panel .sgtabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===d.v)));const b=$('#panel .sh-body');if(b)b.scrollTop=0;
     if(d.v==='5')setTimeout(()=>{const m=S.sheet&&S.sheet.rdMap;try{m&&m.invalidateSize&&m.invalidateSize()}catch(e){}},60)},
   memQrPrint:()=>{const card=`<div class="pq"><small style="font-weight:600">${esc(S.settings.rcName||'เนื้อล้วนๆ')}</small>${qrSvg(memberUrl())}<b>สมัครสมาชิกสะสมแต้ม</b><small>ทุก ${num(+S.settings.pointsPer||50)} บาท ได้ 1 แต้ม · ใช้ได้ทั้ง 2 ร้าน</small></div>`;$('#printArea').className='qrs one';$('#printArea').innerHTML=card;setTimeout(()=>window.print(),50)},
   memCard:()=>{const sh=S.sheet;const o=sh&&(sh.order||poById(sh.id));if(!o||!o.memberPhone)return;const m=S.members.find(x=>x.id===o.memberPhone)||{};

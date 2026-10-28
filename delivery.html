@@ -230,6 +230,8 @@ body.dark .sph,[data-theme=dark] .sph{color:#fbbf24!important}
 /* กันวรรณยุกต์/สระบนภาษาไทยโดนตัดในช่องกรอก */
 input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,select{line-height:1.6!important;overflow:visible}
 input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8px,var(--ipt,0px));padding-bottom:max(8px,var(--ipb,0px));height:auto}
+
+.pdpa-note{margin:8px 0 0;font-size:12px;line-height:1.5;color:#7a6a5a;opacity:.9}
 </style>
 </head>
 <body>
@@ -623,7 +625,7 @@ function renderStatus(){const d=S.st,v=$('#view');$('#footIn').innerHTML='';$('#
   if((stg==='accepted'||stg==='slipbad')&&d.via==='lineman')h+=`<div class="rnote lm"><span class="ic">🟢</span><div><b>ส่งโดยไรเดอร์ LINE MAN</b><span>ไรเดอร์ร้านไม่ว่างตอนนี้ ร้านจะเรียก LINE MAN ไปส่งให้ · ค่าส่ง ${baht(d.fee)} ตามแอป LINE MAN</span></div></div>`;
   if(stg==='accepted'||stg==='slipbad'){
     h+=`<div class="card">${stg==='slipbad'?`<div class="warn">⚠️ ร้านแจ้ง: <b>${esc(d.slipBad||'')}</b></div>`:''}
-      ${pp?`${ppPoster(pp,amt,{name:window.PPN||'',bg:'images/bg-m.jpg',pos:'left top',size:'auto 100%',rep:'repeat-x',htop:1,foot:'ค่าอาหาร '+baht(d.food)+' + ค่าส่ง'+(d.via==='lineman'?' LINE MAN':'')+' '+baht(d.fee)})}<p class="help" style="text-align:center">กดค้างที่ QR เพื่อบันทึกรูป แล้วเปิดในแอปธนาคาร</p>`:`<div class="warn">ร้านยังไม่ได้ตั้งพร้อมเพย์ โทรถามเลขบัญชีกับร้าน${d.shopPhone?` <a href="tel:${esc(d.shopPhone)}">${esc(d.shopPhone)}</a>`:''}</div>`}
+      ${pp?`<p class="pdpa-note">🔒 ร้านเก็บชื่อ เบอร์โทร และที่อยู่ไว้ใช้ทำออร์เดอร์และจัดส่งเท่านั้น ไม่เปิดเผยให้ผู้อื่น · รูปสลิปลบอัตโนมัติ · ขอดูหรือลบข้อมูลได้ที่ร้าน</p>${ppPoster(pp,amt,{name:window.PPN||'',bg:'images/bg-m.jpg',pos:'left top',size:'auto 100%',rep:'repeat-x',htop:1,foot:'ค่าอาหาร '+baht(d.food)+' + ค่าส่ง'+(d.via==='lineman'?' LINE MAN':'')+' '+baht(d.fee)})}<p class="help" style="text-align:center">กดค้างที่ QR เพื่อบันทึกรูป แล้วเปิดในแอปธนาคาร</p>`:`<div class="warn">ร้านยังไม่ได้ตั้งพร้อมเพย์ โทรถามเลขบัญชีกับร้าน${d.shopPhone?` <a href="tel:${esc(d.shopPhone)}">${esc(d.shopPhone)}</a>`:''}</div>`}
       ${slipBox()}</div>`}
   if(stg==='slip')h+=`<div class="card">${S.slipSent&&S.slipSent.id===S.id?`<div class="slipok"><img src="${S.slipSent.img}" alt="สลิป" data-a="viewSlip"><div class="grow"><b>✓ ส่งสลิปแล้ว</b><small class="muted">ร้านกำลังตรวจยอด ${baht(amt)}</small></div></div>`:`<div class="slipok"><span style="font-size:30px">📎</span><div class="grow"><b>✓ ส่งสลิปแล้ว</b><small class="muted">ร้านกำลังตรวจยอด ${baht(amt)}</small></div></div>`}<label class="btn sm" for="slipIn">ส่งสลิปใหม่</label></div>`;
   if(dv.ext&&['accepted','picked'].includes(dv.status)){const nm=String(dv.riderName||'').replace(/^LINE MAN( · )?/,'');

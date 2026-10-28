@@ -78,6 +78,9 @@ button:disabled{opacity:.5}
 /* กันวรรณยุกต์/สระบนภาษาไทยโดนตัดในช่องกรอก */
 input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,select{line-height:1.6!important;overflow:visible}
 input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8px,var(--ipt,0px));padding-bottom:max(8px,var(--ipb,0px));height:auto}
+
+.pdpa-note{margin:8px 0 0;font-size:12px;line-height:1.5;color:#7a6a5a;opacity:.9}
+.pdpa-ck{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5;margin:6px 0 10px;text-align:left}.pdpa-ck input{width:18px;height:18px;flex:none;margin-top:2px}
 </style>
 </head>
 <body>
@@ -88,6 +91,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8
   <div><label for="ph">เบอร์โทรศัพท์</label><input id="ph" type="tel" inputmode="tel" autocomplete="tel" maxlength="12" placeholder="08x-xxx-xxxx" required></div>
   <div><label for="nm">ชื่อเล่น (ไม่บังคับ)</label><input id="nm" maxlength="40" autocomplete="nickname" placeholder="กรุณากรอกชื่อลูกค้า"></div>
   <p class="err" id="err" role="alert"></p>
+  <label class="pdpa-ck"><input type="checkbox" id="pdpaOk"> <span>ยินยอมให้ร้านเก็บเบอร์โทรและชื่อ เพื่อสะสมแต้มและแจ้งสิทธิพิเศษ · ขอลบข้อมูลได้ทุกเมื่อที่ร้าน</span></label>
   <button type="submit" id="go">สมัครสมาชิก</button>
   <p class="muted">ใช้เบอร์โทรเพื่อสะสมแต้มกับร้านเท่านั้น</p>
 </form>
@@ -112,6 +116,7 @@ const cfg=window.APP_CONFIG||{};let sb=null;{const per=+(new URLSearchParams(loc
 try{sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}})}catch(e){}
 $('#f').addEventListener('submit',async e=>{e.preventDefault();const ph=$('#ph').value.replace(/\D/g,''),err=$('#err');
   if(!/^0\d{8,9}$/.test(ph))return err.textContent='เบอร์โทรไม่ถูกต้อง (ตัวเลข 9–10 หลัก ขึ้นต้นด้วย 0)';
+  if(!$('#pdpaOk').checked)return err.textContent='กรุณากดยินยอมการเก็บข้อมูลก่อนสมัคร';
   if(!sb)return err.textContent='ระบบยังไม่พร้อม ลองใหม่อีกครั้ง';
   err.textContent='';$('#go').disabled=true;$('#go').textContent='กำลังสมัคร…';
   try{const {data,error}=await sb.rpc('member_signup',{p_phone:ph,p_name:$('#nm').value.trim()});

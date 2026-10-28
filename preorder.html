@@ -392,6 +392,9 @@ body.dark .sph,[data-theme=dark] .sph{color:#fbbf24!important}
 /* กันวรรณยุกต์/สระบนภาษาไทยโดนตัดในช่องกรอก */
 input:not([type=checkbox]):not([type=radio]):not([type=range]),textarea,select{line-height:1.6!important;overflow:visible}
 input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8px,var(--ipt,0px));padding-bottom:max(8px,var(--ipb,0px));height:auto}
+
+.pdpa-note{margin:8px 0 0;font-size:12px;line-height:1.5;color:#7a6a5a;opacity:.9}
+.pdpa-ck{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5;margin:6px 0 10px;text-align:left}.pdpa-ck input{width:18px;height:18px;flex:none;margin-top:2px}
 </style>
 </head>
 <body>
@@ -741,7 +744,7 @@ function render(){
     <section class="box"><h3>ผู้รับ</h3>
       <div class="field"><label for="pName">ชื่อ</label><input id="pName" maxlength="40" autocomplete="name" value="${esc(me.name||'')}" placeholder="กรุณากรอกชื่อลูกค้า"></div>
       <div class="field"><label for="pPhone">เบอร์โทร</label><input id="pPhone" type="tel" inputmode="tel" maxlength="12" autocomplete="tel" value="${esc(me.phone||'')}" placeholder="08x-xxx-xxxx"></div></section>
-    <section class="box"><h3>ชำระเงิน</h3><div class="seg">
+    <p class="pdpa-note" style="margin:-4px 4px 10px">🔒 ร้านเก็บชื่อและเบอร์โทรไว้ใช้ทำออร์เดอร์และติดต่อกลับเท่านั้น ไม่เปิดเผยให้ผู้อื่น · รูปสลิปลบอัตโนมัติ · ขอดูหรือลบข้อมูลได้ที่ร้าน</p><section class="box"><h3>ชำระเงิน</h3><div class="seg">
       ${c.payBefore?`<button type="button" class="segb" data-a="pay" data-v="before" aria-pressed="${S.pay==='before'}">โอนก่อน</button>`:''}
       ${c.payAfter?`<button type="button" class="segb" data-a="pay" data-v="after" aria-pressed="${S.pay==='after'}">ชำระเงินตอนรับของ</button>`:''}</div>
       ${S.pay==='before'?`${pp&&cartT()>0?ppBox(pp,cartT(),c.ppName):pp?'':`<p class="err" style="margin:0;font-size:13px">ร้านยังไม่ได้ตั้งเบอร์พร้อมเพย์ · ติดต่อร้าน${c.phone?' '+esc(c.phone):''} เพื่อขอเลขบัญชี</p>`}
