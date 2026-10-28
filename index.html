@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.28-114758">
+<meta name="app-version" content="2026.10.28-135441">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1536,6 +1536,18 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8
 .secr i{font-style:normal}.secr>div{display:flex;flex-direction:column;gap:2px;min-width:0}.secr small{color:var(--muted)}
 .secd{display:flex;flex-direction:column;gap:1px;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
 .secck{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+
+.secleg{margin:4px 0;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--surface)}
+.secleg summary{cursor:pointer}.secleg table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px}
+.secleg th,.secleg td{padding:6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.secleg tr.crit td:first-child{color:#dc2626;font-weight:700}.secleg tr.warn td:first-child{color:#d97706;font-weight:700}
+.secleg small{font-weight:400;color:var(--muted)}
+
+/* รายการ: ชื่อเมนูบน แถบเหลือขายใต้ชื่อ ราคาขวา */
+.kng.knlist .kngi{display:grid!important;grid-template-columns:64px minmax(0,1fr) auto;grid-template-areas:"img name price" "img lim price";column-gap:12px;row-gap:4px;align-items:center}
+.kng.knlist .kngi-img{grid-area:img}.kng.knlist .kngi b{grid-area:name;align-self:end}.kng.knlist .kngi em{grid-area:price}
+.kng.knlist .kngi .limb{grid-area:lim;align-self:start;max-width:320px;margin-top:0}
+.kng.knlist .kngi:not(:has(.limb)) b{grid-row:1/3;align-self:center}
 </style>
 </head>
 <body>
@@ -1769,7 +1781,7 @@ try{S.menuLay=localStorage.getItem('nl_menulay')==='grid'?'grid':'list'}catch(e)
 const curCats=()=>S.shop==='po'?((S.po&&S.po.cats)||[]):S.shop==='kn'?((S.kn&&S.kn.cats)||[]):(S.settings.cats||[]);
 /* ---------- db writes: one at a time per document ---------- */
 const queues={};
-function errMsg(e){const c=e&&e.code;if(/locked_paid/.test(String((e&&e.message)||'')))return '🔒 บิลที่ชำระแล้วแก้ยอดหรือลบไม่ได้ · ต้องเป็นแอดมิน หรือมีสิทธิ์ "ยกเลิกบิล"';if(/no_menu_edit/.test(String((e&&e.message)||'')))return '🔒 บัญชีนี้ไม่มีสิทธิ์แก้เมนูและราคา';if(/shop_closed/.test(String((e&&e.message)||'')))return '🔒 ร้านปิดอยู่ · เปิดบิลใหม่ / เพิ่มรายการไม่ได้ (แอดมินกด "เปิดร้าน" ก่อน)';
+function errMsg(e){const c=e&&e.code;if(/admin_only|locked_paid/.test(String((e&&e.message)||'')))return '🔴 รายการสำคัญ · ต้องให้แอดมินทำเท่านั้น ('+(String(e.message).split(': ')[1]||'บิลที่ชำระแล้ว')+')';if(/no_menu_edit/.test(String((e&&e.message)||'')))return '🔒 บัญชีนี้ไม่มีสิทธิ์แก้เมนูและราคา';if(/shop_closed/.test(String((e&&e.message)||'')))return '🔒 ร้านปิดอยู่ · เปิดบิลใหม่ / เพิ่มรายการไม่ได้ (แอดมินกด "เปิดร้าน" ก่อน)';
   if(c==='not_found')return 'ไม่พบรายการนี้แล้ว อาจถูกลบหรือปิดจากอีกเครื่อง';
   if(c==='quota_exceeded')return 'พื้นที่ฐานข้อมูลเต็ม ลบบิลหรือรายการเก่าบางส่วนก่อน';
   if(c==='invalid_argument')return 'บันทึกไม่สำเร็จ บัญชีนี้ไม่มีสิทธิ์แก้ไข หรือข้อมูลไม่ถูกต้อง';
@@ -3480,6 +3492,15 @@ function secCard(){const p=(S.settings.pdpa)||{},sd=p.slipDays??60,pd=p.piiDays?
   return `<div class="card"><div class="sec-h" style="margin:0"><h3>📜 บันทึกการใช้งาน</h3><button type="button" class="btn sm" data-act="secLoad">🔄 โหลดใหม่</button></div>
    <p class="help" style="margin:0">ระบบบันทึกเองทุกครั้งที่มีการรับเงิน ยกเลิก/ลบบิล แก้ราคาเมนู แก้ตั้งค่า เปลี่ยนพร้อมเพย์ เปลี่ยนสิทธิ์ เพิ่ม/ลบพนักงาน เปิด-ปิดลิ้นชัก รายจ่าย และสมาชิก · <b>แก้หรือลบบันทึกไม่ได้ แม้แต่แอดมิน</b> · 🔴 จะแจ้งเตือนเข้ามือถือแอดมิน</p>
    <div class="chips" id="secF">${Object.entries(SEC_F).map(([k,t])=>`<button type="button" class="chip" aria-pressed="${(S.secF||'all')===k}" data-act="secF" data-v="${k}">${t}</button>`).join('')}</div>
+   <details class="secleg"><summary><b>ℹ️ ระดับความสำคัญ · ใครทำได้</b></summary>
+    <table><thead><tr><th>ระดับ</th><th>เหตุการณ์</th><th>ใครทำได้</th></tr></thead><tbody>
+     <tr class="crit"><td>🔴 สำคัญมาก<br><small>แจ้งเตือนมือถือแอดมินทันที</small></td><td>เปลี่ยนเลข/ชื่อบัญชีพร้อมเพย์ · เปลี่ยนสิทธิ์พนักงาน · เพิ่ม/ลบ/เปลี่ยนตำแหน่งพนักงาน</td><td><b>แอดมินเท่านั้น</b></td></tr>
+     <tr class="crit"><td>🔴 สำคัญมาก</td><td>ยกเลิก/ลบบิลที่ชำระแล้ว</td><td>แอดมิน · คนที่แอดมินให้สิทธิ์ "ยกเลิกบิล"</td></tr>
+     <tr class="crit"><td>🔴 สำคัญมาก</td><td>ปิดร้านแล้วเงินขาด ฿200 ขึ้นไป</td><td>คนปิดร้าน (ระบบเตือนเอง)</td></tr>
+     <tr class="warn"><td>🟠 ควรตรวจ</td><td>แก้ราคาเมนู · ลบเมนู · ลบสมาชิก · แก้บิลหลังจ่าย · ลบบิลที่ยังไม่จ่าย</td><td>แอดมิน · คนที่มีสิทธิ์ "แก้เมนูและราคา"/"ยกเลิกบิล"</td></tr>
+     <tr><td>⚪ ทั่วไป</td><td>รับเงิน · เปิด/ปิดลิ้นชัก · รายจ่าย/รายรับ · สมาชิกใหม่/แต้ม · แก้ตั้งค่าอื่น · PDPA ลบตามกำหนด</td><td>ตามสิทธิ์ในตาราง "สิทธิ์การใช้งาน"</td></tr>
+    </tbody></table>
+    <p class="help" style="margin:6px 0 0">ตั้งค่าร้าน/ส่วนกลาง และรายชื่อพนักงาน แก้ได้เฉพาะแอดมิน (บังคับในฐานข้อมูล) · สิทธิ์อื่นแอดมินเลือกให้แต่ละตำแหน่งได้ที่แท็บ 👥 พนักงาน & สิทธิ์</p></details>
    <div id="secList" class="seclist"><p class="help">กำลังโหลด…</p></div></div>
   <div class="card"><h3>🧾 PDPA · เก็บข้อมูลลูกค้าเท่าที่จำเป็น</h3>
    <div class="grid2"><div class="field"><label for="pdSlip">ลบรูปสลิปโอนเงินหลัง (วัน)</label><input id="pdSlip" inputmode="numeric" value="${sd}"></div>
