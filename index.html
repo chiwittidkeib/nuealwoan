@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.28-094903">
+<meta name="app-version" content="2026.10.28-110421">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1500,6 +1500,35 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8
 @keyframes msMoved{0%{background:rgba(250,204,21,.55);box-shadow:inset 4px 0 0 #f59e0b}60%{background:rgba(250,204,21,.25);box-shadow:inset 4px 0 0 #f59e0b}100%{background:transparent;box-shadow:inset 0 0 0 transparent}}
 .msort-r.mup .msort-n.pop,.msort-r.mdn .msort-n.pop{animation:msPop .6s ease-out;background:#f59e0b;color:#fff}
 @keyframes msPop{0%{transform:scale(1.5)}100%{transform:scale(1)}}
+
+/* มือถือ: ซ่อนแถวปุ่มสถานะ/ตั้งค่าในหัวแอป กดปุ่มเฟืองเพื่อแสดง */
+#hdrMore{display:none}
+@media (max-width:860px){
+ .top-in{position:relative}
+ #hdrMore{display:inline-flex;position:absolute;right:14px;top:calc(10px + env(safe-area-inset-top,0px));z-index:2;flex:none;width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;border:1px solid color-mix(in srgb,var(--line) 70%,transparent);background:var(--surface);font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.1);padding:0}
+ body.hdr-open #hdrMore{background:linear-gradient(135deg,var(--acc,#14b8a6),var(--acc2,#0f766e));color:#fff!important;border-color:transparent}body.hdr-open #hdrMore *{color:#fff!important;stroke:#fff}
+ body:not(.hdr-open) .top-in>#hdrShop,body:not(.hdr-open) .top-in>#hdrModeWrap,body:not(.hdr-open) .top-in>#hdrSys,body:not(.hdr-open) .top-in>#hdrShopSet,body:not(.hdr-open) .top-in>#hdrMe,body:not(.hdr-open) .top-in>#hdrLogout,body:not(.hdr-open) .top-in>.hbr,body:not(.hdr-open) .top-in>[data-act="settings"]{display:none!important}
+}
+
+/* หน้าขาย ล้านฅนเมียง: สลับ รายการ / ตาราง */
+.knsrch{display:flex;gap:8px;align-items:center}.knsrch input{flex:1;min-width:0}
+.knlay{flex:none}.knlay button{white-space:nowrap}
+@media (max-width:520px){.knlay span{display:none}.knlay button{min-width:42px}}
+.kng.knlist{grid-template-columns:1fr!important;gap:8px}
+.kng.knlist .kngi{flex-direction:row!important;align-items:center;gap:12px;padding:8px 12px 8px 8px}
+.kng.knlist .kngi-img{flex:none;width:64px!important;aspect-ratio:1/1;border-radius:12px}
+.kng.knlist .kngi-img.ph{font-size:22px}
+.kng.knlist .kngi b{flex:1;font-size:15.5px}
+.kng.knlist .kngi em{flex:none;font-size:16px}
+.kng.knlist .kngi-n{top:50%;transform:translateY(-50%);right:auto;left:58px}
+
+/* แถบเหลือขายต่อวัน */
+.limb{display:flex;flex-direction:column;gap:3px;margin-top:5px;width:100%;max-width:240px}
+.limb-t{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:12px;line-height:1.3}
+.limb-t b{font-weight:800;white-space:nowrap}.limb-t i{font-style:normal;color:var(--muted);white-space:nowrap}
+.limb-bar{display:block;height:7px;border-radius:99px;background:rgba(0,0,0,.1);overflow:hidden}
+.limb-bar span{display:block;height:100%;border-radius:99px;transition:width .3s}
+.limb.sm{max-width:none;margin-top:2px}.limb.sm .limb-t{font-size:11.5px}
 </style>
 </head>
 <body>
@@ -1512,6 +1541,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8
   <button class="btn sm hbtn" data-act="settings" id="hdrSys" type="button">⚙️ <span>ตั้งค่า<span class="hfull">ระบบ</span>ส่วนกลาง</span></button>
   <button class="btn sm hbtn" data-act="shopSet" id="hdrShopSet" type="button" hidden>🏪 <span>ตั้งค่าร้าน<span class="hfull" id="hdrShopSetN"></span></span></button><i class="hbr" aria-hidden="true"></i>
   <button class="btn sm" id="hdrShop" data-act="shopSession" type="button" hidden>🔒 ปิดร้าน</button>
+  <button type="button" id="hdrMore" data-act="hdrMore" aria-label="แสดงปุ่มตั้งค่า" title="แสดง/ซ่อน ปุ่มตั้งค่า">⚙️</button>
   <button class="btn sm hbtn hout" id="hdrLogout" data-act="logout" data-confirm="1" type="button">🚪 ออกจากระบบ</button>
 </div></header>
 
@@ -1674,6 +1704,8 @@ const linesCost=items=>(items||[]).reduce((s,l)=>s+(+l.cost||0)*l.qty,0);
 const linesCount=items=>(items||[]).reduce((s,l)=>s+l.qty,0);
 const thumb=(m,cls)=>!m.img&&S.shop==='noodle'?`<div class="${cls}"><img src="images/menu-ph.jpg?v=20261016b" alt="${esc(m.name)}" loading="lazy"></div>`:m.img?`<div class="${cls}"><img src="${esc(m.img)}" alt="${esc(m.name)}" loading="lazy"></div>`:`<div class="${cls} none"><span>${esc(String(m.name||'?').trim().charAt(0))}</span></div>`;
 const soldToday=mid=>{if(S.shop==='po')return poSold(mid);if(S.shop==='kn')return knSold(mid);const t0=sod();let n=0;const f=o=>(o.items||[]).forEach(l=>{if(l.menuId===mid&&(+l.at||0)>=t0)n+=+l.qty||0});Object.values(S.open).forEach(f);(S.today||[]).forEach(f);return n};
+const limBar=(m,sm)=>{if(typeof m.dailyLimit!=='number')return '';const L=m.dailyLimit,sold=Math.min(L,soldToday(m.id)),left=Math.max(0,L-sold),pc=L?left/L*100:0,c=pc<=15?'#dc2626':pc<=40?'#f59e0b':'#16a34a';
+  return `<span class="limb${sm?' sm':''}" title="ขายได้ต่อวัน ${L}"><span class="limb-t"><b style="color:${c}">เหลือ ${num(left)}</b><i>ขายแล้ว ${num(sold)}/${num(L)}</i></span><span class="limb-bar"><span style="width:${pc}%;background:${c}"></span></span></span>`};
 const menuLeft=m=>typeof m.dailyLimit==='number'?Math.max(0,m.dailyLimit-soldToday(m.id)):null;
 const bkkNowMin=()=>new Date(Date.now()+7*3600e3).toISOString().slice(0,16);
 const comboOff=m=>!!(m&&m.combo&&((m.combo.start&&bkkNowMin()<m.combo.start)||(m.combo.end&&bkkNowMin()>m.combo.end)));
@@ -2121,12 +2153,12 @@ function viewMenu(){
   const canTog=can('menu_edit')||can('menu_toggle'),tog=m=>canTog?`<button class="btn sm${m.active===false?' pri':' offsale'}" data-act="menuToggle" data-id="${m.id}" type="button" style="white-space:nowrap">${m.active===false?'เปิดขาย':'ปิดการขาย'}</button>`:'';
   if(S.menuLay==='grid'){h+='<div class="mtgrid">';
     list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-      const so=isSoldOut(m)||m.hidden,th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}${pIds.has(m.id)?' haspro':''}${m.special?' sp':''}" data-act="menuEdit" data-id="${m.id}">${pIds.has(m.id)?PSEAL:''}${so?th.replace(/<\/div>$/,(m.hidden?naStampHtml():stampHtml(false))+'</div>'):th}<div class="tags">${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?`<span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div>
-       <div class="mb"><div class="mn">${m.special?'<span class="sptag">⭐ พิเศษ</span> ':''}${esc(m.name)}</div><div class="ms">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%</div><div class="mf"><b>${baht(p)}</b>${tog(m)}</div></div></div>`});
+      const so=isSoldOut(m)||m.hidden,th=thumb(m,'mg-img');h+=`<div class="mtile${so?' off':''}${pIds.has(m.id)?' haspro':''}${m.special?' sp':''}" data-act="menuEdit" data-id="${m.id}">${pIds.has(m.id)?PSEAL:''}${so?th.replace(/<\/div>$/,(m.hidden?naStampHtml():stampHtml(false))+'</div>'):th}<div class="tags">${m.consign?`<span class="pill info">📦 เหลือ ${consignLeft(m)}</span>`:''}</div>
+       <div class="mb"><div class="mn">${m.special?'<span class="sptag">⭐ พิเศษ</span> ':''}${esc(m.name)}</div><div class="ms">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%</div>${limBar(m)}<div class="mf"><b>${baht(p)}</b>${tog(m)}</div></div></div>`});
     return h+'</div>';}
   h+='<div class="list">';
   list.forEach(m=>{const p=+m.price||0,c=+m.cost||0,mg=p?Math.round((p-c)/p*100):0;
-    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?' <span class="pill na">สินค้ายังไม่จำหน่าย</span>':''}${m.consign?` <span class="pill info">📦 ฝากขาย · เหลือ ${consignLeft(m)}</span>`:''}${typeof m.dailyLimit==='number'?` <span class="leftq${menuLeft(m)<=3?' low':''}">วันนี้ ${soldToday(m.id)}/${m.dailyLimit}</span>`:''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div></div>${(can('menu_edit')||can('menu_toggle'))?`${tog(m)}`:''}<div class="r"><b>${baht(p)}</b></div></div>`});
+    h+=`<div class="row click" data-act="menuEdit" data-id="${m.id}">${m.img?`<span data-act="imgv" data-src="${esc(m.img)}" data-cap="${esc(m.name)}" class="zoomable" title="ดูรูปเต็ม">${thumb(m,'thumb')}</span>`:thumb(m,'thumb')}<div class="grow"><div class="t">${esc(m.name)} ${isSoldOut(m)?'<span class="pill" style="background:#e5383b;color:#fff">หมดแล้ว</span>':''}${m.hidden?' <span class="pill na">สินค้ายังไม่จำหน่าย</span>':''}${m.consign?` <span class="pill info">📦 ฝากขาย · เหลือ ${consignLeft(m)}</span>`:''}</div><div class="s">${esc(m.cat||'ไม่มีหมวด')} · ต้นทุน ${baht(c)} · กำไร ${mg}%${hasOpts(m)?' · มีตัวเลือก '+optGroups(m).length+' กลุ่ม':''}${(m.recipe||[]).length?' · ตัดสต็อกอัตโนมัติ':''}</div>${limBar(m)}</div>${(can('menu_edit')||can('menu_toggle'))?`${tog(m)}`:''}<div class="r"><b>${baht(p)}</b></div></div>`});
   return h+'</div>';
 }
 
@@ -3306,6 +3338,8 @@ const ACT={
   catBack:()=>{const b=S.sheet.back;if(b)openSheet(b);else closeSheet()},
   menuSortApply:async(cat,ids)=>{const sib=ids.map(id=>S.menu.find(x=>x.id===id)).filter(Boolean);const ch=[];sib.forEach((x,k)=>{const o=(k+1)*10;if(x.ord!==o){x.ord=o;ch.push(x)}});if(!ch.length)return;sortMenu();render();
     const r=await Promise.all(ch.map(x=>write('menu/'+x.id,w=>w.update({ord:x.ord}))));if(r.some(v=>!v))toast('บันทึกลำดับไม่สำเร็จบางรายการ','bad');else toast('จัดลำดับแล้ว')},
+  knLay:d=>{S.knLay=d.v;try{localStorage.setItem('nl_kn_lay',d.v)}catch(e){}render()},
+  hdrMore:()=>{const o=!document.body.classList.contains('hdr-open');document.body.classList.toggle('hdr-open',o);try{localStorage.setItem('nl_hdr_open',o?'1':'0')}catch(e){}},
   menuSortMode:()=>{if(!can('menu_edit'))return deny();S.menuSort=!S.menuSort;render()},
   menuMove:async d=>{const m=S.menu.find(x=>x.id===d.id);if(!m)return;const sib=S.menu.filter(x=>x.cat===m.cat),i=sib.indexOf(m),j=i+ +d.d;if(j<0||j>=sib.length)return;
     const r0=document.querySelector(`.msort-r[data-mid="${m.id}"]`),t0=r0?r0.getBoundingClientRect().top:null;
@@ -3431,6 +3465,8 @@ $('#hdrMode').addEventListener('change',e=>{const v=e.target.value;e.target.data
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet()});
 setInterval(()=>{if(S.state==='ready'&&(!S.sheet||S.sheet.type!=='pay'))render()},60000);
 /* ---------- แจ้งเตือนเวอร์ชันใหม่ (กันมือถือจำหน้าเก่าไว้) ---------- */
+try{if(localStorage.getItem('nl_hdr_open')==='1')document.body.classList.add('hdr-open')}catch(e){}
+try{S.knLay=localStorage.getItem('nl_kn_lay')||'grid'}catch(e){}
 const APP_VER=(document.querySelector('meta[name="app-version"]')||{}).content||'';
 function verRow(){const v=APP_VER.replace(/^(\d{4})\.(\d\d)\.(\d\d)-(\d\d)(\d\d).*/,(m,y,mo,d,h,mi)=>`${+d}/${+mo}/${+y+543} ${h}:${mi} น.`);return `<div class="verrow"><span>📱 เวอร์ชันที่ใช้อยู่: <b>${esc(v||'-')}</b></span><button type="button" class="btn sm" data-act="verCheck">🔄 ตรวจสอบอัปเดต</button></div>`}
 async function checkUpdate(manual){try{const r=await fetch(location.pathname+'?vcheck='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/name="app-version" content="([^"]+)"/);
@@ -3533,13 +3569,13 @@ function viewKnSell(){S.knSO=false;const cats=curCats(),M=S.menu.filter(m=>!m.hi
    ${adm?`<div class="knbar2"><button type="button" class="qsw${qOn?' on':''}" role="switch" aria-checked="${qOn}" data-act="knQToggle"><span class="qsw-t"><i></i></span><b>ระบบคิว</b><em>${qOn?'เปิด':'ปิด'}</em></button>${qOn?'<button type="button" class="kncash" data-act="knQr">📱 QR ลูกค้าสั่งเอง</button>':''}${(()=>{const c=cashCur('kn');return `<button type="button" class="kncash${c?' on':''}" data-act="${c?'cashFloat':'knShop'}">${c&&c.scanOnly?'📱 สแกนอย่างเดียว':`💵 เงินทอน <b>${c?baht(c.float||0):'ยังไม่ใส่'}</b>`}</button>${c?'<button type="button" class="kncash kncl" data-act="knShop">🔒 ปิดร้าน</button>':''}`})()}</div>`:''}
    <div class="kns">
    <div class="kns-m">
-    <div class="knsrch"><input id="knQ" type="search" placeholder="🔍 ค้นหาเมนู" value="${esc(S.knQ||'')}" autocomplete="off" aria-label="ค้นหาเมนู"></div>
+    <div class="knsrch"><input id="knQ" type="search" placeholder="🔍 ค้นหาเมนู" value="${esc(S.knQ||'')}" autocomplete="off" aria-label="ค้นหาเมนู"><div class="mlay knlay" role="group" aria-label="รูปแบบการแสดง"><button type="button" data-act="knLay" data-v="list" aria-pressed="${S.knLay==='list'}" title="แบบรายการ">☰<span> รายการ</span></button><button type="button" data-act="knLay" data-v="grid" aria-pressed="${S.knLay!=='list'}" title="แบบตาราง">▦<span> ตาราง</span></button></div></div>
     ${usedCats.length?`<div class="knc-tabs" role="tablist"><button type="button" class="knct${cat==='all'?' on':''}" data-act="knCat" data-v="all">🍽️ รวมทุกหมวด <em>${M.length}</em></button>${usedCats.map(c=>`<button type="button" class="knct${cat===c?' on':''}" data-act="knCat" data-v="${esc(c)}">${esc(c)} <em>${cnt(c)}</em></button>`).join('')}</div>`:''}
     ${SP.length&&!q&&cat==='all'&&!S.knSO?`<div class="knsp"><div class="knsp-h"><span class="knsp-b">⭐ เมนูพิเศษประจำวัน</span></div><div class="knsp-l">${SP.map(m=>`<button type="button" class="knsp-i" data-act="knPick" data-id="${m.id}">${m.img?`<img src="${esc(m.img)}" alt="">`:`<span class="ph">${esc(String(m.name).slice(0,1))}</span>`}<span class="knsp-t"><b>${esc(m.name)}</b>${m.desc?`<small>${esc(m.desc)}</small>`:''}<em>${baht(+m.price||0)}</em></span><i class="knsp-add">＋</i></button>`).join('')}</div></div>`:''}
     ${M.length?(cat==='all'&&!q&&usedCats.length>1?usedCats.map(c=>{const LC=L.filter(m=>(m.cat||'อื่นๆ')===c);return LC.length?`<h4 class="kng-h">${esc(c)}</h4>`+knTiles(LC):''}).join(''):knTiles(L))
       :`<div class="empty"><b>ยังไม่มีเมนู</b>ไปที่แท็บ "เมนู" แล้วกด + เพิ่มเมนู เช่น ข้าวซอย น้ำพริกหนุ่ม แกงฮังเล ไส้อั่ว</div>`}
    </div>${knCartHtml(qOn,n,tot)}`;}
-function knTiles(L){return `<div class="kng">${L.map(m=>{const so=isSoldOut(m),inC=S.knCart.filter(l=>l.menuId===m.id).reduce((a,l)=>a+l.qty,0);return `<button type="button" class="kngi${so?' off':''}${inC?' in':''}${S.knSO?' som':''}" data-act="knPick" data-id="${m.id}" ${so&&!S.knSO?'disabled':''}>${S.knSO?`<i class="kngi-so">${m.active===false?'▶ เปิดขาย':'⛔ กดเพื่อตั้งหมด'}</i>`:''}${m.img?`<span class="kngi-img"><img src="${esc(m.img)}" alt="" loading="lazy"></span>`:`<span class="kngi-img ph">${esc(String(m.name||'?').slice(0,1))}</span>`}<b>${esc(m.name)}</b><em>${so?'หมดแล้ว':baht(+m.price||0)}</em>${inC?`<i class="kngi-n">${inC}</i>`:''}</button>`}).join('')||'<div class="empty">ไม่พบเมนู</div>'}</div>`}
+function knTiles(L){return `<div class="kng${S.knLay==='list'?' knlist':''}">${L.map(m=>{const so=isSoldOut(m),inC=S.knCart.filter(l=>l.menuId===m.id).reduce((a,l)=>a+l.qty,0);return `<button type="button" class="kngi${so?' off':''}${inC?' in':''}${S.knSO?' som':''}" data-act="knPick" data-id="${m.id}" ${so&&!S.knSO?'disabled':''}>${S.knSO?`<i class="kngi-so">${m.active===false?'▶ เปิดขาย':'⛔ กดเพื่อตั้งหมด'}</i>`:''}${m.img?`<span class="kngi-img"><img src="${esc(m.img)}" alt="" loading="lazy"></span>`:`<span class="kngi-img ph">${esc(String(m.name||'?').slice(0,1))}</span>`}<b>${esc(m.name)}</b><em>${so?'หมดแล้ว':baht(+m.price||0)}</em>${limBar(m,1)}${inC?`<i class="kngi-n">${inC}</i>`:''}</button>`}).join('')||'<div class="empty">ไม่พบเมนู</div>'}</div>`}
 function knCartHtml(qOn,n,tot){return `
    <aside class="kns-c"><div class="knc-h"><b>🧺 ตะกร้า</b>${qOn&&n?`<span class="knc-qno">คิวที่ <b>${esc((knCfg().qPre??'K')+String(knNextNo()).padStart(3,'0'))}</b></span>`:''}${n?`<button type="button" class="lnk" data-act="knClear" data-confirm="1">ล้าง</button>`:''}</div>
     ${n?`<div class="knc-l">${S.knCart.map((l,i)=>`<div class="kncl"><div class="kncl-t"><b>${esc(l.name)}</b>${l.opts.length?`<small>${esc(optNames(l.opts))}</small>`:''}${l.note?`<small>📝 ${esc(l.note)}</small>`:''}</div>
