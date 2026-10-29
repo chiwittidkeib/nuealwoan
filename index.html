@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.28-135441">
+<meta name="app-version" content="2026.10.29-104114">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1548,6 +1548,10 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8
 .kng.knlist .kngi-img{grid-area:img}.kng.knlist .kngi b{grid-area:name;align-self:end}.kng.knlist .kngi em{grid-area:price}
 .kng.knlist .kngi .limb{grid-area:lim;align-self:start;max-width:320px;margin-top:0}
 .kng.knlist .kngi:not(:has(.limb)) b{grid-row:1/3;align-self:center}
+
+.kaline{padding:10px 12px;border-radius:12px;background:var(--sunk);font-weight:700;font-size:14px}.kaline.ok{background:rgba(22,163,74,.12);color:#15803d}.kaline.bad{background:rgba(220,38,38,.12);color:#b91c1c}
+
+#secF{display:flex;flex-wrap:wrap!important;overflow:visible!important;gap:6px}#secF .chip{flex:none}
 </style>
 </head>
 <body>
@@ -3489,7 +3493,11 @@ setInterval(()=>{if(S.state==='ready'&&(!S.sheet||S.sheet.type!=='pay'))render()
 /* ---------- ความปลอดภัยข้อมูล + PDPA ---------- */
 const SEC_F={all:'ทั้งหมด',crit:'🔴 สำคัญ',money:'💰 การเงิน',set:'⚙️ ตั้งค่า/สิทธิ์',menu:'🍽️ เมนู',pdpa:'🧾 PDPA'};
 function secCard(){const p=(S.settings.pdpa)||{},sd=p.slipDays??60,pd=p.piiDays??365;
-  return `<div class="card"><div class="sec-h" style="margin:0"><h3>📜 บันทึกการใช้งาน</h3><button type="button" class="btn sm" data-act="secLoad">🔄 โหลดใหม่</button></div>
+  const ka=(S.lists&&S.lists.keepalive)||null,kh=ka?(Date.now()-(+ka.at||0))/36e5:null,kOk=kh!=null&&kh<36;
+  return `<div class="card"><h3>🔄 กันฐานข้อมูลถูกพัก (Supabase แพ็กเกจฟรี)</h3>
+   <div class="kaline ${kh==null?'':kOk?'ok':'bad'}">${kh==null?'⚪ ยังไม่เคยได้รับสัญญาณ · ตั้งค่า GitHub Actions ตามคู่มือ':kOk?`✅ สัญญาณล่าสุด ${dshort(+ka.at)} ${hm(+ka.at)} น. (${kh<1?'ไม่ถึง 1':Math.round(kh)} ชม.ที่แล้ว)`:`⚠️ ไม่มีสัญญาณมา ${Math.round(kh)} ชม. · ตรวจ GitHub → Actions → Supabase keepalive`}</div>
+   <p class="help" style="margin:0">Supabase ฟรีจะพักโปรเจกต์ถ้าไม่มีการใช้งาน 7 วัน · GitHub เรียกฐานข้อมูลให้เองวันละ 2 ครั้ง (08:17 / 20:17 น.) · ถ้าเรียกไม่ได้ GitHub ส่งอีเมลเตือน · Supabase ก็ส่งอีเมลเตือนล่วงหน้า ~1 สัปดาห์</p></div>
+  <div class="card"><div class="sec-h" style="margin:0"><h3>📜 บันทึกการใช้งาน</h3><button type="button" class="btn sm" data-act="secLoad">🔄 โหลดใหม่</button></div>
    <p class="help" style="margin:0">ระบบบันทึกเองทุกครั้งที่มีการรับเงิน ยกเลิก/ลบบิล แก้ราคาเมนู แก้ตั้งค่า เปลี่ยนพร้อมเพย์ เปลี่ยนสิทธิ์ เพิ่ม/ลบพนักงาน เปิด-ปิดลิ้นชัก รายจ่าย และสมาชิก · <b>แก้หรือลบบันทึกไม่ได้ แม้แต่แอดมิน</b> · 🔴 จะแจ้งเตือนเข้ามือถือแอดมิน</p>
    <div class="chips" id="secF">${Object.entries(SEC_F).map(([k,t])=>`<button type="button" class="chip" aria-pressed="${(S.secF||'all')===k}" data-act="secF" data-v="${k}">${t}</button>`).join('')}</div>
    <details class="secleg"><summary><b>ℹ️ ระดับความสำคัญ · ใครทำได้</b></summary>
@@ -3712,8 +3720,8 @@ function sheetKnSet(){const c=knCfg();$('#panel').innerHTML=head('🏪 ตั้
   <input type="hidden" id="knPPN" value="${esc(S.settings.ppName||'')}">
   <div class="field"><label for="knPre">ตัวอักษรนำหน้าเลขคิว</label><input id="knPre" maxlength="3" value="${esc(c.qPre??'K')}"></div>
   <label class="check"><input type="checkbox" id="knQOn" ${c.queueOn!==false?'checked':''}> 🔔 ใช้ระบบคิว + ชื่อลูกค้า (เอาออกตอนลูกค้าน้อย = ขายจบทันที)</label>
-  <div class="field"><label for="knFl">เงินทอนตั้งต้นปกติ (บาท)</label><input id="knFl" inputmode="decimal" value="${esc(c.floatDef??500)}"></div></form>
-  <div class="sh-foot"><button class="btn pri wide" data-act="knSetSave" type="button">บันทึก</button></div>`}
+  <div class="field"><label for="knFl">เงินทอนตั้งต้นปกติ (บาท)</label><input id="knFl" inputmode="decimal" value="${esc(c.floatDef??500)}"></div>
+  ${S.role==='owner'?`<div class="card" style="border:1px solid var(--chili);padding:12px;display:flex;flex-direction:column;gap:6px;margin-top:10px"><b style="color:var(--chili)">🧹 รีเซตบิล · ล้านฅนเมียง</b><span class="help" style="margin:0">ล้างบิล/ใบเสร็จช่วงทดลองระบบ ก่อนเปิดขายจริง · เมนู สต็อก ตั้งค่าไม่ถูกลบ</span><button type="button" class="btn sm danger" data-act="resetOpen" data-v="kn" style="align-self:flex-start">🧹 รีเซตบิลล้านฅนเมียง…</button></div>`:''}</form><div class="sh-foot"><button class="btn pri wide" data-act="knSetSave" type="button">บันทึก</button></div>`}
 Object.assign(ACT,{
   knCat:d=>{S.knCat=d.v;render()},
   knPick:async d=>{const m=S.knMenu.find(x=>x.id===d.id);if(!m)return;if(S.knSO){const on=m.active===false;m.active=on;render();await write('menu/'+m.id,r=>r.update({active:on,...(on?{}:{soldOutAt:Date.now()})}));return toast(on?'เปิดขาย '+m.name+' อีกครั้ง':'⛔ '+m.name+' หมดแล้ว')}if(isSoldOut(m))return;if(hasOpts(m))optPick(m,{notes:QUICK_NOTES,addLabel:'ใส่ตะกร้า',onAdd:sel=>knAdd(m,sel)});else knAdd(m,{opts:[],qty:1,note:''})},
@@ -3850,9 +3858,10 @@ document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('.dw
 document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('.dwrap'))dShow(e.target)},true);
 
 // ---------- รีเซตบิล (ช่วงทดลองระบบ) · เจ้าของร้าน · SQL reset_bills สำรองไว้ใน docs_trash ----------
-const RS_OPT={noodle:[['bills','บิล / ออร์เดอร์ทั้งหมด (รวมบิลที่เปิดค้าง) + เรียกพนักงาน + สลิป',['orders','calls','slips'],1],['delivery','งานเดลิเวอรี่ / คำขอส่ง / รูปส่งของ',['deliveries','dl_req','dl_proof'],1],['coupons','ประวัติการใช้/เก็บคูปอง (ตัวคูปองไม่ลบ)',['coupon_use','coupon_stats','coupon_wallet'],1],['seq','เริ่มเลขบิล / เลขออร์เดอร์ 0001 ใหม่ (เฉพาะเนื้อล้วนๆ)',[],1],['points','ล้างแต้มสมาชิกเป็น 0 (ใช้ร่วม 2 ร้าน · สมาชิกไม่ถูกลบ)',['members'],0],['finance','รายรับ / รายจ่าย / ซื้อของเข้า ของเนื้อล้วนๆ',[],0],['consign','ประวัติของฝากขาย',['consign_log'],0]],
-  po:[['bills','ออร์เดอร์พรีออเดอร์ทั้งหมด + สลิปโอน',['po_orders','po_slips'],1],['seq','เริ่มเลขออร์เดอร์ PR 0001 ใหม่',[],1],['finance','รายรับ / รายจ่าย / ซื้อของเข้า ของข้าวมันไก่',[],0],['points','ล้างแต้มสมาชิกเป็น 0 (ใช้ร่วม 2 ร้าน · สมาชิกไม่ถูกลบ)',['members'],0]]};
-function sheetReset(){const s=S.sheet,nm=s.shop==='po'?'ข้าวมันไก่':'เนื้อล้วนๆ',C=s.counts||{};
+const RS_OPT={noodle:[['bills','บิล / ออร์เดอร์ทั้งหมด (รวมบิลที่เปิดค้าง) + เรียกพนักงาน + สลิป',['orders','calls','slips'],1],['delivery','งานเดลิเวอรี่ / คำขอส่ง / รูปส่งของ',['deliveries','dl_req','dl_proof'],1],['coupons','ประวัติการใช้/เก็บคูปอง (ตัวคูปองไม่ลบ)',['coupon_use','coupon_stats','coupon_wallet'],1],['seq','เริ่มเลขบิล / เลขออร์เดอร์ 0001 ใหม่ (เฉพาะเนื้อล้วนๆ)',[],1],['points','ล้างแต้มสมาชิกเป็น 0 (ใช้ร่วม 2 ร้าน · สมาชิกไม่ถูกลบ)',['members'],0],['finance','รายรับ / รายจ่าย / ซื้อของเข้า ของเนื้อล้วนๆ',[],0],['consign','ประวัติของฝากขาย',['consign_log'],0],['cash','ประวัติลิ้นชักเงิน / เปิด-ปิดร้าน ของเนื้อล้วนๆ',['cash_noodle'],0]],
+  kn:[['bills','บิลขาย / คิว / ใบเสร็จทั้งหมด + สลิปโอน (ลูกค้าสแกนสั่งเอง)',['kn_sales','kn_slips'],1],['cash','ประวัติลิ้นชักเงิน / เปิด-ปิดร้าน ของล้านฅนเมียง',['cash_kn'],1],['finance','รายรับ / รายจ่าย / ซื้อของเข้า ของล้านฅนเมียง',[],0]],
+  po:[['bills','ออร์เดอร์พรีออเดอร์ทั้งหมด + สลิปโอน',['po_orders','po_slips'],1],['cash','ประวัติลิ้นชักเงิน / เปิด-ปิดร้าน ของข้าวมันไก่',['cash_po'],0],['seq','เริ่มเลขออร์เดอร์ PR 0001 ใหม่',[],1],['finance','รายรับ / รายจ่าย / ซื้อของเข้า ของข้าวมันไก่',[],0],['points','ล้างแต้มสมาชิกเป็น 0 (ใช้ร่วม 2 ร้าน · สมาชิกไม่ถูกลบ)',['members'],0]]};
+function sheetReset(){const s=S.sheet,nm=s.shop==='po'?'ข้าวมันไก่':s.shop==='kn'?'ล้านฅนเมียง':'เนื้อล้วนๆ',C=s.counts||{};
   const cnt=cols=>cols.length?` <span class="muted">(${cols.reduce((a,c)=>a+(+C[c]||0),0).toLocaleString()} รายการ)</span>`:'';
   $('#panel').innerHTML=head('🧹 รีเซตบิล · '+nm,'ช่วงทดลองระบบ · เจ้าของร้านเท่านั้น')+`<form class="sh-body" onsubmit="return false">
    <div class="notice" style="border-color:var(--chili);color:var(--chili);background:color-mix(in srgb,var(--chili) 8%,transparent)">⚠️ ข้อมูลที่เลือกจะหายจากระบบทันที (ระบบสำรองไว้ในฐานข้อมูล กู้คืนได้ด้วย SQL เท่านั้น) · ใช้ตอนทดลองระบบ ก่อนเปิดขายจริง</div>
