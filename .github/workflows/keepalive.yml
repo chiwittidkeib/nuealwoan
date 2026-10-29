@@ -1,0 +1,31 @@
+# กัน Supabase แพ็กเกจฟรีถูกพัก (ไม่มีการใช้งาน 7 วัน)
+# เรียกฐานข้อมูลวันละ 2 ครั้ง · ถ้าเรียกไม่ได้ (ฐานข้อมูลถูกพัก/ล่ม) งานนี้จะล้มเหลว แล้ว GitHub ส่งอีเมลแจ้งเจ้าของ repo
+name: Supabase keepalive
+on:
+  schedule:
+    - cron: '17 1,13 * * *'   # 08:17 และ 20:17 น. เวลาไทย
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: js/config.js
+          sparse-checkout-cone-mode: false
+      - name: Ping Supabase
+        run: |
+          URL=$(grep -o 'https://[a-z0-9]*\.supabase\.co' js/config.js | head -1)
+          KEY=$(grep -o 'SUPABASE_KEY:[^"]*"[^"]*"' js/config.js | sed 's/.*"\([^"]*\)"/\1/')
+          test -n "$URL" -a -n "$KEY" || { echo "อ่าน js/config.js ไม่ได้"; exit 1; }
+          for i in 1 2 3; do
+            if curl -fsS -m 30 -X POST "$URL/rest/v1/rpc/nl_keepalive" \
+                 -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+                 -d '{"p_src":"github"}'; then echo; echo "✅ Supabase ทำงานปกติ"; exit 0; fi
+            sleep 20
+          done
+          echo "::error::เรียก Supabase ไม่ได้ — โปรเจกต์อาจถูกพัก เข้า supabase.com/dashboard แล้วกด Restore"
+          exit 1
