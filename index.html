@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.10.29-104717">
+<meta name="app-version" content="2026.11.05-083153">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1870,7 +1870,7 @@ function clearAuth(){try{Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/
 function bumpFail(){let n=0;try{n=(+sessionStorage.getItem('nl_fail')||0)+1;sessionStorage.setItem('nl_fail',n)}catch(e){}return n}
 async function logout(){try{await Promise.race([SB.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,3000))])}catch(e){}clearAuth();location.reload()}
 /* ---------- ออกจากระบบอัตโนมัติ (ยกเว้นแอดมิน): ข้ามเที่ยงคืน / แอดมินปิดร้าน ---------- */
-function closedCard(){const kn=isKn();if(kn?!!cashCur('kn'):!shopClosed())return '';const ss=kn?(()=>{const l=(S.cashS||[]).find(x=>x.shop==='kn'&&x.closeAt);return l?{closedAt:l.closeAt,closedBy:l.closedBy}:{}})():shopSes(),po=S.shop==='po',lg=po?'images/logo-po.png':kn?'images/logo-kn.png?v=20261022':'images/stamp-logo.png?v=20261016b';
+function closedCard(){const kn=isKn();if(kn?!!cashCur('kn'):!shopClosed())return '';const ss=kn?(()=>{const l=(S.cashS||[]).find(x=>x.shop==='kn'&&x.closeAt);return l?{closedAt:l.closeAt,closedBy:l.closedBy}:{}})():shopSes(),po=S.shop==='po',lg=po?'images/logo-po-t.png':kn?'images/logo-kn.png?v=20261022':'images/stamp-logo.png?v=20261016b';
   return `<div class="closedwrap"><div class="cstamp"><img src="${lg}" alt=""><b>ปิดให้บริการ</b><i>Closed</i></div>
    <div class="closedtx"><b>🔒 ร้านปิดแล้ว</b><span>${kn?'ขายหน้าร้าน / ลูกค้าสแกนสั่งเองไม่ได้ · ใส่เงินทอนเพื่อเปิดร้าน':po?'ลูกค้าสั่งพรีออเดอร์ใหม่ไม่ได้ · ออร์เดอร์ที่รับไว้แล้วยังจัดการได้ตามปกติ':'เปิดบิลใหม่ / เพิ่มรายการ / ลูกค้าสั่งเองไม่ได้ · บิลที่ค้างอยู่ยังเก็บเงินได้'}</span>${ss.closedAt?`<small>ปิดเมื่อ ${dshort(ss.closedAt)} ${hm(ss.closedAt)} น.${ss.closedBy?' · '+esc(emailToUser(ss.closedBy)):''}</small>`:''}
    ${(kn?canPo():S.role==='owner')?'<small>กด "เปิดร้าน" ที่ปุ่มด้านบนเพื่อเปิดร้าน</small>':'<small>แอดมินจะเป็นคนเปิดร้าน</small>'}</div></div>`}
