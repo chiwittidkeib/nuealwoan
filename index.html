@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.11.05-083803">
+<meta name="app-version" content="2026.11.05-092429">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -278,7 +278,7 @@ h1,h2,h3{font-family:var(--f-display);font-weight:500;margin:0;text-wrap:balance
 .done{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:40px 10px}
 .done h2{font-size:26px}
 
-.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:80;font-size:14px;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+.toast{position:fixed;z-index:2147483000!important;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:80;font-size:14px;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
 .toast.bad{background:var(--chili);color:#fff}
 @media (prefers-reduced-motion:no-preference){.panel{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
 .ptswarn{background:rgba(255,180,60,.13);border:1px solid rgba(255,180,60,.45);color:#ffd58a;border-radius:9px;padding:7px 10px;font-size:13px}
@@ -1396,6 +1396,33 @@ body.shop-kn #hdrShop:not(.closed){color:#14532d;background:linear-gradient(180d
 .knsp-t{flex:1;min-width:0;display:flex;flex-direction:column}.knsp-t b{font-size:16px}.knsp-t small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.knsp-t em{font-style:normal;font-weight:800;color:#b45309;font-size:17px}
 .knsp-add{font-style:normal;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#c8792a,#6b3e1f);color:#fff;font-size:20px;font-weight:800;flex:none}
 .nlcash{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}.nlc{flex:1 1 200px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-radius:16px;border:1.5px solid rgba(94,197,156,.45);background:linear-gradient(180deg,rgba(30,34,32,.92),rgba(18,20,19,.92));color:#f1ead8;font:inherit;font-size:14px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}.nlc b{font-size:18px;color:#5ec59c;white-space:nowrap}.nlc:hover{border-color:#5ec59c;box-shadow:0 0 0 3px rgba(94,197,156,.18),0 4px 14px rgba(0,0,0,.25)}.nlc.sub{border-color:rgba(212,175,55,.45)}.nlc.sub b{color:#e6c35c}.nlc.scan{border-color:rgba(56,189,248,.55)}.nlc.scan b{color:#7dd3fc;font-size:14px}.nlc.off{border-color:rgba(239,68,68,.6);animation:nlcP 1.6s ease-in-out infinite}.nlc.off b{color:#fca5a5;font-size:14px}@keyframes nlcP{50%{box-shadow:0 0 0 4px rgba(239,68,68,.22)}}@media (prefers-reduced-motion:reduce){.nlc.off{animation:none}}
+.qp-grid{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:4px 0 8px}
+.qp{--qc:#7a1414;--qc2:#4a0b0b;--qg:#c9a24a;--qd:#2b1a10;position:relative;width:300px;min-height:480px;box-sizing:border-box;padding:24px 22px 24px;border-radius:20px;overflow:hidden;background-color:#fbf6ec;background-position:center,center bottom;background-size:100% 100%,100% auto;background-repeat:no-repeat;color:var(--qd);display:flex;flex-direction:column;align-items:center;text-align:center;font-family:'IBM Plex Sans Thai',system-ui,sans-serif;box-shadow:0 14px 34px rgba(0,0,0,.35);-webkit-print-color-adjust:exact;print-color-adjust:exact;break-inside:avoid;page-break-inside:avoid;flex:0 0 auto}
+.qp-po{--qc:#c8102e;--qc2:#8a0b20;--qg:#d4a63c}.qp-kn{--qc:#6b3e1f;--qc2:#3f220f;--qg:#c8792a}
+.qp>*{position:relative}
+.qp .qp-f{position:absolute;inset:9px;border:2px solid var(--qg);border-radius:14px;pointer-events:none}
+.qp .qp-f::after{content:"";position:absolute;inset:4px;border:1px solid var(--qg);border-radius:10px;opacity:.7}
+.qp-hd{display:flex;flex-direction:column;align-items:center;gap:2px}
+.qp-lg{height:56px;width:auto;max-width:150px;object-fit:contain;border-radius:10px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.18))}
+.qp-nm{font-size:19px;font-weight:800;color:var(--qc);line-height:1.5;letter-spacing:.2px}
+.qp-en{font-size:9.5px;letter-spacing:2.6px;font-weight:700;color:var(--qg);line-height:1.2}
+.qp-big{margin:8px 0 8px;padding:3px 18px;border-radius:999px;background:linear-gradient(180deg,var(--qc),var(--qc2));color:#fff;font-size:24px;font-weight:800;line-height:1.55;box-shadow:0 4px 12px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.25);max-width:100%}
+.qp-qr{position:relative;background:#fff;padding:10px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.18);line-height:0}
+.qp-qr svg{width:150px;height:150px;display:block}
+.qp-qr i{position:absolute;width:20px;height:20px;border:3.5px solid var(--qc)}
+.qp-qr .c1{left:-6px;top:-6px;border-right:0;border-bottom:0;border-radius:8px 0 0 0}.qp-qr .c2{right:-6px;top:-6px;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.qp-qr .c3{left:-6px;bottom:-6px;border-right:0;border-top:0;border-radius:0 0 0 8px}.qp-qr .c4{right:-6px;bottom:-6px;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.qp-sub{margin-top:10px;font-size:12.5px;font-weight:600;line-height:1.55;color:var(--qd);background:rgba(255,255,255,.78);padding:1px 10px;border-radius:8px}
+.qp-sub+.qp-sub{margin-top:3px}.qp-sub:last-of-type{margin-bottom:12px}
+.qp-note{margin-top:5px;margin-bottom:12px;font-size:10.5px;font-weight:700;color:#b45309;line-height:1.5;background:rgba(255,248,235,.9);padding:1px 8px;border-radius:6px}
+.qp-ft{margin-top:auto;font-size:11.5px;font-weight:700;color:#fff;background:var(--qc);padding:3px 14px;border-radius:999px;line-height:1.6;box-shadow:0 2px 8px rgba(0,0,0,.25);border:1.5px solid rgba(255,255,255,.7)}
+#printArea.qrp{display:none}
+@media print{#printArea.qrp{display:grid!important;grid-template-columns:repeat(2,88mm);gap:8mm;justify-content:center;padding:6mm 0}
+ #printArea.qrp .qp{width:88mm;box-shadow:none;border-radius:5mm}
+ #printArea.qrp.one{grid-template-columns:120mm}#printArea.qrp.one .qp{width:120mm;padding:9mm 8mm 7mm}
+ #printArea.qrp.one .qp-qr svg{width:64mm;height:64mm}#printArea.qrp.one .qp-big{font-size:34px}#printArea.qrp.one .qp-nm{font-size:26px}#printArea.qrp.one .qp-lg{height:24mm;max-width:60mm}#printArea.qrp.one .qp-sub{font-size:15px}#printArea.qrp.one .qp-ft{font-size:14px}
+ #printArea.qrp .qp-qr svg{width:44mm;height:44mm}
+ #printArea.qrp .qp{min-height:128mm}#printArea.qrp.one .qp{min-height:178mm}}
 .kncash{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1.5px solid #d9b994;background:rgba(255,250,242,.95);font:inherit;font-size:14px;color:#4a2c16;cursor:pointer}.kncash b{color:#b91c1c}.kncash.on{border-color:#22c55e}.kncash.on b{color:#15803d}
 .knq.st-pay{border:2px solid #3b82f6;background:#eff6ff}.knq-pay{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px;border-radius:12px;background:rgba(59,130,246,.08)}
 .chip.payc{border-color:#3b82f6!important;color:#1d4ed8}.knqr-big svg{width:280px!important;height:280px!important}.knqr-big b{font-size:16px;margin-top:6px}
@@ -1553,6 +1580,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8
 .kaline{padding:10px 12px;border-radius:12px;background:var(--sunk);font-weight:700;font-size:14px}.kaline.ok{background:rgba(22,163,74,.12);color:#15803d}.kaline.bad{background:rgba(220,38,38,.12);color:#b91c1c}
 
 #secF{display:flex;flex-wrap:wrap!important;overflow:visible!important;gap:6px}#secF .chip{flex:none}
+.cpdone{background:linear-gradient(180deg,#22c55e,#15803d)!important;color:#fff!important;border-color:#15803d!important;box-shadow:0 0 0 3px rgba(34,197,94,.3)!important;transition:background .2s}
 </style>
 </head>
 <body>
@@ -1800,6 +1828,12 @@ function write(path,fn){
     toast(errMsg(e),'bad');return false}};
   const q=(queues[path]||Promise.resolve()).then(run);queues[path]=q;return q;}
 let toastT;
+/* ปุ่มคัดลอก: กดแล้วปุ่มเปลี่ยนเป็น ✅ คัดลอกแล้ว + toast ทุกจุด */
+let CPB=null;document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button,a,[data-act]');CPB=b&&/คัดลอก/.test(b.textContent||'')?b:null},true);
+function cpOk(){const b=CPB;CPB=null;if(!b||!b.isConnected||b.classList.contains('cpdone'))return;const w=b.offsetWidth;b.dataset.cph=b.innerHTML;b.style.minWidth=w+'px';b.classList.add('cpdone');b.innerHTML='✅ คัดลอกแล้ว';if(navigator.vibrate)try{navigator.vibrate(30)}catch(_){}
+  setTimeout(()=>{if(b.isConnected&&b.dataset.cph!=null){b.innerHTML=b.dataset.cph;delete b.dataset.cph;b.classList.remove('cpdone');b.style.minWidth=''}},2000)}
+(()=>{const c=navigator.clipboard;if(c&&c.writeText){const w=c.writeText.bind(c);try{c.writeText=t=>w(t).then(r=>{cpOk();if(!$('#toast')||$('#toast').hidden)toast('✅ คัดลอกแล้ว');return r})}catch(_){}}
+  if(document.execCommand){const x=document.execCommand.bind(document);document.execCommand=(...a)=>{const r=x(...a);if(a[0]==='copy'&&r)cpOk();return r}}})();
 function toast(msg,kind){const t=$('#toast');t.textContent=msg;t.className='toast'+(kind?' '+kind:'');t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,kind==='bad'?4200:2200)}
 
 /* ---------- PromptPay (EMVCo) ---------- */
@@ -2332,7 +2366,7 @@ let __negT=0;
 if(!window.__sx){window.__sx=1;new MutationObserver(()=>{sxDecorate();if(document.body.classList.contains('shop-kn'))['header.top','#view','#panel','#toast','#tabs'].forEach(q=>knIcons(document.querySelector(q)));clearTimeout(__negT);__negT=setTimeout(()=>{['#view','#panel','#sheet'].forEach(q=>{const r=document.querySelector(q);if(r)negMark(r)})},120)}).observe(document.body,{childList:true,subtree:true})}
 function renderSheet(){const s=S.sheet;if(!s)return;setTimeout(fmtNums,0);
   {const pn=$('#panel');if(pn&&pn.parentElement)pn.parentElement.classList.toggle('findmode',s.type==='poFind')}
-  ({knRc:sheetKnRc,knQr:sheetKnQr,cashOpen:sheetCashOpen,cashClose:sheetCashClose,knPay:sheetKnPay,knSale:sheetKnSale,knSet:sheetKnSet,wdHist:sheetWdHist,poWd:sheetPoWd,poCost:sheetPoCost,poFind:sheetPoFind,poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
+  ({qrOut:sheetQrOut,knRc:sheetKnRc,knQr:sheetKnQr,cashOpen:sheetCashOpen,cashClose:sheetCashClose,knPay:sheetKnPay,knSale:sheetKnSale,knSet:sheetKnSet,wdHist:sheetWdHist,poWd:sheetPoWd,poCost:sheetPoCost,poFind:sheetPoFind,poEdit:sheetPoEdit,poArrive:sheetPoArrive,poPromos:sheetPoPromos,poPromoEdit:sheetPoPromoEdit,poPick:sheetPoPick,poPayQr:sheetPoPayQr,poScan:sheetPoScan,combos:sheetCombos,comboEdit:sheetComboEdit,poNote:sheetPoNote,reset:sheetReset,poCx:sheetPoCx,poSlips:sheetPoSlips,lmBook:sheetLmBook,poRound:sheetPoRound,poSlipBad:sheetPoSlipBad,order:sheetOrder,pay:sheetPay,menuEdit:sheetMenu,cats:sheetCats,voiceRec:sheetVoiceRec,optBulk:sheetOptBulk,stockEdit:sheetStock,purchase:sheetPurchase,expense:sheetExpense,settings:sheetSettings,walkinQr:sheetWalkinQr,openTbl:sheetOpenTbl,newDel:sheetNewDel,staffNew:sheetStaffNew,staffPw:sheetStaffPw,bill:sheetBill,qr:sheetQr,qrOne:sheetQrOne,rcQr:sheetRcQr,income:sheetIncome,catList:sheetCatList,reward:sheetReward,rdNew:sheetRdNew,riders:sheetRiders,myAcct:sheetMyAcct,coupons:sheetCoupons,cpnEdit:sheetCpnEdit,dlReq:sheetDlReq,dlLink:sheetDlLink,oaPost:sheetOaPost,menuView:sheetMenuView,poRcQr:sheetPoRcQr,receipt:sheetReceipt,member:sheetMember,poSet:sheetPoSet,poQr:sheetPoQr}[s.type])();}
 const head=(t,sub)=>`<div class="sh-head"><div class="grow"><h2>${t}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-act="close" type="button" aria-label="ปิด">×</button></div>`;
 
 /* order */
@@ -3201,6 +3235,26 @@ const dayLabel=()=>S.qrDay?new Date(S.qrDay.day+'T12:00:00').toLocaleDateString(
 async function ensureTok(o){if(!o||o.table==='TA'||o.qrToken)return o&&o.qrToken;const t=newTok();S.open[o.id]={...o,qrToken:t};await write('orders/'+o.id,r=>r.transform(d=>d.status==='open'&&!d.qrToken?{qrToken:t}:null));return (S.open[o.id]||{}).qrToken||t}
 const tableUrl=(t,k)=>new URL('order.html',location.href).href.split('?')[0].split('#')[0]+'?t='+t+'&k='+k;
 const orderUrl=o=>o.table==='TA'?tableUrl(0,walkKey())+'&o='+encodeURIComponent(o.id):tableUrl(o.table,qrSecure()?(o.qrToken||''):S.settings.qrKey);
+/* ======================= QR โปสเตอร์ (พิมพ์ / บันทึกเป็นรูป) — ทุกร้าน ======================= */
+const QP_TH={noodle:{bg:'images/rcbg-nl.jpg?v=2',lg:'images/logo-nl-t.png?v=20261016b',nm:()=>S.settings.rcName||S.settings.shopName||'เนื้อล้วนๆ',en:'NUEA LWOAN'},
+  po:{bg:'images/rcbg-po.jpg?v=2',lg:'images/logo-po-t.png?v=20261018',nm:()=>poCfg().shopName||'ข้าวมันไก่',en:'CHICKEN RICE'},
+  kn:{bg:'images/rcbg-kn.jpg?v=2',lg:'images/logo-kn.png?v=20261022',nm:()=>knCfg().shopName||'ล้านฅนเมียง',en:'LANNA KITCHEN'}};
+function qpCard(c,sh){const t=QP_TH[sh]||QP_TH.noodle;
+  return `<div class="qp qp-${sh}" style="background-image:linear-gradient(180deg,rgba(251,246,236,.97) 0%,rgba(251,246,236,.93) 38%,rgba(251,246,236,.35) 70%,rgba(251,246,236,.05) 100%),url('${t.bg}')"><i class="qp-f"></i>
+   <div class="qp-hd"><img class="qp-lg" src="${t.lg}" alt="" crossorigin="anonymous"><div class="qp-nm">${esc(t.nm())}</div><div class="qp-en">${t.en} · SCAN ME</div></div>
+   <div class="qp-big">${c.big}</div>
+   <div class="qp-qr"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i>${c.svg}</div>
+   ${c.sub.map(x=>`<div class="qp-sub">${x}</div>`).join('')}
+   ${c.note?`<div class="qp-note">${c.note}</div>`:''}
+   <div class="qp-ft">📱 เปิดกล้องมือถือ แล้วสแกนได้เลย</div></div>`}
+function qrOut(name,shop){const sh=shop||cashShop(),T=QP_TH[sh]||QP_TH.noodle,nm=T.nm().trim();
+  const L=[...document.querySelectorAll('#printArea .pq')].map(e=>{const sv=e.querySelector('svg');const sm=[...e.querySelectorAll('small')];
+    return {svg:sv?sv.outerHTML:'',big:(e.querySelector('b')||{}).innerHTML||'',sub:sm.filter(x=>!x.classList.contains('pqrt')&&x.textContent.trim()&&x.textContent.trim()!==nm&&x.textContent.trim()!==(S.settings.shopName||'').trim()).map(x=>x.innerHTML),note:(sm.find(x=>x.classList.contains('pqrt'))||{}).innerHTML||''}}).filter(x=>x.svg);
+  if(!L.length)return toast('ไม่พบ QR','bad');
+  S.qrOut={sh,name:name||'qr',L};openSheet({type:'qrOut'})}
+function sheetQrOut(){const q=S.qrOut;if(!q)return closeSheet();const n=q.L.length;
+  $('#panel').innerHTML=head('🖨️ พิมพ์ / บันทึก QR',n>1?n+' ใบ · พิมพ์ได้ 4 ใบต่อหน้า A4':'เลือกพิมพ์ หรือบันทึกเป็นรูปไว้ส่งต่อ')+`<div class="sh-body"><div class="qp-grid${n>1?' many':''}" id="qpView">${q.L.map(c=>qpCard(c,q.sh)).join('')}</div></div>
+   <div class="sh-foot"><button class="btn" data-act="close" type="button">ปิด</button><button class="btn" id="qpImg" data-act="qpImg" type="button">🖼️ บันทึกเป็นรูป${n>1?' ('+n+')':''}</button><button class="btn pri wide" data-act="qpPrint" type="button">🖨️ พิมพ์</button></div>`}
 function qrCard(url,big,sub){const s=S.settings;return `<div class="pq">${s.logo?`<img src="${esc(s.logo)}" alt="" style="height:34px;width:auto;margin:0 auto 4px;display:block">`:''}<small style="font-weight:600">${esc(s.shopName)}</small>${qrSvg(url)}<b>${big}</b><small>${sub}</small></div>`}
 function sheetQrOne(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const walk=o.table==='TA';
   if(qrSecure()&&((!walk&&!o.qrToken)||(walk&&!S.qrDay))){$('#panel').innerHTML=head('QR')+`<div class="sh-body"><p class="muted">กำลังสร้าง QR…</p></div>`;
@@ -3304,7 +3358,7 @@ const ACT={
   openOrder:d=>openSheet({type:'order',id:d.id,cat:'all',q:'',edit:null}),
   quickOrder:()=>can('tables')?(S.floor='other',createOrder({table:'TA',channel:'walkin',label:'ออร์เดอร์ '+hm(Date.now())})):deny(),
   walkinQr:()=>openSheet({type:'walkinQr'}),
-  wqPrint:()=>{const pa=$('#printArea');pa.className='qrs';pa.innerHTML=`<div class="pq" style="grid-column:1/-1;max-width:90mm;margin:0 auto">${qrSvg(tableUrl(0,walkKey()))}<b>สแกนสั่งอาหาร</b><small>ไม่ต้องรอโต๊ะ · ${esc(S.settings.shopName)}${qrSecure()?' · ใช้ได้วันที่ '+dayLabel():''}</small></div>`;setTimeout(()=>window.print(),50)},
+  wqPrint:()=>{const pa=$('#printArea');pa.className='qrs';pa.innerHTML=`<div class="pq" style="grid-column:1/-1;max-width:90mm;margin:0 auto">${qrSvg(tableUrl(0,walkKey()))}<b>สแกนสั่งอาหาร</b><small>ไม่ต้องรอโต๊ะ${qrSecure()?' · ใช้ได้วันที่ '+dayLabel():''}</small></div>`;qrOut('walkin')},
   moveTbl:async()=>{const id=S.sheet.id,t=val('mvT'),cur=S.open[id];if(!t||!cur)return;const fromTA=cur.table==='TA';if(!(fromTA?can('tables')||can('move'):can('move')))return deny();
     const tgt=Object.values(S.open).filter(x=>x.table===t&&x.id!==id).sort((a,b)=>a.openedAt-b.openedAt)[0];
     if(!tgt)return toast('โต๊ะ '+t+' ยังไม่เปิด เปิดโต๊ะก่อนแล้วค่อยย้าย','bad');if(!(cur.items||[]).length)return toast('บิลนี้ยังไม่มีรายการ','bad');
@@ -3427,8 +3481,8 @@ const ACT={
   qrName:d=>{S.sheet.qn=d.n||'';sheetQrOne()},
   qrFor:d=>openSheet({type:'qrOne',id:d.id,qn:d.n||''}),
   qrOne:()=>{const id=S.sheet&&S.sheet.id;if(!id)return;openSheet({type:'qrOne',id})},
-  qrDayPrint:()=>{sheetQr();setTimeout(()=>window.print(),50)},
-  qrOnePrint:()=>{sheetQrOne();setTimeout(()=>window.print(),50)},
+  qrDayPrint:()=>{sheetQr();qrOut('qr-day')},
+  qrOnePrint:()=>{sheetQrOne();qrOut('qr')},
   staffNew:()=>openSheet({type:'staffNew'}),
   viewAs:d=>{try{localStorage.setItem('nl_mode',d.r)}catch(e){}S.viewAs=d.r;S.tab=homeTab(d.r);S.backTab='stock';closeSheet();render();window.scrollTo(0,0);toast('สลับเป็นมุมมอง '+roleName(d.r))},
   viewAsOff:()=>{try{localStorage.removeItem('nl_mode')}catch(e){}S.viewAs=null;render();toast('กลับเป็นมุมมองแอดมินแล้ว')},
@@ -3473,7 +3527,7 @@ const ACT={
     try{await memRedeem(m.id,+r.pts||0,r.name);rwUsed(r.id);toast(`แลก ${r.name} แล้ว · −${num(r.pts)} แต้ม`);setTimeout(()=>{if(S.sheet&&S.sheet.type==='member')sheetMember()},900);}catch(e){toast(e.message==='แต้มไม่พอ'?'แต้มไม่พอ':errMsg(e),'bad')}},
   memSave:async()=>{const id=S.sheet.id,np=Math.max(0,Math.round(nval('mbPts'))),nm=val('mbName');const ok=await write('members/'+id,r=>r.transform(d=>{const x=memLots(d);const L=x.L;const diff=np-x.points;if(diff>0){const k=lotKey();L[k]=(L[k]||0)+diff}else if(diff<0)lotTake(L,-diff);let h=d.hist;if(x.expired)h=histPush(h,{k:'expire',p:-x.expired});if(diff)h=histPush(h,{k:'adjust',p:diff,n:'โดย '+(S.me||'ร้าน')});return {name:nm,points:lotSum(L),lots:L,hist:h||[]}}));if(ok){closeSheet();toast('บันทึกสมาชิกแล้ว')}},
   memDel:async()=>{const ok=await write('members/'+S.sheet.id,r=>r.delete());if(ok){closeSheet();toast('ลบสมาชิกแล้ว')}},
-  qrPrint:()=>{sheetQr();setTimeout(()=>window.print(),50)},
+  qrPrint:()=>{sheetQr();qrOut('qr-table')},
   qrRotate:async()=>{const k=newQrKey();const ok=await write('config/settings',r=>r.update({qrKey:k}));if(ok){S.settings={...S.settings,qrKey:k};sheetQr();toast('สร้างรหัส QR ใหม่แล้ว พิมพ์ชุดใหม่ไปติดโต๊ะ')}},
   range:d=>{S.report.range=d.v;S.report.data=null;render()},
   nGoWd:()=>{S.tab='back';S.backTab='stock';render();scrollTo(0,0);ACT.poWd({g:'food'})},
@@ -3753,8 +3807,8 @@ Object.assign(ACT,{
   knSlipBad:async d=>{const why=prompt('เหตุผลที่สลิปไม่ผ่าน (ลูกค้าจะเห็น)','ยอดเงินไม่ตรง');if(why==null)return;await write('kn_sales/'+d.id,r=>r.update({slip:false,slipBad:String(why).slice(0,80)}));toast('แจ้งลูกค้าแนบสลิปใหม่แล้ว')},
   knRc:async d=>{const o=(S.knSales||[]).find(x=>x.id===d.id);if(!o)return;if(!o.tok){const t=knTok();o.tok=t;await write('kn_sales/'+o.id,r=>r.update({tok:t}))}openSheet({type:'knRc',id:o.id})},
   knQr:()=>openSheet({type:'knQr'}),
-  knCopy:d=>{try{navigator.clipboard.writeText(d.v);toast('คัดลอกลิงก์แล้ว')}catch(e){prompt('คัดลอกลิงก์',d.v)}},
-  knQrPrint:()=>{const w=window.open('','_blank');if(!w)return;w.document.write('<html><head><title>QR สั่งอาหาร</title><style>body{font-family:sans-serif;text-align:center;padding:30px}svg{width:340px;height:340px}h1{margin:10px 0}</style></head><body><h1>'+esc(knCfg().shopName||'ล้านฅนเมียง')+'</h1><p style="font-size:22px">📱 สแกนสั่งอาหาร · ใส่ชื่อ · จ่ายเงิน</p>'+qrSvg(knOrderUrl())+'<p>รอเรียกคิวที่หน้าร้าน</p><p style="color:#888;font-size:13px">QR ประจำวันที่ '+dshort(Date.now())+' · เปลี่ยนใหม่ทุกครั้งที่เปิดร้าน</p><script>setTimeout(()=>print(),300)<\/script></body></html>');w.document.close()},
+  knCopy:async d=>{try{await navigator.clipboard.writeText(d.v);toast('คัดลอกลิงก์แล้ว')}catch(e){prompt('คัดลอกลิงก์',d.v)}},
+  knQrPrint:()=>{const pa=$('#printArea');pa.className='qrs one';pa.innerHTML=`<div class="pq">${qrSvg(knOrderUrl())}<b>สแกนสั่งอาหาร</b><small>ใส่ชื่อ · เลือกเมนู · จ่ายเงิน · รอเรียกคิวที่หน้าร้าน</small><small class="pqrt">QR ประจำวันที่ ${esc(dshort(Date.now()))} · เปลี่ยนใหม่ทุกครั้งที่เปิดร้าน</small></div>`;qrOut('qr-kn','kn')},
   knR:d=>{S.knR=d.v;render()},
   knSet:()=>{if(S.role!=='owner')return deny();openSheet({type:'knSet'})},
   knSetSave:async()=>{const c={...(S.kn||{}),shopName:val('knSN')||'ล้านฅนเมียง',promptpay:val('knPP').replace(/\D/g,''),ppName:val('knPPN').trim().slice(0,50),phone:S.settings.phone||'',qPre:val('knPre').trim().slice(0,3),queueOn:$('#knQOn').checked,floatDef:+val('knFl')||0};const ok=await write('config/kn',r=>r.set(c));if(ok){S.kn=c;closeSheet();render();toast('บันทึกแล้ว')}}
@@ -4336,6 +4390,18 @@ function viewPoReport(){{const RS=poRounds(),k=RS.map(r=>r.start+':'+roundOrders
    ${wiCard()}${poCashCard(T,t0,t1,len,gg)}${prExp(t0,t1)}${poFinCard(T,t0,t1,len)}${cashHistHtml('po')}
    <details class="card prtbl"><summary><b>ตารางรายวัน</b></summary><div class="list">${[...A.D].reverse().filter(r=>r.o).map(r=>`<div class="row"><div class="grow"><div class="t">ส่ง${poDayName(r.d)}${['วันนี้','พรุ่งนี้','เมื่อวาน'].includes(poDayName(r.d))?' · '+esc(poDate(r.d)):''}</div><div class="s">${r.o} ออร์เดอร์ · ${r.f} กล่อง${r.dr?' · น้ำ '+r.dr+' ขวด':''}${r.u?' · ค้างจ่าย '+baht(r.u):''}</div></div><div style="text-align:right"><b>${baht(r.s)}</b><div class="s muted">ทุน ${baht(r.c)} · กำไร ${baht(r.s-r.c)}</div></div></div>`).join('')||'<div class="empty">ไม่มียอด</div>'}</div></details>`;
   return h}
+Object.assign(ACT,{
+  qpPrint:()=>{const q=S.qrOut;if(!q)return;const pa=$('#printArea');pa.className='qrp'+(q.L.length===1?' one':'');pa.innerHTML=q.L.map(c=>qpCard(c,q.sh)).join('');
+    const imgs=[...pa.querySelectorAll('img')];Promise.all(imgs.map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r}))).then(()=>setTimeout(()=>window.print(),120))},
+  qpImg:async()=>{const q=S.qrOut,btn=$('#qpImg');if(!q)return;const els=[...document.querySelectorAll('#qpView .qp')];if(!els.length)return;const t0=btn.textContent;btn.disabled=true;btn.textContent='กำลังสร้างรูป…';
+    try{if(!window.html2canvas)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+      const files=[];for(let k=0;k<els.length;k++){const el=els[k];const cv=await html2canvas(el,{scale:3,backgroundColor:null,useCORS:true,width:el.offsetWidth,height:el.offsetHeight});
+        const blob=await new Promise(r=>cv.toBlob(r,'image/png'));const bg=(q.L[k].big||'').replace(/<[^>]*>/g,''),tm=bg.match(/โต๊ะ\s*(\d+)/),tt=tm?'table-'+tm[1]:/สั่งเอง/.test(bg)?'walkin':(els.length>1?String(k+1):'');
+        files.push(new File([blob],q.name+(tt?'-'+tt:'')+'.png',{type:'image/png'}));btn.textContent='กำลังสร้างรูป… '+(k+1)+'/'+els.length}
+      if(navigator.canShare&&navigator.canShare({files})&&matchMedia('(pointer:coarse)').matches){try{await navigator.share({files,title:'QR'})}catch(e){}}
+      else{for(const f of files){const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),8000);await new Promise(r=>setTimeout(r,250))}toast('✅ บันทึกรูป QR แล้ว'+(files.length>1?' '+files.length+' รูป':''))}
+    }catch(e){console.warn(e);toast('สร้างรูปไม่สำเร็จ ลองกดพิมพ์แทน','bad')}
+    if(btn.isConnected){btn.disabled=false;btn.textContent=t0}}});
 Object.assign(ACT,{pfDay:d=>{S.pfDay=d.v||'';sheetPoFind()},cashAll:()=>{S.cashAll=!S.cashAll;render()},cashOpen:()=>{S.cashOpen=!S.cashOpen;render()},prGrp:d=>{if(prGrp()===d.v)return;S.prGrp=d.v;prLS('nl_prg',d.v);PRGA=true;render()},prRange:d=>{S.prRange=d.v==='c'?'c':+d.v;prLS('nl_prr',String(d.v));render()},prSort:d=>{S.prSort=d.v;render()}});
 function cashCardG(o){const out=o.out.buy+o.out.exp,got=o.got,owe=o.owe||0,net=got-out,stv=(o.stock||[]).reduce((a,x)=>a+Math.max(0,+x.qty||0)*(+x.unitCost||0),0),pct=out>0?Math.min(100,got/out*100):100,mx=Math.max(1,out,got+owe),col=v=>`color:${v>=0?'#1a8a5c':'var(--chili)'}`;
   const R0=o.rec,rec=[...R0.purch.map(x=>({at:x.at,n:'🛒 ซื้อ '+(x.name||'')+(x.qty?' '+num(x.qty)+' '+(x.unit||''):''),a:-(+x.amount||0),note:x.note})),...R0.exp.map(x=>({at:x.at,n:'💸 '+(x.cat||'รายจ่าย'),a:-(+x.amount||0),note:x.note})),...R0.inc.map(x=>({at:x.at,n:'💰 '+(x.cat||'รายรับ'),a:+x.amount||0,note:x.note}))].sort((a,b)=>b.at-a.at),sh=S.cashAll?rec:rec.slice(0,6),dd=t=>{const d=new Date(t);return d.getDate()+'/'+(d.getMonth()+1)};
@@ -4893,7 +4959,7 @@ Object.assign(ACT,{
     render();toast(poState().open?'เปิดรับออร์เดอร์แล้ว':'ยังเปิดรับไม่ได้ · ตรวจวัน/เวลาใน "กำหนดรอบส่ง"',poState().open?'':'bad')},
   poSet:()=>{if(!poAdmin())return deny();openSheet({type:'poSet'})},
   poQr:()=>openSheet({type:'poQr'}),
-  poQrPrint:()=>{sheetPoQr();setTimeout(()=>window.print(),50)},
+  poQrPrint:()=>{sheetPoQr();qrOut('qr-preorder')},
   poCopy:async()=>{const li=$('#poLink'),u=li&&li.value?li.value:poUrl()+(S.poRt?'?r='+S.poRt:'');try{await navigator.clipboard.writeText(u);toast('คัดลอกลิงก์แล้ว')}catch(e){const i=$('#poLink');if(i){i.select();document.execCommand&&document.execCommand('copy')}toast('คัดลอกลิงก์แล้ว')}},
   poPtAdd:()=>{poReadPts();S.sheet.d.points.push({id:'p'+uid(),name:'',note:''});S.sheet.dirty=true;poRenderPts();const L=document.querySelectorAll('[data-pt][data-k="name"]');if(L.length)L[L.length-1].focus()},
   poPtDel:d=>{poReadPts();S.sheet.d.points.splice(+d.i,1);S.sheet.dirty=true;poRenderPts()},
@@ -4987,7 +5053,7 @@ Object.assign(ACT,{
     if(error)return toast(/display_name|column/i.test(error.message||'')?'ยังไม่ได้รัน SQL ชื่อพนักงาน (nuealwoan-patch-staffname.sql)':'ตั้งชื่อไม่สำเร็จ','bad');toast('บันทึกชื่อแล้ว');loadStaff()},
   sgTab:d=>{S.sheet.sg=+d.v;if(d.v==='9')setTimeout(secLoad,0);document.querySelectorAll('#panel .sg').forEach(x=>x.hidden=x.dataset.sg!==d.v);document.querySelectorAll('#panel .sgtabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===d.v)));const b=$('#panel .sh-body');if(b)b.scrollTop=0;
     if(d.v==='5')setTimeout(()=>{const m=S.sheet&&S.sheet.rdMap;try{m&&m.invalidateSize&&m.invalidateSize()}catch(e){}},60)},
-  memQrPrint:()=>{const card=`<div class="pq"><small style="font-weight:600">${esc(S.settings.rcName||'เนื้อล้วนๆ')}</small>${qrSvg(memberUrl())}<b>สมัครสมาชิกสะสมแต้ม</b><small>ทุก ${num(+S.settings.pointsPer||50)} บาท ได้ 1 แต้ม · ใช้ได้ทั้ง 2 ร้าน</small></div>`;$('#printArea').className='qrs one';$('#printArea').innerHTML=card;setTimeout(()=>window.print(),50)},
+  memQrPrint:()=>{const card=`<div class="pq"><small style="font-weight:600">${esc(S.settings.rcName||'เนื้อล้วนๆ')}</small>${qrSvg(memberUrl())}<b>สมัครสมาชิกสะสมแต้ม</b><small>ทุก ${num(+S.settings.pointsPer||50)} บาท ได้ 1 แต้ม · ใช้ได้ทั้ง 2 ร้าน</small></div>`;$('#printArea').className='qrs one';$('#printArea').innerHTML=card;qrOut('qr-member','noodle')},
   memCard:()=>{const sh=S.sheet;const o=sh&&(sh.order||poById(sh.id));if(!o||!o.memberPhone)return;const m=S.members.find(x=>x.id===o.memberPhone)||{};
     showMemberCard({phone:maskPhone(o.memberPhone),name:o.memberName||m.name||o.name||'',points:o.ptsBalance!=null?o.ptsBalance:m.points,note:+o.ptsEarned?`ได้รับ +${+o.ptsEarned} แต้มจากบิลนี้ 🎉`:''})},
   rcLogoReset:d=>{RCLOGO[d.id]='';if(S.sheet)S.sheet.dirty=true;const b=$('#'+d.id+'Box');if(b)b.innerHTML=`<img src="${esc(d.def)}" alt="โลโก้">`;const m=$('#'+d.id+'Msg');if(m)m.textContent='ใช้โลโก้ตั้งต้น · กด "บันทึก" เพื่อใช้งาน'},
@@ -5346,7 +5412,7 @@ Object.assign(ACT,{
     const {error}=S.sheet.apMode==='pw'?await SB.rpc('admin_rider_pw',{p_id:d.id,p_password:p}):await SB.rpc('admin_create_rider',{p_id:d.id,p_username:u,p_password:p});
     if(error){if(e)e.textContent=rdErr(error);return}S.sheet.ap=null;S.sheet.cred={id:d.id,u:upU(u),p};toast(S.sheet.apMode==='pw'?'ตั้งรหัสผ่านใหม่แล้ว':'อนุมัติไรเดอร์แล้ว');sheetRiders()},
   rdCopy:()=>{const c=S.sheet.cred;if(!c)return;const t=`Raptor Rider · ${new URL('rider.html',location.href).href.split('?')[0]}\nชื่อผู้ใช้: ${c.u}\nรหัสผ่าน: ${c.p}`;navigator.clipboard?.writeText(t).then(()=>toast('คัดลอกแล้ว ส่งให้ไรเดอร์ได้เลย'),()=>toast('คัดลอกไม่ได้ จดไว้แทน','bad'))},
-  rdCopyLink:d=>navigator.clipboard?.writeText(d.v).then(()=>toast('คัดลอกลิงก์แล้ว'),()=>{}),
+  rdCopyLink:d=>navigator.clipboard?navigator.clipboard.writeText(d.v).then(()=>toast('คัดลอกลิงก์แล้ว'),()=>prompt('คัดลอกลิงก์นี้',d.v)):prompt('คัดลอกลิงก์นี้',d.v),
   rdBlock:async d=>{const r=(S.riders||[]).find(x=>x.id===d.id);if(!r)return;const st=r.status==='blocked'?'active':'blocked';if(await write('riders/'+d.id,x=>x.update({status:st,...(st==='blocked'?{ready:false}:{})}))){r.status=st;sheetRiders()}},
   rdDel:async d=>{if(await write('riders/'+d.id,x=>x.delete())){S.riders=(S.riders||[]).filter(x=>x.id!==d.id);sheetRiders();toast('ลบแล้ว')}},
   rdShopGps:()=>{if(!navigator.geolocation)return toast('เครื่องนี้หาตำแหน่งไม่ได้','bad');toast('กำลังหาตำแหน่ง… (ต้องอยู่ที่ร้าน)');navigator.geolocation.getCurrentPosition(p=>{const m=S.sheet.rdMap;const lat=+p.coords.latitude.toFixed(6),lng=+p.coords.longitude.toFixed(6);if(m&&m.__set)m.__set(lat,lng);else{S.sheet.rdShop={lat,lng};rdShopTxt()}},()=>toast('หาตำแหน่งไม่ได้ อนุญาตตำแหน่งในเบราว์เซอร์ก่อน','bad'),{enableHighAccuracy:true,timeout:15000})},
