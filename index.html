@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.11.05-092429">
+<meta name="app-version" content="2026.11.05-100416">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1416,6 +1416,7 @@ body.shop-kn #hdrShop:not(.closed){color:#14532d;background:linear-gradient(180d
 .qp-sub+.qp-sub{margin-top:3px}.qp-sub:last-of-type{margin-bottom:12px}
 .qp-note{margin-top:5px;margin-bottom:12px;font-size:10.5px;font-weight:700;color:#b45309;line-height:1.5;background:rgba(255,248,235,.9);padding:1px 8px;border-radius:6px}
 .qp-ft{margin-top:auto;font-size:11.5px;font-weight:700;color:#fff;background:var(--qc);padding:3px 14px;border-radius:999px;line-height:1.6;box-shadow:0 2px 8px rgba(0,0,0,.25);border:1.5px solid rgba(255,255,255,.7)}
+.qpwrap{display:flex;justify-content:center;padding:4px 0 6px}.qpwrap .qp{width:min(340px,100%);min-height:0}.qpwrap .qp-qr svg{width:210px;height:210px}.qpwrap .qp-big{font-size:26px}.qpwrap .qp-ft{margin-top:14px}
 #printArea.qrp{display:none}
 @media print{#printArea.qrp{display:grid!important;grid-template-columns:repeat(2,88mm);gap:8mm;justify-content:center;padding:6mm 0}
  #printArea.qrp .qp{width:88mm;box-shadow:none;border-radius:5mm}
@@ -1466,7 +1467,7 @@ body.shop-kn .closedtx span{color:#f6e7d4}body.shop-kn .closedtx small{color:#d9
 .btn[data-armed],button[data-armed],a[data-armed]{color:#fff!important;background:linear-gradient(135deg,#ef4444,#b91c1c)!important;border:2px solid #fff!important;box-shadow:0 0 0 3px rgba(220,38,38,.35),0 4px 12px rgba(185,28,28,.35)!important;text-shadow:0 1px 1px rgba(0,0,0,.25);font-weight:700}
 .btn[data-armed] *,button[data-armed] *{color:#fff!important}
 
-.cfscan{margin-top:6px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px;border-radius:14px;border:1.5px dashed #2563eb;background:linear-gradient(180deg,#eff6ff,#dbeafe);color:#1e40af;font-weight:800}.cfscan small{font-weight:500;color:#3b5bab;font-size:12px}
+.cfscan{flex:0 0 auto!important;height:auto!important;min-height:0!important;margin:6px 16px 10px!important;width:auto!important;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px;border-radius:14px;border:1.5px dashed #2563eb;background:linear-gradient(180deg,#eff6ff,#dbeafe);color:#1e40af;font-weight:800}.cfscan small{font-weight:500;color:#3b5bab;font-size:12px}
 
 .msort-tip{margin:4px 0 8px!important;padding:8px 12px;border-radius:12px;background:var(--surface,#fffaf2);color:var(--fg)!important;box-shadow:0 2px 8px rgba(0,0,0,.1)}
 .msort-h{font-weight:800;color:var(--acc2,#6b3e1f);padding:10px 4px 4px;font-size:14px}
@@ -3247,6 +3248,17 @@ function qpCard(c,sh){const t=QP_TH[sh]||QP_TH.noodle;
    ${c.sub.map(x=>`<div class="qp-sub">${x}</div>`).join('')}
    ${c.note?`<div class="qp-note">${c.note}</div>`:''}
    <div class="qp-ft">📱 เปิดกล้องมือถือ แล้วสแกนได้เลย</div></div>`}
+/* QR บนจอให้ลูกค้าสแกน → แปลงเป็นโปสเตอร์แบบเดียวกับตอนพิมพ์ */
+const QP_SCR={qrOne:1,walkinQr:1,knQr:'kn',poQr:'po',rcQr:'noodle',poRcQr:'po',knRc:'kn'};
+function qpify(){const t=S.sheet&&S.sheet.type,m=t&&QP_SCR[t];if(!m)return;const sh=m===1?cashShop():m,T=QP_TH[sh]||QP_TH.noodle;
+  const nms=[T.nm(),S.settings.shopName||'',S.settings.rcName||'',poCfg().rcName||'',poCfg().shopName||'',knCfg().shopName||''].map(x=>String(x).trim()).filter(Boolean);
+  document.querySelectorAll('#panel .qrbig .pq,#panel .qrbox.big,#panel .knp-qr').forEach(e=>{if(e.closest('.qpwrap'))return;const sv=e.querySelector('svg');if(!sv)return;
+    const bt=e.querySelector('b,.amt');let big=bt?bt.textContent.trim():'';nms.forEach(n=>{big=big.replace(' · '+n,'')});if(!big)big=/Rc$/.test(t)?'สแกนรับใบเสร็จ':'สแกนสั่งอาหาร';
+    const subs=[...e.querySelectorAll('small,div:not(.amt)')].filter(x=>x!==bt&&!x.classList.contains('pqrt')&&!x.querySelector('svg')).map(x=>x.textContent.trim()).filter(x=>x&&!nms.includes(x));
+    const nt=e.querySelector('.pqrt');const w=document.createElement('div');w.className='qpwrap';
+    w.innerHTML=qpCard({svg:sv.outerHTML,big:esc(big),sub:subs.map(esc),note:nt?esc(nt.textContent.trim()):''},sh);
+    const host=e.closest('.qrbig')||e;host.replaceWith(w)})}
+(()=>{const go=()=>{const p=$('#panel');if(!p)return setTimeout(go,300);let q=0;new MutationObserver(()=>{if(q)return;q=1;requestAnimationFrame(()=>{q=0;try{qpify()}catch(e){console.warn(e)}})}).observe(p,{childList:true,subtree:true})};go()})();
 function qrOut(name,shop){const sh=shop||cashShop(),T=QP_TH[sh]||QP_TH.noodle,nm=T.nm().trim();
   const L=[...document.querySelectorAll('#printArea .pq')].map(e=>{const sv=e.querySelector('svg');const sm=[...e.querySelectorAll('small')];
     return {svg:sv?sv.outerHTML:'',big:(e.querySelector('b')||{}).innerHTML||'',sub:sm.filter(x=>!x.classList.contains('pqrt')&&x.textContent.trim()&&x.textContent.trim()!==nm&&x.textContent.trim()!==(S.settings.shopName||'').trim()).map(x=>x.innerHTML),note:(sm.find(x=>x.classList.contains('pqrt'))||{}).innerHTML||''}}).filter(x=>x.svg);
@@ -3631,7 +3643,7 @@ function sheetCashOpen(){const s=S.sheet,sh=cashShop(),last=cashLast(sh),def=s.f
    ${off.length?`<label class="check"><input type="checkbox" id="cfReact" checked> เปิดขายเมนูที่หมดเมื่อวาน (${off.length} เมนู: ${esc(off.slice(0,4).map(m=>m.name).join(', '))}${off.length>4?'…':''})</label>`:''}
    <p class="help" style="margin:0">ตอนปิดร้าน ระบบจะหักเงินทอนนี้ออกจากเงินที่นับได้ให้เอง</p></div>
    ${sh!=='po'?`<button type="button" class="btn wide cfscan" data-act="cfScan">📱 ไม่มีเงินทอน · รับสแกน/โอนอย่างเดียว<small>ลูกค้าจ่ายพร้อมเพย์ทั้งหมด · ปิดการรับเงินสดวันนี้</small></button>`:''}</div>
-   <div class="sh-foot"><button class="btn" data-act="close" type="button">ข้าม</button><button class="btn pri wide" data-act="cfSave" type="button">🔓 เปิดร้าน · เริ่มขาย</button></div>`;
+   <div class="sh-foot"><button class="btn" data-act="cfSkip" type="button">${KN?'ข้าม · เปิดร้านเลย':'ข้าม'}</button><button class="btn pri wide" data-act="cfSave" type="button">🔓 เปิดร้าน · เริ่มขาย</button></div>`;
   const i=$('#cfIn');i.addEventListener('input',()=>{s.f=i.value.replace(/[^0-9.]/g,'');$('#cfShow').textContent=baht(+s.f||0)})}
 function knPotRows(t0,t1){const M={};(S.knMenu||[]).forEach(m=>M[m.id]={m,q:0,s:0,pot:0,pack:0,ing:[]});
   (S.knSales||[]).filter(o=>knLive(o)&&+o.at>=t0&&+o.at<t1).forEach(o=>(o.items||[]).forEach(l=>{const r=M[l.menuId];if(!r)return;const q=+l.qty||0;r.q+=q;r.s+=((+l.price||0)+(+l.extra||0))*q;r.pack+=cpUnitKn(l.menuId)*q}));
@@ -3661,6 +3673,7 @@ function cashHistHtml(sh){const L=(S.cashS||[]).filter(x=>x.shop===sh).slice(0,1
   return `<div class="card"><h3>💵 ลิ้นชักเงินสด (ล่าสุด)</h3><div class="list">${L.map(c=>{const X=c.closeAt?{cash:c.cashSales,qr:c.qrSales}:cashSales(c);return `<div class="row"><div class="grow"><div class="t">${dshort(c.at)} ${hm(c.at)}${c.closeAt?' – '+hm(c.closeAt):' · <span class="pill ok">เปิดอยู่</span>'}</div><div class="s">ทอนตั้งต้น ${baht(c.float||0)} · สด ${baht(X.cash||0)} · โอน ${baht(X.qr||0)}${c.closeAt&&c.counted!=null?` · นับได้ ${baht(c.counted)}`:''}</div></div>${c.closeAt&&c.diff!=null?`<b class="${Math.abs(c.diff)<.01?'':c.diff>0?'up':'dn'}">${Math.abs(c.diff)<.01?'ตรง':(c.diff>0?'เกิน ':'ขาด ')+baht(Math.abs(c.diff))}</b>`:''}</div>`}).join('')}</div></div>`}
 Object.assign(ACT,{
   cfSet:d=>{const i=$('#cfIn');i.value=d.v;S.sheet.f=d.v;$('#cfShow').textContent=baht(+d.v)},
+  cfSkip:()=>{if(cashShop()==='kn'&&!cashCur('kn')){S.sheet.f=0;S.sheet.scan=0;return ACT.cfSave()}closeSheet()},
   cfScan:()=>{S.sheet.scan=1;S.sheet.f=0;ACT.cfSave()},
   cfSave:async()=>{const sh=cashShop(),f=+(S.sheet.f??val('cfIn'))||0;if(cashCur(sh)){closeSheet();return toast('ลิ้นชักเปิดอยู่แล้ว')}const now=Date.now(),id=sh+'-'+now,doc={shop:sh,at:now,float:S.sheet.scan?0:r2(f),by:S.me||'',...(S.sheet.scan?{scanOnly:true}:{}),...(sh==='kn'?{qk:newQrKey()+newQrKey()}:{})};
     const ok=await write('cash_sessions/'+id,r=>r.set(doc));if(!ok)return;S.cashS=[{id,...doc},...(S.cashS||[])];
