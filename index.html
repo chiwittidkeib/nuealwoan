@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.11.05-083153">
+<meta name="app-version" content="2026.11.05-083803">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1395,6 +1395,7 @@ body.shop-kn #hdrShop:not(.closed){color:#14532d;background:linear-gradient(180d
 .knsp-i img,.knsp-i .ph{width:64px;height:64px;border-radius:12px;object-fit:cover;flex:none}.knsp-i .ph{display:grid;place-items:center;background:linear-gradient(135deg,#e9a54b,#6b3e1f);color:#fff;font-weight:800;font-size:26px}
 .knsp-t{flex:1;min-width:0;display:flex;flex-direction:column}.knsp-t b{font-size:16px}.knsp-t small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.knsp-t em{font-style:normal;font-weight:800;color:#b45309;font-size:17px}
 .knsp-add{font-style:normal;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#c8792a,#6b3e1f);color:#fff;font-size:20px;font-weight:800;flex:none}
+.nlcash{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}.nlc{flex:1 1 200px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-radius:16px;border:1.5px solid rgba(94,197,156,.45);background:linear-gradient(180deg,rgba(30,34,32,.92),rgba(18,20,19,.92));color:#f1ead8;font:inherit;font-size:14px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}.nlc b{font-size:18px;color:#5ec59c;white-space:nowrap}.nlc:hover{border-color:#5ec59c;box-shadow:0 0 0 3px rgba(94,197,156,.18),0 4px 14px rgba(0,0,0,.25)}.nlc.sub{border-color:rgba(212,175,55,.45)}.nlc.sub b{color:#e6c35c}.nlc.scan{border-color:rgba(56,189,248,.55)}.nlc.scan b{color:#7dd3fc;font-size:14px}.nlc.off{border-color:rgba(239,68,68,.6);animation:nlcP 1.6s ease-in-out infinite}.nlc.off b{color:#fca5a5;font-size:14px}@keyframes nlcP{50%{box-shadow:0 0 0 4px rgba(239,68,68,.22)}}@media (prefers-reduced-motion:reduce){.nlc.off{animation:none}}
 .kncash{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1.5px solid #d9b994;background:rgba(255,250,242,.95);font:inherit;font-size:14px;color:#4a2c16;cursor:pointer}.kncash b{color:#b91c1c}.kncash.on{border-color:#22c55e}.kncash.on b{color:#15803d}
 .knq.st-pay{border:2px solid #3b82f6;background:#eff6ff}.knq-pay{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px;border-radius:12px;background:rgba(59,130,246,.08)}
 .chip.payc{border-color:#3b82f6!important;color:#1d4ed8}.knqr-big svg{width:280px!important;height:280px!important}.knqr-big b{font-size:16px;margin-top:6px}
@@ -1870,7 +1871,7 @@ function clearAuth(){try{Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/
 function bumpFail(){let n=0;try{n=(+sessionStorage.getItem('nl_fail')||0)+1;sessionStorage.setItem('nl_fail',n)}catch(e){}return n}
 async function logout(){try{await Promise.race([SB.auth.signOut({scope:'local'}),new Promise(r=>setTimeout(r,3000))])}catch(e){}clearAuth();location.reload()}
 /* ---------- ออกจากระบบอัตโนมัติ (ยกเว้นแอดมิน): ข้ามเที่ยงคืน / แอดมินปิดร้าน ---------- */
-function closedCard(){const kn=isKn();if(kn?!!cashCur('kn'):!shopClosed())return '';const ss=kn?(()=>{const l=(S.cashS||[]).find(x=>x.shop==='kn'&&x.closeAt);return l?{closedAt:l.closeAt,closedBy:l.closedBy}:{}})():shopSes(),po=S.shop==='po',lg=po?'images/logo-po-t.png':kn?'images/logo-kn.png?v=20261022':'images/stamp-logo.png?v=20261016b';
+function closedCard(){const kn=isKn();if(kn?!!cashCur('kn'):!shopClosed())return '';const ss=kn?(()=>{const l=(S.cashS||[]).find(x=>x.shop==='kn'&&x.closeAt);return l?{closedAt:l.closeAt,closedBy:l.closedBy}:{}})():shopSes(),po=S.shop==='po',lg=po?'images/logo-po-stamp.png?v=20261105':kn?'images/logo-kn.png?v=20261022':'images/stamp-logo.png?v=20261016b';
   return `<div class="closedwrap"><div class="cstamp"><img src="${lg}" alt=""><b>ปิดให้บริการ</b><i>Closed</i></div>
    <div class="closedtx"><b>🔒 ร้านปิดแล้ว</b><span>${kn?'ขายหน้าร้าน / ลูกค้าสแกนสั่งเองไม่ได้ · ใส่เงินทอนเพื่อเปิดร้าน':po?'ลูกค้าสั่งพรีออเดอร์ใหม่ไม่ได้ · ออร์เดอร์ที่รับไว้แล้วยังจัดการได้ตามปกติ':'เปิดบิลใหม่ / เพิ่มรายการ / ลูกค้าสั่งเองไม่ได้ · บิลที่ค้างอยู่ยังเก็บเงินได้'}</span>${ss.closedAt?`<small>ปิดเมื่อ ${dshort(ss.closedAt)} ${hm(ss.closedAt)} น.${ss.closedBy?' · '+esc(emailToUser(ss.closedBy)):''}</small>`:''}
    ${(kn?canPo():S.role==='owner')?'<small>กด "เปิดร้าน" ที่ปุ่มด้านบนเพื่อเปิดร้าน</small>':'<small>แอดมินจะเป็นคนเปิดร้าน</small>'}</div></div>`}
@@ -2100,6 +2101,8 @@ function render(){MEMO=null;
 }
 const isLow=s=>(+s.qty||0)<=(+s.min||0);
 
+function nlCashBar(){if(shopClosed()||!can('pay'))return '';const c=cashCur('noodle');
+  return `<div class="nlcash">${c?`<button type="button" class="nlc on${c.scanOnly?' scan':''}" data-act="cashFloat"><span>${c.scanOnly?'📱 รับสแกนอย่างเดียว':'💵 เงินทอนในลิ้นชัก'}</span><b>${c.scanOnly?'แตะเพื่อใส่เงินทอน':baht(c.float||0)}</b></button><button type="button" class="nlc sub" data-act="cashNow"><span>💰 เงินสดควรมีตอนนี้</span><b>${baht(r2((+c.float||0)+cashSales(c).cash))}</b></button>`:`<button type="button" class="nlc off" data-act="cashSet"><span>💵 ยังไม่ได้ใส่เงินทอน</span><b>แตะเพื่อใส่</b></button>`}</div>`}
 function viewTables(){
   const n=Math.max(1,Math.min(60,+S.settings.tables||10));
   const byTable={};const ta=[];
@@ -2112,6 +2115,7 @@ function viewTables(){
     <div class="stat"><b class="num">${S.today.length}</b><span>บิลที่ชำระแล้ว</span></div>
     <div class="stat"><b class="num">${busy}/${n}</b><span>โต๊ะที่มีลูกค้า</span></div>
     <div class="stat"><b class="money">${baht(pend)}</b><span>ยอดรอชำระ</span></div></div>`;
+  h+=nlCashBar();
   h+=`<div class="quickbar"><button class="btn pri qb" data-act="quickOrder" type="button"><b>+ สั่ง Order</b><small>ไม่ต้องเลือกโต๊ะ</small></button>${S.settings.qrWalkin!==false?`<button class="btn qb" data-act="walkinQr" type="button"><b>QR ให้ลูกค้าสั่งเอง</b><small>ไม่ต้องเลือกโต๊ะ</small></button>`:''}</div>`;
   const fl=['tables','other','deliv'].includes(S.floor)?S.floor:'tables';
   const walk=ta.filter(o=>chOf(o)==='walkin'),dl=ta.filter(o=>chOf(o)!=='walkin');
@@ -2437,14 +2441,15 @@ function addItem(oid,mid,sel){if(shopClosed('noodle')){toast('🔒 ร้าน�
   if(ex)ex.qty+=nl.qty;else items.push({...nl});return items});}
 
 /* pay */
+const nlScanOnly=()=>!!(cashCur('noodle')||{}).scanOnly;
 function sheetPay(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const s=S.sheet;
   $('#panel').innerHTML=head('ชำระเงิน · '+esc(tableLabel(o)),(o.orderNo?esc(o.orderNo)+' · ':'')+linesCount(o.items)+' รายการ')+
-  `<div class="sh-body"><div class="bigsum"><small>ยอดที่ต้องชำระ</small><b id="payTotal">฿0</b><small id="paySub"></small></div>
+  `<div class="sh-body"><div class="bigsum"><small>ยอดที่ต้องชำระ</small><b id="payTotal">฿0</b><small id="paySub"></small></div>${nlScanOnly()&&!isDel(o)?'<p class="help" style="margin:0;text-align:center">📱 วันนี้รับสแกน/โอนอย่างเดียว · ใส่เงินทอนที่หน้าโต๊ะเพื่อรับเงินสด</p>':''}
    ${o.slipAt?`<button class="slipcard" data-act="viewSlip" data-id="${o.id}" type="button"><span>📎</span><span class="grow"><b>ลูกค้าแนบสลิปโอนเงินแล้ว</b><small>${hm(o.slipAt)} · แตะเพื่อดูสลิป ตรวจยอดและชื่อบัญชีก่อนกดรับเงิน</small></span><span>›</span></button>`:''}
    ${can('discount')?`<div class="field"><label for="payDisc">ส่วนลด (บาท)</label><input id="payDisc" inputmode="decimal" placeholder="0" value="${esc(s.discount||'')}"></div>`:''}
    ${isDel(o)?`<div class="card" id="payPlat"></div>`:'<div class="card" id="payCpn" hidden></div>'}
    ${S.settings.pointsOn&&!isDel(o)?`<div class="card"><h3>สมาชิกสะสมแต้ม</h3><div class="inrow"><input id="payPhone" inputmode="tel" placeholder="เบอร์โทรลูกค้า" value="${esc(s.phone||'')}" autocomplete="off" aria-label="เบอร์โทรลูกค้า"><button class="btn sm" data-act="findMember" type="button">ค้นหา</button></div><div id="payMem"></div></div>`:''}
- <div class="seg" role="group" ${isDel(o)?'hidden':''}>${o.slipAt||isRd(o)?'':`<button data-act="method" data-v="cash" aria-pressed="${s.method==='cash'}" type="button">เงินสด</button>`}<button data-act="method" data-v="promptpay" aria-pressed="${s.method==='promptpay'}" type="button">พร้อมเพย์</button></div>
+ <div class="seg" role="group" ${isDel(o)?'hidden':''}>${o.slipAt||isRd(o)||nlScanOnly()?'':`<button data-act="method" data-v="cash" aria-pressed="${s.method==='cash'}" type="button">เงินสด</button>`}<button data-act="method" data-v="promptpay" aria-pressed="${s.method==='promptpay'}" type="button">พร้อมเพย์</button></div>
    <section id="payCash" ${s.method==='cash'?'':'hidden'} style="display:flex;flex-direction:column;gap:12px">
      <div class="field"><label for="payRecv">รับเงินมา (บาท)</label><input id="payRecv" inputmode="decimal" placeholder="0" value="${esc(s.received||'')}"></div>
      <div class="quick" id="payQuick"></div>
@@ -2456,7 +2461,7 @@ function sheetPay(){const o=S.open[S.sheet.id];if(!o)return closeSheet();const s
   if($('#payPhone')){$('#payPhone').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();findMember()}});renderMem()}
   $('#payRecv').addEventListener('input',e=>{S.sheet.received=e.target.value;payUpdate()});
   renderCpn();payUpdate();}
-const payOpen=id=>{const o=S.open[id];const p={type:'pay',id,method:o&&isDel(o)?chOf(o):(o&&(o.slipAt||isRd(o))?'promptpay':'cash'),discount:'',received:''};
+const payOpen=id=>{const o=S.open[id];const p={type:'pay',id,method:o&&isDel(o)?chOf(o):(o&&(o.slipAt||isRd(o)||nlScanOnly())?'promptpay':'cash'),discount:'',received:''};
   if(o&&o.memberPhone&&S.settings.pointsOn&&!isDel(o)){p.phone=o.memberPhone;p.member=S.members.find(m=>m.id===o.memberPhone)||null;p.memberNew=!p.member;p.custMem=true}return p};
 function payCalc(){const o=S.open[S.sheet.id],s=S.sheet,st=S.settings;const sub=linesTotal(o.items);
   const promo=!isDel(o)&&!isRd(o)?promoCalcJS((o.items||[]).map(l=>({menuId:l.fee?null:l.menuId,qty:l.qty,price:(+l.price||0)+(+l.extra||0)})),nlLivePromos()):{disc:0,list:[]};
@@ -3571,7 +3576,7 @@ function sheetCashOpen(){const s=S.sheet,sh=cashShop(),last=cashLast(sh),def=s.f
    <div class="chips">${[0,300,500,1000].map(v=>`<button type="button" class="chip" data-act="cfSet" data-v="${v}">${v?baht(v):'ไม่มี'}</button>`).join('')}</div>
    ${off.length?`<label class="check"><input type="checkbox" id="cfReact" checked> เปิดขายเมนูที่หมดเมื่อวาน (${off.length} เมนู: ${esc(off.slice(0,4).map(m=>m.name).join(', '))}${off.length>4?'…':''})</label>`:''}
    <p class="help" style="margin:0">ตอนปิดร้าน ระบบจะหักเงินทอนนี้ออกจากเงินที่นับได้ให้เอง</p></div>
-   ${KN?`<button type="button" class="btn wide cfscan" data-act="cfScan">📱 ไม่มีเงินทอน · รับสแกน/โอนอย่างเดียว<small>ลูกค้าจ่ายพร้อมเพย์ทั้งหมด · ปิดการรับเงินสดวันนี้</small></button>`:''}</div>
+   ${sh!=='po'?`<button type="button" class="btn wide cfscan" data-act="cfScan">📱 ไม่มีเงินทอน · รับสแกน/โอนอย่างเดียว<small>ลูกค้าจ่ายพร้อมเพย์ทั้งหมด · ปิดการรับเงินสดวันนี้</small></button>`:''}</div>
    <div class="sh-foot"><button class="btn" data-act="close" type="button">ข้าม</button><button class="btn pri wide" data-act="cfSave" type="button">🔓 เปิดร้าน · เริ่มขาย</button></div>`;
   const i=$('#cfIn');i.addEventListener('input',()=>{s.f=i.value.replace(/[^0-9.]/g,'');$('#cfShow').textContent=baht(+s.f||0)})}
 function knPotRows(t0,t1){const M={};(S.knMenu||[]).forEach(m=>M[m.id]={m,q:0,s:0,pot:0,pack:0,ing:[]});
@@ -3615,6 +3620,8 @@ Object.assign(ACT,{
     if(sh!=='kn'&&!shopClosed(sh)&&s.alsoClose!==false){await SB.rpc('shop_session',{p_closed:true,p_shop:sh});const key=sh==='po'?'shopSessionPo':'shopSession';S.lists=S.lists||{};S.lists[key]={...(S.lists[key]||{}),closed:true,closedAt:now}}
     closeSheet();render();toast('🔒 ปิดร้านแล้ว · เงินสดสุทธิ '+baht(upd.net)+(upd.diff!=null&&Math.abs(upd.diff)>=.01?(upd.diff>0?' · เกิน ':' · ขาด ')+baht(Math.abs(upd.diff)):''))},
   cashFloat:async()=>{const c=cashCur();if(!c)return;const v=prompt(c.scanOnly?'ตอนนี้รับสแกนอย่างเดียว · ใส่เงินทอนเพื่อเปิดรับเงินสด (บาท)':'แก้เงินทอนตั้งต้น (บาท)',String(c.float||0));if(v==null)return;const f=r2(+String(v).replace(/[^0-9.]/g,'')||0);c.float=f;c.scanOnly=false;render();await write('cash_sessions/'+c.id,r=>r.update({float:f,scanOnly:false}));toast('เงินทอน '+baht(f)+' · รับเงินสดได้แล้ว')},
+  cashSet:()=>{if(!can('pay'))return deny();openSheet({type:'cashOpen'})},
+  cashNow:()=>{const c=cashCur();if(!c)return;const X=cashSales(c);toast('เงินทอน '+baht(c.float||0)+' + ขายเงินสด '+baht(X.cash)+' = '+baht(r2((+c.float||0)+X.cash))+' · โอน '+baht(X.qr))},
   knShop:()=>{if(!canPo())return deny();openSheet({type:cashCur('kn')?'cashClose':'cashOpen'})},
   knQToggle:async()=>{if(!canPo())return deny();const on=knCfg().queueOn===false;if(!confirm(on?'เปิดใช้ระบบคิว?\n\n• ทุกบิลได้เลขคิว + ใส่ชื่อลูกค้า\n• มีแท็บ "คิว" ไว้เรียกลูกค้า':'ปิดระบบคิว?\n\n• ขายจบทันที ไม่มีเลขคิว ไม่ต้องใส่ชื่อ\n• ซ่อนแท็บ "คิว" (คิวที่ค้างยังอยู่ เปิดกลับมาดูได้)'))return;const c={...(S.kn||{}),queueOn:on};const ok=await write('config/kn',r=>r.set(c));if(ok){S.kn=c;render();toast(on?'🔔 เปิดใช้ระบบคิวแล้ว':'ปิดระบบคิวแล้ว · ขายจบได้ทันที')}},
   knSoldMode:()=>{S.knSO=!S.knSO;render();if(S.knSO)toast('แตะเมนูเพื่อตั้ง "หมดแล้ว" / เปิดขายอีกครั้ง')},

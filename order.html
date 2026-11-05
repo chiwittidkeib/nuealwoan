@@ -500,7 +500,7 @@ async function start(){
   const cfg=window.APP_CONFIG||{};
   if(!T||!K)return fail('สแกน QR ที่โต๊ะเพื่อสั่งอาหาร','ลิงก์นี้ไม่มีเลขโต๊ะ');
   if(!window.supabase||!cfg.SUPABASE_URL||!cfg.SUPABASE_KEY)return fail('ระบบยังไม่พร้อม','แจ้งพนักงานได้เลย');
-  sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}});sb.rpc('public_pp_name').then(r=>{if(r&&r.data)window.PPN=r.data},()=>{});
+  sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_KEY,{auth:{persistSession:false}});sb.rpc('public_pp_name').then(r=>{if(r&&r.data)window.PPN=r.data},()=>{});sb.rpc('public_cash_ok',{p_shop:'noodle'}).then(r=>{window.CASHNO=!!r&&r.data===false},()=>{});
   const {data,error}=await sb.rpc('public_menu',{p_key:K});
   if(error){if(lastOid()&&await tryReceipt())return;const [a,b]=rpcErr(error);return fail(a,b)}
   if(!WALK&&(+T<1||+T>data.tables))return fail('ไม่พบโต๊ะนี้','สแกน QR บนโต๊ะอีกครั้ง หรือแจ้งพนักงาน');
@@ -655,7 +655,7 @@ function render(){
         ${st.waiting?`<p class="muted" style="margin:0">ยังมี ${st.waiting} รายการที่กำลังทำ ยอดนี้รวมไว้แล้ว</p>`:''}
         ${(h=>h?h+'<p class="pdpa-note">🔒 เบอร์โทรใช้สะสมแต้มเท่านั้น ไม่เปิดเผยให้ผู้อื่น · ขอลบข้อมูลได้ที่ร้าน</p>':'')(memBox(st,bc))}
         ${pp&&bc.total>0?`${ppPoster(pp,bc.total,{name:window.PPN||'',bg:'images/bg-m.jpg',pos:'left top',size:'auto 100%',rep:'repeat-x',htop:1})}`:''}
-        <div class="stack">${pp&&bc.total>0?slipBox(st):''}${S.slipSent&&S.slipSent.o===(st.orderNo||'')?'':`<button class="btn${pp?'':' pri'}" data-a="call" data-v="pay" type="button">ชำระเงินสด / เรียกพนักงานเก็บเงิน</button>`}</div>
+        <div class="stack">${pp&&bc.total>0?slipBox(st):''}${S.slipSent&&S.slipSent.o===(st.orderNo||'')?'':(window.CASHNO?`<p class="muted" style="margin:0;font-size:13px;text-align:center">📱 วันนี้ร้านรับชำระด้วยการสแกน / โอนเท่านั้น</p><button class="btn" data-a="call" data-v="pay" type="button">เรียกพนักงาน</button>`:`<button class="btn${pp?'':' pri'}" data-a="call" data-v="pay" type="button">ชำระเงินสด / เรียกพนักงานเก็บเงิน</button>`)}</div>
         <p class="muted" style="margin:0;font-size:13px">ส่วนลดหรือแต้มสะสม พนักงานจะหักให้ตอนชำระเงิน ยอดสุดท้ายตามใบเสร็จ</p>`:'<p class="muted">ยังไม่มีรายการ</p>');
     ft=`<button class="btn" data-a="view" data-v="status" type="button">ดูสถานะ</button><button class="btn pri wide" data-a="view" data-v="menu" type="button">สั่งเพิ่ม</button>`;
   }else{
