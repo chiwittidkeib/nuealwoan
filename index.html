@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="app-version" content="2026.11.05-100416">
+<meta name="app-version" content="2026.11.17-115219">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111614">
 <meta name="color-scheme" content="dark">
@@ -1578,6 +1578,14 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]){padding-top:max(8
 .kng.knlist .kngi .limb{grid-area:lim;align-self:start;max-width:320px;margin-top:0}
 .kng.knlist .kngi:not(:has(.limb)) b{grid-row:1/3;align-self:center}
 
+.ghcd{border:1.5px solid rgba(22,163,74,.35)}.ghcd.warn{border-color:rgba(234,88,12,.55)}.ghcd.bad{border-color:rgba(220,38,38,.7);animation:ghP 1.6s ease-in-out infinite}@keyframes ghP{50%{box-shadow:0 0 0 4px rgba(220,38,38,.18)}}
+.ghnum{display:flex;align-items:baseline;justify-content:center;flex-wrap:wrap;gap:4px 6px;margin:10px 0 8px;font-variant-numeric:tabular-nums}
+.ghnum b{font-size:40px;font-weight:800;line-height:1.2;color:#16a34a;min-width:1.3em;text-align:center}.ghnum i{font-style:normal;font-size:13px;font-weight:700;opacity:.75;margin-right:6px}
+.ghcd.warn .ghnum b{color:#ea580c}.ghcd.bad .ghnum b{color:#dc2626}
+.ghbar{height:10px;border-radius:99px;background:var(--sunk);overflow:hidden;margin-bottom:8px}.ghbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#16a34a,#4ade80)}
+.ghcd.warn .ghbar i{background:linear-gradient(90deg,#ea580c,#fb923c)}.ghcd.bad .ghbar i{background:linear-gradient(90deg,#dc2626,#f87171)}
+.ghinfo{font-size:13px;text-align:center;margin-bottom:6px;line-height:1.6}
+@media (max-width:520px){.ghnum b{font-size:32px}}@media (prefers-reduced-motion:reduce){.ghcd.bad{animation:none}}
 .kaline{padding:10px 12px;border-radius:12px;background:var(--sunk);font-weight:700;font-size:14px}.kaline.ok{background:rgba(22,163,74,.12);color:#15803d}.kaline.bad{background:rgba(220,38,38,.12);color:#b91c1c}
 
 #secF{display:flex;flex-wrap:wrap!important;overflow:visible!important;gap:6px}#secF .chip{flex:none}
@@ -1937,7 +1945,7 @@ async function startData(){
   let u;try{u=await tmo(SB.auth.getUser(),15000)}catch(e){u={data:{user:null}}}S.me=emailToUser(u.data.user?.email||'');S.email=String(u.data.user?.email||'').toLowerCase();
 
   const db=makeDb(SB);
-  S.db=db;S.state='ready';render();setTimeout(pdpaAuto,8000);
+  S.db=db;S.state='ready';render();setTimeout(pdpaAuto,8000);setTimeout(ghWarn,10000);
   pushBoot();loadQrDay();setInterval(()=>{const d=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);if(!S.qrDay||S.qrDay.day!==d)loadQrDay()},10*60000);
   if(S.role!=='owner'){gateCheck();setInterval(gateCheck,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)gateCheck()})}
   db.doc('config/permissions').onSnapshot(s=>{S.perms=s.exists?(s.data().roles||null):null;renderSoon();refreshSheet()},onErr);
@@ -3563,9 +3571,31 @@ setInterval(()=>{if(S.state==='ready'&&(!S.sheet||S.sheet.type!=='pay'))render()
 /* ---------- แจ้งเตือนเวอร์ชันใหม่ (กันมือถือจำหน้าเก่าไว้) ---------- */
 /* ---------- ความปลอดภัยข้อมูล + PDPA ---------- */
 const SEC_F={all:'ทั้งหมด',crit:'🔴 สำคัญ',money:'💰 การเงิน',set:'⚙️ ตั้งค่า/สิทธิ์',menu:'🍽️ เมนู',pdpa:'🧾 PDPA'};
+/* นับถอยหลัง 60 วัน ก่อน GitHub ปิดงานตั้งเวลา (keepalive) — นับจากการอัปโหลดล่าสุด */
+const GH_DAYS=60;
+function ghRepo(){const h=location.hostname,m=h.match(/^([^.]+)\.github\.io$/i),seg=location.pathname.split('/').filter(Boolean)[0];return m&&seg&&!/\.html$/.test(seg)?m[1]+'/'+seg:'chiwittidkeib/nuealwoan'}
+async function ghPush(force){let c=null;try{c=JSON.parse(localStorage.getItem('nl_gh_push')||'null')}catch(e){}
+  if(c&&!force&&Date.now()-c.chk<3*36e5)return c.at;
+  try{const r=await fetch('https://api.github.com/repos/'+ghRepo(),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();const at=Date.parse(j.pushed_at);if(!at)throw 0;
+    try{localStorage.setItem('nl_gh_push',JSON.stringify({at,chk:Date.now()}))}catch(e){}if(S.ghAt!==at){S.ghAt=at;renderSoon&&renderSoon()}return at}catch(e){return c?c.at:null}}
+function ghLeft(at){return at?at+GH_DAYS*864e5-Date.now():null}
+function ghCdTxt(ms){if(ms<=0)return 'ครบกำหนดแล้ว';const d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);
+  return `<b>${d}</b><i>วัน</i><b>${String(h).padStart(2,'0')}</b><i>ชม.</i><b>${String(m).padStart(2,'0')}</b><i>นาที</i><b>${String(s).padStart(2,'0')}</b><i>วิ</i>`}
+function ghCard(){const at=S.ghAt;if(at===undefined){S.ghAt=null;ghPush().then(a=>{if(a){S.ghAt=a;renderSoon()}})}
+  if(!at)return `<div class="card ghcd"><h3>⏳ นับถอยหลัง นาฬิกาปลุก GitHub</h3><p class="help" style="margin:0">กำลังเช็กวันที่อัปโหลดล่าสุด… <button type="button" class="btn sm" data-act="ghRe">🔄 เช็กใหม่</button></p></div>`;
+  const ms=ghLeft(at),d=ms/864e5,lv=d<=7?'bad':d<=20?'warn':'ok',pct=Math.max(0,Math.min(100,ms/(GH_DAYS*864e5)*100)),due=at+GH_DAYS*864e5;
+  return `<div class="card ghcd ${lv}"><div class="sec-h" style="margin:0"><h3>⏳ นับถอยหลัง นาฬิกาปลุก GitHub</h3><button type="button" class="btn sm" data-act="ghRe">🔄 เช็กใหม่</button></div>
+   <div class="ghnum" id="ghCd" data-due="${due}">${ghCdTxt(ms)}</div>
+   <div class="ghbar"><i style="width:${pct.toFixed(1)}%"></i></div>
+   <div class="ghinfo">อัปโหลดล่าสุด ${new Date(at).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})} ${hm(at)} น. · ครบกำหนด <b>${new Date(due).toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</b></div>
+   <p class="help" style="margin:0">${lv==='ok'?'✅ ยังไม่ต้องทำอะไร · ':lv==='warn'?'🟠 ใกล้แล้ว · ':'🔴 ต้องทำตอนนี้ · '}อัปโหลดไฟล์ขึ้น GitHub ครั้งไหนก็ตาม ตัวนับจะกลับไปเริ่ม ${GH_DAYS} วันใหม่ · ถ้าเลยกำหนด เข้า GitHub → Actions → keepalive → กด <b>Enable workflow</b></p></div>`}
+setInterval(()=>{const e=document.getElementById('ghCd');if(e)e.innerHTML=ghCdTxt(+e.dataset.due-Date.now())},1000);
+function ghWarn(){if(S.role!=='owner')return;ghPush().then(at=>{const ms=ghLeft(at);if(ms==null)return;S.ghAt=at;const d=Math.ceil(ms/864e5);if(d>10)return;
+  let k='';try{k=localStorage.getItem('nl_gh_warn')||''}catch(e){}const t=bkDay();if(k===t)return;try{localStorage.setItem('nl_gh_warn',t)}catch(e){}
+  toast(d<=0?'⚠️ นาฬิกาปลุก GitHub หมดอายุแล้ว · เข้า GitHub → Actions → Enable workflow':'⏳ อีก '+d+' วัน GitHub จะปิดนาฬิกาปลุกกันฐานข้อมูลพัก · อัปโหลดไฟล์ขึ้น GitHub เพื่อต่ออายุ','bad')})}
 function secCard(){const p=(S.settings.pdpa)||{},sd=p.slipDays??60,pd=p.piiDays??365;
   const ka=(S.lists&&S.lists.keepalive)||null,kh=ka?(Date.now()-(+ka.at||0))/36e5:null,kOk=kh!=null&&kh<36;
-  return `<div class="card"><h3>🔄 กันฐานข้อมูลถูกพัก (Supabase แพ็กเกจฟรี)</h3>
+  return ghCard()+`<div class="card"><h3>🔄 กันฐานข้อมูลถูกพัก (Supabase แพ็กเกจฟรี)</h3>
    <div class="kaline ${kh==null?'':kOk?'ok':'bad'}">${kh==null?'⚪ ยังไม่เคยได้รับสัญญาณ · ตั้งค่า GitHub Actions ตามคู่มือ':kOk?`✅ สัญญาณล่าสุด ${dshort(+ka.at)} ${hm(+ka.at)} น. (${kh<1?'ไม่ถึง 1':Math.round(kh)} ชม.ที่แล้ว)`:`⚠️ ไม่มีสัญญาณมา ${Math.round(kh)} ชม. · ตรวจ GitHub → Actions → Supabase keepalive`}</div>
    <p class="help" style="margin:0">Supabase ฟรีจะพักโปรเจกต์ถ้าไม่มีการใช้งาน 7 วัน · GitHub เรียกฐานข้อมูลให้เองวันละ 2 ครั้ง (08:17 / 20:17 น.) · ถ้าเรียกไม่ได้ GitHub ส่งอีเมลเตือน · Supabase ก็ส่งอีเมลเตือนล่วงหน้า ~1 สัปดาห์</p></div>
   <div class="card"><div class="sec-h" style="margin:0"><h3>📜 บันทึกการใช้งาน</h3><button type="button" class="btn sm" data-act="secLoad">🔄 โหลดใหม่</button></div>
@@ -3605,7 +3635,7 @@ function secRender(){const box=$('#secList');if(!box)return;const f=S.secF||'all
   const fv=v=>v==null?'–':typeof v==='object'?JSON.stringify(v).slice(0,60):String(v).slice(0,60);
   box.innerHTML=L.length?L.map(r=>{const d=r.diff&&typeof r.diff==='object'?Object.entries(r.diff).filter(([,v])=>Array.isArray(v)).slice(0,4).map(([k,v])=>`<span>${esc(k)}: ${esc(fv(v[0]))} → <b>${esc(fv(v[1]))}</b></span>`).join(''):'';const t=new Date(r.at);
     return `<div class="secr ${r.sev||''}"><i>${r.sev==='crit'?'🔴':r.sev==='warn'?'🟠':'⚪'}</i><div><b>${esc(r.summary||'')}</b><small>${dshort(+t)} ${hm(+t)} น. · ${esc(emailToUser(r.actor||'')||r.actor||'')}${r.role?' ('+esc(r.role)+')':''}</small>${d?`<div class="secd">${d}</div>`:''}</div></div>`}).join(''):'<p class="help">ยังไม่มีรายการ</p>'}
-Object.assign(ACT,{secLoad:()=>secLoad(),secF:d=>{S.secF=d.v;document.querySelectorAll('#secF .chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===d.v)));secRender()},
+Object.assign(ACT,{ghRe:()=>{ghPush(true).then(a=>{if(a){S.ghAt=a;renderSoon();toast('อัปเดตแล้ว')}else toast('เช็ก GitHub ไม่ได้ ลองใหม่ภายหลัง','bad')})},secLoad:()=>secLoad(),secF:d=>{S.secF=d.v;document.querySelectorAll('#secF .chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===d.v)));secRender()},
   pdSave:async()=>{const sd=Math.max(7,Math.round(+val('pdSlip')||60)),pd=Math.max(30,Math.round(+val('pdPii')||365));const ok=await write('config/settings',r=>r.update({pdpa:{slipDays:sd,piiDays:pd}}));if(ok){S.settings={...S.settings,pdpa:{slipDays:sd,piiDays:pd}};toast('บันทึกกำหนดเวลาแล้ว')}},
   pdRun:async()=>{const {data,error}=await SB.rpc('pdpa_purge');if(error)return toast('ทำไม่สำเร็จ: '+(error.message||''),'bad');toast(`ลบรูปสลิป ${num(data.slips||0)} รูป · ปิดบังบิลเก่า ${num(data.pii||0)} บิล`);secLoad()},
   pdForget:async()=>{const ph=val('pdPh').replace(/\D/g,'');if(!/^0\d{8,9}$/.test(ph))return toast('ใส่เบอร์โทรให้ถูกต้อง','bad');const {data,error}=await SB.rpc('pdpa_forget',{p_phone:ph});if(error)return toast('ทำไม่สำเร็จ: '+(error.message||''),'bad');toast(`ลบข้อมูลแล้ว · สมาชิก ${data.members} · บิล ${data.bills}`);const i=$('#pdPh');if(i)i.value='';secLoad()},
